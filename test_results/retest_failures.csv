@@ -1,0 +1,64 @@
+id,question,status,domain,duration_sec,row_count,error
+11,Total gross add per site di Surabaya 30 hari terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+26,Perbandingan traffic 5G bulan ini vs bulan lalu per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+27,Site 5G dengan pertumbuhan traffic tertinggi MoM,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+28,Total user 5G per territory di East Java,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+29,OpenSignal download speed rata-rata per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+30,Berapa availability 4G per kabkota di Central Java?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+31,Top 5 territory dengan traffic 5G tertinggi MTD,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+32,Network experience score per region dari OpenSignal,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+33,Site 5G yang traffic-nya turun >30% dalam seminggu terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+34,Rata-rata latency per region dari OpenSignal,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+35,Jumlah site 5G baru yang aktif bulan ini,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+36,Traffic 5G per branch di East Java MTD,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+37,Perbandingan upload vs download speed antar operator dari OpenSignal,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+38,Coverage 5G per kecamatan di Surabaya,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+39,Bandingkan market share IM3 vs Telkomsel per kabkota di bulan terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+40,Market share IOH per age group bulan terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+41,Trend market share IM3 selama 6 bulan terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+42,Kabkota mana yang market share IOH di bawah 20%?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+43,Perbandingan market share semua operator per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+57,Tampilkan forecast revenue untuk top 5 micro-cluster bulan depan,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+58,Forecast revenue per branch di Central Java bulan depan,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+60,Micro-cluster mana yang forecast revenue-nya naik >10%?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+63,Total forecast revenue seluruh Java bulan depan,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+65,Trend forecast revenue 3 bulan ke depan per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+69,Apakah forecast revenue bulan ini on track?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+70,Top 10 kabkota forecast revenue tertinggi bulan depan,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+72,Micro-cluster dengan forecast paling akurat 3 bulan terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+74,Status service order FTTH per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+81,Average time to complete FTTH service order,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+82,Sales FTTH bulan ini vs bulan lalu per branch,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+83,Top 5 branch dengan growth FTTH tertinggi,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+84,Berapa total FTTH SA (service agreement) yang aktif?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+85,Total HVC subscriber per region bulan terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+86,Revenue HVC vs non-HVC per kecamatan,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+88,Trend HVC revenue harian 30 hari terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+90,ARPU HVC per region MTD,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+91,Perbandingan HVC subscriber bulan ini vs bulan lalu,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+92,HVC revenue contribution per branch di East Java,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+93,Site dengan HVC ARPU tertinggi di Central Java,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+102,Perbandingan KPI bulan ini vs bulan lalu per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+125,Branch dengan growth gross add tertinggi bulan ini,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+130,Perbandingan marketing KPI bulan ini vs bulan lalu,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+131,Top performing region berdasarkan marketing acquisition,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+132,Marketing spend efficiency per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+146,Sales per channel distribution per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+148,SND KPI: gross add vs churn per branch bulan ini,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+170,Berapa total site per region dari reference territory?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+177,SND kecwise IS performance overview,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+181,Korelasi antara 5G traffic dengan revenue per site,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+183,Bandingkan HVC churn dengan overall churn per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+184,Apakah site dengan coverage 5G memiliki revenue lebih tinggi?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+185,Daerah mana yang perlu prioritas investasi berdasarkan forecast dan market share?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+186,Kecamatan dengan market share tinggi tapi FTTH penetrasi rendah,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+187,Bagaimana performance outlet berkorelasi dengan market share?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+189,Bandingkan KPI summary dengan marketing KPI per region,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+191,"Berikan executive summary seluruh Java: revenue, market share, 5G, churn",CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+192,Top 3 masalah utama yang terlihat dari data bulan ini,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+193,Rekomendasi area untuk ekspansi berdasarkan forecast dan competitive data,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+196,Analisis gap: area market share tinggi tapi 5G coverage rendah,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+197,Branch mana yang paling butuh improvement di semua KPI?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+198,Summary data quality: berapa null/missing di kolom-kolom kunci?,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+199,Ranking branch secara keseluruhan (composite score),CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found
+200,Prediksi revenue kuartal depan berdasarkan trend 3 bulan terakhir,CONNECTION_ERROR,,0.0,0,HTTP Error 404: Not Found

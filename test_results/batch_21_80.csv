@@ -1,0 +1,950 @@
+id,question,expected_domain,routed_domain,status,error,elapsed_s,sql,row_count,answer_preview,has_chart,has_table
+21,Berapa total traffic 5G per region di bulan terakhir?,network,network,OK,,25.6,"WITH latest AS (
+  SELECT MAX(mth_id) AS max_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_5g_site_monthly`
+)
+SELECT
+  t.region,
+  t.mth_id,
+  SUM(t.traffic_5g) AS total_traffic_5g
+FROM `data-java-prd-97b9.java_precalc.rham_5g_site_monthly` t
+JOIN latest l ON t.mth_id = l.max_mth
+WHERE t.mth_dt = PARSE_DATE('%Y%m', l.max_mth)
+GROUP BY t.region, t.mth_id
+ORDER BY total_traffic_5g DESC
+LIMIT 100",4,"## Total Traffic 5G per Region — Mei 2025
+
+Berikut ringkasan traffic 5G di bulan terakhir (periode **202605 / Mei 2025**):
+
+| # | Region | Total Traffic 5G |
+|---|--------|-----------------|
+| 1 | *(Tidak teridentifikasi)* | **42.871.504** |
+| 2 | **Central Java** | **4.247.779** |
+| 3 | **East Java",True,True
+22,Top 10 site 5G dengan traffic tertinggi,network,network,OK,,37.3,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_5g_site_daily`
+)
+SELECT
+  s.site_id,
+  s.brand,
+  s.kabkot,
+  s.province,
+  s.region,
+  s.circle,
+  s.branch,
+  s.traffic_total,
+  s.traffic_5g,
+  s.traffic_4g,
+  s.traffic_2g,
+  s.dev5g_total,
+  s.dev5g_with_traffic,
+  s.dt_id
+FROM `data-java-prd-97b9.java_precalc.rham_5g_site_daily` s
+JOIN latest l ON s.dt_id = l.max_dt
+ORDER BY s.traffic_total DESC
+LIMIT 10",10,"## Top 10 Site 5G dengan Traffic Tertinggi
+
+**Data per: 26 Mei 2026**
+
+Berikut 10 site 5G dengan total traffic tertinggi:
+
+| # | Site ID | Traffic Total (GB) | Traffic 5G (GB) | Traffic 4G (GB) | Device 5G (Aktif/Total) |
+|---|---------|-------------------|-----------------|-----------------|-------",True,True
+23,Trend traffic 5G harian selama 7 hari terakhir,network,network,OK,,28.0,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_5g_territory_daily`
+)
+SELECT
+  t.dt_id,
+  SUM(t.traffic_5g) AS total_traffic_5g,
+  SUM(t.traffic_total) AS total_traffic_all
+FROM `data-java-prd-97b9.java_precalc.rham_5g_territory_daily` t, latest l
+WHERE t.dt_id >= DATE_SUB(l.max_dt, INTERVAL 6 DAY)
+  AND t.dt_id <= l.max_dt
+  AND t.territory_level = 'national'
+GROUP BY t.dt_id
+ORDER BY t.dt_id
+LIMIT 7",0,"## Trend Traffic 5G Harian — 7 Hari Terakhir
+
+**Hasil: Tidak ada data ditemukan.**
+
+Query tidak mengembalikan data apapun (0 baris). Beberapa kemungkinan penyebab:
+
+1. **Filter `territory_level = 'national'`** — Mungkin tidak ada record dengan value tersebut di tabel `rham_5g_territory_daily`. Perlu",False,False
+24,Berapa jumlah site 5G aktif per region?,network,network,OK,,25.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_5g_territory_daily`
+  WHERE territory_level = 'region'
+)
+SELECT
+  t.dt_id,
+  t.territory_name AS region,
+  t.brand,
+  t.site_count AS jumlah_site_5g
+FROM `data-java-prd-97b9.java_precalc.rham_5g_territory_daily` t
+JOIN latest l ON t.dt_id = l.max_dt
+WHERE t.territory_level = 'region'
+ORDER BY t.territory_name, t.brand
+LIMIT 100",6,"## Jumlah Site 5G Aktif per Region
+
+**Data per 26 Mei 2026**, berikut jumlah site 5G on-air di area Java & Bali Nusra:
+
+| Region | Brand | Jumlah Site 5G |
+|---|---|---|
+| **CENTRAL JAVA** | IM3 | 6.608 |
+| | 3ID | 6.609 |
+| **EAST JAVA** | IM3 | 6.527 |
+| | 3ID | 6.523 |
+| **BALI NUSRA** | IM3 | 2.",True,True
+25,Availability rate per territory bulan terakhir,network,network,OK,,35.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_avail_stat_territory_monthly`
+)
+SELECT
+  t.month_id,
+  t.territory_level,
+  t.territory_name,
+  t.parent_province,
+  t.parent_region,
+  t.parent_circle,
+  t.total_sites,
+  t.mean_avg_avail_pct_2g,
+  t.mean_avg_avail_pct_4g,
+  t.mean_avg_avail_pct_5g,
+  t.total_downtime_hrs_2g,
+  t.total_downtime_hrs_4g,
+  t.sites_with_any_gt3h_4g,
+  t.sites_with_any_gt5h_4g,
+  t.sites_with_full_outage_4g
+FROM `da",1000,"# Availability Rate per Territory — Mei 2025
+
+## Ringkasan Level Circle (JAVA)
+Secara keseluruhan untuk **Circle JAVA** (15.794 sites):
+
+| Teknologi | Availability Rate |
+|-----------|:-----------------:|
+| **4G** | **99,834%** |
+| **5G** | **99,874%** |
+| **2G** | **99,657%** |
+
+Total downtime: **3",True,True
+26,Perbandingan traffic 5G bulan ini vs bulan lalu per region,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+27,Site 5G dengan pertumbuhan traffic tertinggi MoM,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+28,Total user 5G per territory di East Java,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+29,OpenSignal download speed rata-rata per region,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+30,Berapa availability 4G per kabkota di Central Java?,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+31,Top 5 territory dengan traffic 5G tertinggi MTD,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+32,Network experience score per region dari OpenSignal,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+33,Site 5G yang traffic-nya turun >30% dalam seminggu terakhir,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+34,Rata-rata latency per region dari OpenSignal,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+35,Jumlah site 5G baru yang aktif bulan ini,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+36,Traffic 5G per branch di East Java MTD,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+37,Perbandingan upload vs download speed antar operator dari OpenSignal,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+38,Coverage 5G per kecamatan di Surabaya,network,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+39,Bandingkan market share IM3 vs Telkomsel per kabkota di bulan terakhir,competitive,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+40,Market share IOH per age group bulan terakhir,competitive,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+41,Trend market share IM3 selama 6 bulan terakhir,competitive,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+42,Kabkota mana yang market share IOH di bawah 20%?,competitive,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+43,Perbandingan market share semua operator per region,competitive,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+44,Top 10 kecamatan dengan market share IM3 tertinggi,competitive,competitive,OK,,27.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2`
+  WHERE operator = 'IM3'
+    AND kpi_nm = 'market_share'
+)
+SELECT
+  t.kecamatan,
+  t.kabkot,
+  t.province,
+  t.region,
+  t.branch,
+  t.base_norm_prcnt AS ms_im3_prcnt,
+  t.base_norm_abs   AS ms_im3_abs,
+  t.dt_id
+FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2` t
+JOIN latest l ON t.dt_id = l.max_dt
+WHERE t.operator = 'IM3'
+  AND LOWER(t.kpi_nm) = 'market_share'
+  AND LOWE",0,"## Top 10 Kecamatan dengan Market Share IM3 Tertinggi
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Query tidak mengembalikan data apapun. Beberapa kemungkinan penyebabnya:
+
+1. **Filter tanggal** — Data pada tanggal terbaru mungkin belum tersedia atau belum di-update di tabel `rham_fb_ms_kecamatan_v2",False,False
+45,Network insight IOH vs Telkomsel per minggu terakhir,competitive,network,OK,,28.8,"WITH latest_week AS (
+  SELECT MAX(end_dt) AS max_end_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_opensignal_territory_wly_wide`
+)
+SELECT
+  t.end_dt,
+  t.start_dt,
+  t.territory_level,
+  t.territory_name,
+  -- IOH (Indosat) metrics
+  t.video_exp_indosat,
+  t.voice_exp_indosat,
+  t.games_exp_indosat,
+  t.livevideo_exp_indosat,
+  -- Telkomsel metrics
+  t.video_exp_tsel,
+  t.voice_exp_tsel,
+  t.games_exp_tsel,
+  t.livevideo_exp_tsel,
+  -- Delta IOH vs Telkomsel
+  ROUND(t.video_exp_indosat - t.v",0,"## Network Insight IOH vs Telkomsel — Minggu Terakhir
+
+**Data tidak tersedia (0 baris hasil).**
+
+Query untuk perbandingan network experience (Video, Voice App, Games, Live Video) antara IOH dan Telkomsel pada level nasional minggu terakhir mengembalikan hasil kosong.
+
+### Kemungkinan Penyebab:
+- **D",False,False
+46,Kecamatan mana yang market share IM3 naik >5% MoM?,competitive,competitive,OK,,31.3,"WITH bounds AS (
+  SELECT
+    MAX(dt_id) AS latest_dt,
+    DATE_SUB(MAX(dt_id), INTERVAL 1 MONTH) AS prev_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2`
+  WHERE operator = 'im3'
+),
+curr AS (
+  SELECT
+    t.kecamatan,
+    t.kabkot,
+    t.province,
+    t.branch,
+    t.area,
+    t.region,
+    t.base_norm_prcnt AS ms_curr
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2` t
+  JOIN bounds b ON t.dt_id = b.latest_dt
+  WHERE t.operator = 'im3'
+    AND LOWER(t.kpi_nm) ",0,"## Market Share IM3 — Kenaikan >5% MoM per Kecamatan
+
+**Hasil: Tidak ada kecamatan yang mencatat kenaikan market share IM3 lebih dari 5 percentage points secara Month-over-Month.**
+
+### Kemungkinan Penyebab:
+- **Pergerakan market share relatif stabil** di seluruh kecamatan pada periode terakhir, seh",False,False
+47,Market share per operator di Semarang,competitive,competitive,OK,,32.0,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kabkota_v2`
+  WHERE LOWER(locations) LIKE '%semarang%'
+)
+SELECT
+  t.dt_id,
+  t.locations,
+  t.operator,
+  t.kpi_nm,
+  t.base_ori_prcnt,
+  t.base_ori_abs,
+  t.base_norm_prcnt,
+  t.base_norm_abs,
+  t.ga_ori_prcnt,
+  t.ga_ori_abs,
+  t.ga_norm_prcnt,
+  t.ga_norm_abs,
+  t.churn_ori_prcnt,
+  t.churn_ori_abs,
+  t.churn_norm_prcnt,
+  t.churn_norm_abs
+FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kabkota_",10,"## Market Share per Operator di Semarang (Data: 10 Mei 2026)
+
+### 🏙️ KOTA SEMARANG
+
+| Operator | Base Share | Base Subs | GA Share | Churn Share |
+|---|---|---|---|---|
+| **Telkomsel** | **31,2%** | 552.132 | 26,7% | 27,2% |
+| **Indosat** | **21,2%** | 375.641 | 20,7% | 18,8% |
+| Hutchison | 19,3% |",True,True
+48,Trend market share XL di East Java 6 bulan terakhir,competitive,competitive,OK,,30.7,"WITH bounds AS (
+  SELECT
+    MAX(dt_id) AS max_dt,
+    FORMAT_DATE('%Y%m', DATE_SUB(MAX(dt_id), INTERVAL 5 MONTH)) AS lo_month,
+    FORMAT_DATE('%Y%m', MAX(dt_id)) AS hi_month
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kabkota_v2`
+)
+SELECT
+  FORMAT_DATE('%Y%m', t.dt_id) AS month_id,
+  t.operator,
+  SUM(t.base_norm_abs) AS total_base_norm_abs,
+  ROUND(AVG(t.base_norm_prcnt), 4) AS avg_market_share_prcnt,
+  SUM(t.ga_norm_abs) AS total_ga_norm_abs,
+  SUM(t.churn_norm_abs) AS total_churn_no",0,"## Trend Market Share XL di East Java — 6 Bulan Terakhir
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Query tidak mengembalikan data apa pun untuk trend market share XL Axiata di East Java selama 6 bulan terakhir.
+
+### Kemungkinan Penyebab:
+- **Filter operator** — Nama operator ""XL"" mungkin tersimpa",False,False
+49,Perbandingan gross add IOH vs Telkomsel per kabkota,competitive,competitive,OK,,34.4,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kabkota_v2`
+  WHERE kpi_nm = 'ga'
+)
+SELECT
+  t.locations AS kabkota,
+  t.dt_id,
+  SUM(CASE WHEN LOWER(t.operator) IN ('im3','ioh','3id','indosat') THEN t.ga_ori_abs END) AS ga_ioh,
+  SUM(CASE WHEN LOWER(t.operator) IN ('tsel','telkomsel') THEN t.ga_ori_abs END) AS ga_tsel,
+  SAFE_DIVIDE(
+    SUM(CASE WHEN LOWER(t.operator) IN ('im3','ioh','3id','indosat') THEN t.ga_ori_abs END),
+    SUM(CASE WHEN LO",0,"## Perbandingan Gross Add IOH vs Telkomsel per Kabupaten/Kota
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Query tidak mengembalikan data apapun. Beberapa kemungkinan penyebabnya:
+
+1. **Filter tanggal** — Data pada tanggal terbaru mungkin belum tersedia atau belum di-load ke tabel `rham_fb_ms_kabkot",False,False
+50,Market share amount per operator di Central Java,competitive,reporting,OK,,29.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_province`
+)
+SELECT
+  t.dt_id,
+  t.month_id,
+  t.week,
+  t.province,
+  t.region,
+  t.ms_amount_ioh,
+  t.ms_amount_im3,
+  t.ms_amount_3id,
+  t.ms_amount_tsel,
+  t.ms_amount_xl,
+  t.ms_amount_sf,
+  t.fb_ms_pop,
+  ROUND(SAFE_DIVIDE(t.ms_amount_ioh, t.fb_ms_pop) * 100, 2) AS ms_pct_ioh,
+  ROUND(SAFE_DIVIDE(t.ms_amount_im3, t.fb_ms_pop) * 100, 2) AS ms_pct_im3,
+  ROUND(SAFE_DIVIDE(t.ms_amount",2,"## Market Share by Amount (Revenue) in Central Java
+
+**IOH leads the Central Java market with ~38% share**, well ahead of all competitors.
+
+Here's the latest snapshot (May 2025, Weeks 18–19):
+
+| Operator | Amount (W19) | Share (%) |
+|----------|------------:|:---------:|
+| **IOH (combined)** | **8,3",True,True
+51,Kecamatan dengan market share SmartFren tertinggi,competitive,competitive,OK,,41.1,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2`
+  WHERE LOWER(operator) = 'smartfren'
+)
+SELECT
+  t.kecamatan,
+  t.kabkot,
+  t.province,
+  t.branch,
+  t.area,
+  t.region,
+  t.dt_id,
+  t.base_norm_prcnt AS market_share_prcnt,
+  t.base_norm_abs AS market_share_abs,
+  t.ga_norm_prcnt,
+  t.ga_norm_abs,
+  t.churn_norm_prcnt,
+  t.churn_norm_abs
+FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2` t
+JOIN latest l ON t.dt_id = l.ma",50,"## Kecamatan dengan Market Share SmartFren Tertinggi
+
+**Per data terbaru (10 Mei 2026)**, berikut 50 kecamatan dengan market share SmartFren tertinggi:
+
+### 🏆 Top 5 Kecamatan
+| # | Kecamatan | Kabkot | Provinsi | Market Share | Pelanggan |
+|---|-----------|--------|----------|-------------|---------",True,True
+52,Network quality comparison IOH vs XL dari Facebook data,competitive,competitive,OK,,40.7,"WITH latest AS (
+  SELECT MAX(wk_end_dt) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_network_insight_wly`
+)
+SELECT
+  n.brand,
+  n.object_level,
+  -- 4G metrics
+  ROUND(AVG(n.dl_speed_median_4g), 2) AS avg_dl_speed_median_4g,
+  ROUND(AVG(n.dl_speed_low_4g), 2)    AS avg_dl_speed_low_4g,
+  ROUND(AVG(n.dl_speed_high_4g), 2)   AS avg_dl_speed_high_4g,
+  ROUND(AVG(n.latency_4g), 2)         AS avg_latency_4g,
+  ROUND(AVG(n.rtt_4g), 2)             AS avg_rtt_4g,
+  ROUND(AVG(n.signal_stren",6,"## Network Quality Comparison: IOH (IM3) vs XL — Facebook Data
+
+### Key Finding: **XL leads on download speed, but IOH has lower latency and larger sample coverage.**
+
+---
+
+### 4G Performance (Kabupaten/Kota level)
+
+| Metric | **IM3** | **XL** | Gap |
+|---|---|---|---|
+| **DL Speed (Median)** | 11.8",True,True
+53,Churn rate perbandingan IOH vs Telkomsel per region,competitive,kpi_summary,OK,,50.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  m.month_id,
+  m.kabkot,
+  -- IOH combined (IM3 + 3ID)
+  SUM(m.gross_churn_90d)                                    AS ioh_gross_churn_90d,
+  SUM(m.rgu_90d)                                            AS ioh_rgu_90d,
+  SAFE_DIVIDE(SUM(m.gross_churn_90d), SUM(m.rgu_90d)) * 100 AS ioh_churn_rate_pct,
+  SUM(m.net_churn_90d)                                      AS ioh_net_c",200,"## Hasil Analisis: Churn Rate IOH per Kabupaten/Kota (Februari 2026)
+
+### ⚠️ Catatan Penting
+**Data Telkomsel tidak tersedia** dalam tabel ini. Database Executive KPI Summary hanya berisi data internal IOH (brand IM3 & 3ID), sehingga **perbandingan langsung IOH vs Telkomsel tidak dapat dilakukan**. ",True,True
+54,Market share IM3 di segmen usia 18-24 tahun,competitive,competitive,OK,,37.3,"WITH latest_dt AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_age`
+)
+SELECT
+  t.dt_id,
+  t.kabkota,
+  t.age,
+  SAFE_CAST(t.ms_im3 AS FLOAT64) AS market_share_im3,
+  SAFE_CAST(t.market_size_im3 AS INT64) AS market_size_im3,
+  SAFE_CAST(t.ga_im3 AS INT64) AS gross_add_im3,
+  SAFE_CAST(t.churn_im3 AS INT64) AS churn_im3,
+  SAFE_CAST(t.net_add_im3 AS INT64) AS net_add_im3,
+  SAFE_CAST(t.pop_im3 AS INT64) AS population_im3
+FROM `data-java-prd-97b9.java_precalc.r",500,"## Market Share IM3 di Segmen Usia 18-24 Tahun
+
+**Data per 11 Januari 2026** — tersedia **500 kabupaten/kota**.
+
+### 🏆 Top 10 Market Share Tertinggi
+
+| No | Kabupaten/Kota | Market Share | Population IM3 | Net Add |
+|----|----------------|:-----------:|:--------------:|:-------:|
+| 1 | **Blitar** | ",True,True
+55,Top 5 kabkota dimana IOH kalah market share dari XL,competitive,competitive,OK,,31.2,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_age`
+),
+agg AS (
+  SELECT
+    t.kabkota,
+    SUM(SAFE_CAST(t.ms_im3 AS FLOAT64)) + SUM(SAFE_CAST(t.ms_tri AS FLOAT64)) AS ms_ioh,
+    SUM(SAFE_CAST(t.ms_xl AS FLOAT64)) AS ms_xl
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_age` t
+  CROSS JOIN latest l
+  WHERE t.dt_id = l.max_dt
+  GROUP BY t.kabkota
+)
+SELECT
+  kabkota,
+  ROUND(ms_ioh, 4) AS ms_ioh,
+  ROUND(ms_xl, 4) AS ms_xl,
+  ROUND(ms_xl - ms",5,"## Top 5 Kabupaten/Kota di Mana IOH Kalah Market Share dari XL
+
+Berikut adalah 5 kabkota dengan selisih market share **XL di atas IOH** paling besar:
+
+| # | Kabupaten/Kota | MS IOH | MS XL | Selisih (XL − IOH) |
+|---|----------------|--------|-------|---------------------|
+| 1 | **Lombok Timur** | 4",True,True
+56,Penetrasi 3ID per kecamatan di East Java,competitive,competitive,OK,,28.4,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2`
+  WHERE operator = '3ID'
+    AND province = 'East Java'
+)
+SELECT
+  t.dt_id,
+  t.kec_id,
+  t.kecamatan,
+  t.kabkot,
+  t.province,
+  t.branch,
+  t.area,
+  t.region,
+  t.operator,
+  t.kpi_nm,
+  t.base_ori_prcnt,
+  t.base_ori_abs,
+  t.base_norm_prcnt,
+  t.base_norm_abs,
+  t.ga_ori_prcnt,
+  t.ga_ori_abs,
+  t.ga_norm_prcnt,
+  t.ga_norm_abs,
+  t.churn_ori_prcnt,
+  t.churn_ori_abs,
+  t.churn_n",0,"## Penetrasi 3ID (Tri) per Kecamatan di East Java
+
+**Hasil: Tidak ada data yang ditemukan.**
+
+Query tidak mengembalikan data sama sekali (0 baris). Beberapa kemungkinan penyebabnya:
+
+1. **Filter periode (dt_id):** Data untuk periode terbaru mungkin belum tersedia atau belum di-load ke tabel `rham_fb",False,False
+57,Tampilkan forecast revenue untuk top 5 micro-cluster bulan depan,forecast,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for function PARSE_DATE
+  Argument types: STRING, INT64
+  Signature: PARS",37.3,"WITH latest_month AS ( SELECT MAX(month_id) AS max_month FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_mc_output_v3` WHERE flag = 'actual' ), top_5_mc AS ( SELECT t.micro_cluster, t.branch, t.region, t.brand, SUM(t.value) AS total_rev_actual FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_mc_output_v3` t JOIN latest_month lm ON t.month_id = lm.max_month WHERE t.flag = 'actual' AND t.metric = 'rev_prepaid' GROUP BY t.micro_cluster, t.branch, t.region, t.brand ORDER BY to",0,"## Forecast Revenue Top 5 Micro-Cluster Bulan Depan
+
+**Hasil query kosong** — tidak ada data yang ditemukan.
+
+### Kemungkinan penyebab:
+- **Data forecast belum tersedia**: Proyeksi untuk bulan depan mungkin belum di-upload atau belum di-generate oleh tim planning.
+- **Data aktual bulan terakhir belu",False,False
+58,Forecast revenue per branch di Central Java bulan depan,forecast,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for function PARSE_DATE
+  Argument types: STRING, INT64
+  Signature: PARS",33.1,"WITH latest AS ( SELECT MAX(CAST(month_id AS STRING)) AS max_month_id FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3` ), next_month AS ( SELECT FORMAT_DATE('%Y%m', DATE_ADD(PARSE_DATE('%Y%m', max_month_id), INTERVAL 1 MONTH)) AS forecast_month_id FROM latest ) SELECT f.month_id, f.branch, f.brand, f.region, f.metric, f.scenario, f.flag, SUM(f.value) AS total_value FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3` f CROSS JOIN next_month n",0,"## Hasil Forecast Revenue per Branch - Central Java
+
+**Data tidak ditemukan** untuk forecast revenue bulan depan di Central Java.
+
+### Kemungkinan Penyebab:
+- **Data forecast belum tersedia** untuk periode bulan berikutnya
+- **Filter region** mungkin tidak cocok dengan format data (periksa penulisan",False,False
+59,Akurasi forecast vs actual revenue bulan lalu per kabkota,forecast,forecast,OK,,34.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_kabkota_output_v3`
+  WHERE flag = 'forecast'
+),
+forecast AS (
+  SELECT
+    f.month_id,
+    f.kabkot,
+    f.brand,
+    f.region,
+    f.circle,
+    f.metric,
+    f.scenario,
+    SUM(f.value) AS forecast_value
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_kabkota_output_v3` f
+  JOIN latest l ON f.month_id = l.max_month
+  WHERE f.flag = 'forecast'
+    AND LOWER(f.metric)",0,"## Akurasi Forecast vs Actual Revenue Bulan Lalu per Kabkota
+
+**Hasil: Tidak ada data yang ditemukan.**
+
+Query tidak mengembalikan baris data sama sekali. Beberapa kemungkinan penyebabnya:
+
+1. **Data belum tersedia** — Data actual revenue untuk bulan terakhir mungkin belum di-*upload* atau belum di-",False,False
+60,Micro-cluster mana yang forecast revenue-nya naik >10%?,forecast,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for function PARSE_DATE
+  Argument types: STRING, INT64
+  Signature: PARS",42.5,"WITH latest AS ( SELECT MAX(month_id) AS max_mid FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_mc_output_v3` WHERE flag = 'forecast' ), prev_month AS ( SELECT FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', CAST(max_mid AS STRING)), INTERVAL 1 MONTH)) AS pm, FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', CAST(max_mid AS STRING)), INTERVAL 12 MONTH)) AS py, max_mid FROM latest ), curr AS ( SELECT t.micro_cluster, t.brand, t.branch, t.region, t.circle, t.scenario, t.value AS rev_cur",0,"## Hasil Analisis
+
+**Tidak ada micro-cluster yang memenuhi kriteria forecast revenue naik >10%.**
+
+Data query mengembalikan **0 hasil**, yang berarti:
+
+- Tidak ada micro-cluster dengan pertumbuhan MoM (month-over-month) **atau** YoY (year-over-year) di atas 10% pada periode forecast yang tersedia.
+
+",False,False
+61,Forecast daily revenue minggu depan per branch,forecast,forecast,OK,,29.2,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_output_v3`
+  WHERE flag = 'forecast'
+),
+forecast_window AS (
+  SELECT
+    o.dt_id,
+    o.branch,
+    o.brand,
+    o.region,
+    o.circle,
+    o.metric,
+    o.value AS forecast_value,
+    o.scenario,
+    o.flag
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_output_v3` o
+  CROSS JOIN latest l
+  WHERE o.flag = 'forecast'
+    AND o.dt_id > DATE_SUB(l.max_dt, INTERVAL ",0,"## Forecast Revenue Harian Minggu Depan per Branch
+
+**Hasil: Tidak ada data ditemukan.**
+
+Query tidak mengembalikan data apapun. Beberapa kemungkinan penyebabnya:
+
+1. **Data forecast belum tersedia** — Forecast untuk periode minggu depan mungkin belum di-generate atau belum di-load ke tabel `v3 bran",False,False
+62,Perbandingan forecast v1 vs v3 per branch,forecast,forecast,OK,,38.6,"WITH latest_date AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_output`
+),
+v1_data AS (
+  SELECT
+    t.dt_id,
+    t.branch,
+    t.brand,
+    t.region,
+    t.metric,
+    t.value AS value_v1,
+    t.flag AS flag_v1
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_output` t
+  CROSS JOIN latest_date l
+  WHERE t.dt_id >= DATE_SUB(l.max_dt, INTERVAL 30 DAY)
+    AND LOWER(t.metric) LIKE '%rev%'
+),
+v3_data AS (
+  SELECT
+    t.dt_id,",1000,"## Hasil Perbandingan Forecast V1 vs V3 per Branch
+
+### Temuan Utama: **Data forecast V3 tidak tersedia (semua NULL)**
+
+Dari 1.000 baris data yang ditarik, **seluruh nilai `value_v3` kosong (null)**, sehingga perbandingan antara model V1 dan V3 **tidak dapat dilakukan**. Kolom `diff_v3_minus_v1`, `p",True,True
+63,Total forecast revenue seluruh Java bulan depan,forecast,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for function PARSE_DATE
+  Argument types: STRING, INT64
+  Signature: PARS",35.9,"WITH latest AS ( SELECT MAX(CAST(month_id AS STRING)) AS max_month_id FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3` ), next_month AS ( SELECT FORMAT_DATE('%Y%m', DATE_ADD(PARSE_DATE('%Y%m', max_month_id), INTERVAL 1 MONTH)) AS target_month_id FROM latest ) SELECT n.target_month_id AS month_id, f.region, f.metric, f.scenario, f.flag, SUM(f.value) AS total_forecast_value FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3` f CROSS JOIN next_",0,"## Total Forecast Revenue Seluruh Java Bulan Depan
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Tidak ada data forecast revenue untuk bulan depan yang tersedia saat ini.
+
+### Kemungkinan Penyebab:
+- **Data forecast belum di-*upload* atau di-*generate*** untuk periode bulan depan.
+- **Bulan terbaru (",False,False
+64,Branch mana yang forecast revenue-nya paling rendah?,forecast,forecast,OK,,22.6,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3`
+  WHERE flag = 'forecast'
+)
+SELECT
+  t.branch,
+  t.brand,
+  t.region,
+  t.circle,
+  t.metric,
+  t.scenario,
+  t.value AS forecast_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3` t
+JOIN latest l ON t.month_id = l.max_month
+WHERE t.flag = 'forecast'
+  AND LOWER(t.metric) LIKE '%rev_prepaid%'
+ORDER BY t.value ASC
+LIMIT 20",0,"## Hasil Analisis: Branch dengan Forecast Revenue Terendah
+
+**Data tidak ditemukan (0 baris).**
+
+Query tidak mengembalikan hasil apapun. Beberapa kemungkinan penyebabnya:
+
+1. **Filter bulan forecast** — Bulan forecast terbaru mungkin belum tersedia di tabel `monthly branch output v3`.
+2. **Filter me",False,False
+65,Trend forecast revenue 3 bulan ke depan per region,forecast,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for function PARSE_DATE
+  Argument types: STRING, INT64
+  Signature: PARS",60.1,"WITH latest_source AS (
+  SELECT MAX(CAST(month_id AS STRING)) AS max_month_src
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_source`
+),
+bounds_src AS (
+  SELECT
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', max_month_src), INTERVAL 5 MONTH)) AS lo_src,
+    max_month_src AS hi_src
+  FROM latest_source
+),
+historical AS (
+  SELECT
+    'ACTUAL' AS data_type,
+    CAST(s.month_id AS STRING) AS month_id,
+    s.region,
+    s.branch,
+    s.brand,
+    SUM(s.rev_prepaid) AS tota",1000,"## Trend & Forecast Revenue Prepaid per Region
+
+### Temuan Utama
+
+**Data forecast 3 bulan ke depan belum tersedia.** Seluruh 1.000 baris yang dikembalikan memiliki `data_type = ""ACTUAL""` dengan kolom `total_rev_forecast = null`. Artinya, model forecast v3 belum menghasilkan proyeksi untuk periode se",True,True
+66,Forecast source data availability per branch,forecast,forecast,OK,,44.5,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_source`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+),
+latest_month AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_source`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+),
+src AS (
+  SELECT
+    s.branch,
+    s.brand,
+    s.region,
+    s.circle,
+    COUNT(DISTINCT s.dt_id) AS days_with_data,
+    M",194,"## Forecast Source Data Availability: **All 194 Branch-Brand Combinations are COMPLETE** ✅
+
+**Key finding:** The latest available forecast source data is for **May 2026 (2026-05-01)**, and every single branch-brand combination has **100% data population** across all 16 key metrics.
+
+### Summary
+
+| M",True,True
+67,Kabkota dengan gap terbesar antara forecast dan actual,forecast,forecast,OK,,30.6,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_kabkota_output_v3`
+),
+forecast AS (
+  SELECT
+    f.kabkot,
+    f.brand,
+    f.metric,
+    f.month_id,
+    SUM(f.value) AS forecast_value
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_kabkota_output_v3` f
+  CROSS JOIN latest l
+  WHERE f.month_id = l.max_month
+    AND f.flag = 'forecast'
+    AND f.scenario = 'baseline'
+  GROUP BY f.kabkot, f.brand, f.metric, f.month_id",0,"## Hasil Analisis: Gap Terbesar Antara Forecast dan Actual
+
+**Tidak ada data yang ditemukan** untuk perbandingan forecast vs actual per kabupaten/kota.
+
+### Kemungkinan Penyebab:
+- **Data forecast belum tersedia** untuk periode bulan terakhir
+- **Filter skenario 'baseline'** tidak memiliki data yang",False,False
+68,Forecast revenue micro-cluster di Surabaya,forecast,forecast,OK,,35.3,"WITH latest_period AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_mc_output_v3`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+),
+forecast_data AS (
+  SELECT
+    f.dt_id,
+    f.year,
+    f.month_id,
+    f.micro_cluster,
+    f.brand,
+    f.branch,
+    f.region,
+    f.metric,
+    f.value,
+    f.flag,
+    f.scenario
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_mc_output_v3` f
+  CROSS JOIN latest_period lp
+  WHERE f.dt_id >= ",1000,"## Forecast Revenue Micro-Cluster di Surabaya
+
+Data menampilkan **forecast revenue harian** untuk **4 micro-cluster** di Surabaya dengan 3 skenario (optimistic, moderate, pessimistic), mencakup 2 brand (IM3 & 3ID) dan 2 metrik revenue (rev_data & rev_vsd). Berikut ringkasan per **31 Desember 2026 (s",True,True
+69,Apakah forecast revenue bulan ini on track?,forecast,forecast,ERROR,sql_gen_failed: Expecting property name enclosed in double quotes: line 2 column 3528 (char 3529),30.9,,0,,False,False
+70,Top 10 kabkota forecast revenue tertinggi bulan depan,forecast,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for function PARSE_DATE
+  Argument types: STRING, INT64
+  Signature: PARS",31.8,"WITH next_month AS ( SELECT FORMAT_DATE('%Y%m', DATE_ADD(PARSE_DATE('%Y%m', CAST(MAX(month_id) AS STRING)), INTERVAL 1 MONTH)) AS next_month_id FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_kabkota_output_v3` ) SELECT t.kabkot, t.brand, t.region, t.circle, t.metric, t.scenario, t.flag, SUM(t.value) AS total_forecast_value FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_kabkota_output_v3` t JOIN next_month nm ON CAST(t.month_id AS STRING) = nm.next_month_id WHERE t.metri",0,"## Hasil: Tidak Ada Data Ditemukan
+
+Sayangnya, query untuk **Top 10 Kabupaten/Kota dengan forecast revenue tertinggi bulan depan** mengembalikan **hasil kosong** (0 baris).
+
+### Kemungkinan Penyebab:
+- **Data forecast belum tersedia** untuk bulan depan — kemungkinan model forecast belum di-*generate",False,False
+71,Daily forecast trend untuk branch Semarang,forecast,forecast,OK,,33.1,"WITH latest_dates AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_output_v3`
+  WHERE branch = 'SEMARANG'
+)
+SELECT
+  t.dt_id,
+  t.year,
+  t.month_id,
+  t.branch,
+  t.brand,
+  t.metric,
+  t.flag,
+  t.scenario,
+  t.value
+FROM `data-java-prd-97b9.java_precalc.rham_forecast_daily_branch_output_v3` t,
+     latest_dates l
+WHERE t.branch = 'SEMARANG'
+  AND t.dt_id >= DATE_SUB(l.max_dt, INTERVAL 89 DAY)
+ORDER BY t.metric, t.brand, t.scenario, t.dt_id
+",1000,"## Trend Forecast Harian — Branch Semarang
+
+Berikut ringkasan dari **1.000 data forecast harian** untuk branch **SEMARANG**:
+
+### Data yang Terlihat (Preview: Brand 3ID, Metrik `avg_vlr_daily`, Skenario Moderate)
+
+- **Rentang waktu:** 3 Oktober 2026 – 21 November 2026 (sekitar 90 hari terakhir data ",True,True
+72,Micro-cluster dengan forecast paling akurat 3 bulan terakhir,forecast,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for function PARSE_DATE
+  Argument types: STRING, INT64
+  Signature: PARS",41.6,"WITH latest_month AS (
+  SELECT MAX(CAST(month_id AS STRING)) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_mc_output_v3`
+),
+month_bounds AS (
+  SELECT 
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', max_month), INTERVAL 2 MONTH)) AS lo_month,
+    max_month AS hi_month
+  FROM latest_month
+),
+forecast_data AS (
+  SELECT 
+    CAST(f.month_id AS STRING) AS month_id,
+    f.micro_cluster,
+    f.brand,
+    f.branch,
+    f.metric,
+    MAX(CASE WHEN f.flag = 'forecast' ",0,"## Hasil: Tidak Ada Data Ditemukan
+
+Query untuk mencari micro-cluster dengan forecast paling akurat dalam 3 bulan terakhir mengembalikan **0 baris data**.
+
+### Kemungkinan Penyebab:
+- **Data forecast belum tersedia** untuk 3 bulan terakhir di tabel `monthly mc output v3` (scenario baseline).
+- **Fil",False,False
+73,Berapa total FTTH provisioning bulan ini?,fixed_broadband,fixed_broadband,OK,,19.6,"WITH latest AS (
+  SELECT MAX(year_month) AS max_ym
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_pa_detail`
+)
+SELECT
+  l.max_ym AS year_month,
+  COUNT(*) AS total_ftth_provisioning
+FROM `data-java-prd-97b9.java_precalc.rham_ftth_pa_detail` t
+JOIN latest l
+  ON t.year_month = l.max_ym
+GROUP BY l.max_ym
+ORDER BY 1
+LIMIT 1",1,"## Total FTTH Provisioning Bulan Ini
+
+**23.099 provisioning** pada periode **Mei 2026**.
+
+Angka ini merupakan total seluruh aktivitas provisioning FTTH yang tercatat di bulan terbaru dalam sistem. Jika Anda membutuhkan perbandingan dengan bulan sebelumnya atau breakdown per area di wilayah Java, sil",True,True
+74,Status service order FTTH per region,fixed_broadband,fixed_broadband,ERROR,400 GET https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/queries/bd4231fb-6965-4a82-9a6f-6b060e257bca?maxResults=0&location=asia-southeast2&prettyPrint=false: Failed to parse in,55.1,"WITH latest AS (
+  SELECT MAX(date_so) AS max_date
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail`
+)
+SELECT
+  so.sales_region,
+  COUNT(*) AS total_so,
+  COUNTIF(sa.bill_acc IS NOT NULL) AS completed_activated,
+  COUNTIF(pa.bill_acc IS NOT NULL AND sa.bill_acc IS NULL) AS provisioning_in_progress,
+  COUNTIF(pa.bill_acc IS NULL AND sa.bill_acc IS NULL) AS open_pending,
+  ROUND(SAFE_DIVIDE(COUNTIF(sa.bill_acc IS NOT NULL), COUNT(*)) * 100, 2) AS pct_completed,
+  ROUND(SAFE_DIVIDE(COUNT",15,"## Status Service Order FTTH per Region (6 Bulan Terakhir)
+
+**Total SO: 188.686** tersebar di 15 region, dengan rincian status sebagai berikut:
+
+### 6 Region Utama:
+
+| Region | Total SO | ✅ Completed | ⏳ In-Progress | ⏸️ Open/Pending | % Completed |
+|--------|----------|-------------|---------------",True,True
+75,Jumlah FWA site aktif per region,fixed_broadband,fixed_broadband,OK,,35.0,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fwa_site_raw`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+)
+SELECT
+  f.site_id,
+  f.kpi,
+  f.val,
+  f.brand,
+  f.dt_id
+FROM `data-java-prd-97b9.java_precalc.rham_fwa_site_raw` f
+JOIN latest l ON f.dt_id = l.max_dt
+WHERE LOWER(f.kpi) LIKE '%active%'
+  OR LOWER(f.kpi) LIKE '%aktif%'
+  OR LOWER(f.kpi) LIKE '%status%'
+LIMIT 50",0,"## Jumlah FWA Site Aktif per Region
+
+**Hasil query kosong** — tidak ada data yang dikembalikan dari tabel `rham_fwa_site_raw`.
+
+### Kemungkinan penyebab:
+- **Filter tanggal (dt_id)** yang digunakan tidak sesuai atau data belum tersedia untuk periode tersebut.
+- **Tabel belum memiliki kolom region**,",False,False
+76,Trend sales FTTH harian 30 hari terakhir,fixed_broadband,fixed_broadband,OK,,30.6,"WITH latest AS (
+  SELECT MAX(date_so) AS max_date
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail`
+)
+SELECT
+  t.date_so,
+  COUNT(*) AS total_orders,
+  COUNT(DISTINCT t.bill_acc) AS unique_bill_acc,
+  COUNT(DISTINCT t.customer_id) AS unique_customers,
+  ROUND(SUM(t.price), 2) AS total_price
+FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail` t
+CROSS JOIN latest l
+WHERE t.date_so >= DATE_SUB(l.max_date, INTERVAL 29 DAY)
+  AND t.date_so <= l.max_date
+GROUP BY t.date_so
+ORDER BY ",30,"## Trend Sales FTTH Harian — 30 Hari Terakhir (27 Apr – 26 Mei 2026)
+
+### Ringkasan Utama
+- **Total order 30 hari: ~34.301 order** dengan total nilai sekitar **Rp 14,27 miliar**
+- **Rata-rata harian: ~1.143 order/hari** dengan nilai rata-rata **~Rp 475 juta/hari**
+
+### Pola & Temuan Penting
+
+**📈 Har",True,True
+77,Top 10 kecamatan dengan FTTH sales terbanyak,fixed_broadband,fixed_broadband,OK,,25.4,"WITH latest AS (
+  SELECT MAX(month_so) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail`
+)
+SELECT
+  so.shp_kabkota,
+  so.shp_kecamatan,
+  COUNT(*) AS total_so
+FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail` so
+JOIN latest l ON so.month_so = l.max_month
+WHERE so.shp_kecamatan IS NOT NULL
+GROUP BY so.shp_kabkota, so.shp_kecamatan
+ORDER BY total_so DESC
+LIMIT 10",0,"## Top 10 Kecamatan dengan FTTH Sales Terbanyak
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Query tidak mengembalikan data apapun. Beberapa kemungkinan penyebabnya:
+
+- **Data periode terbaru belum tersedia** — tabel `rham_ftth_so_detail` mungkin belum terisi untuk bulan berjalan.
+- **Filter tanggal",False,False
+78,Completion rate service order FTTH per branch,fixed_broadband,fixed_broadband,OK,,36.0,"WITH so_summary AS (
+  SELECT
+    so.sales_region AS branch,
+    COUNT(DISTINCT so.bill_acc) AS total_so
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail` so
+  WHERE so.sales_region IS NOT NULL
+  GROUP BY so.sales_region
+),
+sa_summary AS (
+  SELECT
+    sa.sales_region AS branch,
+    COUNT(DISTINCT sa.bill_acc) AS total_sa
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_sa_detail` sa
+  WHERE sa.sales_region IS NOT NULL
+  GROUP BY sa.sales_region
+),
+result AS (
+  SELECT
+    so.branch,",23,"## FTTH Service Order Completion Rate by Branch
+
+**Overall, the completion rate across major branches ranges between ~31–35%**, meaning roughly one-third of FTTH Service Orders reach Service Activation.
+
+### Top 6 Branches (by volume — these account for the vast majority of SOs):
+
+| Branch | Total S",True,True
+79,FTTH provisioning pending vs completed bulan ini,fixed_broadband,fixed_broadband,OK,,22.3,"WITH latest AS (
+  SELECT MAX(year_month) AS max_ym
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_pa_detail`
+)
+SELECT
+  pa.year_month,
+  CASE
+    WHEN pa.date_pa IS NOT NULL AND pa.date_so IS NOT NULL THEN 'Completed'
+    ELSE 'Pending'
+  END AS provisioning_status,
+  COUNT(*) AS total_orders
+FROM `data-java-prd-97b9.java_precalc.rham_ftth_pa_detail` pa
+JOIN latest l ON pa.year_month = l.max_ym
+GROUP BY pa.year_month, provisioning_status
+ORDER BY provisioning_status
+LIMIT 100",2,"## FTTH Provisioning Bulan Ini (Mei 2026)
+
+| Status | Jumlah Order |
+|---|---|
+| ✅ **Completed** | **23.097** |
+| ⏳ **Pending** | **2** |
+
+### Ringkasan
+- **Total order:** 23.099
+- **Tingkat penyelesaian sangat tinggi:** **99,99%** order sudah selesai diproses (date_pa dan date_so terisi lengkap).
+-",True,True
+80,FWA site tracker status per region,fixed_broadband,reference,OK,,28.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_master_tracker_fwa`
+)
+SELECT
+  t.region,
+  t.kpi AS status_tracker,
+  COUNT(DISTINCT t.addfield1) AS jumlah_site,
+  SUM(t.val) AS total_val
+FROM `data-java-prd-97b9.java_precalc.rham_master_tracker_fwa` t
+JOIN latest l ON t.dt_id = l.max_dt
+WHERE t.page = 'FWA' OR t.brand = 'FWA' OR TRUE
+GROUP BY t.region, t.kpi
+ORDER BY t.region, jumlah_site DESC
+LIMIT 500",12,"## FWA Site Tracker Status per Region
+
+All regions show **0 distinct sites** (jumlah_site) across both tracker statuses, but there are notable differences in **total value** by region and status:
+
+### GROSSCHURN90 (Total: 4,685)
+| Region | Total Val |
+|-----------|-----------|
+| **SUMATERA** | 1,276",True,True

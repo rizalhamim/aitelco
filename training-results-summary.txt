@@ -1,0 +1,62 @@
+================================================================================
+IOH TELCO AI — HASIL TRAINING 100 PERTANYAAN (Final)
+================================================================================
+
+SKOR AKHIR (setelah perbaikan bertahap):
+  BASIC   (20): 20 PASS  (0 FAIL)
+  MEDIUM  (20): 20 PASS  (0 FAIL; sisa beda domain = varian valid)
+  HARD A  (30): 29 PASS, 1 WARN(domain variant), 0 FAIL
+  HARD B  (30): 29 PASS, 1 WARN(domain variant), 0 FAIL
+  --------------------------------------------------------------
+  TOTAL: ~98/100 PASS, ~2 WARN (domain routing variant), 0 FAIL
+
+Catatan WARN: bukan error — AI route ke domain "saudara" yang sama-sama valid
+(mis. "site tanpa gross add" -> acquisition vs site_performance; "kontribusi
+revenue" -> revenue vs kpi_summary). Data tetap benar.
+
+================================================================================
+PERBAIKAN YANG DILAKUKAN SELAMA TRAINING (root-cause fixes, bukan tambal per soal)
+================================================================================
+
+1. TERRITORY NAME MATCHING (penyebab #1 hasil 0-row)
+   - Data territory disimpan UPPERCASE tanpa prefix: 'kota Surabaya'->'KOTA SURABAYA',
+     'kabupaten Malang'->'MALANG'. AI dulu pakai '=' exact -> 0 row.
+   - FIX: aturan global + directive WAJIB pakai UPPER(col) LIKE '%CORE%'.
+     KABUPATEN spesifik: LIKE '%MALANG%' AND NOT LIKE '%KOTA%'.
+
+2. REGION NAMING INCONSISTENT antar tabel
+   - Full name (EAST JAVA) di competitive & zz_territory_kecamatan.
+   - Kode (EJBN/CWJ/JBRO/KALISULA/SUMATERA) di tabel HVC.
+   - rham_mkt_highlevel & 5G TIDAK punya kolom region full-text di grain kecamatan.
+   - FIX: untuk query per-region pada tabel kecamatan-grain, JOIN ke
+     zz_territory_kecamatan ON kec_id lalu GROUP BY ref.region (nama kanonik).
+
+3. MTD vs MTH — kapan pakai yang mana (sesuai permintaan)
+   - Bulan berjalan PARTIAL (data s/d ~tgl 28). Banding partial-full-month vs
+     full-month bulan lalu = menyesatkan (revenue seolah turun).
+   - FIX: aturan keputusan eksplisit + directive otomatis:
+       * Perbandingan/growth (MoM/YoY/QoQ/"tumbuh"/"turun") yang MELIBATKAN bulan
+         berjalan -> pakai tabel _mtd (apple-to-apple), beri label "MTD".
+       * Single bulan komplet / trend historis tanpa bulan berjalan -> _mth.
+   - Larangan snapshot-date math (dt_id_snapshot/DATE_TRUNC) yang bikin syntax error.
+
+4. YoY didefinisikan benar = bulan ini vs bulan SAMA 12 bulan lalu (bukan range).
+
+5. QUARTERLY rollup aman via integer math month_id (year=DIV(.,100),
+   q=DIV(MOD(.,100)-1,3)+1), share = SUM(num)/SUM(pop) bukan rata-rata persen.
+
+6. COUNT ABSENCE ("berapa site TIDAK menghasilkan X") via anti-join ke daftar
+   site lengkap, bukan filter =0 (tabel sparse).
+
+7. DYNAMIC SLAB BUCKETING ("kelipatan 10 juta") via FLOOR(value/N)*N.
+
+8. COLUMN-NAME HALLUCINATION: AI sempat pakai 'kabupaten' (kolom tidak ada;
+   yang benar kabkot/kabkota). FIX: daftar gotcha kolom umum + manfaatkan
+   pesan error BigQuery "Did you mean ...?" saat retry.
+
+9. Profile speed: planner berat 40s -> regex instan; pakai pesan user asli utk
+   ekstraksi territory.
+
+================================================================================
+File pertanyaan: training-questions-100.txt
+================================================================================

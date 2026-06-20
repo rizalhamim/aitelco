@@ -1,0 +1,84 @@
+# TELCO AI - REPORTS REPLICATION KNOWLEDGE BASE
+Date Generated: 2026-06-15
+Purpose: 100% Exact replication guide for Web (Next.js/React) and Mobile (Flutter/Dart) dashboards.
+
+=============================================================================
+0. CORE ARCHITECTURE & CACHING STRATEGY
+=============================================================================
+- Brand Model: Data contains "IM3" and "3ID". "IOH" is always the sum of IM3 + 3ID.
+- Caching: Reports are expensive. Backend caches payloads in-memory.
+  - Marker: `dt_id_snapshot` (for highlevel) and `as_of_dt` (for data rev).
+  - Web & Mobile check `/api/reports/data-version` every 2 mins.
+  - Cache Key: `report_type|data_version|circle|brand|scope_type|scope_value`.
+  - When BigQuery updates, `data_version` changes, Cache Key changes -> Auto-rebuilds instantly.
+
+=============================================================================
+1. COMPREHENSIVE REPORT
+=============================================================================
+**Data Source**: `rham_mkt_highlevel_mtd` (current month), `rham_mkt_highlevel_mth` (closed months history).
+**Logic**:
+- Timeframes: LLMTD (mid-2), LMTD (mid-1), MTD (mid), LYTD (mid-100), YTD (cumulative).
+- Metric Types:
+  * Flow Metrics (Revenue, Gross Add, Usage): YTD = SUM(Jan..MTD).
+  * Snapshot Metrics (Site, RGU, VLR, Outlets): YTD = point-in-time (MTD current vs MTD last year).
+- Computed Ratios: Computed POST-aggregation. e.g., ARPU = (Rev Prepaid MTD) / (RGU 90D MTD).
+**UI/UX**:
+- Brand-Banded Table: 1st column is "Metric" (Sticky Left, z-index 3).
+- 9 Columns per Brand (IOH / IM3 / 3ID): LLMTD, LMTD, MTD, Var, %, LYTD, YTD, Var YoY, YoY%.
+- Zebra rows, Tints: Var uses Steel Blue (#DAE5EE), Growth uses Sand Gold (#F2EAD2).
+- Font: tabular-nums for digits. Arrows: ▲ (green #13A58F) / ▼ (red #E26A6A).
+
+=============================================================================
+2. PREPAID DATA REVENUE
+=============================================================================
+**Data Source**: `rham_site_data_rev_channel_mtd` & `_mth` (Channel), `_price_slab_mtd` (Slabs).
+**Logic**:
+- Grouped by `channel_group` (Organic, Digital Distribution, MOBO Trade) and `channel_detail` (APPS, UMB, etc).
+- 3 Chunks: Total Channel, ATL (Non CVM), BTL (CVM).
+- Ratios: Channel Mix % vs Total Data Rev, ATL vs BTL %, ATL/BTL multiplier (e.g. 1.8x).
+- Price Slab: 15 fixed ordered slabs (0-10k, 10-20k, ..., above 1Mn). Data is NOT channel-aware (rendered as Total/IM3/3ID).
+**UI/UX**:
+- Header: Headline IOH Revenue + MoM Growth.
+- Expandable Rows (Accordion): Channel group (e.g., ORGANIC) can be tapped to expand `channel_detail` rows (indented 22px).
+- Columns (frozen Channel name): LLMTD, LMTD, MTD, Var, %, LYTD, YTD, Var YoY, YoY%, Contrib %.
+
+=============================================================================
+3. PRODUCT DEMAND
+=============================================================================
+**Data Source**: `rham_site_data_rev_product_mtd` & `_mth`.
+**Logic**:
+- Grouped by `quota_slab` (8 bins) x `validity_slab` (7 bins) x `channel_group`.
+- Generates `slab_scopes` for: Total, Organic, Digital, Trade. Inside each scope -> quota slab tables, validity slab tables, and Top 10 Products table.
+- Heatmap Matrix: Quota (Y-axis) x Validity (X-axis). 
+**UI/UX**:
+- Top Panel: Slab tables (Quota / Validity toggle). Rendered identical to Data Revenue tables (9 columns). Includes Top Products table.
+- Bottom Panel: 
+  * Rank Legend (#1 Red, #2 Magenta, #3 Yellow).
+  * Revenue Heatmap (Teal opacity based on value/Max). Rank badges overlay the cells.
+  * Growth MoM% Heatmap (Diverging: Red for negative, Teal for positive).
+
+=============================================================================
+4. SITE PERFORMANCE
+=============================================================================
+**Data Source**: `rham_site_wise_addr_java` (attributes), `_addr_java_perf` (LMTD/MTD/Growth precomputed per brand), `_monthly` (6-month history), `rham_site_ga_daily` (Funnel).
+**Logic**:
+- Search by GPS (Nearest 10) or Text (Site ID / Name).
+- Detail fetches: Attributes, KPI (MTD), Funnel (M1S->M2S->P1M->P2M->GA), Network (2G/4G/5G Usage/Traffic/Device), Availability (Uptime/Downtime), FWA.
+**UI/UX**:
+- 2 Main Views: Snapshot (MTD metrics) & Full Month (6-month history).
+- Snapshot Tables: `Metric | LMTD | MTD | Growth` for selected Brand.
+- Full Month Tables: `Metric | M1 | M2 | M3 | M4 | M5 | M6` (X-axis is month_id, Y-axis is metric).
+- Top Products, Price Slabs, and Channel Revenue are filtered specific to the Site ID.
+
+=============================================================================
+5. DESIGN SYSTEM TOKENS (CSS / FLUTTER)
+=============================================================================
+- Primary Teal: #15A697
+- IOH Brand Band: #15A697 (Teal)
+- IM3 Brand Band: #F5A623 (Yellow), Text: #161616
+- 3ID Brand Band: #EB008B (Magenta)
+- Positive (▲): #13A58F (Web) / #32BCAD (Mobile)
+- Negative (▼): #E26A6A (Web) / #ED1C24 (Mobile)
+- Var Tint BG: #DAE5EE
+- Growth Tint BG: #F2EAD2
+- Fonts: Poppins (Headers/Values), Prompt (Tables/Body), Tabular-nums for all metrics.

@@ -1,0 +1,2207 @@
+id,question,expected_domain,routed_domain,status,error,elapsed_s,sql,row_count,answer_preview,has_chart,has_table
+81,Average time to complete FTTH service order,fixed_broadband,fixed_broadband,ERROR,"400 Failed to parse input string ""Sep-25""; reason: invalidQuery, location: query, message: Failed to parse input string ""Sep-25""
+
+Location: asia-southeast2
+Job ID: d40a935b-5ee1-44ba-9968-6756b5c19d39",40.9,"WITH latest_so AS (
+  SELECT MAX(date_so) AS max_date
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail`
+),
+recent_so AS (
+  SELECT bill_acc, date_so
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_so_detail` so
+  JOIN latest_so ls ON so.date_so >= DATE_SUB(ls.max_date, INTERVAL 3 MONTH)
+  WHERE so.date_so IS NOT NULL
+),
+recent_sa AS (
+  SELECT bill_acc, date_sa
+  FROM `data-java-prd-97b9.java_precalc.rham_ftth_sa_detail`
+  WHERE date_sa IS NOT NULL
+)
+SELECT
+  COUNT(*) AS total_match",1,"## FTTH Service Order Completion Time
+
+**Average time to complete an FTTH service order: 1.75 days**
+
+Here's the full picture based on **76,687 matched orders** (Feb 26 – May 26, 2026):
+
+| Metric | Days |
+|---|---|
+| **Average** | 1.75 |
+| **Median** | 1.0 |
+| **Minimum** | 0 (same-day) |
+| **Maximu",True,True
+82,Sales FTTH bulan ini vs bulan lalu per branch,fixed_broadband,fixed_broadband,ERROR,"400 Failed to parse input string ""2026-05""; reason: invalidQuery, location: query, message: Failed to parse input string ""2026-05""
+
+Location: asia-southeast2
+Job ID: 54ef2a7f-86d5-44b7-a1b5-51d357c455",39.1,"WITH bounds AS ( SELECT MAX(year_month) AS cur_month, FORMAT_DATE('%Y-%m', DATE_SUB(PARSE_DATE('%Y-%m', MAX(year_month)), INTERVAL 1 MONTH)) AS prev_month FROM `data-java-prd-97b9.java_precalc.rham_ftth_sa_detail` ) SELECT s.sales_region, SUM(CASE WHEN s.year_month = b.cur_month THEN 1 ELSE 0 END) AS sales_count_current_month, SUM(CASE WHEN s.year_month = b.prev_month THEN 1 ELSE 0 END) AS sales_count_prev_month, SUM(CASE WHEN s.year_month = b.cur_month THEN 1 ELSE 0 END) - SUM(CASE WHEN s.year_",10,"## Sales FTTH Bulan Ini vs Bulan Lalu per Branch
+
+**Secara keseluruhan, seluruh branch utama mengalami penurunan sales FTTH bulan ini dibanding bulan lalu.** Total sales dari 6 branch utama turun secara signifikan.
+
+### Ringkasan per Branch (utama):
+
+| Branch | Bulan Ini | Bulan Lalu | Selisih | MoM",True,True
+83,Top 5 branch dengan growth FTTH tertinggi,fixed_broadband,fixed_broadband,ERROR,Response ended prematurely,15.7,,0,,False,False
+84,Berapa total FTTH SA (service agreement) yang aktif?,fixed_broadband,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+85,Total HVC subscriber per region bulan terakhir,customer_hvc,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+86,Revenue HVC vs non-HVC per kecamatan,customer_hvc,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+87,Top 10 site dengan HVC subscriber terbanyak,customer_hvc,customer_hvc,OK,,26.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_site_mth`
+)
+SELECT
+  t.site_id,
+  t.site_nm,
+  t.month_id,
+  SUM(t.subs_hvc) AS total_subs_hvc
+FROM `data-java-prd-97b9.java_precalc.rham_hvc_site_mth` t
+JOIN latest l ON t.month_id = l.max_month
+GROUP BY t.site_id, t.site_nm, t.month_id
+ORDER BY total_subs_hvc DESC
+LIMIT 10",10,"## Top 10 Site dengan HVC Subscriber Terbanyak (Juni 2025)
+
+Berikut adalah 10 site dengan jumlah subscriber HVC tertinggi pada periode **Mei 2025 (202605)**:
+
+| # | Site ID | Nama Site | Total Subs HVC |
+|---|---------|-----------|---------------:|
+| 1 | 11TGR0239 | VIP_AIRPORT_T3_AL_FN | **3.168** ",True,True
+88,Trend HVC revenue harian 30 hari terakhir,customer_hvc,customer_hvc,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: SELECT list expression references t.dt_id which is neither grouped nor aggregated at [6:3]
+
+Loc",40.3,"WITH latest AS ( SELECT MAX(dt_id) AS max_dt FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_daily` ) SELECT t.dt_id, SUM(t.subs_hvc) AS total_subs_hvc, SUM(t.rev_organic) AS total_rev_organic, SUM(t.rev_mobo_trade) AS total_rev_mobo_trade, SUM(t.rev_digital) AS total_rev_digital, SUM(t.rev_total) AS total_rev_total FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_daily` t CROSS JOIN latest l WHERE t.dt_id >= FORMAT_DATE('%Y%m%d', DATE_SUB(PARSE_DATE('%Y%m%d', l.max_dt), INTERVAL 29 DAY)) G",30,"## Trend HVC Revenue Harian — 30 Hari Terakhir (27 Apr – 26 Mei 2026)
+
+### Angka Kunci
+- **Revenue total kumulatif per 26 Mei: Rp 1.997 T** (month-to-date Mei)
+- **Jumlah subs HVC stabil** di kisaran **18,5 – 18,6 juta** sepanjang periode.
+
+---
+
+### Pola Penting
+
+1. **Reset awal bulan terlihat jelas",True,True
+89,Kecamatan dengan HVC churn tertinggi bulan ini,customer_hvc,customer_hvc,OK,,34.0,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth`
+)
+SELECT
+  t.month_id,
+  t.kec_id,
+  t.kabkota,
+  t.circle,
+  t.region,
+  t.provinsi,
+  SUM(t.subs_hvc_out) AS total_churn_hvc
+FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth` t
+JOIN latest l ON t.month_id = l.max_month
+GROUP BY t.month_id, t.kec_id, t.kabkota, t.circle, t.region, t.provinsi
+ORDER BY total_churn_hvc DESC
+LIMIT 50",50,"## Kecamatan dengan HVC Churn Tertinggi — Juni 2025 (202605)
+
+**Kecamatan dengan churn HVC tertinggi adalah Cakung (Jakarta Timur) dengan 13.610 subscriber HVC keluar.**
+
+### Top 10 Kecamatan:
+
+| # | Kecamatan | Kab/Kota | Provinsi | Churn HVC |
+|---|-----------|----------|----------|-----------|
+| ",True,True
+90,ARPU HVC per region MTD,customer_hvc,customer_hvc,ERROR,Response ended prematurely,13.9,,0,,False,False
+91,Perbandingan HVC subscriber bulan ini vs bulan lalu,customer_hvc,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+92,HVC revenue contribution per branch di East Java,customer_hvc,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+93,Site dengan HVC ARPU tertinggi di Central Java,customer_hvc,,CONNECTION_ERROR,"HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/chat/stream (Caused by NewConnectionError(""HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [Errno 111] Connection refused""))",0.0,,0,,False,False
+94,Gross add HVC per kecamatan bulan terakhir,customer_hvc,customer_hvc,OK,,35.7,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth`
+)
+SELECT
+  t.month_id,
+  t.kec_id,
+  t.brand,
+  t.circle,
+  t.region,
+  t.kabkota,
+  t.provinsi,
+  SUM(t.subs_hvc_in) AS gross_add_hvc
+FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth` t
+JOIN latest l ON t.month_id = l.max_month
+GROUP BY t.month_id, t.kec_id, t.brand, t.circle, t.region, t.kabkota, t.provinsi
+ORDER BY gross_add_hvc DESC
+LIMIT 1000",1000,"## Gross Add HVC per Kecamatan — Juni 2025
+
+Data mencakup **1.000 kecamatan** untuk periode **Mei 2025 (202605)**, brand **IM3**. Berikut ringkasannya:
+
+### 🏆 Top 10 Kecamatan Gross Add HVC Tertinggi
+
+| # | Kecamatan | Kab/Kota | Provinsi | Gross Add HVC |
+|---|-----------|----------|----------|----",True,True
+95,HVC retention rate per region,customer_hvc,customer_hvc,OK,,29.8,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_daily`
+)
+SELECT
+  t.region,
+  t.dt_id,
+  SUM(t.subs_hvc) AS total_subs_hvc,
+  SUM(t.subs_hvc_stay) AS total_subs_hvc_stay,
+  SUM(t.subs_hvc_in) AS total_subs_hvc_in,
+  SUM(t.subs_hvc_out) AS total_subs_hvc_out,
+  SAFE_DIVIDE(SUM(t.subs_hvc_stay), SUM(t.subs_hvc_stay) + SUM(t.subs_hvc_out)) AS retention_rate,
+  SAFE_DIVIDE(SUM(t.subs_hvc_out), SUM(t.subs_hvc_stay) + SUM(t.subs_hvc_out)) AS churn_ra",6,"## HVC Retention Rate by Region (as of 26 May 2026)
+
+Here's the breakdown of HVC (High Value Customer) retention performance across regions:
+
+| Region | Total HVC Subs | Retention Rate | Churn Rate | HVC Stay | HVC Out |
+|-----------|---------------|---------------|------------|-----------|---------",True,True
+96,Top 5 kecamatan dengan pertumbuhan HVC terbesar MoM,customer_hvc,customer_hvc,OK,,33.2,"WITH bounds AS (
+  SELECT
+    MAX(month_id) AS cur_month,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth`
+),
+cur AS (
+  SELECT kec_id, kabkota, region, circle, provinsi,
+         SUM(subs_hvc) AS subs_hvc_cur
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth` t
+  JOIN bounds b ON t.month_id = b.cur_month
+  GROUP BY kec_id, kabkota, region, circle, provinsi
+),
+prev AS (
+  SELECT k",5,"## Top 5 Kecamatan dengan Pertumbuhan HVC Terbesar (MoM)
+
+Berikut 5 kecamatan dengan pertumbuhan subscriber HVC absolut terbesar bulan ini dibanding bulan sebelumnya:
+
+| # | Kecamatan | Kab/Kota | Provinsi | HVC Prev | HVC Cur | Growth | % |
+|---|-----------|----------|----------|----------|--------",True,True
+97,Revenue per HVC tier (premium/gold/silver) per region,customer_hvc,customer_hvc,OK,,27.2,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth`
+)
+SELECT
+  t.region,
+  SUM(t.rev_total) AS total_revenue,
+  SUM(t.rev_organic) AS rev_organic,
+  SUM(t.rev_mobo_trade) AS rev_mobo_trade,
+  SUM(t.rev_digital) AS rev_digital
+FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth` t
+JOIN latest l ON t.month_id = l.max_month
+GROUP BY t.region
+ORDER BY total_revenue DESC
+LIMIT 100",6,"## HVC Revenue by Region (Latest Full Month)
+
+**Important note:** The underlying HVC tables do not contain a premium/gold/silver tier column, so a breakdown by value tier is **not available**. Below is the best alternative — total HVC revenue by region.
+
+### Regional Summary
+
+| Region | Total Revenu",True,True
+98,HVC usage pattern: voice vs data per region,customer_hvc,customer_hvc,OK,,46.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth`
+)
+SELECT
+  t.month_id,
+  t.region,
+  t.kabkota,
+  SUM(t.subs_hvc)          AS total_subs_hvc,
+  SUM(t.subs_hvc_stay)     AS total_subs_hvc_stay,
+  SUM(t.subs_hvc_in)       AS total_subs_hvc_in,
+  SUM(t.subs_hvc_out)      AS total_subs_hvc_out,
+  SUM(t.rev_organic)       AS total_rev_organic,
+  SUM(t.rev_mobo_trade)    AS total_rev_mobo_trade,
+  SUM(t.rev_digital)       AS total_rev_d",200,"# HVC Usage Pattern: Available Metrics by Region (June 2025)
+
+> **Important note:** The HVC data tables do **not contain voice or data usage metrics** (no voice minutes or payload/data volume columns). Instead, here's what's available — **HVC subscriber counts and revenue** broken down by kabkota ac",True,True
+99,"Ringkasan KPI utama: revenue, RGU, churn bulan ini",kpi_summary,kpi_summary,OK,,35.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  CAST(t.month_id AS STRING) AS month_id,
+  t.brand,
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_prepaid) AS total_revenue,
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  SUM(t.rgu_30d) AS total_rgu_30d,
+  SUM(t.gross_churn_",2,"## Ringkasan KPI Utama — Februari 2026 (Region Java)
+
+### 💰 Revenue
+| Brand | Total Revenue | Rev Data | Rev Voice | Rev SMS |
+|-------|--------------|----------|-----------|---------|
+| **IM3** | **Rp 298,1 M** | Rp 265,7 M | Rp 1,4 M | Rp 256,6 jt |
+| **3ID** | **Rp 153,0 M** | Rp 144,9 M | Rp 0 |",True,True
+100,KPI highlevel per kecamatan di Surabaya MTD,kpi_summary,kpi_summary,OK,,48.3,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id, MAX(dt_id) AS max_dt_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mtd`
+  WHERE UPPER(kabkot) LIKE '%SURABAYA%'
+)
+SELECT
+  t.month_id,
+  t.dt_id,
+  t.kec_id,
+  t.kecamatan,
+  t.kabkot,
+  t.brand,
+  -- Revenue KPIs
+  t.rev_prepaid,
+  t.rev_data,
+  t.rev_voice,
+  t.rev_sms,
+  t.rev_vsd,
+  t.rev_data_mobo_trade,
+  t.rev_data_mobo_non_trade,
+  t.rev_data_organic,
+  t.rev_acquisition_m0,
+  t.rev_base,
+  -- Traffic / Payload
+  t.",62,"# KPI High-Level per Kecamatan di Surabaya — MTD Februari 2026
+
+**Periode:** Month-to-Date per **3 Februari 2026** (month_id: 202602)
+**Cakupan:** 31 kecamatan × 2 brand (IM3 & 3ID) = **62 baris data**
+
+---
+
+## 📊 Ringkasan Revenue (Gabungan IM3 + 3ID)
+
+| Kecamatan | Rev Prepaid (Jt) | Rev Data (Jt) ",True,True
+101,Trend revenue harian selama 30 hari terakhir,kpi_summary,kpi_summary,OK,,32.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly`
+)
+SELECT
+  t.dt_id,
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_prepaid) + SUM(t.rev_vsd) AS total_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly` t
+CROSS JOIN latest l
+WHERE t.dt_id >= DATE_SUB(l.max_dt, INTER",30,"## Trend Revenue Harian — 30 Hari Terakhir (1–30 November 2025)
+
+### Ringkasan Utama
+- **Total revenue tertinggi:** **Rp 309,5 miliar** pada **1 November** (awal bulan).
+- **Total revenue terendah:** **Rp 229,8 miliar** pada **18 November**.
+- **Revenue akhir bulan meningkat signifikan**, ditutup di",True,True
+102,Perbandingan KPI bulan ini vs bulan lalu per region,kpi_summary,kpi_summary,ERROR,sql_gen_failed: Unterminated string starting at: line 2 column 10 (char 11),29.1,,0,,False,False
+103,Top 10 kecamatan dengan RGU tertinggi,kpi_summary,kpi_summary,OK,,32.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly`
+)
+SELECT
+  t.kec_id,
+  t.kecamatan,
+  t.kabkot,
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  SUM(t.rgu_30d) AS total_rgu_30d
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly` t
+JOIN latest l ON t.dt_id = l.max_dt
+GROUP BY t.kec_id, t.kecamatan, t.kabkot
+ORDER BY total_rgu_90d DESC
+LIMIT 10",10,"## Top 10 Kecamatan dengan RGU Tertinggi
+
+Berikut adalah 10 kecamatan dengan jumlah RGU terbesar (data tanggal terbaru):
+
+| # | Kecamatan | Kab/Kota | RGU 90 Hari | RGU 30 Hari |
+|---|-----------|----------|------------:|------------:|
+| 1 | **Percut Sei Tuan** | Deli Serdang | 432.241 | 229.848 |
+|",True,True
+104,Churn rate per region bulan terakhir,kpi_summary,kpi_summary,OK,,34.1,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  t.kabkot,
+  CAST(t.month_id AS STRING) AS month_id,
+  SUM(t.gross_churn_90d) AS total_gross_churn_90d,
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  SAFE_DIVIDE(SUM(t.gross_churn_90d), SUM(t.rgu_90d)) AS churn_rate_90d,
+  SUM(t.net_churn_90d) AS total_net_churn_90d,
+  SAFE_DIVIDE(SUM(t.net_churn_90d), SUM(t.rgu_90d)) AS net_churn_rate_90d
+FROM `data-java-prd-97b9.java_precalc",100,"## Churn Rate per Region — Februari 2026
+
+Data mencakup **100 kabupaten/kota** untuk periode **month_id 202602** (90 hari).
+
+### Temuan Utama
+
+**Secara umum, gross churn rate 90d masih relatif rendah** — berkisar antara **~0,09%** hingga **~0,24%** dari total RGU.
+
+### 🔴 Wilayah dengan Gross Churn R",True,True
+105,ARPU trend 6 bulan terakhir per region,kpi_summary,kpi_summary,OK,,44.5,"WITH bounds AS (
+  SELECT
+    MAX(CAST(month_id AS STRING)) AS hi,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(CAST(month_id AS STRING))), INTERVAL 5 MONTH)) AS lo
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  CAST(t.month_id AS STRING) AS month_id,
+  t.kabkot,
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  SAFE_DIVIDE(SUM(t.rev_prepaid), SUM(t.rgu_90d)) AS arpu_90d,
+  SUM(t.rgu_30d) AS total_rgu_30d,
+  SAFE_DIVIDE(SUM(t.r",1000,"# Trend ARPU 6 Bulan Terakhir per Kabupaten/Kota
+
+## Ringkasan Utama
+
+Data mencakup **6 bulan** (Sep 2025 – Feb 2026) dengan **~167 kabupaten/kota** (1.000 baris total). Namun ada beberapa catatan penting:
+
+---
+
+## ⚠️ Catatan Data
+
+1. **Bulan Jan 2026 & Feb 2026 belum lengkap:**
+   - Pada level nasi",True,True
+106,Kecamatan dengan penurunan revenue terbesar MTD,kpi_summary,kpi_summary,OK,,38.9,"WITH bounds AS (
+  SELECT
+    MAX(CAST(month_id AS STRING)) AS cur_month,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(CAST(month_id AS STRING))), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mtd`
+),
+cur AS (
+  SELECT
+    t.kecamatan,
+    t.kabkot,
+    t.kec_id,
+    SUM(t.rev_prepaid) AS rev_mtd_cur
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mtd` t
+  INNER JOIN bounds b ON CAST(t.month_id AS STRING) = b.cur_month
+  GROUP B",50,"## Kecamatan dengan Penurunan Revenue MTD Terbesar
+
+**Kecamatan PATI (Kab. Pati)** mengalami penurunan revenue MTD terbesar secara nominal, yaitu **-Rp 235,4 juta** (turun 54,1% dari bulan sebelumnya).
+
+### Top 10 Penurunan Terbesar (Nominal):
+
+| # | Kecamatan | Kab/Kota | Penurunan | % Drop |
+|---|",True,True
+107,Total gross add bulan ini vs target,kpi_summary,kpi_summary,OK,,26.1,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  CAST(t.month_id AS STRING) AS month_id,
+  SUM(t.gross_add) AS total_gross_add,
+  SUM(t.ga_m2s) AS target_gross_add_m2s,
+  SUM(t.m2s) AS m2s,
+  CASE
+    WHEN SUM(t.m2s) > 0
+    THEN ROUND(SAFE_DIVIDE(SUM(t.gross_add), SUM(t.m2s)) * 100, 2)
+    ELSE NULL
+  END AS achievement_pct
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth` t
+JOIN latest l ON t.month_id",1,"## Total Gross Add Bulan Ini vs Target
+
+**Total Gross Add bulan Februari 2026: 82.367**
+
+Berikut perbandingannya terhadap target:
+
+| Metrik | Nilai |
+|---|---|
+| **Gross Add Aktual** | 82.367 |
+| **Target (M2S)** | 1.146.929 |
+| **Pencapaian** | **7,18%** |
+
+### Catatan Penting:
+- Pencapaian masih *",True,True
+108,Revenue per kecamatan di branch Semarang,kpi_summary,kpi_summary,OK,,31.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  t.month_id,
+  t.kecamatan,
+  t.kabkot,
+  t.kec_id,
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_prepaid) + SUM(t.rev_vsd) AS total_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth` t
+JOIN latest l",35,"## Revenue per Kecamatan di Branch Semarang (Februari 2026)
+
+Terdapat **35 kecamatan** di wilayah Semarang (Kota Semarang & Kab. Semarang) dengan total data sebagai berikut:
+
+### 🏆 Top 5 Kecamatan (Revenue Tertinggi)
+| # | Kecamatan | Kabkot | Total Revenue |
+|---|-----------|--------|--------------",True,True
+109,KPI summary per circle bulan terakhir,kpi_summary,kpi_summary,OK,,47.3,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  m.month_id,
+  m.kabkot AS circle,
+  -- Revenue
+  SUM(m.rev_prepaid) AS total_rev_prepaid,
+  SUM(m.rev_data) AS total_rev_data,
+  SUM(m.rev_voice) AS total_rev_voice,
+  SUM(m.rev_sms) AS total_rev_sms,
+  SUM(m.rev_vsd) AS total_rev_vsd,
+  -- Subscriber / User Base
+  SUM(m.rgu_90d) AS total_rgu_90d,
+  SUM(m.rgu_30d) AS total_rgu_30d,
+  SUM(m.gross_add) AS total_gross_add,",200,"# KPI Summary per Circle — Februari 2026
+
+## 🏆 Top 10 Circle berdasarkan Revenue Prepaid
+
+| # | Circle | Rev. Prepaid (Rp M) | Rev. Data (Rp M) | RGU 90d | ARPU 90d (Rp) | Net Churn 30d |
+|---|--------|---------------------|-------------------|---------|---------------|---------------|
+| 1 | **BOGOR",True,True
+110,Trend churn harian 2 minggu terakhir,kpi_summary,kpi_summary,OK,,33.3,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly`
+)
+SELECT
+  t.dt_id,
+  SUM(t.net_churn_90d) AS total_net_churn_90d,
+  SUM(t.net_churn_30d) AS total_net_churn_30d,
+  SUM(t.gross_churn_90d) AS total_gross_churn_90d
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly` t
+CROSS JOIN latest l
+WHERE t.dt_id >= DATE_SUB(l.max_dt, INTERVAL 13 DAY)
+  AND t.dt_id <= l.max_dt
+GROUP BY t.dt_id
+ORDER BY t.dt_id ASC
+LIMIT 14",14,"## Trend Churn Harian — 2 Minggu Terakhir (17–30 Nov 2025)
+
+Secara keseluruhan, **churn masih negatif (kehilangan pelanggan)** di semua metrik selama 14 hari terakhir. Berikut ringkasannya:
+
+### Pola Utama
+
+| Metrik | Rentang Nilai | Hari Terburuk | Hari Terbaik |
+|---|---|---|---|
+| **Net Churn 90d",True,True
+111,Perbandingan ARPU antar region 3 bulan terakhir,kpi_summary,kpi_summary,OK,,42.7,"WITH latest_months AS (
+  SELECT DISTINCT month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+  ORDER BY month_id DESC
+  LIMIT 3
+),
+kpi AS (
+  SELECT
+    t.month_id,
+    t.kabkot AS region,
+    SUM(t.rev_prepaid) AS total_rev_prepaid,
+    SUM(t.rgu_90d) AS total_rgu_90d,
+    SAFE_DIVIDE(SUM(t.rev_prepaid), SUM(t.rgu_90d)) AS arpu_90d,
+    SUM(t.arpu_0_90d_hvc) AS total_hvc,
+    SUM(t.arpu_0_90d_mvc) AS total_mvc,
+    SUM(t.arpu_0_90d_lvc) AS total_lvc,
+    SUM(t.arpu_0_90d_n",500,"## Perbandingan ARPU antar Region — 3 Bulan Terakhir
+
+Data mencakup **500 region (kabupaten/kota)** untuk 3 bulan terakhir. Berikut ringkasan utama dari periode terbaru (**Februari 2026**):
+
+### 🔝 Region dengan ARPU Tertinggi
+| Region | ARPU per RGU 90D | Total Revenue Prepaid |
+|---|---|---|
+| **Ni",True,True
+112,Revenue growth MoM per kecamatan top 20,kpi_summary,kpi_summary,OK,,41.1,"WITH bounds AS (
+  SELECT
+    MAX(CAST(month_id AS STRING)) AS curr_month,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(CAST(month_id AS STRING))), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+),
+curr AS (
+  SELECT
+    t.kec_id,
+    t.kecamatan,
+    t.kabkot,
+    SUM(t.rev_prepaid) AS rev_curr
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth` t
+  JOIN bounds b ON CAST(t.month_id AS STRING) = b.curr_month
+  GROUP BY t.ke",20,"## Revenue Growth MoM per Kecamatan — Top 20
+
+Berikut hasil pertumbuhan revenue prepaid **Month-over-Month (MoM)** untuk 20 kecamatan:
+
+### 📈 Kecamatan dengan Pertumbuhan Positif (3 kecamatan)
+
+| # | Kecamatan | Kab/Kota | Rev Prev | Rev Curr | Growth |
+|---|-----------|----------|----------|-------",True,True
+113,Performance 5G per branch bulan terakhir,geo,geo,OK,,41.4,"WITH latest AS (
+  SELECT MAX(mth_id) AS max_mth_id
+  FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_monthly`
+)
+SELECT
+  t.mth_id,
+  t.region,
+  t.area,
+  t.branch_im3,
+  t.brand,
+  t.data_uu30_dev_5g AS pengguna_5g_uu30,
+  t.dev5g_total AS device_5g_total,
+  t.dev5g_with_traffic AS device_5g_with_traffic,
+  t.dev5g_no_traffic AS device_5g_no_traffic,
+  t.traffic_5g AS traffic_5g,
+  t.data_uu30_traffic_5g AS data_uu30_traffic_5g,
+  t.traffic_total AS traffic_total,
+  SAFE_DIVIDE(t.traffic_",72,"# Performance 5G per Branch — Mei 2025
+
+Berikut ringkasan performa 5G di seluruh branch untuk **bulan Mei 2025** (72 baris data, mencakup brand IM3 dan 3ID):
+
+---
+
+## 🏆 Top Branch — % Traffic 5G Tertinggi
+
+| Branch | Brand | % Traffic 5G | Traffic 5G (GB) | Device 5G Total |
+|--------|-------|------",True,True
+114,Berapa jumlah desa yang ter-cover IOH di Central Java?,geo,geo,OK,,26.4,"WITH desa_perf AS (
+  SELECT DISTINCT desa_name, site_id_ref
+  FROM `data-java-prd-97b9.java_precalc.rham_desa_perf_monthly` 
+  WHERE LOWER(city) LIKE '%jawa tengah%' OR LOWER(kabkota) LIKE '%jawa tengah%' OR LOWER(region) LIKE '%central java%' OR LOWER(region) LIKE '%jawa tengah%' OR LOWER(region_net) LIKE '%jawa tengah%' OR LOWER(region_net) LIKE '%central java%'
+),
+desa_project AS (
+  SELECT DISTINCT desa_name, site_id_ref
+  FROM `data-java-prd-97b9.java_precalc.rham_project_desa_java`
+  WHER",1,"## Jumlah Desa Ter-cover IOH di Central Java (Jawa Tengah)
+
+**Total desa yang ter-cover: 413 desa**, didukung oleh **404 site**.
+
+### Catatan:
+- Jumlah desa (413) sedikit lebih banyak dari jumlah site (404), yang menunjukkan beberapa site mencakup lebih dari satu desa.
+- Data ini mencakup seluruh wi",True,True
+115,Branch performance ranking berdasarkan revenue,geo,site_performance,OK,,29.3,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+)
+SELECT
+  t.branch,
+  t.month_id,
+  SUM(t.rev_prepaid) AS total_revenue,
+  RANK() OVER (ORDER BY SUM(t.rev_prepaid) DESC) AS ranking
+FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly` t
+JOIN latest l ON t.month_id = l.max_month
+WHERE t.branch IS NOT NULL
+  AND t.branch != ''
+GROUP BY t.branch, t.month_id
+ORDER BY ranking
+LIMIT 100",97,"## Ranking Performa Branch Berdasarkan Revenue (Juni 2025)
+
+Data mencakup **97 branch** untuk periode **202605 (Juni 2025)**. Berikut ringkasannya:
+
+### 🏆 Top 10 Branch Revenue Tertinggi
+
+| Ranking | Branch | Total Revenue |
+|---------|--------|--------------|
+| 1 | **TANGERANG** | Rp 171,4 M |
+| 2 ",True,True
+116,Territory mapping: berapa site per kecamatan di East Java?,geo,reference,OK,,37.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_ref_site_desa`
+)
+SELECT
+  t.kecamatan,
+  t.kabkota,
+  COUNT(DISTINCT s.site_id) AS total_site
+FROM `data-java-prd-97b9.java_precalc.rham_ref_site_desa` s
+CROSS JOIN latest l
+INNER JOIN `data-java-prd-97b9.java_precalc.rham_ref_territory2` t
+  ON s.kel_des_nm = t.kecamatan AND t.province = 'JAWA TIMUR'
+WHERE s.month_id = l.max_month
+GROUP BY t.kecamatan, t.kabkota
+ORDER BY total_site DESC
+LIMIT 1000",530,"## Distribusi Site per Kecamatan di Jawa Timur
+
+**Total tercatat: 530 kecamatan** tersebar di seluruh provinsi Jawa Timur.
+
+### 🏆 Top 10 Kecamatan dengan Site Terbanyak
+
+| # | Kecamatan | Kab/Kota | Jumlah Site |
+|---|-----------|----------|:-----------:|
+| 1 | **Sidorejo** | Magetan | **109** |
+| 2",True,True
+117,Desa dengan performance terendah di branch Semarang,geo,geo,OK,,38.9,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_desa_perf_monthly`
+  WHERE branch = 'SEMARANG'
+)
+SELECT
+  d.region,
+  d.brand,
+  d.desa_name,
+  d.site_id_ref,
+  d.kecamatan_desa,
+  d.city,
+  d.micro_cluster,
+  d.branch,
+  d.cse_rse_name,
+  d.rge_bme_name,
+  d.month_id,
+  d.rev_prepaid,
+  d.rev_vsd,
+  d.rev_data,
+  d.subs_rgu_90d,
+  d.subs_rgu_30d,
+  d.avg_vlr_daily,
+  d.subs_gross_add,
+  d.datauu,
+  d.avg_subs_pau_daily,
+  d.usg_data_gb
+FROM `dat",50,"## Desa dengan Performance Terendah di Branch Semarang
+
+Berikut adalah **50 desa dengan revenue prepaid terendah** di branch Semarang pada **Juni 2025 (202605)**:
+
+### 🔻 10 Desa dengan Revenue Prepaid Paling Rendah:
+
+| # | Desa | Kota | Kecamatan | Brand | Rev Prepaid (Rp) | Subs 30d |
+|---|------|-",True,True
+118,Perbandingan 5G performance antar branch,geo,geo,OK,,44.7,"WITH latest AS (
+  SELECT MAX(mth_dt) AS max_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_monthly`
+)
+SELECT
+  t.mth_id,
+  t.region,
+  t.area,
+  t.branch_im3,
+  t.brand,
+  SUM(t.dev5g_total) AS total_dev5g,
+  SUM(t.dev5g_with_traffic) AS dev5g_with_traffic,
+  SUM(t.dev5g_no_traffic) AS dev5g_no_traffic,
+  SUM(t.data_uu30_dev_5g) AS data_uu30_dev_5g,
+  SUM(t.traffic_5g) AS traffic_5g,
+  SUM(t.traffic_total) AS traffic_total,
+  SAFE_DIVIDE(SUM(t.traffic_5g), SUM(t.traffic_total)) AS p",72,"## Perbandingan Performa 5G Antar Branch — Mei 2025
+
+### 🏆 Top 5 Branch (berdasarkan Traffic 5G, gabungan IM3 + 3ID)
+
+| No | Branch | Region | Traffic 5G (TB) | % Traffic 5G | Device 5G Aktif | Avg Traffic/User |
+|----|--------|--------|----------------:|-------------:|-----------------:|-----------",True,True
+119,Gross add per branch harian 7 hari terakhir,geo,kpi_summary,OK,,30.0,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly`
+)
+SELECT
+  t.dt_id,
+  t.kabkot AS branch,
+  SUM(t.gross_add) AS total_gross_add
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly` t
+CROSS JOIN latest l
+WHERE t.dt_id >= DATE_SUB(l.max_dt, INTERVAL 6 DAY)
+  AND t.dt_id <= l.max_dt
+GROUP BY t.dt_id, t.kabkot
+ORDER BY t.dt_id DESC, total_gross_add DESC
+LIMIT 1000",1000,"## Gross Add per Branch Harian — 7 Hari Terakhir
+
+**Data terbaru: 30 November 2025** | Total data: 1.000 baris (mencakup ~143 branch per hari selama 7 hari).
+
+### 🏆 Top 10 Branch (30 Nov 2025)
+
+| # | Branch | Gross Add |
+|---|--------|-----------|
+| 1 | **SLEMAN** | **6.100** |
+| 2 | KOTA MEDAN | 4.",True,True
+120,Territory 5G coverage per branch di Bali Nusra,geo,geo,OK,,28.1,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_territory_daily`
+  WHERE region = 'BALI NUSRA'
+),
+territory_data AS (
+  SELECT
+    t.branch_im3,
+    COUNT(*) AS total_territory,
+    SUM(CASE WHEN t.site_count > 0 AND t.traffic_5g > 0 THEN 1 ELSE 0 END) AS territory_with_5g
+  FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_territory_daily` t
+  JOIN latest l ON t.dt_id = l.max_dt
+  WHERE t.region = 'BALI NUSRA'
+  GROUP BY t.branch_im3
+)
+SE",9,"## Territory 5G Coverage per Branch di Bali Nusra
+
+**Semua 9 branch di region Bali Nusra memiliki coverage 5G 100%.** 🎯
+
+Berikut rinciannya:
+
+| Branch | Total Territory | Dengan 5G | Tanpa 5G | % Coverage 5G |
+|---|---|---|---|---|
+| Bali Barat | 2 | 2 | 0 | **100%** |
+| Bali Timur | 2 | 2 | 0 | **1",True,True
+121,Branch mana yang 5G traffic-nya naik paling tinggi MoM?,geo,geo,OK,,33.6,"WITH bounds AS (
+  SELECT
+    MAX(mth_id) AS cur_mth,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(mth_id)), INTERVAL 1 MONTH)) AS prev_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_monthly`
+),
+cur AS (
+  SELECT branch_im3, brand, region, area, SUM(traffic_5g) AS traffic_5g_cur
+  FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_monthly` t
+  JOIN bounds b ON t.mth_id = b.cur_mth
+  GROUP BY branch_im3, brand, region, area
+),
+prev AS (
+  SELECT branch_im3, brand, region,",50,"## Branch dengan Kenaikan 5G Traffic Tertinggi (MoM)
+
+**Branch SUMBA (brand IM3)** adalah satu-satunya branch yang mencatat **kenaikan** 5G traffic secara Month-over-Month, dengan:
+
+- **Kenaikan absolut:** +158,87 (dari 770,49 → 929,36)
+- **Kenaikan persentase:** **+20,6% MoM**
+- **Region:** Bali Nu",True,True
+122,Desa performance history: trend 6 bulan terakhir Surabaya,geo,geo,OK,,44.0,"WITH bounds AS (
+  SELECT
+    MAX(month_id) AS hi,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 5 MONTH)) AS lo
+  FROM `data-java-prd-97b9.java_precalc.rham_desa_perf_monthly`
+)
+SELECT
+  t.month_id,
+  t.region,
+  t.city,
+  t.branch,
+  t.desa_name,
+  t.site_id_ref,
+  t.kecamatan_desa,
+  t.micro_cluster,
+  t.rev_prepaid,
+  t.rev_vsd,
+  t.rev_data,
+  t.subs_rgu_90d,
+  t.subs_rgu_30d,
+  t.avg_vlr_daily,
+  t.subs_gross_add,
+  t.datauu,
+  t.avg_subs_pau_daily,
+  t.usg_d",444,"# Trend Performa Desa di Surabaya (6 Bulan Terakhir)
+
+Data mencakup **444 baris** yang merepresentasikan performa bulanan per desa di **Kota Surabaya** (region East Java) selama periode **Februari – Mei 2026** (4 bulan yang terlihat di data preview).
+
+> ⚠️ *Catatan: Data preview hanya menampilkan 4 ",True,True
+123,Top 10 branch berdasarkan 5G territory count,geo,geo,OK,,32.5,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_territory_daily`
+)
+SELECT
+  t.branch_im3,
+  t.region,
+  t.circle,
+  COUNT(DISTINCT t.province) AS territory_count,
+  SUM(t.site_count) AS total_site_count
+FROM `data-java-prd-97b9.java_precalc.rham_branch_5g_territory_daily` t
+JOIN latest l ON t.dt_id = l.max_dt
+GROUP BY t.branch_im3, t.region, t.circle
+ORDER BY territory_count DESC
+LIMIT 10",10,"## Top 10 Branch Berdasarkan 5G Territory Count
+
+Dari data terbaru, **seluruh 10 branch teratas memiliki territory count yang sama, yaitu 1**. Artinya masing-masing branch hanya mencakup 1 territory (province) untuk layanan 5G. Berikut detailnya:
+
+| # | Branch | Region | Territory | Total Site |
+|--",True,True
+124,Payung data per kecamatan di Central Java,geo,reference,OK,,41.7,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_ref_site_desa`
+)
+SELECT
+  t.kec_id,
+  t.kecamatan,
+  t.kabkot AS kabkota,
+  COUNT(DISTINCT s.site_id) AS jumlah_site
+FROM `data-java-prd-97b9.java_precalc.rham_ref_site_desa` s
+CROSS JOIN latest l
+INNER JOIN `data-java-prd-97b9.java_precalc.rham_ref_territory` t
+  ON LOWER(s.kel_des_nm) LIKE CONCAT('%', LOWER(t.kecamatan), '%')
+WHERE s.month_id = l.max_month
+  AND LOWER(t.province) = 'jawa tengah'
+G",473,"## Payung Data (Jumlah Site) per Kecamatan — Jawa Tengah
+
+Data mencakup **473 kecamatan** di seluruh Provinsi Jawa Tengah. Berikut ringkasannya:
+
+### 🔝 Top 10 Kecamatan dengan Site Terbanyak
+
+| # | Kecamatan | Kab/Kota | Jumlah Site |
+|---|-----------|----------|-------------|
+| 1 | **Tanjung** | Br",True,True
+125,Branch dengan growth gross add tertinggi bulan ini,geo,site_performance,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Name ga not found inside t at [11:11]
+
+Location: asia-southeast2
+Job ID: 649fbf30-ecaf-4427-8f3",36.7,"WITH bounds AS (
+  SELECT
+    MAX(month_id) AS cur_month,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+),
+cur AS (
+  SELECT
+    t.branch,
+    t.brand,
+    SUM(t.ga) AS ga_cur
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly` t
+  CROSS JOIN bounds b
+  WHERE t.month_id = b.cur_month
+  GROUP BY t.branch, t.brand
+),
+prev AS (
+  SELECT
+    t.branch,
+    t.brand,
+    SU",0,,False,False
+126,Perbandingan desa performance antar region,geo,geo,OK,,37.6,"WITH latest AS (
+  SELECT MAX(month_id) AS max_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_desa_perf_monthly`
+)
+SELECT
+  t.region,
+  COUNT(DISTINCT t.desa_name) AS jumlah_desa,
+  COUNT(DISTINCT t.site_id_ref) AS jumlah_site,
+  ROUND(SUM(t.rev_prepaid), 0) AS total_rev_prepaid,
+  ROUND(SUM(t.rev_data), 0) AS total_rev_data,
+  ROUND(SUM(t.rev_vsd), 0) AS total_rev_vsd,
+  ROUND(SUM(t.usg_data_gb), 2) AS total_traffic_data_gb,
+  ROUND(SUM(t.subs_rgu_90d), 0) AS total_subs_rgu_90d,
+  ROUND(SUM(t",3,"## Perbandingan Performa Desa Antar Region (Bulan Terbaru)
+
+### Ringkasan Utama
+
+| Metrik | **Central Java** | **East Java** | **Bali Nusra** |
+|---|---|---|---|
+| Jumlah Desa | 396 | **403** (terbanyak) | 187 |
+| Jumlah Site | 403 | **428** | 187 |
+| Total Rev Prepaid | **Rp 35,7 M** | Rp 28,7 M | ",True,True
+127,"Marketing KPI highlight bulan ini: awareness, acquisition",marketing,marketing,OK,,48.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mth`
+)
+SELECT
+  t.month_id,
+  t.brand,
+  -- Acquisition metrics
+  SUM(t.gross_add) AS total_gross_add,
+  SUM(t.ga_m2s) AS total_ga_m2s,
+  SUM(t.ga_m1s) AS total_ga_m1s,
+  SUM(t.rev_acquisition_m0) AS total_rev_acquisition_m0,
+  -- Subscriber base
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  SUM(t.rgu_30d) AS total_rgu_30d,
+  SUM(t.close_rgu90d) AS total_close_rgu90d,
+  SUM(t.close_rgu30d) A",2,"## 📊 Marketing KPI Highlight — Mei 2025
+
+### 🚀 Acquisition (Akuisisi Pelanggan Baru)
+
+| Metrik | **IM3** | **3ID** | **Total** |
+|---|---|---|---|
+| **Gross Add** | **911.220** | 388.376 | **1,30 juta** |
+| GA → M1S (bulan 1 aktif) | 1.526.912 | 903.291 | 2,43 juta |
+| GA → M2S (bulan 2 aktif) | 1.0",True,True
+128,Trend marketing KPI harian 30 hari terakhir,marketing,marketing,OK,,48.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_kpi_highlevel_dly`
+)
+SELECT
+  t.dt_id,
+  SUM(t.rev_prepaid)                           AS total_rev_prepaid,
+  SUM(t.rev_data)                               AS total_rev_data,
+  SUM(t.rev_voice)                              AS total_rev_voice,
+  SUM(t.rev_sms)                                AS total_rev_sms,
+  SUM(t.rev_vsd)                                AS total_rev_vsd,
+  SUM(t.sub_rgu_90d)         ",30,"# Trend Marketing KPI Harian — 30 Hari Terakhir (27 Apr – 26 Mei 2026)
+
+## 📊 Ringkasan Utama
+
+### Revenue Prepaid
+- **Rata-rata harian:** ~Rp 128,5 miliar
+- **Tertinggi:** **Rp 176,1 miliar** (4 Mei) — lonjakan signifikan, kemungkinan ada event/campaign
+- **Terendah:** **Rp 115,4 miliar** (14 Mei)
+-",True,True
+129,Marketing KPI per region MTD,marketing,marketing,OK,,52.0,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mtd`
+)
+SELECT
+  t.month_id,
+  t.kabkot,
+  t.brand,
+  -- Revenue KPIs
+  SUM(t.rev_prepaid)                          AS total_rev_prepaid,
+  SUM(t.rev_data)                              AS total_rev_data,
+  SUM(t.rev_voice)                             AS total_rev_voice,
+  SUM(t.rev_sms)                               AS total_rev_sms,
+  SUM(t.rev_vsd)                               AS ",973,"# Marketing KPI per Region — MTD May 2025
+
+The dataset covers **973 rows** across hundreds of kabupaten/kota, broken down by two brands: **IM3** and **3ID**.
+
+---
+
+## Key Highlights
+
+### Revenue
+- **Bandung** leads by a wide margin with combined total revenue of ~**IDR 48.0B** (IM3: ~25.3B + 3ID: ~2",True,True
+130,Perbandingan marketing KPI bulan ini vs bulan lalu,marketing,marketing,ERROR,sql_gen_failed: Unterminated string starting at: line 2 column 10 (char 11),27.9,,0,,False,False
+131,Top performing region berdasarkan marketing acquisition,marketing,marketing,ERROR,sql_gen_failed: Unterminated string starting at: line 2 column 10 (char 11),23.3,,0,,False,False
+132,Marketing spend efficiency per region,marketing,marketing,ERROR,Only SELECT/WITH queries are allowed (read-only).,49.6,"WITH latest AS ( SELECT MAX(month_id) AS max_month_id FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mth` ) SELECT t.kabkot, t.brand, CAST(t.month_id AS STRING) AS month_id, ROUND(SUM(t.rev_prepaid), 2) AS total_rev_prepaid, ROUND(SUM(t.rev_acquisition_m0), 2) AS total_rev_acquisition_m0, ROUND( SAFE_DIVIDE(SUM(t.rev_prepaid), SUM(t.rev_acquisition_m0)), 4 ) AS rev_to_acquisition_ratio, ROUND(SUM(t.gross_add), 0) AS total_gross_add FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlev",200,"## Marketing Spend Efficiency by Kabkot & Brand — June 2025
+
+**Note:** Since actual marketing spend data isn't available, **acquisition revenue (rev_acquisition_m0)** is used as a proxy for marketing investment. The ratio = **Prepaid Revenue ÷ Acquisition Revenue** — a higher ratio means each rupiah",True,True
+133,Conversion rate marketing campaign per branch,marketing,marketing,OK,,45.8,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mth`
+)
+SELECT
+  t.kabkot AS kabkot_branch,
+  SUM(t.gross_add) AS total_gross_add,
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  SUM(t.ga_m2s) AS total_ga_converted_m2s,
+  ROUND(SAFE_DIVIDE(SUM(t.ga_m2s), SUM(t.gross_add)) * 100, 2) AS conversion_rate_ga_to_m2s_pct,
+  ROUND(SAFE_DIVIDE(SUM(t.ga_m1s), SUM(t.gross_add)) * 100, 2) AS conversion_rate_ga_to_m1s_pct,
+  ROUND(SAFE_DIVIDE(SUM(t.rgu_9",100,"# Marketing Acquisition Conversion Rate by Branch (Kabkot)
+
+## ⚠️ Important Data Caveat
+The dataset lacks direct campaign data (targeted/accepted/success). Instead, this uses a **proxy metric**: the ratio of converted subscribers (GA→M2S, GA→M1S, GA→RGU 90-day) to total gross adds. **Note:** convers",True,True
+134,Marketing KPI monthly trend 6 bulan terakhir,marketing,marketing,OK,,35.1,"WITH bounds AS (
+  SELECT 
+    MAX(month_id) AS max_month,
+    CAST(FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', CAST(MAX(month_id) AS STRING)), INTERVAL 5 MONTH)) AS INT64) AS min_month
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mth`
+)
+SELECT 
+  t.month_id,
+  t.brand,
+  -- Revenue metrics
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+ ",12,"## Trend KPI Marketing 6 Bulan Terakhir (Des 2025 - Mei 2026)
+
+### Ringkasan Utama
+
+Data menunjukkan **tren penurunan** pada sebagian besar metrik revenue dan subscriber dalam 6 bulan terakhir untuk kedua brand (IM3 dan 3ID).
+
+---
+
+### 📊 Revenue Prepaid (dalam Triliun Rp)
+
+| Bulan | IM3 | 3ID |
+|---",True,True
+135,Region dengan marketing ROI tertinggi,marketing,marketing,OK,,47.7,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mth`
+),
+roi_calc AS (
+  SELECT
+    t.kabkot,
+    CAST(t.month_id AS STRING) AS month_id,
+    SUM(t.rev_prepaid) AS total_revenue,
+    SUM(t.rev_acquisition_m0) AS total_acquisition_cost,
+    SUM(t.gross_add) AS total_gross_add,
+    SUM(t.rgu_90d) AS total_rgu_90d,
+    SAFE_DIVIDE(
+      SUM(t.rev_prepaid) - SUM(t.rev_acquisition_m0),
+      SUM(t.rev_acquisition_m0)
+    ) AS marketin",50,"## Region dengan Marketing ROI Tertinggi (Mei 2025)
+
+**Bolaang Mongondow Selatan** mencatatkan Marketing ROI tertinggi, yaitu **470,44x** — artinya setiap Rp 1 biaya akuisisi menghasilkan sekitar Rp 470 revenue.
+
+### Top 10 Kabupaten/Kota berdasarkan Marketing ROI:
+
+| # | Kabupaten/Kota | ROI | Reve",True,True
+136,Detail marketing KPI untuk East Java MTD,marketing,marketing,OK,,29.8,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mtd`
+)
+SELECT
+  t.month_id,
+  t.mth_dt,
+  t.dt_id_snapshot,
+  t.kabkot,
+  t.kecamatan,
+  t.kec_id,
+  t.brand,
+  SUM(t.rev_prepaid) AS rev_prepaid,
+  SUM(t.rev_vsd) AS rev_vsd,
+  SUM(t.rev_voice) AS rev_voice,
+  SUM(t.rev_sms) AS rev_sms,
+  SUM(t.rev_data) AS rev_data,
+  SUM(t.gross_add) AS gross_add,
+  SUM(t.usg_data_gb) AS usg_data_gb,
+  SUM(t.usg_og_voice_min) AS usg_og_voice_min,",0,"## Detail Marketing KPI East Java — MTD
+
+**Hasil query kosong (0 baris data ditemukan).**
+
+Tidak ada data Marketing KPI MTD yang tersedia untuk region **East Java** pada periode terbaru.
+
+### Kemungkinan Penyebab:
+- **Filter region tidak cocok**: Kolom `kabkot` mungkin menggunakan penamaan yang berb",False,False
+137,Marketing highlevel: semua metrik utama bulan terakhir,marketing,kpi_summary,OK,,43.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  CAST(t.month_id AS STRING) AS month_id,
+  t.brand,
+  -- Revenue
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_prepaid) + SUM(t.rev_vsd) AS total_revenue,
+  -- Subscriber / RGU
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  S",2,"
+
+## 📊 Ringkasan KPI Utama Bulan Februari 2026 — Region Java
+
+### 💰 Revenue
+
+| Metrik | IM3 | 3ID |
+|--------|-----|-----|
+| **Total Revenue** | **Rp 565,5 M** | **Rp 297,9 M** |
+| Revenue Prepaid | Rp 298,1 M | Rp 153,0 M |
+| Revenue Data | Rp 265,7 M | Rp 144,9 M |
+| Revenue Voice | Rp 1,4 M | Rp ",True,True
+138,Perbandingan marketing performance antar circle,marketing,marketing,OK,,51.7,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_mkt_highlevel_mth`
+)
+SELECT
+  t.month_id,
+  t.kabkot AS circle,
+  t.brand,
+  -- Revenue metrics
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_data_mobo_trade) AS total_rev_data_mobo_trade,
+  SUM(t.rev_data_mobo_non_trade) AS total_rev_data_mobo",500,"# Perbandingan Marketing Performance Antar Circle (Mei 2026)
+
+Data mencakup **500 baris** yang merepresentasikan kombinasi circle (kabupaten/kota) × brand (3ID & IM3) untuk periode **Mei 2026**.
+
+---
+
+## Temuan Utama
+
+### 🏆 Circle dengan Revenue Terbesar
+| Circle | Brand | Rev Prepaid |
+|--------|--",True,True
+139,Total sales per kecamatan di East Java bulan terakhir,sales_distribution,kpi_summary,OK,,38.7,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  t.month_id,
+  t.kecamatan,
+  t.kabkot,
+  t.kec_id,
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_prepaid) + SUM(t.rev_vsd) AS total_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth` t
+JOIN latest l",701,"## Total Sales per Kecamatan di East Java - Februari 2026
+
+**Total: 701 kecamatan** tercatat dengan data penjualan di Jawa Timur pada bulan terakhir (Februari 2026).
+
+### 🏆 Top 10 Kecamatan dengan Revenue Tertinggi:
+
+| Peringkat | Kecamatan | Kab/Kota | Total Revenue |
+|-----------|-----------|-----",True,True
+140,Jumlah outlet NBS aktif per region,sales_distribution,sales_distribution,OK,,85.9,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs`
+)
+SELECT
+  o.region,
+  COUNT(DISTINCT o.outlet_id) AS active_outlet_count
+FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs` o
+JOIN latest l ON o.month_id = l.max_month
+WHERE o.region IS NOT NULL
+GROUP BY o.region
+ORDER BY active_outlet_count DESC
+LIMIT 100",12,"## Jumlah Outlet NBS Aktif per Region
+
+Total outlet NBS aktif pada bulan terakhir: **375.579 outlet** tersebar di 12 region.
+
+### Rincian per Region (urutan terbanyak):
+
+| # | Region | Outlet Aktif |
+|---|--------|------------:|
+| 1 | **Central Java** | **48.455** |
+| 2 | **East Java** | **44.739** ",True,True
+141,SND KPI highlevel harian minggu terakhir,sales_distribution,sales_distribution,OK,,50.8,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_snd_kpi_highlevel_dly`
+)
+SELECT
+  t.dt_id,
+  t.brand,
+  COUNT(DISTINCT t.kec_unik) AS n_kecamatan,
+  SUM(t.ono) AS total_ono,
+  SUM(t.ga_m1) AS total_ga_m1,
+  SUM(t.ga_m2) AS total_ga_m2,
+  SUM(t.ga_m3) AS total_ga_m3,
+  SUM(t.acquisition_revenue) AS total_acquisition_revenue,
+  SUM(t.acq_rev_rguga_trad) AS total_acq_rev_rguga_trad,
+  SUM(t.data_rev) AS total_data_rev,
+  SUM(t.data_traffic_gb) AS total_da",14,"## Ringkasan KPI SND Harian — Minggu Terakhir (20–26 Mei 2026)
+
+Data mencakup **7 hari terakhir** dengan breakdown per brand **IM3** dan **3ID**.
+
+---
+
+### 📊 Revenue Akuisisi (Kumulatif Harian)
+
+| Tanggal | IM3 (Acq Rev Trad) | 3ID (Acq Revenue) |
+|-----------|--------------------:|-----------------",True,True
+142,Top 10 kecamatan dengan sales tertinggi MTD,sales_distribution,sales_distribution,OK,,22.9,"WITH latest AS (
+  SELECT MAX(mth_date) AS max_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mtd`
+)
+SELECT 
+  t.kec_unik,
+  t.circle,
+  t.region,
+  t.branch,
+  t.brand,
+  t.tot_rev,
+  t.mth,
+  t.as_of_dt
+FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mtd` t
+CROSS JOIN latest l
+WHERE t.mth_date = l.max_mth
+ORDER BY t.tot_rev DESC
+LIMIT 10",10,"## Top 10 Kecamatan dengan Sales Tertinggi MTD (Mei 2025)
+
+**Kecamatan dengan revenue tertinggi adalah Grogol, Sukoharjo** dengan total **Rp 6,33 miliar** (per tanggal 26 Mei 2025).
+
+### Ringkasan Top 10:
+
+| Peringkat | Kecamatan | Branch | Region | Revenue |
+|-----------|-----------|--------|------",True,True
+143,Outlet NBS performance ranking per branch,sales_distribution,sales_distribution,OK,,44.7,"WITH outlet_stats AS (
+  SELECT
+    o.branch,
+    COUNT(DISTINCT o.outlet_id) AS jumlah_outlet,
+    COUNT(DISTINCT o.site_id) AS jumlah_site
+  FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs` o
+  WHERE o.month_id = (SELECT MAX(month_id) FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs`)
+  GROUP BY o.branch
+),
+snd_stats AS (
+  SELECT
+    s.branch,
+    SUM(s.tot_rev) AS total_revenue,
+    SUM(s.secondary) AS total_secondary,
+    SUM(s.tertiary_b) AS total_tertiary
+  FROM `data-java-prd-",97,"## Outlet NBS Performance Ranking per Branch
+
+The data covers **97 branches**, but only **36 branches** (primarily Java, Bali, and Nusa Tenggara) have active revenue and transaction data. The remaining **61 branches** (outside Java) show zero revenue and transactions, likely because NBS data is scop",True,True
+144,Trend sales MTD per region,sales_distribution,kpi_summary,OK,,37.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mtd`
+)
+SELECT
+  t.month_id,
+  t.dt_id,
+  t.brand,
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_prepaid) + SUM(t.rev_vsd) AS total_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mtd` t
+JOIN latest l ON t.month_id",4,"## Sales MTD Trend – February 2026 (All Java)
+
+> **Note:** The data covers all Java (no region-level breakdown is available in this table). Results are split by brand: **IM3** and **3ID**.
+
+### Key Numbers as of 3 Feb 2026
+
+| Brand | Total Revenue (MTD) | Prepaid Rev | VSD Rev |
+|-------|-----------",True,True
+145,Kecamatan dengan penurunan sales terbesar MoM,sales_distribution,sales_distribution,OK,,43.8,"WITH bounds AS (
+  SELECT
+    MAX(mth) AS cur_mth,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(mth)), INTERVAL 1 MONTH)) AS prev_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mth`
+),
+cur AS (
+  SELECT
+    t.kec_unik,
+    t.circle,
+    t.region,
+    t.branch,
+    t.brand,
+    SUM(t.tot_rev)  AS cur_rev,
+    SUM(t.ga)       AS cur_ga
+  FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mth` t
+  JOIN bounds b ON t.mth = b.cur_mth
+  GROUP BY 1,2,3,4,5
+),
+prev AS (
+  SE",50,"## Kecamatan dengan Penurunan Sales Terbesar (MoM April → Mei 2026)
+
+**Kecamatan dengan penurunan revenue terbesar adalah Banyumanik, Kota Semarang (IM3)** dengan drop **Rp 2,99 miliar** atau turun **56,4%** dari bulan sebelumnya.
+
+### Top 10 Kecamatan dengan Penurunan Terbesar:
+
+| Kecamatan | Kabup",True,True
+146,Sales per channel distribution per region,sales_distribution,sales_distribution,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Unrecognized name: month_id at [2:14]
+
+Location: asia-southeast2
+Job ID: e0871bec-3921-4f1f-817",36.2,"WITH latest_month AS ( SELECT MAX(mth) AS max_month FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mth` ) SELECT s.region, s.brand, SUM(s.trad_supply) AS total_trad_supply, SUM(s.secondary) AS total_secondary, SUM(s.tertiary_b) AS total_tertiary, SUM(s.m2s) AS total_m2s, SUM(s.quro) AS total_quro, SUM(s.qsso) AS total_qsso, SUM(s.osa) AS total_osa, SUM(s.fwa) AS total_fwa, SUM(s.tot_rev) AS total_revenue, SUM(s.ga) AS total_ga, SUM(s.vlr_subs) AS total_vlr_subs FROM `data-java-prd-97b9.j",6,"## Sales per Channel Distribution by Region
+
+Here's the breakdown for the latest available month across all three Java+ regions, split by brand:
+
+### Revenue Overview
+
+| Region | Brand | Total Revenue (IDR) |
+|---|---|---|
+| **Central Java** | IM3 | **326.3B** |
+| **East Java** | IM3 | **299.6B** |
+",True,True
+147,Outlet density per kecamatan di Central Java,sales_distribution,sales_distribution,OK,,28.4,"SELECT kecamatan, kec_id, kabkot, COUNT(DISTINCT outlet_id) AS jumlah_outlet FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs` WHERE province = 'JAWA TENGAH' AND month_id = (SELECT MAX(month_id) FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs` WHERE province = 'JAWA TENGAH') GROUP BY kecamatan, kec_id, kabkot ORDER BY jumlah_outlet DESC LIMIT 1000",573,"## Outlet Density per Kecamatan — Central Java
+
+The data covers **573 kecamatan** across Central Java (latest available month).
+
+### Top 10 Kecamatan by Outlet Count
+
+| # | Kecamatan | Kab/Kota | Outlets |
+|---|-----------|----------|---------|
+| 1 | **Wanasari** | Brebes | **276** |
+| 2 | Adiwerna ",True,True
+148,SND KPI: gross add vs churn per branch bulan ini,sales_distribution,sales_distribution,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Name branch not found inside h at [6:5]
+
+Location: asia-southeast2
+Job ID: 4473c944-3a46-4ba8-b",55.8,"WITH latest AS (
+  SELECT MAX(mth) AS max_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mth`
+)
+SELECT
+  t.branch,
+  t.mth AS month_id,
+  SUM(t.ga) AS gross_add,
+  SUM(t.vlr_subs) AS vlr_subs,
+  SUM(t.tot_rev) AS total_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mth` t
+CROSS JOIN latest l
+WHERE t.mth = l.max_mth
+GROUP BY t.branch, t.mth
+ORDER BY gross_add DESC
+LIMIT 100",36,"## SND KPI per Branch — Juni 2025 (Period 202605)
+
+### Temuan Utama
+Total **36 branch** di region Java (dan Nusa Tenggara) tercatat, dengan total **Gross Add ~515.000+** untuk bulan ini.
+
+> ⚠️ **Catatan penting:** Kolom **churn tidak tersedia** di tabel SND kecwise, sehingga perbandingan gross add v",True,True
+149,Top 5 branch dengan outlet terbanyak,sales_distribution,sales_distribution,OK,,25.9,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs`
+)
+SELECT
+  o.branch,
+  COUNT(DISTINCT o.outlet_id) AS total_outlets
+FROM `data-java-prd-97b9.java_precalc.rham_outlet_nbs` o
+JOIN latest l ON o.month_id = l.max_month
+GROUP BY o.branch
+ORDER BY total_outlets DESC
+LIMIT 5",5,"## Top 5 Branch dengan Outlet Terbanyak
+
+Berikut adalah 5 branch dengan jumlah outlet terbanyak pada bulan terbaru:
+
+| # | Branch | Jumlah Outlet |
+|---|--------|--------------|
+| 1 | **PADANG** | **10.815** |
+| 2 | TANGERANG | 8.625 |
+| 3 | SIANTAR SIDEMPUAN | 8.581 |
+| 4 | CENTRAL WEST NORTH JAKAR",True,True
+150,Perbandingan sales performance bulan ini vs target per region,sales_distribution,sales_distribution,OK,,39.8,"WITH latest AS (
+  SELECT MAX(mth_date) AS max_mth_date
+  FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mth`
+)
+SELECT
+  s.region,
+  s.mth AS month_id,
+  ROUND(SUM(s.tot_rev), 2) AS total_revenue,
+  ROUND(SUM(s.vlr_subs), 0) AS total_vlr_subs,
+  ROUND(SUM(s.ga), 0) AS total_ga,
+  ROUND(SUM(s.trad_supply), 0) AS total_trad_supply,
+  ROUND(SUM(s.m2s), 2) AS total_m2s,
+  ROUND(SUM(s.secondary), 2) AS total_secondary,
+  ROUND(SUM(s.tertiary_b), 2) AS total_tertiary,
+  ROUND(SUM(s.osa), 2) AS",3,"## Sales Performance per Region — Mei 2025
+
+Berikut ringkasan **KPI aktual** untuk 3 region di Java pada bulan **Mei 2025** (202605):
+
+| KPI | Central Java | East Java | Bali Nusra |
+|-----|-------------|-----------|------------|
+| **Total Revenue** | **Rp 481,4 M** | Rp 389,3 M | Rp 107,6 M |
+| **V",True,True
+151,Market share IM3 per area bulan terakhir,reporting,reporting,OK,,30.8,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_area`
+)
+SELECT
+  t.month_id,
+  t.area_3id,
+  t.region,
+  t.ms_im3,
+  t.ms_amount_im3,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_area` t
+JOIN latest l ON t.month_id = l.max_month_id
+ORDER BY t.ms_im3 DESC
+LIMIT 100",36,"## Market Share IM3 per Area — Juni 2025 (Bulan Terakhir)
+
+Berikut rangkuman market share IM3 per area, diurutkan dari yang tertinggi:
+
+### 🏆 Top 5 Area dengan MS Tertinggi
+| Area | Region | MS IM3 | Amount IM3 | Populasi FB |
+|------|--------|--------|------------|-------------|
+| **Outer Jakarta E",True,True
+152,Market share per branch untuk brand 3ID,reporting,reporting,OK,,31.9,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_branch_3id`
+)
+SELECT
+  t.month_id,
+  t.branch_3id,
+  t.area_3id,
+  t.region,
+  t.ms_3id,
+  t.ms_amount_3id,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_branch_3id` t
+JOIN latest l ON t.month_id = l.max_month_id
+ORDER BY t.ms_3id DESC
+LIMIT 100",100,"## Market Share Brand 3ID per Branch — Juni 2026 (202605)
+
+Data menampilkan **100 record** dari seluruh branch 3ID, diurutkan dari market share tertinggi. Berikut ringkasannya:
+
+### 🏆 Top 10 Branch dengan Market Share Tertinggi
+
+| # | Branch | Area | Region | MS 3ID | Amount | Populasi |
+|---|------",True,True
+153,Report market share nasional trend 6 bulan,reporting,reporting,OK,,27.2,"WITH bounds AS (
+  SELECT
+    MAX(month_id) AS hi,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 5 MONTH)) AS lo
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_national`
+)
+SELECT
+  t.month_id,
+  ROUND(t.ms_ioh, 4)   AS ms_ioh,
+  ROUND(t.ms_tsel, 4)  AS ms_tsel,
+  ROUND(t.ms_xl, 4)    AS ms_xl,
+  ROUND(t.ms_sf, 4)    AS ms_sf,
+  t.ms_amount_ioh,
+  t.ms_amount_tsel,
+  t.ms_amount_xl,
+  t.ms_amount_sf,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rha",0,"## Laporan Trend Market Share Nasional — 6 Bulan Terakhir
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Query tidak mengembalikan data apa pun. Beberapa kemungkinan penyebab:
+
+1. **Filter `week = 'MONTHLY'`** — Nilai kolom di tabel mungkin menggunakan format berbeda (misalnya `'Monthly'`, `'monthly'`",False,False
+154,Market share per circle di East Java,reporting,reporting,OK,,39.4,"WITH latest_circle AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_circle`
+),
+latest_kabkota AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_kabkota`
+),
+circle_data AS (
+  SELECT
+    'circle' AS level,
+    c.circle AS area_name,
+    CAST(NULL AS STRING) AS parent,
+    c.month_id,
+    c.week,
+    c.ms_ioh,
+    c.ms_amount_ioh,
+    c.fb_ms_pop
+  FROM `data-java-prd-97b9.java_precalc.rham_rep",76,"## IOH Market Share in East Java — May 2025
+
+### Key Findings
+
+The data covers **38 kabupaten/kota** across Jawa Timur for the latest period (202605), with weekly snapshots at **W18 and W19**.
+
+---
+
+### 🏆 Top 5 Kabupaten/Kota by Market Share (W19)
+
+| Area | MS IOH | IOH Subs | Population |
+|------|-",True,True
+155,Market share IM3 vs 3ID per cluster,reporting,reporting,OK,,37.8,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_cluster_3id`
+)
+SELECT
+  t.month_id,
+  t.region,
+  t.area_3id,
+  t.branch_3id,
+  t.cluster_3id,
+  t.ms_im3,
+  t.ms_3id,
+  t.ms_ioh,
+  t.ms_amount_im3,
+  t.ms_amount_3id,
+  t.ms_amount_ioh,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_cluster_3id` t
+JOIN latest l ON t.month_id = l.max_month
+ORDER BY t.region, t.area_3id, t.branch_3id, t.cluster_3id
+LIMIT 1000",862,"## Market Share IM3 vs 3ID per Cluster — Juni 2025
+
+Data mencakup **862 baris** dari seluruh cluster di region Java dan Bali Nusra pada periode **202605 (Juni 2025)**.
+
+### Temuan Utama
+
+**Secara umum, IM3 mendominasi dibanding 3ID di sebagian besar cluster**, namun ada pola menarik berdasarkan wila",True,True
+156,Report market share per kabkota di Central Java,reporting,competitive,OK,,39.4,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kabkota_v2`
+  WHERE operator IN ('IM3', '3ID', 'im3', '3id', 'Indosat', 'IOH')
+)
+SELECT
+  k.dt_id,
+  k.locations AS kabkota,
+  k.operator,
+  k.kpi_nm,
+  k.base_ori_prcnt,
+  k.base_ori_abs,
+  k.base_norm_prcnt,
+  k.base_norm_abs,
+  k.ga_ori_prcnt,
+  k.ga_ori_abs,
+  k.ga_norm_prcnt,
+  k.ga_norm_abs,
+  k.churn_ori_prcnt,
+  k.churn_ori_abs,
+  k.churn_norm_prcnt,
+  k.churn_norm_abs
+FROM `data-java-prd-97",0,"## Market Share per Kabkota — Central Java
+
+**Result: No data returned.**
+
+The query came back empty (0 rows). Here are the likely reasons:
+
+1. **Province filtering issue** — The table `rham_fb_ms_kabkota_v2` does not have a direct `province` column. The cross-reference with the kecamatan table (whi",False,False
+157,Trend market share nasional semua operator 12 bulan,reporting,reporting,OK,,29.6,"WITH bounds AS (
+  SELECT
+    MAX(month_id) AS hi,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 11 MONTH)) AS lo
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_national`
+)
+SELECT
+  t.month_id,
+  -- Market Share (subscriber/penetration)
+  t.ms_ioh,
+  t.ms_im3,
+  t.ms_3id,
+  t.ms_tsel,
+  t.ms_xl,
+  t.ms_sf,
+  -- Market Share Amount (revenue/value)
+  t.ms_amount_ioh,
+  t.ms_amount_im3,
+  t.ms_amount_3id,
+  t.ms_amount_tsel,
+  t.ms_amount_xl,
+  t.ms_amount_",0,"## Trend Market Share Nasional Semua Operator (12 Bulan)
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Tidak ada data yang dikembalikan dari query ini. Beberapa kemungkinan penyebabnya:
+
+1. **Filter periode belum sesuai** — Rentang 12 bulan terakhir yang digunakan mungkin tidak cocok dengan `month_id",False,False
+158,Market share per age group secara nasional,reporting,reporting,OK,,25.7,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_age`
+)
+SELECT
+  t.month_id,
+  t.age_group,
+  ROUND(t.ms_ioh, 4) AS ms_ioh,
+  t.ms_amount_ioh,
+  ROUND(t.ms_im3, 4) AS ms_im3,
+  ROUND(t.ms_3id, 4) AS ms_3id,
+  ROUND(t.ms_tsel, 4) AS ms_tsel,
+  ROUND(t.ms_xl, 4) AS ms_xl,
+  ROUND(t.ms_sf, 4) AS ms_sf,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_age` t
+JOIN latest l ON CAST(t.month_id AS STRING) = CAST(l.max_mon",0,"## Market Share per Age Group — Nasional
+
+**Data tidak ditemukan (0 baris).**
+
+Tidak ada hasil yang dikembalikan dari query ini. Kemungkinan penyebabnya:
+
+1. **Filter territory**: Query saat ini memfilter pada territory **'Java'** saja, bukan nasional. Jika Anda membutuhkan data nasional, filter ter",False,False
+159,Market share area ranking top 10,reporting,reporting,OK,,28.8,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_area`
+)
+SELECT
+  t.month_id,
+  t.area_3id,
+  t.region,
+  t.ms_ioh,
+  t.ms_tsel,
+  t.ms_xl,
+  t.ms_sf,
+  RANK() OVER (ORDER BY t.ms_ioh DESC) AS ranking
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_area` t
+JOIN latest l ON t.month_id = l.max_month
+ORDER BY ranking ASC
+LIMIT 10",10,"## Top 10 Areas by IOH Market Share (June 2025)
+
+Here's the ranking of areas where IOH holds the highest market share:
+
+| Rank | Area | Region | IOH | Telkomsel | XL | SmartFren |
+|------|------|--------|-----|-----------|-----|-----------|
+| 1 | Outer Jakarta East | Outer Jakarta | **52.3%** | 19.7",True,True
+160,Report FB market share per kecamatan di Surabaya,reporting,competitive,OK,,45.6,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2`
+  WHERE LOWER(kabkot) LIKE '%surabaya%'
+)
+SELECT
+  t.dt_id,
+  t.kabkot,
+  t.kecamatan,
+  t.kec_id,
+  t.operator,
+  t.kpi_nm,
+  t.base_ori_prcnt,
+  t.base_ori_abs,
+  t.base_norm_prcnt,
+  t.base_norm_abs,
+  t.ga_ori_prcnt,
+  t.ga_ori_abs,
+  t.ga_norm_prcnt,
+  t.ga_norm_abs,
+  t.churn_ori_prcnt,
+  t.churn_ori_abs,
+  t.churn_norm_prcnt,
+  t.churn_norm_abs
+FROM `data-java-prd-97b9.java_prec",155,"# FB Market Share per Kecamatan — Kota Surabaya
+
+**Data as of: 10 May 2026** | **155 rows** covering **31 kecamatan × 5 operators**
+
+---
+
+## Overall Landscape
+
+**Telkomsel leads in nearly every kecamatan**, typically holding **29–46% base market share (normalized)**, followed by Indosat and XL, with",True,True
+161,Market share branch ranking di Bali Nusra,reporting,reporting,OK,,25.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_branch_im3`
+)
+SELECT
+  t.month_id,
+  t.branch,
+  t.region,
+  t.ms_ioh,
+  t.ms_tsel,
+  t.ms_xl,
+  t.ms_sf,
+  RANK() OVER (ORDER BY t.ms_ioh DESC) AS rank_ms_ioh
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_branch_im3` t
+JOIN latest l ON t.month_id = l.max_month_id
+WHERE LOWER(t.region) LIKE '%bali%nusra%'
+  AND t.week = 'MONTHLY'
+ORDER BY rank_ms_ioh ASC
+LIMIT 100",0,"## Market Share Branch Ranking di Bali Nusra
+
+**Data tidak ditemukan (0 baris).**
+
+Tidak ada hasil yang dikembalikan dari query untuk region Bali Nusra. Beberapa kemungkinan penyebab:
+
+- **Data belum tersedia** untuk periode terbaru di tabel `rham_report_fb_ms_branch_im3`.
+- **Nama region tidak coco",False,False
+162,Perbandingan market share IM3 antar region trend 6 bulan,reporting,reporting,OK,,29.6,"WITH bounds AS (
+  SELECT
+    MAX(month_id) AS hi,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 5 MONTH)) AS lo
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_region`
+)
+SELECT
+  t.month_id,
+  t.region,
+  ROUND(t.ms_im3, 4) AS ms_im3,
+  t.ms_amount_im3,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_region` t
+CROSS JOIN bounds b
+WHERE t.month_id BETWEEN b.lo AND b.hi
+ORDER BY t.region, t.month_id
+LIMIT 1000",276,"## Perbandingan Market Share IM3 Antar Region — Trend 6 Bulan (Des 2025 – Mei 2026)
+
+Berikut ringkasan market share IM3 per region berdasarkan data 6 bulan terakhir:
+
+### 🏆 Ranking Region (berdasarkan rata-rata MS terakhir)
+
+| Region | MS IM3 (Des '25) | MS IM3 (Mei '26) | Trend |
+|---|---|---|---|
+",True,True
+163,Market share 3ID per cluster di East Java,reporting,reporting,OK,,35.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_cluster_3id`
+)
+SELECT
+  t.month_id,
+  t.week,
+  t.cluster_3id,
+  t.branch_3id,
+  t.area_3id,
+  t.region,
+  t.ms_3id,
+  t.ms_amount_3id,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_cluster_3id` t
+JOIN latest l ON t.month_id = l.max_month
+WHERE LOWER(t.region) LIKE '%east java%'
+   OR LOWER(t.region) LIKE '%jawa timur%'
+   OR LOWER(t.region) LIKE '%jatim%'
+ORDER ",106,"## Market Share 3ID per Cluster di East Java (Mei 2025)
+
+Data menampilkan **106 baris** dari 53 cluster di region East Java, mencakup minggu **W18 dan W19** (month_id: 202605).
+
+### 🏆 Top 10 Cluster (Market Share Tertinggi - W19)
+
+| # | Cluster | Branch | MS 3ID | Pelanggan |
+|---|---------|--------",True,True
+164,National market share: IOH total (IM3+3ID) vs competitors,reporting,reporting,OK,,29.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_national`
+)
+SELECT
+  t.month_id,
+  t.week,
+  t.level_name,
+  t.ms_ioh,
+  t.ms_im3,
+  t.ms_3id,
+  t.ms_tsel,
+  t.ms_xl,
+  t.ms_sf,
+  t.ms_amount_ioh,
+  t.ms_amount_im3,
+  t.ms_amount_3id,
+  t.ms_amount_tsel,
+  t.ms_amount_xl,
+  t.ms_amount_sf,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_national` t
+JOIN latest l ON t.month_id = l.max_month
+ORDER BY t.week DESC
+L",2,"## National Market Share: IOH vs Competitors (May 2025)
+
+**IOH holds 31.58% national market share**, ranking **#2** behind Telkomsel, based on the latest data (W19, May 2025).
+
+### Market Share Breakdown
+
+| Operator | Market Share | Subscribers |
+|---|---|---|
+| **Telkomsel** | **41.82%** | 83.1M |
+",True,True
+165,Market share circle ranking berdasarkan growth MoM,reporting,reporting,OK,,27.9,"WITH bounds AS (
+  SELECT
+    MAX(month_id) AS curr_month,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_circle`
+),
+curr AS (
+  SELECT c.circle, c.ms_ioh
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_circle` c
+  JOIN bounds b ON c.month_id = b.curr_month
+  WHERE c.week = 'MONTHLY'
+),
+prev AS (
+  SELECT c.circle, c.ms_ioh
+  FROM `data-java-prd-97b9.java_precalc.rham_report_",0,"## Hasil: Data Tidak Ditemukan
+
+Query untuk ranking market share circle berdasarkan pertumbuhan MoM menghasilkan **0 baris data**.
+
+### Kemungkinan Penyebab:
+- **Data belum tersedia** untuk dua bulan terakhir di tabel circle, sehingga perbandingan MoM tidak bisa dihitung.
+- **Filter tanggal** mungki",False,False
+166,Report market share kecamatan dengan sample terbesar,reporting,reporting,OK,,41.4,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_kecamatan`
+)
+SELECT
+  t.month_id,
+  t.kec_id,
+  t.kecamatan,
+  t.kabkot,
+  t.province,
+  t.region,
+  t.ms_ioh,
+  t.ms_im3,
+  t.ms_3id,
+  t.ms_tsel,
+  t.ms_xl,
+  t.ms_sf,
+  t.ms_amount_ioh,
+  t.ms_amount_im3,
+  t.ms_amount_3id,
+  t.ms_amount_tsel,
+  t.ms_amount_xl,
+  t.ms_amount_sf,
+  t.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_kecamatan` t
+JOIN latest l ON t.mont",1000,"## Report Market Share Kecamatan dengan Sample Terbesar
+
+**Kecamatan dengan sample populasi terbesar adalah CENGKARENG (Jakarta Barat)** dengan **~2,2 juta sample** (fb_ms_pop), periode **Juni 2025 (202605)**.
+
+### Top 10 Kecamatan berdasarkan Sample Terbesar:
+
+| # | Kecamatan | Kab/Kota | Province ",True,True
+167,Berapa jumlah kecamatan per region di Java?,reference,reference,OK,,21.8,"SELECT region, COUNT(DISTINCT kec_id) AS jumlah_kecamatan FROM `data-java-prd-97b9.java_precalc.rham_ref_territory` WHERE island = 'Java' GROUP BY region ORDER BY jumlah_kecamatan DESC LIMIT 100",0,"## Jumlah Kecamatan per Region di Java
+
+Sayangnya, **query tidak mengembalikan data** (0 baris hasil).
+
+### Kemungkinan Penyebab:
+- **Data kosong atau belum terisi** pada tabel referensi territory (`rham_ref_territory`).
+- **Filter region/pulau Java** tidak cocok dengan nilai yang tersimpan di datab",False,False
+168,List semua branch beserta region-nya,reference,reference,OK,,23.9,"SELECT DISTINCT branch, region FROM `data-java-prd-97b9.java_precalc.rham_ref_territory2` WHERE branch IS NOT NULL ORDER BY region, branch LIMIT 1000",97,"## Daftar Seluruh Branch dan Region di IOH Java
+
+Terdapat **97 branch** yang tersebar di beberapa region. Berikut ringkasannya berdasarkan data yang tersedia:
+
+| Region | Jumlah Branch | Contoh Branch |
+|---|---|---|
+| **BALI NUSRA** | 9 | Bali Barat, Bali Timur, Flores Barat, Lombok Barat, Sumba, T",True,True
+169,Mapping site ke desa di kecamatan X (Surabaya),reference,reference,OK,,26.0,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_ref_site_desa`
+)
+SELECT
+  s.month_id,
+  s.site_id,
+  s.kel_des_nm,
+  s.latitude,
+  s.longitude,
+  t.kecamatan,
+  t.kabkota
+FROM `data-java-prd-97b9.java_precalc.rham_ref_site_desa` s
+CROSS JOIN latest l
+INNER JOIN `data-java-prd-97b9.java_precalc.rham_ref_territory2` t
+  ON UPPER(s.kel_des_nm) = UPPER(t.kecamatan)
+WHERE s.month_id = l.max_month
+  AND UPPER(t.kabkota) LIKE '%SURABAYA%'
+  AND UPPER(t.",0,"## Hasil: Tidak Ada Data Ditemukan
+
+Pencarian pemetaan site ke desa untuk **kecamatan yang mengandung huruf ""X"" di Surabaya** menghasilkan **0 hasil**.
+
+### Kemungkinan Penyebab:
+- **Tidak ada kecamatan di Surabaya yang mengandung huruf ""X""** dalam nama resminya. Kecamatan di Surabaya umumnya bernam",False,False
+170,Berapa total site per region dari reference territory?,reference,reference,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Unrecognized name: site_id at [1:31]
+
+Location: asia-southeast2
+Job ID: 9c29e11c-9626-4946-8556",26.8,"SELECT region, COUNT(DISTINCT kec_id) AS total_kecamatan FROM `data-java-prd-97b9.java_precalc.rham_ref_territory` GROUP BY region ORDER BY total_kecamatan DESC LIMIT 100",12,"## Total Kecamatan per Region (Reference Territory)
+
+> **Catatan:** Tabel territory tidak memiliki kolom site secara langsung, sehingga yang dihitung adalah **jumlah kecamatan unik** per region sebagai unit terkecil yang tersedia.
+
+Berikut hasilnya untuk **12 region** dengan total **7.175 kecamatan*",True,True
+171,Super88 site list di East Java,reference,reference,OK,,27.1,"SELECT kabkota, province, island, java_non_java, region, circle, area, flag FROM `data-java-prd-97b9.java_precalc.rham_ref_super88` WHERE LOWER(region) = 'east java' ORDER BY kabkota LIMIT 1000",38,"## Super88 Site List in East Java
+
+The East Java region has **38 kabupaten/kota** in total, but only **4 sites** are classified as **Super 88**:
+
+| # | Kabupaten/Kota | Area |
+|---|---------------|------|
+| 1 | **BANGKALAN** | Western East Java |
+| 2 | **PAMEKASAN** | Western East Java |
+| 3 | **SAM",True,True
+172,Holiday calendar: tanggal libur bulan ini,reference,reference,OK,,15.4,,0,"
+
+Berikut daftar **hari libur nasional bulan ini (Juni 2025)**:
+
+| Tanggal | Hari Libur |
+|---------|-----------|
+| **1 Juni** | Hari Lahir Pancasila |
+| **6 Juni** | Hari Raya Idul Adha 1446 H |
+| **7 Juni** | Cuti Bersama Idul Adha |
+| **27 Juni** | Tahun Baru Islam 1447 H |
+
+---
+
+### Relevansi un",False,False
+173,Territory hierarchy: region > circle > branch > kabkota,reference,reference,OK,,11.3,,0,"Got it. The territory hierarchy for the Java region is:
+
+1. **Region** — highest level (e.g., Java)
+2. **Circle** — subdivision of a region
+3. **Branch** — subdivision of a circle
+4. **Kabkota** (Kabupaten/Kota) — lowest level, representing individual districts/cities
+
+This hierarchy is used across ",False,False
+174,Berapa jumlah kelurahan per kabkota di Central Java?,reference,reference,OK,,23.1,"SELECT kabkota, COUNT(DISTINCT kecamatan) AS jumlah_kecamatan_unik FROM `data-java-prd-97b9.java_precalc.rham_ref_territory2` WHERE province = 'Central Java' GROUP BY kabkota ORDER BY jumlah_kecamatan_unik DESC LIMIT 100",0,"## Hasil: Data Tidak Ditemukan
+
+Query tidak mengembalikan hasil (0 baris). Berikut penjelasannya:
+
+### Kemungkinan Penyebab:
+1. **Filter provinsi tidak cocok** — Nama provinsi ""Central Java"" mungkin tersimpan dengan format berbeda di database (misalnya *""Jawa Tengah""*, *""JAWA TENGAH""*, atau *""CENTRA",False,False
+175,FWA master tracker: status semua FWA site,reference,reference,OK,,34.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_master_tracker_fwa`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 90 DAY)
+)
+SELECT
+  t.dt_id,
+  t.brand,
+  t.page,
+  t.circle,
+  t.region,
+  t.area,
+  t.branch,
+  t.kpi,
+  t.addfield1,
+  t.addfield2,
+  t.addfield3,
+  t.addfield4,
+  t.addfield5,
+  t.addfield6,
+  t.addfield7,
+  t.addfield8,
+  t.addfield9,
+  t.addfield10,
+  t.addfield11,
+  t.val
+FROM `data-java-prd-97b9.java_precalc.rham_master_tracker_",397,"## Status FWA Master Tracker — Data per 20 Mei 2026
+
+**Total data yang tersedia: 397 baris**, mencakup KPI churn FWA untuk brand **IM3** dan **3ID** di circle **JAVA**.
+
+### KPI yang Dilacak
+Data memuat **2 KPI utama**:
+- **GROSSCHURN90** — jumlah gross churn dalam 90 hari
+- **CHURNBACK90** — jumlah",True,True
+176,Mapping kecamatan ke branch di Semarang,reference,reference,OK,,23.4,"SELECT kec_id, kecamatan, kabkot AS kabupaten_kota, branch_im3 AS branch, region, circle, area_im3 AS area FROM `data-java-prd-97b9.java_precalc.rham_ref_territory` WHERE branch_im3 = 'Semarang' ORDER BY kabkot, kecamatan LIMIT 1000",0,"## Mapping Kecamatan ke Branch Semarang
+
+**Hasil query kosong** — tidak ditemukan data kecamatan yang ter-mapping ke branch ""Semarang"" dalam tabel referensi territory.
+
+### Kemungkinan Penyebab:
+- **Nama branch berbeda**: Penamaan di database mungkin tidak persis ""Semarang"" (bisa jadi ""SEMARANG"", ""S",False,False
+177,SND kecwise IS performance overview,misc,misc,ERROR,403 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Access Denied: Table data-java-prd-97b9:java_pbi.ar_vw_kecamatan_bai: User does not have permis,38.0,"WITH latest AS (
+  SELECT MAX(mth_date) AS max_mth_date
+  FROM `data-java-prd-97b9.java_precalc.ds_snd_kecwise_is_performance`
+)
+SELECT
+  t.mth_date,
+  t.mth,
+  t.as_of_dt,
+  t.kec_unik,
+  t.circle,
+  t.region,
+  t.branch,
+  t.brand,
+  t.tot_rev,
+  t.primary_rev,
+  t.secondary,
+  t.tertiary_b,
+  t.trade_supply,
+  t.trade_demand,
+  t.osa,
+  t.ga_fwa,
+  t.ga_trade,
+  t.m2s,
+  t.q_uro,
+  t.q_sso,
+  t.qsc_100mb,
+  t.qsc_500mb,
+  t.ga_biometric_trade,
+  t.sellin_sp
+FROM `data-java-prd-97b9.java_preca",0,,False,False
+178,Territory kecamatan mapping dari tabel misc,misc,misc,OK,,31.9,"SELECT kec_id, kecamatan, kabkota, province, island, urban, circle, region, area, branch, im3_mc, id3_cluster, im3_pt, im3_partner, mpc_sdp, id3_partner, mp3_3kiosk, sea, super_gtm, project FROM `data-java-prd-97b9.java_precalc.zz_territory_kecamatan` ORDER BY region, circle, branch, kabkota, kecamatan LIMIT 1000",1000,"## Hasil: Data Mapping Territory ke Kecamatan
+
+Data berhasil ditampilkan dengan **1.000 baris** (batas maksimum query). Berikut ringkasannya:
+
+### Struktur Hierarki
+Setiap kecamatan dipetakan ke hierarki wilayah lengkap:
+- **Geografi:** Kecamatan → Kab/Kota → Province → Island
+- **Organisasi IOH:** ",True,True
+179,Data apa saja yang ada di tabel zz_territory_kecamatan?,misc,misc,OK,,26.2,"SELECT kec_id, kecamatan, kabkota, province, island, urban, circle, region, area, branch, im3_mc, id3_cluster, im3_pt, im3_partner, mpc_sdp, id3_partner, mp3_3kiosk, sea, super_gtm, project FROM `data-java-prd-97b9.java_precalc.zz_territory_kecamatan` LIMIT 10",10,"## Struktur Tabel `zz_territory_kecamatan`
+
+Tabel ini adalah **master data wilayah (territory) di level kecamatan** yang memetakan setiap kecamatan ke berbagai hierarki organisasi dan distribusi IOH. Tabel memiliki **20 kolom** (semua bertipe STRING):
+
+### Kolom & Penjelasan:
+
+**Geografis:**
+- **kec",True,True
+180,SND kecwise performance per region,misc,sales_distribution,OK,,43.4,"WITH latest AS (
+  SELECT MAX(mth_date) AS max_mth_date
+  FROM `data-java-prd-97b9.java_precalc.rham_snd_kecwise_mth`
+)
+SELECT
+  t.mth,
+  t.as_of_dt,
+  t.region,
+  t.kec_unik,
+  t.circle,
+  t.branch,
+  t.brand,
+  SUM(t.tot_rev)       AS total_revenue,
+  SUM(t.vlr_subs)      AS total_vlr_subs,
+  SUM(t.ga)            AS total_ga,
+  SUM(t.trad_supply)   AS total_trad_supply,
+  SUM(t.m2s)           AS total_m2s,
+  SUM(t.quro)          AS total_quro,
+  SUM(t.qsso)          AS total_qsso,
+  SUM(t.seco",1000,"# SND Kecamatan-wise Performance per Region
+
+## Overview
+The data covers **1,000 kecamatan-level records** for the latest monthly period **May 2025 (202605)**, as of the 26th. All records fall under **Circle: JAVA**, and the preview shows the **BALI NUSRA** region across multiple branches.
+
+---
+
+## ",True,True
+181,Korelasi antara 5G traffic dengan revenue per site,cross,site_performance,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Name usg_data_4g_gb not found inside s at [17:11]
+
+Location: asia-southeast2
+Job ID: 7994034b-a",57.7,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+),
+rev AS (
+  SELECT
+    s.site_id,
+    s.site_nm,
+    s.kabkot_nm,
+    s.provinsi_nm,
+    s.latitude,
+    s.longitude,
+    SUM(s.rev_prepaid) AS total_revenue,
+    SUM(s.rev_data) AS total_rev_data,
+    SUM(s.usg_data_gb) AS total_usg_data_gb,
+    COUNT(DISTINCT s.dt_id) AS days_counted
+  FROM `data-java-prd-97b9.java_precalc.rha",0,"## Korelasi 5G Traffic dengan Revenue per Site
+
+**Hasil: Tidak ada data yang ditemukan.**
+
+Query tidak mengembalikan satupun baris data untuk analisis korelasi antara traffic 5G dan revenue per site.
+
+### Kemungkinan Penyebab:
+- **Tidak ada site dengan konfigurasi 5G aktif** dalam periode 30 hari te",False,False
+182,Wilayah mana yang market share tinggi tapi revenue rendah?,cross,competitive,OK,,45.3,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kabkota_v2`
+),
+ioh_ms AS (
+  SELECT
+    t.locations AS kabkota,
+    t.kpi_nm,
+    -- Aggregate IOH brands (IM3 + Tri/3ID)
+    SUM(CASE WHEN UPPER(t.operator) IN ('IM3','INDOSAT','IOH','3ID','TRI','THREE') THEN t.base_norm_prcnt END) AS ioh_base_prcnt,
+    SUM(CASE WHEN UPPER(t.operator) IN ('IM3','INDOSAT','IOH','3ID','TRI','THREE') THEN t.base_norm_abs END) AS ioh_base_abs,
+    SUM(CASE WHEN UPPER(",0,"## Wilayah dengan Market Share Tinggi tapi Revenue Rendah
+
+**Hasil query kosong** — tidak ada data yang dikembalikan.
+
+### Kemungkinan Penyebab:
+- **Data belum tersedia pada tanggal terbaru**: Tabel `rham_fb_ms_kabkota_v2` mungkin belum ter-update untuk periode terakhir.
+- **Filter tanggal tidak coc",False,False
+183,Bandingkan HVC churn dengan overall churn per region,cross,customer_hvc,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Name hvc_churn_rate_pct not found inside h at [30:12]
+
+Location: asia-southeast2
+Job ID: 195e35",46.7,"WITH latest_hvc AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth`
+),
+hvc_region AS (
+  SELECT
+    t.region,
+    t.month_id,
+    SUM(t.subs_hvc) AS total_subs_hvc,
+    SUM(t.subs_hvc_out) AS total_hvc_out,
+    SUM(t.subs_hvc_in) AS total_hvc_in,
+    SUM(t.subs_hvc_stay) AS total_hvc_stay,
+    SAFE_DIVIDE(SUM(t.subs_hvc_out), SUM(t.subs_hvc)) AS hvc_churn_rate
+  FROM `data-java-prd-97b9.java_precalc.rham_hvc_kec_mth` t
+  INNER JOIN latest_hvc lh ON ",6,"## Perbandingan HVC Churn per Region — Mei 2025
+
+Berikut **tingkat churn HVC (High Value Customer)** per region untuk periode **202605**:
+
+| Region | Total HVC | HVC Out | HVC In | Churn Rate | Net Churn |
+|---|---|---|---|---|---|
+| **EJBN** | 2,25 jt | 449.540 | 450.587 | **19,99%** | 0% |
+| **CWJ",True,True
+184,Apakah site dengan coverage 5G memiliki revenue lebih tinggi?,cross,site_performance,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: No matching signature for aggregate function AVG
+  Argument types: STRUCT<site_id STRING, brand",59.7,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+),
+site_5g AS (
+  SELECT DISTINCT site_id
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_occupancy`
+  WHERE c_5g_config IS NOT NULL
+    AND TRIM(c_5g_config) != ''
+    AND LOWER(c_5g_config) NOT IN ('no 5g', 'none', '0', 'no')
+),
+rev_data AS (
+  SELECT
+    d.site_id,
+    d.brand,
+    CASE WHEN s5.site_id IS NOT NULL THEN '",2,"## Ya, site dengan coverage 5G memiliki revenue rata-rata **jauh lebih tinggi**.
+
+### Perbandingan Utama
+
+| Metrik | Dengan 5G | Tanpa 5G | Selisih |
+|--------|-----------|----------|---------|
+| **Avg Total Revenue/site** | **Rp 3,42 juta** | Rp 2,15 juta | **+59% lebih tinggi** |
+| Avg Revenue Dat",True,True
+185,Daerah mana yang perlu prioritas investasi berdasarkan forecast dan market share?,cross,competitive,ERROR,sql_gen_failed: Unterminated string starting at: line 2 column 10 (char 11),32.8,,0,,False,False
+186,Kecamatan dengan market share tinggi tapi FTTH penetrasi rendah,cross,competitive,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Unrecognized name: kec_id; Did you mean dt_id? at [1:346]
+
+Location: asia-southeast2
+Job ID: 91",32.2,"WITH latest_ms AS ( SELECT dt_id, kec_id, kecamatan, kabkot, province, region, SAFE_CAST(base_norm_prcnt AS FLOAT64) AS ms_ioh FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2` WHERE operator = 'IOH' AND dt_id = (SELECT MAX(dt_id) FROM `data-java-prd-97b9.java_precalc.rham_fb_ms_kecamatan_v2` WHERE operator = 'IOH') ), ranked AS ( SELECT kec_id, kecamatan, kabkot, province, region, ms_ioh, PERCENT_RANK() OVER (ORDER BY ms_ioh) AS ms_percentile FROM latest_ms WHERE ms_ioh IS NOT NULL",0,"## Hasil Analisis: Kecamatan dengan Market Share Tinggi
+
+**Tidak ada data yang ditemukan** untuk query ini.
+
+### Kemungkinan Penyebab:
+- **Filter tanggal** mungkin tidak sesuai dengan periode data yang tersedia
+- **Data FB market share terbaru** belum ter-update di sistem
+- **Threshold persentil 75*",False,False
+187,Bagaimana performance outlet berkorelasi dengan market share?,cross,sales_distribution,ERROR,sql_gen_failed: Unterminated string starting at: line 3 column 18 (char 2920),32.6,,0,,False,False
+188,Region mana yang forecast-nya paling optimis vs pessimis?,cross,forecast,OK,,43.8,"WITH latest AS (
+  SELECT MAX(month_id) AS max_mid
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3`
+  WHERE flag = 'forecast'
+),
+latest_actual AS (
+  SELECT MAX(month_id) AS max_actual_mid
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3`
+  WHERE flag = 'actual'
+),
+forecast_data AS (
+  SELECT
+    f.region,
+    f.branch,
+    f.brand,
+    f.scenario,
+    SUM(f.value) AS forecast_value
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast",0,"## Hasil Analisis: Forecast Paling Optimis vs Pesimis per Region
+
+**Data tidak ditemukan (0 baris).**
+
+Tidak ada hasil yang dikembalikan dari query ini. Beberapa kemungkinan penyebabnya:
+
+1. **Data forecast belum tersedia** — Bisa jadi data forecast untuk periode terbaru belum di-*upload* atau belum",False,False
+189,Bandingkan KPI summary dengan marketing KPI per region,cross,kpi_summary,ERROR,sql_gen_failed: Expecting value: line 1 column 1 (char 0),34.2,,0,,False,False
+190,Site mana yang 5G traffic tinggi tapi subscriber rendah?,cross,network,OK,,51.1,"WITH latest AS (
+  SELECT MAX(mth_id) AS max_mth
+  FROM `data-java-prd-97b9.java_precalc.rham_5g_site_monthly`
+),
+stats AS (
+  SELECT
+    s.site_id,
+    s.brand,
+    s.kabkot,
+    s.province,
+    s.region,
+    s.circle,
+    s.branch,
+    s.traffic_5g,
+    s.data_uu30_dev_5g,
+    s.dev5g_with_traffic,
+    s.traffic_total
+  FROM `data-java-prd-97b9.java_precalc.rham_5g_site_monthly` s
+  JOIN latest l ON s.mth_id = l.max_mth
+  WHERE s.traffic_5g > 0
+),
+percentiles AS (
+  SELECT
+    PERCENTILE_CONT(",174,"## Site dengan 5G Traffic Tinggi tapi Subscriber Rendah
+
+Ditemukan **174 site** yang memiliki pola anomali: traffic 5G di atas persentil ke-75 namun jumlah unique user 5G di bawah persentil ke-25.
+
+### 🔝 Top 10 Site dengan Traffic 5G Tertinggi (Subscriber Rendah)
+
+| # | Site ID | Brand | Traffic 5G ",True,True
+191,"Berikan executive summary seluruh Java: revenue, market share, 5G, churn",cross,kpi_summary,ERROR,sql_gen_failed: Expecting value: line 1 column 1 (char 0),37.7,,0,,False,False
+192,Top 3 masalah utama yang terlihat dari data bulan ini,cross,kpi_summary,ERROR,sql_gen_failed: Unterminated string starting at: line 2 column 10 (char 11),32.1,,0,,False,False
+193,Rekomendasi area untuk ekspansi berdasarkan forecast dan competitive data,cross,competitive,ERROR,sql_gen_failed: Unterminated string starting at: line 2 column 10 (char 11),34.5,,0,,False,False
+194,Perbandingan kinerja brand IM3 vs 3ID di semua aspek,cross,kpi_summary,OK,,53.9,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  t.brand,
+  CAST(t.month_id AS STRING) AS month_id,
+  -- Revenue
+  SUM(t.rev_prepaid) AS total_rev_prepaid,
+  SUM(t.rev_vsd) AS total_rev_vsd,
+  SUM(t.rev_voice) AS total_rev_voice,
+  SUM(t.rev_sms) AS total_rev_sms,
+  SUM(t.rev_data) AS total_rev_data,
+  SUM(t.rev_data_mobo_non_trade) AS total_rev_data_mobo_non_trade,
+  SUM(t.rev_data_mobo_trade) AS total_rev_data_mo",2,"# Perbandingan Kinerja Brand IM3 vs 3ID — Februari 2026
+
+## 📊 Ringkasan Utama
+
+**IM3 unggul jauh di hampir semua aspek dibanding 3ID**, baik dari sisi revenue, subscriber base, maupun traffic. Namun perlu dicatat bahwa **data 3ID sangat tidak lengkap** (banyak metrik bernilai 0 atau null), kemungkin",True,True
+195,"Berapa total revenue, subscriber, dan churn seluruh Java bulan ini?",cross,kpi_summary,OK,,24.8,"WITH latest_month AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mtd`
+)
+SELECT
+  CAST(t.month_id AS STRING) AS month_id,
+  SUM(t.rev_prepaid) AS total_revenue_prepaid,
+  SUM(t.rev_vsd + t.rev_voice + t.rev_sms + t.rev_data) AS total_revenue_all,
+  SUM(t.rgu_90d) AS total_subscriber_rgu90d,
+  SUM(t.rgu_30d) AS total_subscriber_rgu30d,
+  SUM(t.net_churn_90d) AS total_net_churn_90d,
+  SUM(t.net_churn_30d) AS total_net_churn_30d,
+  SUM(t.gross_",1,"## Ringkasan KPI Java - Februari 2026 (MTD)
+
+### 💰 Total Revenue
+- **Revenue Prepaid:** Rp 451,1 miliar
+- **Revenue Keseluruhan (VSD+Voice+SMS+Data):** Rp 824,5 miliar
+
+### 👥 Total Subscriber
+- **RGU 90 hari:** 55,5 juta pelanggan
+- **RGU 30 hari:** 48,2 juta pelanggan
+
+### 📉 Churn
+- **Net Churn 90d",True,True
+196,Analisis gap: area market share tinggi tapi 5G coverage rendah,cross,competitive,ERROR,sql_gen_failed: Expecting value: line 1 column 1 (char 0),36.9,,0,,False,False
+197,Branch mana yang paling butuh improvement di semua KPI?,cross,kpi_summary,ERROR,sql_gen_failed: Expecting value: line 1 column 1 (char 0),34.9,,0,,False,False
+198,Summary data quality: berapa null/missing di kolom-kolom kunci?,cross,misc,ERROR,403 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Access Denied: Table data-java-prd-97b9:java_pbi.ar_vw_kecamatan_bai: User does not have permis,51.8,"WITH table1_stats AS (
+  SELECT 
+    'ds_snd_kecwise_is_performance' AS table_name,
+    COUNT(*) AS total_rows,
+    COUNTIF(mth_date IS NULL) AS mth_date_null,
+    COUNTIF(mth IS NULL) AS mth_null,
+    COUNTIF(as_of_dt IS NULL) AS as_of_dt_null,
+    COUNTIF(kec_unik IS NULL) AS kec_unik_null,
+    COUNTIF(circle IS NULL) AS circle_null,
+    COUNTIF(region IS NULL) AS region_null,
+    COUNTIF(branch IS NULL) AS branch_null,
+    COUNTIF(brand IS NULL) AS brand_null,
+    COUNTIF(tot_rev IS NULL) AS ",0,,False,False
+199,Ranking branch secara keseluruhan (composite score),cross,reporting,ERROR,sql_gen_failed: Expecting value: line 1 column 1 (char 0),31.6,,0,,False,False
+200,Prediksi revenue kuartal depan berdasarkan trend 3 bulan terakhir,cross,forecast,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Analytic functions cannot be arguments to aggregate functions at [38:7]
+
+Location: asia-southea",54.1,"WITH latest AS (
+  SELECT DISTINCT month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3`
+  WHERE metric = 'rev_prepaid'
+  ORDER BY month_id DESC
+  LIMIT 3
+),
+monthly_rev AS (
+  SELECT
+    t.month_id,
+    SUM(t.value) AS total_revenue
+  FROM `data-java-prd-97b9.java_precalc.rham_forecast_monthly_branch_output_v3` t
+  INNER JOIN latest l ON t.month_id = l.month_id
+  WHERE t.metric = 'rev_prepaid'
+    AND t.scenario = 'baseline'
+  GROUP BY t.month_id
+),
+ordered AS",0,"## Prediksi Revenue Kuartal Depan
+
+**Data tidak tersedia (hasil kosong).**
+
+Query tidak mengembalikan data apapun, sehingga proyeksi revenue tidak dapat dihitung.
+
+### Kemungkinan Penyebab:
+- **Data belum terisi** — tabel *monthly branch output v3* mungkin belum memiliki data revenue prepaid (scenar",False,False

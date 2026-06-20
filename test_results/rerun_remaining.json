@@ -1,0 +1,352 @@
+[
+  {
+    "id": "26",
+    "question": "Perbandingan traffic 5G bulan ini vs bulan lalu per region",
+    "expected_domain": "network",
+    "routed_domain": "network",
+    "status": "OK",
+    "row_count": 12,
+    "elapsed_s": "36.4",
+    "error": ""
+  },
+  {
+    "id": "27",
+    "question": "Site 5G dengan pertumbuhan traffic tertinggi MoM",
+    "expected_domain": "network",
+    "routed_domain": "network",
+    "status": "OK",
+    "row_count": 50,
+    "elapsed_s": "40.3",
+    "error": ""
+  },
+  {
+    "id": "28",
+    "question": "Total user 5G per territory di East Java",
+    "expected_domain": "network",
+    "routed_domain": "network",
+    "status": "OK",
+    "row_count": 500,
+    "elapsed_s": "35.5",
+    "error": ""
+  },
+  {
+    "id": "29",
+    "question": "OpenSignal download speed rata-rata per region",
+    "expected_domain": "network",
+    "routed_domain": "network",
+    "status": "OK",
+    "row_count": 24,
+    "elapsed_s": "25.5",
+    "error": ""
+  },
+  {
+    "id": "31",
+    "question": "Top 5 territory dengan traffic 5G tertinggi MTD",
+    "expected_domain": "network",
+    "routed_domain": "network",
+    "status": "OK",
+    "row_count": 5,
+    "elapsed_s": "29.7",
+    "error": ""
+  },
+  {
+    "id": "32",
+    "question": "Network experience score per region dari OpenSignal",
+    "expected_domain": "network",
+    "routed_domain": "network",
+    "status": "OK",
+    "row_count": 12,
+    "elapsed_s": "43.2",
+    "error": ""
+  },
+  {
+    "id": "34",
+    "question": "Rata-rata latency per region dari OpenSignal",
+    "expected_domain": "network",
+    "routed_domain": "network",
+    "status": "OK",
+    "row_count": 24,
+    "elapsed_s": "29.7",
+    "error": ""
+  },
+  {
+    "id": "90",
+    "question": "ARPU HVC per region MTD",
+    "expected_domain": "customer_hvc",
+    "routed_domain": "customer_hvc",
+    "status": "OK",
+    "row_count": 6,
+    "elapsed_s": "101.4",
+    "error": ""
+  },
+  {
+    "id": "91",
+    "question": "Perbandingan HVC subscriber bulan ini vs bulan lalu",
+    "expected_domain": "customer_hvc",
+    "routed_domain": "customer_hvc",
+    "status": "OK",
+    "row_count": 1,
+    "elapsed_s": "33.0",
+    "error": ""
+  },
+  {
+    "id": "92",
+    "question": "HVC revenue contribution per branch di East Java",
+    "expected_domain": "customer_hvc",
+    "routed_domain": "customer_hvc",
+    "status": "OK",
+    "row_count": 1,
+    "elapsed_s": "28.7",
+    "error": ""
+  },
+  {
+    "id": "93",
+    "question": "Site dengan HVC ARPU tertinggi di Central Java",
+    "expected_domain": "customer_hvc",
+    "routed_domain": "site_performance",
+    "status": "OK",
+    "row_count": 1,
+    "elapsed_s": "33.1",
+    "error": ""
+  },
+  {
+    "id": "102",
+    "question": "Perbandingan KPI bulan ini vs bulan lalu per region",
+    "expected_domain": "kpi_summary",
+    "routed_domain": "kpi_summary",
+    "status": "OK",
+    "row_count": 488,
+    "elapsed_s": "62.5",
+    "error": ""
+  },
+  {
+    "id": "125",
+    "question": "Branch dengan growth gross add tertinggi bulan ini",
+    "expected_domain": "geo",
+    "routed_domain": "geo",
+    "status": "OK",
+    "row_count": 97,
+    "elapsed_s": "70.7",
+    "error": ""
+  },
+  {
+    "id": "130",
+    "question": "Perbandingan marketing KPI bulan ini vs bulan lalu",
+    "expected_domain": "marketing",
+    "routed_domain": "marketing",
+    "status": "OK",
+    "row_count": 24,
+    "elapsed_s": "118.2",
+    "error": ""
+  },
+  {
+    "id": "131",
+    "question": "Top performing region berdasarkan marketing acquisition",
+    "expected_domain": "marketing",
+    "routed_domain": "marketing",
+    "status": "OK",
+    "row_count": 100,
+    "elapsed_s": "37.5",
+    "error": ""
+  },
+  {
+    "id": "132",
+    "question": "Marketing spend efficiency per region",
+    "expected_domain": "marketing",
+    "routed_domain": "marketing",
+    "status": "OK",
+    "row_count": 200,
+    "elapsed_s": "41.6",
+    "error": ""
+  },
+  {
+    "id": "146",
+    "question": "Sales per channel distribution per region",
+    "expected_domain": "sales_distribution",
+    "routed_domain": "site_performance",
+    "status": "OK",
+    "row_count": 78,
+    "elapsed_s": "50.6",
+    "error": ""
+  },
+  {
+    "id": "148",
+    "question": "SND KPI: gross add vs churn per branch bulan ini",
+    "expected_domain": "sales_distribution",
+    "routed_domain": "sales_distribution",
+    "status": "OK",
+    "row_count": 37,
+    "elapsed_s": "69.3",
+    "error": ""
+  },
+  {
+    "id": "170",
+    "question": "Berapa total site per region dari reference territory?",
+    "expected_domain": "reference",
+    "routed_domain": "reference",
+    "status": "OK",
+    "row_count": 12,
+    "elapsed_s": "27.1",
+    "error": ""
+  },
+  {
+    "id": "177",
+    "question": "SND kecwise IS performance overview",
+    "expected_domain": "misc",
+    "routed_domain": "sales_distribution",
+    "status": "OK",
+    "row_count": 1000,
+    "elapsed_s": "124.5",
+    "error": ""
+  },
+  {
+    "id": "181",
+    "question": "Korelasi antara 5G traffic dengan revenue per site",
+    "expected_domain": "cross",
+    "routed_domain": "site_performance",
+    "status": "OK",
+    "row_count": 40,
+    "elapsed_s": "52.1",
+    "error": ""
+  },
+  {
+    "id": "183",
+    "question": "Bandingkan HVC churn dengan overall churn per region",
+    "expected_domain": "cross",
+    "routed_domain": "customer_hvc",
+    "status": "OK",
+    "row_count": 6,
+    "elapsed_s": "46.9",
+    "error": ""
+  },
+  {
+    "id": "184",
+    "question": "Apakah site dengan coverage 5G memiliki revenue lebih tinggi?",
+    "expected_domain": "cross",
+    "routed_domain": "site_performance",
+    "status": "OK",
+    "row_count": 1,
+    "elapsed_s": "38.2",
+    "error": ""
+  },
+  {
+    "id": "185",
+    "question": "Daerah mana yang perlu prioritas investasi berdasarkan forecast dan market share?",
+    "expected_domain": "cross",
+    "routed_domain": "",
+    "status": "CONNECTION_ERROR",
+    "row_count": 0,
+    "elapsed_s": "180.1",
+    "error": "timed out"
+  },
+  {
+    "id": "186",
+    "question": "Kecamatan dengan market share tinggi tapi FTTH penetrasi rendah",
+    "expected_domain": "cross",
+    "routed_domain": "competitive",
+    "status": "OK",
+    "row_count": 200,
+    "elapsed_s": "102.7",
+    "error": ""
+  },
+  {
+    "id": "187",
+    "question": "Bagaimana performance outlet berkorelasi dengan market share?",
+    "expected_domain": "cross",
+    "routed_domain": "competitive",
+    "status": "OK",
+    "row_count": 0,
+    "elapsed_s": "40.8",
+    "error": ""
+  },
+  {
+    "id": "189",
+    "question": "Bandingkan KPI summary dengan marketing KPI per region",
+    "expected_domain": "cross",
+    "routed_domain": "kpi_summary",
+    "status": "OK",
+    "row_count": 487,
+    "elapsed_s": "47.4",
+    "error": ""
+  },
+  {
+    "id": "191",
+    "question": "Berikan executive summary seluruh Java: revenue, market share, 5G, churn",
+    "expected_domain": "cross",
+    "routed_domain": "kpi_summary",
+    "status": "OK",
+    "row_count": 1,
+    "elapsed_s": "85.9",
+    "error": ""
+  },
+  {
+    "id": "192",
+    "question": "Top 3 masalah utama yang terlihat dari data bulan ini",
+    "expected_domain": "cross",
+    "routed_domain": "kpi_summary",
+    "status": "OK",
+    "row_count": 3,
+    "elapsed_s": "177.9",
+    "error": ""
+  },
+  {
+    "id": "193",
+    "question": "Rekomendasi area untuk ekspansi berdasarkan forecast dan competitive data",
+    "expected_domain": "cross",
+    "routed_domain": "forecast",
+    "status": "OK",
+    "row_count": 0,
+    "elapsed_s": "47.5",
+    "error": ""
+  },
+  {
+    "id": "196",
+    "question": "Analisis gap: area market share tinggi tapi 5G coverage rendah",
+    "expected_domain": "cross",
+    "routed_domain": "competitive",
+    "status": "OK",
+    "row_count": 200,
+    "elapsed_s": "55.5",
+    "error": ""
+  },
+  {
+    "id": "197",
+    "question": "Branch mana yang paling butuh improvement di semua KPI?",
+    "expected_domain": "cross",
+    "routed_domain": "geo",
+    "status": "OK",
+    "row_count": 36,
+    "elapsed_s": "43.0",
+    "error": ""
+  },
+  {
+    "id": "198",
+    "question": "Summary data quality: berapa null/missing di kolom-kolom kunci?",
+    "expected_domain": "cross",
+    "routed_domain": "misc",
+    "status": "ERROR",
+    "row_count": 0,
+    "elapsed_s": "81.6",
+    "error": "403 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Access Denied: Table data-java-prd-97b9:java_pbi.ar_vw_kecamatan_bai: User does not have permis"
+  },
+  {
+    "id": "199",
+    "question": "Ranking branch secara keseluruhan (composite score)",
+    "expected_domain": "cross",
+    "routed_domain": "geo",
+    "status": "OK",
+    "row_count": 36,
+    "elapsed_s": "112.7",
+    "error": ""
+  },
+  {
+    "id": "200",
+    "question": "Prediksi revenue kuartal depan berdasarkan trend 3 bulan terakhir",
+    "expected_domain": "cross",
+    "routed_domain": "forecast",
+    "status": "OK",
+    "row_count": 3,
+    "elapsed_s": "75.9",
+    "error": ""
+  }
+]

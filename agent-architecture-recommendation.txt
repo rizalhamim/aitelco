@@ -1,0 +1,637 @@
+================================================================================
+IOH TELCO AI — AGENT ARCHITECTURE & LLM RECOMMENDATION
+================================================================================
+Dokumen ini mendeskripsikan seluruh agent yang ada di infrastruktur IOH Telco AI,
+termasuk tugas, model LLM yang dipakai, tabel yang ditangani, dan design knowledge.
+
+Tanggal: 29 Mei 2026
+Project: data-java-prd-97b9 | Dataset: java_precalc | Region: asia-southeast2
+Endpoint LLM: 9Router (OpenAI-compatible) di 43.129.52.9:20128
+
+================================================================================
+RINGKASAN: 6 AGENT + 1 TOOL (Non-LLM)
+================================================================================
+
+  #   Agent                Model Variable    Saat Ini              Tugas Utama
+  --- -------------------- ----------------- --------------------- ----------------------------------
+  1   Analyst Agent        LLM_MODEL_FAST    Agent-Java-v02.3      Validasi intent, rephrasing
+  2   Orchestrator/Router  LLM_MODEL_FAST    Agent-Java-v02.3      Routing ke domain yang tepat
+  3   SQL Agent            LLM_MODEL         Agent-Java-v02.3      Generate BigQuery SQL
+  4   Synthesizer          LLM_MODEL         Agent-Java-v02.3      Merangkai jawaban dari data
+  5   Profile Planner      LLM_MODEL_FAST    Agent-Java-v02.3      Merencanakan profile deck
+  6   Profile Compiler     LLM_MODEL         Agent-Java-v02.3      Menyusun narrative profile
+  7   Export Agent         (Tidak pakai LLM)  -                    Generate XLSX/PDF
+
+  Catatan: Saat ini SEMUA agent pakai model yang SAMA (Agent-Java-v02.3).
+  Ini tidak optimal — agent routing/classification tidak perlu model berat.
+
+Pipeline Flow:
+  User -> Analyst -> Router -> [SQL Agent -> BigQuery -> Synthesizer] -> User
+                            -> [Profile: Planner -> Parallel SQL -> Compiler] -> User
+                            -> [General Reply langsung] -> User
+                            -> [Export Agent (no LLM)] -> File download
+
+Jumlah LLM call per request:
+  - Chat biasa (greeting):       2-3 calls
+  - Data query standar:          4 calls (analyst + router + SQL + synthesizer)
+  - Profile deck lengkap:        15-25 calls (analyst + router + planner + ~11 SQL + compiler)
+
+
+================================================================================
+AGENT #1: ANALYST AGENT
+================================================================================
+
+File:           backend/app/analyst_agent.py -> analyze()
+Model:          LLM_MODEL_FAST (saat ini: Agent-Java-v02.3)
+Max Tokens:     500
+Streaming:      Tidak (JSON response)
+Call Method:    llm.chat_json()
+
+TUGAS:
+  - Gate pertama di pipeline — menerima pertanyaan mentah dari user
+  - Menentukan apakah pertanyaan ini tentang data (is_data_query) atau chat biasa
+  - Me-rephrase pertanyaan menjadi lebih jelas dan spesifik
+  - Mendeteksi intent export (download/excel/pdf/laporan)
+  - Mendeteksi bahasa user (id/en)
+  - Memberikan hints untuk SQL agent (misal: "gunakan tabel monthly", "aggregate by region")
+
+INPUT:
+  - System prompt (IDENTITY + analyst instructions)
+  - 4 message history terakhir
+  - Pertanyaan user
+
+OUTPUT (JSON):
+  {
+    "validated_query": "pertanyaan yang sudah di-rephrase",
+    "is_data_query": true/false,
+    "export_requested": true/false,
+    "export_format": "xlsx" / "pdf" / null,
+    "hints": "gunakan tabel monthly, aggregate by region",
+    "language": "id"
+  }
+
+KNOWLEDGE:
+  - Hanya IDENTITY prompt (persona Java Analyst)
+  - TIDAK punya akses ke schema tabel atau domain list
+  - Bergantung pada pemahaman umum tentang telco analytics
+
+TABEL YANG DITANGANI:
+  - Tidak langsung — agent ini gate access ke semua domain
+
+KONEKSI KE AGENT LAIN:
+  - Output validated_query -> Router (Orchestrator)
+  - Output is_data_query -> menentukan path (data query / general reply / export)
+  - Output hints -> diteruskan ke SQL Agent via Router
+
+REKOMENDASI MODEL:
+  Butuh: Cepat, akurat untuk classification, JSON output reliable
+  -> gpt-4o-mini (0.5-1s, murah, JSON solid)
+  -> claude-3.5-haiku (0.8-1.5s, intent detection sangat baik)
+  -> gemini-2.0-flash (0.5-1s, JSON output bagus)
+
+
+================================================================================
+AGENT #2: ORCHESTRATOR / ROUTER
+================================================================================
+
+File:           backend/app/orchestrator.py -> route()
+Model:          LLM_MODEL_FAST (saat ini: Agent-Java-v02.3)
+Max Tokens:     600
+Streaming:      Tidak (JSON response)
+Call Method:    llm.chat_json()
+
+TUGAS:
+  - Menerima validated_query dari Analyst Agent
+  - Mengklasifikasi pertanyaan ke SATU dari 12+ domain data, atau PROFILE mode, atau "none"
+  - Menentukan agent spesialisasi mana yang menangani
+  - Me-rephrase pertanyaan untuk konteks domain spesifik
+
+INPUT:
+  - System prompt (IDENTITY + routing rules + domain list dari knowledge base)
+  - 6 message history terakhir
+  - Validated query dari Analyst
+
+OUTPUT (JSON):
+  {
+    "domain": "site_performance" / "marketing" / "network" / ... / "PROFILE" / "none",
+    "reason": "User bertanya tentang revenue per site, route ke site_performance",
+    "language": "id",
+    "rephrased": "Top 5 site dengan revenue prepaid tertinggi di Surabaya bulan ini"
+  }
+
+KNOWLEDGE:
+  - IDENTITY prompt (persona Java Analyst)
+  - Domain overview dari knowledge.domain_overview_text():
+    Compact list semua domain dengan label, deskripsi, dan nama tabel
+  - Routing rules prioritas (hardcoded di prompt):
+    1. SITE-LEVEL metrics -> site_performance
+    2. GENERAL KPI at kecamatan/kabkota -> marketing
+    3. Market share/MS/penetrasi/SOGA -> reporting
+    4. Traffic 5G/availability/OpenSignal -> network
+    5. Forecast/prediksi -> forecast
+    6. FTTH/FWA/broadband/fiber -> fixed_broadband
+    7. HVC/high value/premium -> customer_hvc
+    8. Executive summary/overall KPI -> kpi_summary
+    9. Sales/outlet/NBS/SND -> sales_distribution
+    10. Branch ranking/desa -> geo
+    11. Pre-aggregated FB market share -> reporting
+    12. Site lookup/reference -> reference
+
+DOMAIN LIST & TABEL YANG BISA DI-ROUTE:
+
+  Domain                 Label                          Jumlah Tabel
+  ---------------------- ------------------------------ ------------
+  site_performance       Site Performance               17 tabel
+  network                Network Quality                13 tabel
+  marketing              Marketing KPI                  3 tabel
+  reporting              FB Market Share Reports         27 tabel
+  forecast               Forecast                       (tabel forecast)
+  customer_hvc           High Value Customer             (tabel HVC)
+  sales_distribution     Sales & Distribution            (tabel sales)
+  fixed_broadband        Fixed Broadband                 (tabel FBB)
+  geo                    Geography & Territory           8 tabel
+  kpi_summary            KPI Executive Summary           (tabel KPI)
+  competitive            Competitive (OpenSignal)        (via network tables)
+  reference              Reference Data                  (lookup tables)
+  misc                   Misc                            2 tabel
+  PROFILE                Multi-domain Profile Deck       (semua tabel)
+
+KONEKSI KE AGENT LAIN:
+  - Input dari: Analyst Agent (validated_query)
+  - Output domain -> SQL Agent (menentukan schema yang di-load)
+  - Output "PROFILE" -> Profile Engine
+  - Output "none" -> General Reply (direct LLM stream)
+
+REKOMENDASI MODEL:
+  Butuh: Cepat, akurat classification ke 12+ kategori, JSON solid
+  -> gpt-4o-mini (sangat baik untuk multi-class routing)
+  -> claude-3.5-haiku (routing accuracy tinggi)
+
+
+================================================================================
+AGENT #3: SQL AGENT (Text-to-SQL)
+================================================================================
+
+File:           backend/app/orchestrator.py -> write_sql()
+Model:          LLM_MODEL (saat ini: Agent-Java-v02.3)
+Max Tokens:     2500
+Streaming:      Tidak (JSON response)
+Call Method:    llm.chat_json()
+Self-Correct:   Ya, hingga 3 percobaan (error + prior SQL dikirim balik)
+
+TUGAS:
+  - Agent PALING KRITIKAL — menghasilkan BigQuery Standard SQL dari pertanyaan
+  - Menerima schema tabel spesifik untuk domain yang dipilih Router
+  - Menggunakan data_facts untuk context (date ranges, brand names, dll)
+  - Harus menghasilkan query yang aman (read-only, bounded cost, LIMIT)
+  - Self-correction: jika SQL error, menerima error message dan SQL sebelumnya, lalu memperbaiki
+
+INPUT:
+  - System prompt (IDENTITY + domain-specific schema + data_facts + hard rules)
+  - Optional: previous turn context (domain, SQL, columns, sample rows)
+  - 4 message history terakhir
+  - User question (+ prior_error & prior_sql jika retry)
+
+OUTPUT (JSON):
+  {
+    "sql": "SELECT ... FROM `data-java-prd-97b9.java_precalc.table` WHERE ...",
+    "explanation": "Query ini menghitung total revenue prepaid per kecamatan..."
+  }
+
+KNOWLEDGE (sangat kaya — ini yang membedakan agent ini):
+  1. schema_for_domain(domain_key):
+     - Semua tabel di domain dengan deskripsi
+     - Hingga 35 kolom per tabel dengan tipe data
+     - Kolom tersembunyi (nama saja) jika lebih dari 35
+  2. data_facts_text():
+     - Date ranges aktif per tabel (misal: "rham_site_wise_daily: 2024-01-01 to 2025-05-28")
+     - Brand names: ["im3", "3id", "tsel", "xl", "sf", "by.u"]
+     - Territory hierarchy: kec -> kabkota -> province -> region -> circle -> national
+     - Common column patterns dan naming conventions
+  3. Hard rules di prompt:
+     - Fully-qualified table names wajib
+     - Partition filter wajib
+     - month_id harus di-CAST ke STRING sebelum math
+     - Window function tidak boleh di WHERE/HAVING/JOIN ON
+     - Revenue default = rev_prepaid
+     - Causal analysis: Akuisisi -> Subscriber -> Usage -> Revenue
+
+TABEL YANG DITANGANI:
+  Semua tabel di domain yang dipilih Router. Contoh:
+  - site_performance: 17 tabel (873M+ rows terbesar)
+  - marketing: 3 tabel (160+ kolom per tabel)
+  - reporting: 27 tabel (pre-aggregated market share)
+  - network: 13 tabel (5G, availability, OpenSignal)
+  - geo: 8 tabel (branch, desa, territory)
+
+DETAIL TABEL UTAMA (terbesar / paling sering diquery):
+
+  Tabel                                  Rows          Kolom Kunci
+  -------------------------------------- ------------- ----------------------------------
+  rham_site_data_rev_channel_daily       873,036,037   site revenue by channel (ATL/BTL)
+  rham_site_data_rev_price_slab_daily    736,398,653   site revenue by price slab
+  rham_site_wise_daily_raw               441,550,545   site KPI (EAV pattern)
+  rham_site_wise_daily                   93,977,302    site performance metrics
+  rham_5g_site_daily                     55,270,127    5G per site
+  rham_site_fwa_daily                    56,152,936    FWA per site
+  rham_mkt_kpi_highlevel_dly             ~9,900,000    marketing KPI per kecamatan
+  rham_opensignal_kec_wly_wide           276,449       network experience per kecamatan
+  rham_report_fb_ms_kecamatan            1,183,516     market share per kecamatan
+  rham_desa_perf_history                 53,750        desa performance history
+
+KONEKSI KE AGENT LAIN:
+  - Input dari: Router (domain) + Analyst (validated_query + hints)
+  - Output SQL -> BigQuery Tool (run_query)
+  - Output explanation -> Synthesizer (context)
+  - Retry loop: BigQuery error -> SQL Agent (self-correct) -> BigQuery (max 3x)
+
+REKOMENDASI MODEL:
+  Butuh: Akurasi SQL TINGGI, pemahaman schema kompleks, self-correction
+  -> claude-3.5-sonnet atau claude-sonnet-4 (SQL accuracy terbaik)
+  -> gpt-4o (SQL sangat baik, sedikit lebih cepat)
+  -> JANGAN pakai model kecil — SQL errors costly (3 retry = 3x latency + 3x cost)
+
+
+================================================================================
+AGENT #4: SYNTHESIZER
+================================================================================
+
+File:           backend/app/orchestrator.py -> synthesize() (non-streaming)
+                backend/app/main.py -> gen() line 490 (streaming SSE)
+Model:          LLM_MODEL (saat ini: Agent-Java-v02.3)
+Max Tokens:     1200
+Streaming:      Ya (SSE tokens ke frontend)
+Call Method:    llm.chat_stream()
+
+TUGAS:
+  - Menerima hasil query SQL (columns, rows, row_count) dan pertanyaan asli
+  - Merangkai jawaban dalam bahasa user (id/en)
+  - Lead with angka kunci / jawaban langsung
+  - Tambahkan konteks: top/bottom, trend, pattern
+  - Tidak boleh mengarang angka yang tidak ada di data
+
+INPUT:
+  - System prompt (IDENTITY + synthesis instructions + language)
+  - JSON payload: {question, what_it_computes, columns, row_count, rows_preview (50 rows)}
+
+OUTPUT:
+  - Natural language answer (streaming tokens via SSE)
+  - Markdown formatted (headings, bold, tables, lists)
+
+KNOWLEDGE:
+  - IDENTITY prompt
+  - Synthesis prompt: "Lead with direct answer, add context, be concise"
+  - Menerima explanation dari SQL Agent (what_it_computes)
+  - Menerima raw data (columns + rows) — tahu persis apa yang dikembalikan
+
+TABEL YANG DITANGANI:
+  - Tidak langsung — menerima hasil dari BigQuery Tool
+
+KONEKSI KE AGENT LAIN:
+  - Input dari: SQL Agent (explanation) + BigQuery Tool (columns, rows)
+  - Output -> User (streaming tokens)
+  - Juga dipakai untuk General Reply (tanpa SQL result)
+
+BUG DITEMUKAN:
+  General reply streaming di main.py line 245 dan 279 TIDAK pass model parameter,
+  sehingga default ke LLM_MODEL (model mahal) padahal seharusnya LLM_MODEL_FAST.
+
+REKOMENDASI MODEL:
+  Butuh: Narasi bisnis bagus, bahasa Indonesia/Inggris, streaming cepat
+  -> claude-3.5-sonnet (narasi bisnis excellent)
+  -> gpt-4o (narasi bagus, streaming responsif)
+  -> Untuk general reply: bisa pakai LLM_MODEL_FAST (lebih murah)
+
+
+================================================================================
+AGENT #5: PROFILE PLANNER
+================================================================================
+
+File:           backend/app/profile_engine.py -> plan_profile()
+Model:          LLM_MODEL_FAST (saat ini: Agent-Java-v02.3)
+Max Tokens:     4000
+Streaming:      Tidak (JSON response)
+Call Method:    llm.chat_json()
+
+TUGAS:
+  - Menerima request profile territory (misal: "profile kota Surabaya")
+  - Menentukan territory_type (kabkota/kecamatan/region/circle/branch/province)
+  - Menentukan territory_name yang tepat
+  - Menghasilkan sub-queries untuk setiap section di profile deck
+
+INPUT:
+  - System prompt (planner instructions + section templates)
+  - History context
+  - User question (rephrased dari Router)
+
+OUTPUT (JSON):
+  {
+    "territory_type": "kabkota",
+    "territory_name": "Surabaya",
+    "sub_queries": [
+      {"domain": "marketing", "section_title": "Revenue Overview", "question": "..."},
+      {"domain": "reporting", "section_title": "Market Share", "question": "..."},
+      ...
+    ]
+  }
+
+SECTIONS PROFILE DECK (Full = 16 sections):
+  1.  Executive Summary
+  2.  Revenue Overview (marketing)
+  3.  Revenue by Channel ATL/BTL (site_performance) [direct SQL template]
+  4.  Revenue by Channel Detail (site_performance) [direct SQL template]
+  5.  MOBO Trade Revenue Trend (site_performance) [direct SQL template]
+  6.  Revenue by Price Slab (site_performance) [direct SQL template]
+  7.  Base vs Acquisition Revenue (marketing)
+  8.  Revenue Decomposition / VSD (marketing)
+  9.  Site Infrastructure Profile (site_performance)
+  10. FWA Profile (site_performance)
+  11. 5G Penetration & Funnel (network) [direct SQL template]
+  12. FB Market Share (reporting)
+  13. SOGA Profile (reporting)
+  14. Churn Share (reporting)
+  15. HVC Profile (customer_hvc)
+  16. Territory Info & Strategic Recommendations
+
+SECTIONS PROFILE SIMPLE (4 sections):
+  1. Executive Summary (marketing)
+  2. Revenue Decomposition (marketing)
+  3. Market Share (reporting)
+  4. Site Profile (site_performance)
+
+KNOWLEDGE:
+  - Section templates (hardcoded di profile_engine.py)
+  - 5 sections punya direct SQL template (tidak perlu LLM)
+  - Sisanya dikirim ke SQL Agent via orchestrator.write_sql()
+
+TABEL YANG DITANGANI (indirect via SQL Agent):
+  - rham_mkt_highlevel_mth (marketing)
+  - rham_site_data_rev_channel_mth (site_performance)
+  - rham_site_data_rev_price_slab_mth (site_performance)
+  - rham_5g_territory_monthly (network)
+  - rham_report_fb_ms_kabkota (reporting)
+  - Dan tabel lain sesuai domain di setiap section
+
+KONEKSI KE AGENT LAIN:
+  - Input dari: Router (domain="PROFILE", rephrased query)
+  - Output sub_queries -> SQL Agent (parallel, max_workers=5)
+  - Output semua results -> Profile Compiler
+
+REKOMENDASI MODEL:
+  Butuh: Territory name extraction akurat, JSON complex output
+  -> gpt-4o-mini (cukup untuk planning)
+  -> claude-3.5-haiku (territory detection bagus)
+
+
+================================================================================
+AGENT #6: PROFILE COMPILER
+================================================================================
+
+File:           backend/app/profile_engine.py -> compile_profile_stream()
+Model:          LLM_MODEL (saat ini: Agent-Java-v02.3)
+Max Tokens:     6000 (output terbesar dari semua agent)
+Streaming:      Ya (SSE tokens ke frontend)
+Call Method:    llm.chat_stream()
+
+TUGAS:
+  - Menerima hasil dari semua sub-queries (hingga 16 sections)
+  - Menyusun COMPREHENSIVE TERRITORY PROFILE DECK
+  - Format: Executive Summary -> 14 sections data -> Strategic Recommendations
+  - Harus include: MoM trends (arrow icons), concern flags, competitor comparison
+  - Derived metrics: market share %, revenue composition %, growth rate
+
+INPUT:
+  - System prompt (compiler instructions + section order)
+  - Territory info (type + name)
+  - Semua domain results: {domain, section_title, columns, rows, error, explanation}
+
+OUTPUT:
+  - Markdown narrative (streaming, 6000 tokens)
+  - Structure: headings, tables, bullet points, trend arrows, emoji flags
+
+KNOWLEDGE:
+  - Compilation rules (format, section order, analysis guidelines)
+  - Harus flag concerns (merah) dan strengths (hijau)
+  - Revenue: absolute + percentage composition
+  - Compare IOH vs competitors
+  - Derived metrics (calculate from data)
+  - Strategic Recommendations (5-7 actionable items)
+
+TABEL YANG DITANGANI:
+  - Semua tabel dari semua domain (via sub-query results)
+
+KONEKSI KE AGENT LAIN:
+  - Input dari: Profile Planner (plan) + SQL Agent (parallel results)
+  - Output -> User (streaming tokens)
+
+REKOMENDASI MODEL:
+  Butuh: Narasi panjang berkualitas tinggi, analisis bisnis, bahasa Indonesia
+  -> claude-3.5-sonnet atau claude-sonnet-4 (narasi analitik terbaik)
+  -> gpt-4o (narasi bagus, context window cukup)
+  -> JANGAN pakai model kecil — output 6000 token harus koheren end-to-end
+
+
+================================================================================
+AGENT #7: EXPORT AGENT (Non-LLM)
+================================================================================
+
+File:           backend/app/export_agent.py
+Model:          TIDAK PAKAI LLM
+Dependencies:   openpyxl (XLSX), reportlab (PDF)
+
+TUGAS:
+  - Mengkonversi data hasil query menjadi file XLSX atau PDF branded IOH
+  - XLSX: auto-width, frozen headers, branded colors, auto charts
+  - PDF: header/footer IOH, branded table, summary, SQL reference
+  - Auto-detect chart type: bar (comparison), line (time series), pie (composition)
+
+INPUT:
+  - columns: list[str]
+  - rows: list[dict]
+  - title, summary, sql, explanation, domain
+
+OUTPUT:
+  - bytes (XLSX atau PDF)
+
+KNOWLEDGE:
+  - IOH brand colors (RED #ED1C24, DARK #1A1A1B, TEAL #32BCAD)
+  - Column classification regex (time, pct, currency, count, geo, label, number)
+  - Number formatting rules per type
+
+KONEKSI KE AGENT LAIN:
+  - Input dari: Analyst (export detection) + BigQuery Tool (data)
+  - Output -> User (file download via /api/export/last/{session_id})
+
+
+================================================================================
+DESIGN KNOWLEDGE: KNOWLEDGE BASE STRUCTURE
+================================================================================
+
+File: backend/data/knowledge_base.json
+Loaded by: backend/app/knowledge.py
+
+STRUKTUR:
+  {
+    "meta": { project, dataset, location },
+    "data_facts": { date ranges, brand names, territory hierarchy, conventions },
+    "domains": {
+      "domain_key": {
+        "label": "Human-readable name",
+        "description": "What this domain covers",
+        "tables": {
+          "table_name": {
+            "description": "Table purpose",
+            "rows": 123456,
+            "partition_col": "dt_id",
+            "columns": {
+              "col_name": { "type": "STRING", "description": "..." },
+              ...
+            }
+          }
+        }
+      }
+    }
+  }
+
+FUNGSI KNOWLEDGE.PY:
+  - load_kb()              : Load + cache JSON (LRU)
+  - domain_list()          : List domain {key, label, description, table_count, tables}
+  - domain_overview_text() : Compact text untuk Router prompt
+  - schema_for_domain()    : Full schema text untuk SQL Agent (max 35 cols displayed)
+  - data_facts_text()      : Data facts JSON string
+
+BAGAIMANA KNOWLEDGE DIPAKAI PER AGENT:
+  Agent              Knowledge Yang Diakses
+  ------------------ ---------------------------------------------------------
+  Analyst            Hanya IDENTITY (tidak akses knowledge base)
+  Router             domain_overview_text() — daftar domain + deskripsi singkat
+  SQL Agent          schema_for_domain(domain) + data_facts_text() — FULL schema
+  Synthesizer        Tidak langsung (terima data mentah dari BigQuery)
+  Profile Planner    Section templates (hardcoded, bukan dari KB)
+  Profile Compiler   Tidak langsung (terima results dari sub-queries)
+  Export Agent       Tidak akses KB
+
+
+================================================================================
+REKOMENDASI KONFIGURASI LLM — OPTIMAL & FAST
+================================================================================
+
+OPSI A: DUAL MODEL (Recommended — Best Balance)
+-----------------------------------------------
+  .env:
+    LLM_MODEL_FAST=gpt-4o-mini
+    LLM_MODEL=claude-3.5-sonnet
+
+  Agent                  Model               Latency    Cost/1K tok
+  ---------------------- ------------------- ---------- -----------
+  Analyst Agent          gpt-4o-mini         ~0.5-1s    $0.00015
+  Router                 gpt-4o-mini         ~0.5-1s    $0.00015
+  SQL Agent              claude-3.5-sonnet   ~2-4s      $0.003
+  Synthesizer            claude-3.5-sonnet   ~2-4s      $0.003
+  General Reply          gpt-4o-mini *FIX*   ~0.5-1s    $0.00015
+  Profile Planner        gpt-4o-mini         ~1-2s      $0.00015
+  Profile Compiler       claude-3.5-sonnet   ~4-8s      $0.003
+
+  Total latency data query: ~5-8s (vs 10-15s saat ini)
+  Total latency profile:    ~30-60s (vs 60-120s saat ini)
+
+  * Perlu fix bug: main.py general reply harus pass model=LLM_MODEL_FAST
+
+
+OPSI B: SINGLE PREMIUM MODEL (Simplest)
+----------------------------------------
+  .env:
+    LLM_MODEL_FAST=gpt-4o
+    LLM_MODEL=gpt-4o
+
+  Semua agent pakai gpt-4o.
+  Pro: Simple, consistent quality.
+  Con: Lebih mahal, routing/classification overkill pakai model besar.
+
+
+OPSI C: THREE-TIER (Maximum Optimization)
+-----------------------------------------
+  .env:
+    LLM_MODEL_FAST=gemini-2.0-flash        # Tercepat, termurah
+    LLM_MODEL=claude-3.5-sonnet            # SQL + narasi terbaik
+    # Perlu custom: override per-agent di code
+
+  Tambahkan LLM_MODEL_SYNTH di config.py:
+    Agent                  Model                Latency
+    ---------------------- -------------------- ----------
+    Analyst Agent          gemini-2.0-flash     ~0.3-0.5s
+    Router                 gemini-2.0-flash     ~0.3-0.5s
+    SQL Agent              claude-3.5-sonnet    ~2-4s
+    Synthesizer            gpt-4o               ~1-2s (streaming fast)
+    General Reply          gemini-2.0-flash     ~0.5-1s
+    Profile Planner        gemini-2.0-flash     ~0.5-1s
+    Profile Compiler       claude-3.5-sonnet    ~4-8s
+
+  Total latency data query: ~4-6s
+  Paling optimal tapi perlu modifikasi code untuk 3 tier.
+
+
+OPSI D: ALL ANTHROPIC (Best SQL Quality)
+-----------------------------------------
+  .env:
+    LLM_MODEL_FAST=claude-3.5-haiku
+    LLM_MODEL=claude-sonnet-4
+
+  Pro: Anthropic models paling akurat untuk Text-to-SQL.
+  Con: Haiku bisa sedikit lebih lambat dari gpt-4o-mini.
+
+
+================================================================================
+PERBANDINGAN MODEL UNTUK SETIAP KEBUTUHAN
+================================================================================
+
+UNTUK ROUTING / CLASSIFICATION (Analyst, Router, Planner):
+  Ranking:
+  1. gpt-4o-mini      — Tercepat, JSON reliable, murah, accuracy tinggi
+  2. gemini-2.0-flash  — Sangat cepat, JSON bagus
+  3. claude-3.5-haiku  — Sedikit lebih lambat tapi intent detection unggul
+  4. deepseek-v3      — Murah tapi JSON kadang error
+
+UNTUK TEXT-TO-SQL (SQL Agent):
+  Ranking:
+  1. claude-3.5-sonnet — SQL accuracy TERBAIK untuk BigQuery
+  2. claude-sonnet-4   — Sama bagus, lebih baru
+  3. gpt-4o           — Sangat baik, sedikit di bawah Claude untuk SQL
+  4. deepseek-coder   — Bagus tapi kadang gagal di complex JOIN
+  JANGAN: gpt-4o-mini, gemini-flash — terlalu banyak SQL error
+
+UNTUK NARASI / SYNTHESIS (Synthesizer, Profile Compiler):
+  Ranking:
+  1. claude-3.5-sonnet — Narasi bisnis terbaik, bahasa Indonesia bagus
+  2. gpt-4o           — Streaming cepat, narasi solid
+  3. claude-sonnet-4   — Bagus tapi streaming sedikit lebih lambat
+  4. gemini-1.5-pro   — Narasi OK tapi styling kurang konsisten
+
+UNTUK GENERAL REPLY (Chat biasa):
+  Ranking:
+  1. gpt-4o-mini      — Sangat cepat, cukup untuk greeting/FAQ
+  2. gemini-2.0-flash  — Tercepat
+  3. claude-3.5-haiku  — Lebih natural tapi sedikit lebih lambat
+
+
+================================================================================
+BUGS & IMPROVEMENT YANG DITEMUKAN
+================================================================================
+
+1. BUG: General reply di main.py (line 245, 279) tidak pass model parameter
+   -> Default ke LLM_MODEL (mahal) padahal seharusnya LLM_MODEL_FAST
+   FIX: Tambahkan model=config.LLM_MODEL_FAST di kedua llm.chat_stream() call
+
+2. IMPROVEMENT: Profile engine _run_one_domain() bisa trigger hingga 22 SQL calls
+   -> Pertimbangkan caching hasil per domain jika territory sama dalam 1 jam
+   -> Atau batasi parallel workers dari 5 ke 3 untuk mengurangi load LLM
+
+3. IMPROVEMENT: llm.py selalu kirim stream=True bahkan untuk non-streaming calls
+   -> Untuk chat_json(), bisa set stream=False untuk mengurangi overhead parsing
+
+4. IMPROVEMENT: Analyst Agent tidak punya knowledge tentang domain/tabel
+   -> Tambahkan domain_overview_text() ke analyst prompt agar hints lebih akurat
+
+================================================================================
+END OF DOCUMENT
+================================================================================

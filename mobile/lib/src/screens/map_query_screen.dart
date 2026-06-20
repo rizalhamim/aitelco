@@ -1,0 +1,1233 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+import '../api/api_client.dart';
+import '../services/keep_alive_service.dart';
+import '../app_state.dart';
+import '../theme.dart';
+import '../geo/geo_assets.dart';
+import 'location_sheet.dart';
+
+class _ChoroPoly {
+  final List<LatLng> ring;
+  final Color color;
+  final String label;
+  final double value;
+  final Map<String, dynamic> extra;
+  _ChoroPoly(this.ring, this.color, this.label, this.value, this.extra);
+}
+
+class _Turn {
+  final bool isUser;
+  String content;
+  String? status;
+  String? error;
+  _Turn({required this.isUser, this.content = '', this.status});
+}
+
+class _MPoint {
+  final double lat, lon;
+  final String label;
+  final Map<String, dynamic> info;
+  final Color? color;       // AI-driven marker colour
+  final String? labelText;  // AI-driven persistent value label
+  _MPoint(this.lat, this.lon, this.label, this.info, {this.color, this.labelText});
+}
+
+class MapQueryScreen extends StatefulWidget {
+  const MapQueryScreen({super.key});
+  @override
+  State<MapQueryScreen> createState() => _MapQueryScreenState();
+}
+
+class _MapQueryScreenState extends State<MapQueryScreen> {
+  final _mapController = MapController();
+  final _input = TextEditingController();
+  final _scroll = ScrollController();
+  final List<_Turn> _turns = [];
+  List<_MPoint> _points = [];
+  List<_ChoroPoly> _polys = [];
+  String? _legendMetric;
+  double _legendMin = 0, _legendMax = 0;
+  LatLng? _userLoc;
+  bool _satellite = true;
+  bool _chatOpen = true;
+  bool _busy = false;
+  bool _locating = true;
+  int _selected = -1;
+  int? _resultCount;
+  Map<String, dynamic>? _lastResult;
+  Map<String, dynamic>? _lastSpec;
+  // Fix mode (vs AI chat mode): nearest-site overlay from GPS.
+  bool _fixMode = false;
+  bool _fixLoading = false;
+  String? _fixMonth;
+  bool _fixAuto = false;
+  Timer? _fixTimer;
+  final List<Map<String, String>> _turnsLog = []; // {role, content} for restore
+  StreamSubscription? _sub;
+  // Stable per-user map session so map queries persist to history for relearning.
+  late final String _sessionId =
+      'map_${AuthState.user?['username'] ?? 'anon'}';
+  String get _stateKey => 'map_state::${AuthState.user?['username'] ?? 'anon'}';
+
+  bool get _id => AppState.I.lang == 'id';
+
+  static const _examples = [
+    'Tampilkan 20 site dengan revenue turun bulan ini',
+    '10 site terdekat dengan revenue di bawah 40 Mn',
+    'Outlet IM3 terdekat dari lokasi saya',
+    'Tampilkan outlet di kecamatan Wonocolo',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreState();
+    _getLoc();
+  }
+
+  Future<void> _restoreState() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      final raw = p.getString(_stateKey);
+      if (raw == null) return;
+      final s = jsonDecode(raw) as Map<String, dynamic>;
+      // restore chat bubbles
+      final turns = (s['turns'] as List?) ?? [];
+      for (final t in turns) {
+        final m = (t as Map).cast<String, dynamic>();
+        _turns.add(_Turn(isUser: m['role'] == 'user', content: (m['content'] ?? '').toString()));
+      }
+      // restore the last result + spec, then re-render the visual
+      _lastResult = (s['result'] as Map?)?.cast<String, dynamic>();
+      _lastSpec = (s['spec'] as Map?)?.cast<String, dynamic>();
+      if (mounted) setState(() {});
+      if (_lastResult != null && _lastSpec != null) {
+        await _applySpec(_lastSpec!);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveState() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString(_stateKey, jsonEncode({
+        'turns': _turnsLog,
+        'result': _lastResult,
+        'spec': _lastSpec,
+      }));
+    } catch (_) {}
+  }
+
+  Future<void> _refreshMap() async {
+    _sub?.cancel();
+    _input.clear();
+    setState(() {
+      _turns.clear();
+      _turnsLog.clear();
+      _points = [];
+      _polys = [];
+      _legendMetric = null;
+      _resultCount = null;
+      _selected = -1;
+      _lastResult = null;
+      _lastSpec = null;
+      _busy = false;
+    });
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.remove(_stateKey);
+    } catch (_) {}
+    if (_userLoc != null) _mapController.move(_userLoc!, 12);
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    _fixTimer?.cancel();
+    _input.dispose();
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  // ── Fix mode ──
+  void _setMode(bool fix) {
+    setState(() {
+      _fixMode = fix;
+      _selected = -1;
+      _points = [];
+      _polys = [];
+      _legendMetric = null;
+      _resultCount = null;
+      if (fix) { _chatOpen = false; } else { _fixAuto = false; _fixTimer?.cancel(); }
+    });
+    if (fix) _loadFixSites();
+  }
+
+  Future<void> _loadFixSites() async {
+    setState(() { _fixLoading = true; });
+    LatLng? loc = _userLoc;
+    if (loc == null) {
+      final c = await getCurrentCoord(context);
+      if (c != null) loc = LatLng(c.$1, c.$2);
+    }
+    if (loc == null) { if (mounted) setState(() => _fixLoading = false); return; }
+    _userLoc = loc;
+    try {
+      final d = await ApiClient.nearestSites(loc.latitude, loc.longitude);
+      if (!mounted) return;
+      if (d['ok'] == true) {
+        final sites = (d['sites'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final pts = <_MPoint>[];
+        for (final s in sites) {
+          final la = (s['latitude'] as num?)?.toDouble();
+          final lo = (s['longitude'] as num?)?.toDouble();
+          if (la == null || lo == null) continue;
+          pts.add(_MPoint(la, lo, (s['site_name'] ?? s['site_id'] ?? 'Site').toString(), s));
+        }
+        setState(() { _points = pts; _fixMonth = d['month_id']?.toString(); _selected = -1; });
+        _mapController.move(loc, 14);
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _fixLoading = false);
+  }
+
+  void _toggleFixAuto() {
+    setState(() => _fixAuto = !_fixAuto);
+    _fixTimer?.cancel();
+    if (_fixAuto) {
+      _fixTimer = Timer.periodic(const Duration(seconds: 60), (_) { if (_fixMode) _loadFixSites(); });
+    }
+  }
+
+  Future<void> _getLoc() async {
+    setState(() => _locating = true);
+    final c = await getCurrentCoord(context);
+    if (!mounted) return;
+    setState(() {
+      _locating = false;
+      if (c != null) {
+        _userLoc = LatLng(c.$1, c.$2);
+      }
+    });
+    if (_userLoc != null && _points.isEmpty) {
+      _mapController.move(_userLoc!, 13);
+    }
+  }
+
+  double? _toD(dynamic v) => v is num ? v.toDouble() : double.tryParse(v?.toString() ?? '');
+
+  static const _green = Color(0xFF2FA84F);
+  static const _neutral = Color(0xFFECF3F1);
+  static const _red = Color(0xFFE13838);   // semantic red (decline / low) — real red
+
+  Color _colorFor(double v, double min, double max) {
+    if (max == min) return IOH.yellow;
+    final t = ((v - min) / (max - min)).clamp(0.0, 1.0);
+    // 0 red -> 0.5 yellow -> 1 teal
+    if (t <= 0.5) {
+      return Color.lerp(_red, IOH.yellow, t / 0.5)!;
+    }
+    return Color.lerp(IOH.yellow, IOH.teal, (t - 0.5) / 0.5)!;
+  }
+
+  // Zero-anchored sign scale: negative=red, ~0=neutral, positive=green.
+  Color _colorBySign(double v, double maxAbs) {
+    if (maxAbs <= 0) return _neutral;
+    final t = (v.abs() / maxAbs).clamp(0.0, 1.0);
+    return Color.lerp(_neutral, v >= 0 ? _green : _red, t)!;
+  }
+
+  // Apply the backend's authoritative map_spec against the stored result.
+  Future<void> _applySpec(Map<String, dynamic> spec) async {
+    final res = _lastResult;
+    if (res == null) return;
+    _lastSpec = spec;
+    final cols = (res['columns'] as List?)?.cast<String>() ?? [];
+    final rows = (res['rows'] as List?) ?? [];
+    final mode = (spec['mode'] ?? 'none').toString();
+    if (mode == 'choropleth') {
+      await _renderChoroplethSpec(spec, cols, rows);
+      return;
+    }
+    if (mode == 'points') {
+      _ingestResult(res, style: (spec['style'] as Map?)?.cast<String, dynamic>());
+      return;
+    }
+    // none -> local heuristic fallback
+    _ingestResult(res);
+  }
+
+  // Resolve a colour word/hex from the AI styling spec.
+  Color? _resolveColor(String? c) {
+    if (c == null) return null;
+    final m = {
+      'red': _red, 'merah': _red, 'yellow': IOH.yellow, 'kuning': IOH.yellow,
+      'green': _green, 'hijau': _green, 'teal': IOH.teal, 'biru': const Color(0xFF2A74D4),
+      'pink': IOH.pink, 'magenta': IOH.magenta,
+    };
+    final lc = c.toLowerCase();
+    if (m.containsKey(lc)) return m[lc];
+    if (RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(c)) {
+      return Color(int.parse('FF${c.substring(1)}', radix: 16));
+    }
+    return null;
+  }
+
+  String _fmtMagnitude(num v, String? fmt) {
+    final nf = NumberFormat('#,##0.##', 'id');
+    final av = v.abs();
+    if (fmt == 'raw' || fmt == 'full') return nf.format(v);
+    if (fmt == 'mn') return '${nf.format(v / 1e6)} Mn';
+    if (fmt == 'bn') return '${nf.format(v / 1e9)} Bn';
+    if (av >= 1e12) return '${nf.format(v / 1e12)} Tn';
+    if (av >= 1e9) return '${nf.format(v / 1e9)} Bn';
+    if (av >= 1e6) return '${nf.format(v / 1e6)} Mn';
+    if (av >= 1e3) return '${nf.format(v / 1e3)} K';
+    return nf.format(v);
+  }
+
+  Future<void> _renderChoroplethSpec(Map<String, dynamic> spec, List<String> cols, List rows) async {
+    if (rows.isEmpty) return;
+    final dissolveBy = (spec['dissolve_by'] ?? 'id').toString();
+    final level = (spec['level'] ?? 'kecamatan').toString();
+    final metricCol = (spec['metric_key'] ?? '').toString();
+    final metricKey = cols.firstWhere((c) => c.toLowerCase() == metricCol.toLowerCase(), orElse: () => '');
+    if (metricKey.isEmpty) return;
+
+    // key column whose value joins to geometry/territory
+    final keyColName = dissolveBy == 'name'
+        ? (spec['group_key'] ?? '').toString()
+        : (spec['geo_key'] ?? spec['id_key'] ?? '').toString();
+    final keyKey = cols.firstWhere((c) => c.toLowerCase() == keyColName.toLowerCase(), orElse: () => '');
+    if (keyKey.isEmpty) return;
+    final labelKey = cols.firstWhere(
+      (c) => c.toLowerCase() == (spec['label_key'] ?? keyKey).toString().toLowerCase(),
+      orElse: () => keyKey,
+    );
+
+    final valueMap = <String, Map<String, dynamic>>{};
+    for (final r in rows) {
+      final m = (r as Map).cast<String, dynamic>();
+      final key = (m[keyKey] ?? '').toString().toUpperCase();
+      final v = _toD(m[metricKey]);
+      if (key.isEmpty || v == null) continue;
+      valueMap[key] = {'value': v, 'label': (m[labelKey] ?? key).toString(), 'extra': m};
+    }
+    if (valueMap.isEmpty) return;
+
+    final vals = valueMap.values.map((e) => e['value'] as double).toList();
+    final mn = vals.reduce((a, b) => a < b ? a : b);
+    final mx = vals.reduce((a, b) => a > b ? a : b);
+    final signMode = (spec['coloring'] ?? 'range').toString() == 'sign';
+    final maxAbs = mn.abs() > mx.abs() ? mn.abs() : mx.abs();
+    Color colorOf(double v) => signMode ? _colorBySign(v, maxAbs) : _colorFor(v, mn, mx);
+
+    // geometry: kabupaten only for direct kabkot_id match; else kecamatan
+    final geoLevel = (dissolveBy == 'id' && (spec['geo_key'] ?? spec['id_key']) == 'kabkot_id')
+        ? 'kabupaten'
+        : 'kecamatan';
+    List<GeoFeature> feats;
+    Map<String, Map<String, dynamic>>? terr;
+    try {
+      feats = await GeoAssets.load(geoLevel);
+      if (dissolveBy == 'name') terr = await GeoAssets.territoryMap();
+    } catch (_) {
+      return;
+    }
+
+    final polys = <_ChoroPoly>[];
+    final allPts = <LatLng>[];
+    for (final f in feats) {
+      Map<String, dynamic>? entry;
+      if (dissolveBy == 'name') {
+        final t = terr?[f.id.toUpperCase()]?[level];
+        if (t == null) continue;
+        entry = valueMap[t.toString().toUpperCase()];
+      } else {
+        entry = valueMap[f.id.toUpperCase()];
+      }
+      if (entry == null) continue;
+      final color = colorOf(entry['value'] as double);
+      for (final ring in f.rings) {
+        polys.add(_ChoroPoly(ring, color, entry['label'] as String, entry['value'] as double,
+            (entry['extra'] as Map).cast<String, dynamic>()));
+        allPts.addAll(ring);
+      }
+    }
+    if (!mounted || polys.isEmpty) return;
+    setState(() {
+      _points = [];
+      _polys = polys;
+      _legendMetric = (spec['legend'] ?? metricKey).toString();
+      _legendMin = mn;
+      _legendMax = mx;
+      _resultCount = valueMap.length;
+      _selected = -1;
+    });
+    _mapController.fitCamera(CameraFit.coordinates(coordinates: allPts, padding: const EdgeInsets.all(40)));
+  }
+
+  bool _tryChoropleth(List<String> cols, List rows) {
+    final hasKec = cols.any((c) => c.toLowerCase() == 'kec_id');
+    final hasKab = cols.any((c) => c.toLowerCase() == 'kabkot_id');
+    if (rows.isEmpty || (!hasKec && !hasKab)) return false;
+    final level = hasKec ? 'kecamatan' : 'kabupaten';
+    final idKey = hasKec ? cols.firstWhere((c) => c.toLowerCase() == 'kec_id') : cols.firstWhere((c) => c.toLowerCase() == 'kabkot_id');
+    final labelKey = cols.firstWhere(
+      (c) => ['kecamatan', 'kabupaten', 'kabkota', 'kabkot'].contains(c.toLowerCase()),
+      orElse: () => idKey,
+    );
+    bool excluded(String c) {
+      final lc = c.toLowerCase();
+      if (c == idKey || c == labelKey) return true;
+      if (lc.endsWith('_id')) return true;
+      if (['provinsi', 'province', 'kabupaten', 'kabkota', 'kecamatan', 'region', 'cur_month', 'prev_month'].contains(lc)) return true;
+      if (lc.contains('month') || lc == 'periode' || lc == 'period') return true;
+      return false;
+    }
+
+    final numeric = <String>[];
+    for (final c in cols) {
+      if (excluded(c)) continue;
+      if (rows.any((r) => (r as Map)[c] is num)) numeric.add(c);
+    }
+    if (numeric.isEmpty) return false;
+    final growthRe = RegExp(r'growth|pertumbuhan|change|delta|_pp$|_pct$|_pct_|trend', caseSensitive: false);
+    final metricKey = numeric.firstWhere((c) => growthRe.hasMatch(c), orElse: () => numeric.first);
+
+    final valueMap = <String, Map<String, dynamic>>{};
+    for (final r in rows) {
+      final m = (r as Map).cast<String, dynamic>();
+      final id = (m[idKey] ?? '').toString().toUpperCase();
+      final v = _toD(m[metricKey]);
+      if (id.isEmpty || v == null) continue;
+      valueMap[id] = {'value': v, 'label': (m[labelKey] ?? id).toString(), 'extra': m};
+    }
+    if (valueMap.isEmpty) return false;
+
+    _renderChoropleth(level, valueMap, metricKey);
+    return true;
+  }
+
+  Future<void> _renderChoropleth(String level, Map<String, Map<String, dynamic>> valueMap, String metric) async {
+    final vals = valueMap.values.map((e) => e['value'] as double).toList();
+    final mn = vals.reduce((a, b) => a < b ? a : b);
+    final mx = vals.reduce((a, b) => a > b ? a : b);
+    List<GeoFeature> feats;
+    try {
+      feats = await GeoAssets.load(level);
+    } catch (e) {
+      return;
+    }
+    final polys = <_ChoroPoly>[];
+    final allPts = <LatLng>[];
+    for (final f in feats) {
+      final entry = valueMap[f.id];
+      if (entry == null) continue;
+      final color = _colorFor(entry['value'] as double, mn, mx);
+      for (final ring in f.rings) {
+        polys.add(_ChoroPoly(ring, color, entry['label'] as String, entry['value'] as double, (entry['extra'] as Map).cast<String, dynamic>()));
+        allPts.addAll(ring);
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _points = [];
+      _polys = polys;
+      _legendMetric = metric;
+      _legendMin = mn;
+      _legendMax = mx;
+      _resultCount = valueMap.length;
+      _selected = -1;
+    });
+    if (allPts.isNotEmpty) {
+      _mapController.fitCamera(CameraFit.coordinates(coordinates: allPts, padding: const EdgeInsets.all(40)));
+    }
+  }
+
+  void _ingestResult(Map<String, dynamic> data, {Map<String, dynamic>? style}) {
+    final cols = (data['columns'] as List?)?.cast<String>() ?? [];
+    final rows = (data['rows'] as List?) ?? [];
+    if (style == null && _tryChoropleth(cols, rows)) return;
+    String? latKey, lonKey;
+    for (final c in cols) {
+      final lc = c.toLowerCase();
+      if (latKey == null && (lc == 'latitude' || lc == 'lat' || lc.endsWith('_latitude') || lc.endsWith('_lat'))) latKey = c;
+      if (lonKey == null && (lc == 'longitude' || lc == 'lon' || lc == 'long' || lc.endsWith('_longitude') || lc.endsWith('_lon'))) lonKey = c;
+    }
+    if (latKey == null || lonKey == null) {
+      setState(() => _resultCount = 0);
+      return;
+    }
+    String labelKey = cols.firstWhere(
+      (c) => RegExp(r'site_n|site_name|outlet_n|outlet_name|name|nama|kec|kab', caseSensitive: false).hasMatch(c),
+      orElse: () => cols.isNotEmpty ? cols.first : 'name',
+    );
+
+    // ---- AI styling: per-row colour rules + value label ----
+    final rules = (style?['point_rules'] as List?) ?? [];
+    final labelCfg = (style?['label'] as Map?)?.cast<String, dynamic>();
+    String? colOf(String? name) => name == null
+        ? null
+        : cols.firstWhere((c) => c.toLowerCase() == name.toLowerCase(), orElse: () => '');
+    // pre-compute rank sets
+    final rankSets = <int, Set<int>>{};
+    for (var ri = 0; ri < rules.length; ri++) {
+      final rule = (rules[ri] as Map).cast<String, dynamic>();
+      final rb = colOf(rule['rank_by']?.toString());
+      final top = rule['top'];
+      if (rb != null && rb.isNotEmpty && top is num) {
+        final idx = <MapEntry<int, double>>[];
+        for (var i = 0; i < rows.length; i++) {
+          final v = _toD((rows[i] as Map)[rb]);
+          if (v != null) idx.add(MapEntry(i, v));
+        }
+        final desc = (rule['order']?.toString() == 'desc');
+        idx.sort((a, b) => desc ? b.value.compareTo(a.value) : a.value.compareTo(b.value));
+        rankSets[ri] = idx.take(top.toInt()).map((e) => e.key).toSet();
+      }
+    }
+    final labelKeyName = colOf(labelCfg?['column']?.toString());
+
+    final pts = <_MPoint>[];
+    for (var i = 0; i < rows.length; i++) {
+      final m = (rows[i] as Map).cast<String, dynamic>();
+      final lat = _toD(m[latKey]);
+      final lon = _toD(m[lonKey]);
+      if (lat == null || lon == null || lat == 0 || lon == 0) continue;
+      Color? color;
+      for (var ri = 0; ri < rules.length; ri++) {
+        final rule = (rules[ri] as Map).cast<String, dynamic>();
+        bool match = false;
+        if (rule['default'] == true) {
+          match = true;
+        } else if (rankSets.containsKey(ri)) {
+          match = rankSets[ri]!.contains(i);
+        } else if (rule['where'] != null && rule['op'] != null && rule['value'] is num) {
+          final wc = colOf(rule['where'].toString());
+          final v = wc != null ? _toD(m[wc]) : null;
+          if (v != null) {
+            final t = (rule['value'] as num).toDouble();
+            switch (rule['op'].toString()) {
+              case '<': match = v < t; break;
+              case '<=': match = v <= t; break;
+              case '>': match = v > t; break;
+              case '>=': match = v >= t; break;
+              case '==': match = v == t; break;
+            }
+          }
+        }
+        if (match) { color = _resolveColor(rule['color']?.toString()); break; }
+      }
+      String? labelText;
+      if (labelCfg != null && labelCfg['show'] != false && labelKeyName != null && labelKeyName.isNotEmpty) {
+        final lv = m[labelKeyName];
+        if (lv is num) labelText = _fmtMagnitude(lv, labelCfg['format']?.toString());
+      }
+      pts.add(_MPoint(lat, lon, (m[labelKey] ?? '-').toString(), m, color: color, labelText: labelText));
+    }
+    setState(() {
+      _points = pts;
+      _polys = [];
+      _legendMetric = null;
+      _resultCount = pts.length;
+      _selected = -1;
+    });
+    if (pts.isNotEmpty) _fitBounds();
+  }
+
+  void _fitBounds() {
+    final all = [..._points.map((p) => LatLng(p.lat, p.lon)), if (_userLoc != null) _userLoc!];
+    if (all.isEmpty) return;
+    if (all.length == 1) {
+      _mapController.move(all.first, 15);
+      return;
+    }
+    _mapController.fitCamera(CameraFit.coordinates(coordinates: all, padding: const EdgeInsets.all(60), maxZoom: 16));
+  }
+
+  void _onMapTap(LatLng p) {
+    setState(() => _selected = -1);
+    if (_polys.isEmpty) return;
+    for (final poly in _polys) {
+      if (_pointInRing(p, poly.ring)) {
+        _showRegionInfo(poly);
+        return;
+      }
+    }
+  }
+
+  bool _pointInRing(LatLng p, List<LatLng> ring) {
+    bool inside = false;
+    int j = ring.length - 1;
+    for (int i = 0; i < ring.length; i++) {
+      final xi = ring[i].longitude, yi = ring[i].latitude;
+      final xj = ring[j].longitude, yj = ring[j].latitude;
+      final intersect = ((yi > p.latitude) != (yj > p.latitude)) &&
+          (p.longitude < (xj - xi) * (p.latitude - yi) / ((yj - yi) == 0 ? 1e-12 : (yj - yi)) + xi);
+      if (intersect) inside = !inside;
+      j = i;
+    }
+    return inside;
+  }
+
+  void _showRegionInfo(_ChoroPoly poly) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.vWhite,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(width: 14, height: 14, decoration: BoxDecoration(color: poly.color, shape: BoxShape.circle)),
+            const SizedBox(width: 8),
+            Expanded(child: Text(poly.label, style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 16, color: context.vInk))),
+          ]),
+          const SizedBox(height: 12),
+          ...poly.extra.entries.where((e) => !e.key.toLowerCase().endsWith('_id')).take(8).map((e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Text(e.key, style: TextStyle(fontSize: 12, color: context.vMute)),
+                  Flexible(child: Text(_fmt(e.value), textAlign: TextAlign.right, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: context.vInk))),
+                ]),
+              )),
+        ]),
+      ),
+    );
+  }
+
+  Future<void> _send([String? preset]) async {
+    final msg = (preset ?? _input.text).trim();
+    if (msg.isEmpty || _busy) return;
+    _input.clear();
+
+    // Only inject GPS when the question is proximity-based; otherwise send the
+    // raw message untouched so the existing AI-agent pipeline behaves normally.
+    final proximityRe = RegExp(
+        r'terdekat|nearest|lokasi saya|sekitar saya|sekitar sini|dekat sini|dekat saya|dari sini|di sekitar',
+        caseSensitive: false);
+    final hasCoord = RegExp(r'-?\d{1,3}\.\d+\s*,\s*-?\d{1,3}\.\d+').hasMatch(msg);
+    final needsLoc = _userLoc != null && proximityRe.hasMatch(msg) && !hasCoord;
+    final outgoing = needsLoc
+        ? '$msg (gunakan koordinat lokasi saya: ${_userLoc!.latitude.toStringAsFixed(6)}, ${_userLoc!.longitude.toStringAsFixed(6)})'
+        : msg;
+
+    final history = <Map<String, dynamic>>[];
+    for (final t in _turns.length > 12 ? _turns.sublist(_turns.length - 12) : _turns) {
+      history.add({
+        'role': t.isUser ? 'user' : 'assistant',
+        'content': t.isUser ? t.content : (t.content.isNotEmpty ? t.content : (t.status ?? '')),
+      });
+    }
+
+    setState(() {
+      _resultCount = null;
+      _points = [];
+      _polys = [];
+      _legendMetric = null;
+      _turns.add(_Turn(isUser: true, content: msg));
+      _turns.add(_Turn(isUser: false, status: _id ? 'Memproses…' : 'Processing…'));
+      _turnsLog.add({'role': 'user', 'content': msg});
+      _busy = true;
+    });
+    _scrollDown();
+    KeepAliveService.start(text: _id ? 'Memproses query peta…' : 'Processing map query…');
+    final ai = _turns.last;
+    try {
+      _sub = ApiClient.chatStream(outgoing, _sessionId, AppState.I.lang, history: history, mapContext: true).listen((entry) {
+        final ev = entry.key;
+        final data = entry.value;
+        if (ev == 'step_start') {
+          setState(() => ai.status = '${data['label'] ?? data['step']} — ${data['desc'] ?? ''}');
+        } else if (ev == 'status') {
+          setState(() => ai.status = (data['label'] ?? data['stage'] ?? '').toString());
+        } else if (ev == 'result') {
+          _lastResult = data;
+          // points/multi-result fallback; choropleth handled by map_spec below
+        } else if (ev == 'map_spec') {
+          _applySpec(data);
+        } else if (ev == 'token') {
+          setState(() {
+            ai.content += (data['t'] ?? '').toString();
+            ai.status = null;
+          });
+          _scrollDown();
+        } else if (ev == 'error') {
+          setState(() {
+            ai.error = (data['error'] ?? 'error').toString();
+            ai.status = null;
+          });
+        } else if (ev == 'done') {
+          setState(() => ai.status = null);
+        }
+      }, onError: (e) {
+        KeepAliveService.stop();
+        setState(() {
+          ai.status = null;
+          if (ai.content.isEmpty) ai.error = e.toString();
+        });
+      }, onDone: () {
+        KeepAliveService.stop();
+        if (mounted) setState(() => _busy = false);
+        _turnsLog.add({'role': 'assistant', 'content': ai.content});
+        _saveState();
+      });
+    } catch (e) {
+      KeepAliveService.stop();
+      setState(() {
+        ai.error = e.toString();
+        ai.status = null;
+        _busy = false;
+      });
+    }
+  }
+
+  void _scrollDown() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scroll.hasClients) _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    });
+  }
+
+  String _fmt(dynamic v) {
+    if (v == null) return '—';
+    if (v is num) return v is int || v == v.roundToDouble() ? NumberFormat.decimalPattern('id').format(v) : NumberFormat('#,##0.0', 'id').format(v);
+    return v.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(children: [
+        _map(),
+        _topBar(),
+        _modeBar(),
+        if (_fixMode) _fixPanel(),
+        if (_legendMetric != null) _legend(),
+        if (_resultCount != null && !_fixMode) _badge(),
+        if (_selected >= 0 && _selected < _points.length) _detailCard(_points[_selected]),
+        if (!_chatOpen && !_fixMode) _fab(),
+        if (_chatOpen && !_fixMode) _chatPanel(),
+      ]),
+    );
+  }
+
+  Widget _map() {
+    return FlutterMap(
+      mapController: _mapController,
+      options: MapOptions(
+        initialCenter: _userLoc ?? const LatLng(-7.25, 112.75),
+        initialZoom: 12,
+        onTap: (_, p) => _onMapTap(p),
+      ),
+      children: [
+        TileLayer(
+          urlTemplate: _satellite
+              ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+              : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.bizplan.bizplan_java_agent',
+        ),
+        if (_polys.isNotEmpty)
+          PolygonLayer(
+            polygons: [
+              for (final p in _polys)
+                Polygon(
+                  points: p.ring,
+                  color: p.color.withValues(alpha: 0.65),
+                  borderColor: Colors.white,
+                  borderStrokeWidth: 1,
+                ),
+            ],
+          ),
+        if (_userLoc != null)
+          MarkerLayer(markers: [
+            Marker(
+              point: _userLoc!,
+              width: 22,
+              height: 22,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: IOH.magenta,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 3),
+                  boxShadow: [BoxShadow(color: IOH.magenta.withValues(alpha: 0.4), blurRadius: 6, spreadRadius: 3)],
+                ),
+              ),
+            ),
+          ]),
+        MarkerLayer(markers: [
+          for (int i = 0; i < _points.length; i++)
+            Marker(
+              point: LatLng(_points[i].lat, _points[i].lon),
+              width: 90,
+              height: _points[i].labelText != null ? 52 : 34,
+              alignment: Alignment.topCenter,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() => _selected = i);
+                  _mapController.move(LatLng(_points[i].lat, _points[i].lon), 15);
+                },
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: _points[i].color ?? (i == 0 ? _red : (i == _selected ? IOH.magenta : IOH.teal)),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2.5),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4)],
+                    ),
+                    child: Center(child: Text('${i + 1}', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800))),
+                  ),
+                  if (_points[i].labelText != null)
+                    Container(
+                      margin: const EdgeInsets.only(top: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(color: IOH.ink.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(5)),
+                      child: Text(_points[i].labelText!, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)),
+                    ),
+                ]),
+              ),
+            ),
+        ]),
+      ],
+    );
+  }
+
+  Widget _topBar() {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 8,
+      left: 12,
+      right: 12,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: context.vWhite.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: context.vRule),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 14)],
+        ),
+        child: Row(children: [
+          IconButton(icon: const Icon(Icons.arrow_back, size: 20), onPressed: () => Navigator.pop(context), color: context.vInk, visualDensity: VisualDensity.compact),
+          const Text('Map Query', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 15, color: IOH.red)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _locating ? '📍 …' : (_userLoc != null ? '📍 ${_userLoc!.latitude.toStringAsFixed(4)}, ${_userLoc!.longitude.toStringAsFixed(4)}' : '📍 N/A'),
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11, color: context.vMute),
+            ),
+          ),
+          IconButton(icon: Icon(_satellite ? Icons.map_outlined : Icons.satellite_alt_outlined, size: 19), onPressed: () => setState(() => _satellite = !_satellite), color: context.vInk, visualDensity: VisualDensity.compact),
+          IconButton(icon: const Icon(Icons.my_location, size: 19), onPressed: _getLoc, color: context.vInk, visualDensity: VisualDensity.compact),
+          IconButton(icon: const Icon(Icons.refresh, size: 19), tooltip: 'Refresh', onPressed: _refreshMap, color: context.vInk, visualDensity: VisualDensity.compact),
+        ]),
+      ),
+    );
+  }
+
+  Widget _modeBar() {
+    Widget seg(String label, IconData ic, bool active, VoidCallback onTap) => Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(color: active ? IOH.red : context.vWhite, borderRadius: BorderRadius.circular(999), border: Border.all(color: active ? IOH.red : context.vRule)),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
+            Icon(ic, size: 15, color: active ? Colors.white : context.vMute),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 12, color: active ? Colors.white : context.vMute)),
+          ]),
+        ),
+      ),
+    );
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 56,
+      left: 12, right: 12,
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(color: context.vWhite.withValues(alpha: 0.96), borderRadius: BorderRadius.circular(999), border: Border.all(color: context.vRule), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 10)]),
+        child: Row(children: [
+          seg('AI Mode', Icons.smart_toy_outlined, !_fixMode, () => _setMode(false)),
+          seg('Fix Mode', Icons.cell_tower, _fixMode, () => _setMode(true)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _fixPanel() {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 104,
+      left: 12, right: 12,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(color: context.vWhite.withValues(alpha: 0.96), borderRadius: BorderRadius.circular(12), border: Border.all(color: context.vRule), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8)]),
+        child: Row(children: [
+          Icon(Icons.cell_tower, size: 16, color: IOH.teal600),
+          const SizedBox(width: 8),
+          Expanded(child: Text(_fixLoading ? 'Memuat site terdekat…' : '${_points.length} site terdekat${_fixMonth != null ? ' · $_fixMonth' : ''}',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.vInk))),
+          GestureDetector(
+            onTap: _toggleFixAuto,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: _fixAuto ? IOH.teal500 : context.vPanel, borderRadius: BorderRadius.circular(999), border: Border.all(color: _fixAuto ? IOH.teal500 : context.vRule)),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.autorenew, size: 13, color: _fixAuto ? Colors.white : context.vMute),
+                const SizedBox(width: 4),
+                Text('Auto', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: _fixAuto ? Colors.white : context.vMute)),
+              ]),
+            ),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: _fixLoading ? null : _loadFixSites,
+            child: _fixLoading
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: IOH.teal500))
+                : Icon(Icons.refresh, size: 18, color: IOH.teal600),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _badge() {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 60,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(color: IOH.ink, borderRadius: BorderRadius.circular(999)),
+          child: Text(
+            _resultCount! > 0 ? '$_resultCount lokasi divisualkan' : 'Tidak ada lokasi untuk divisualkan',
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _legend() {
+    final bottomOffset = _chatOpen ? MediaQuery.of(context).size.height * 0.48 + 24 : 24.0;
+    return Positioned(
+      left: 12,
+      bottom: bottomOffset,
+      child: Container(
+        width: 170,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: context.vWhite.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.vRule),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 12)],
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+          Text(_legendMetric ?? '', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 11, color: context.vInk)),
+          const SizedBox(height: 6),
+          Container(
+            height: 12,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              gradient: const LinearGradient(colors: [_red, IOH.yellow, IOH.teal]),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(_fmt(_legendMin), style: TextStyle(fontSize: 10, color: context.vMute)),
+            Text(_fmt(_legendMax), style: TextStyle(fontSize: 10, color: context.vMute)),
+          ]),
+        ]),
+      ),
+    );
+  }
+
+  Widget _fab() {
+    return Positioned(
+      right: 18,
+      bottom: 24,
+      child: FloatingActionButton(
+        backgroundColor: IOH.red,
+        onPressed: () => setState(() => _chatOpen = true),
+        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _chatPanel() {
+    final h = MediaQuery.of(context).size.height;
+    return Positioned(
+      left: 12,
+      right: 12,
+      bottom: 12,
+      child: Container(
+        height: h * 0.48,
+        decoration: BoxDecoration(
+          color: context.vWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.vRule),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 24)],
+        ),
+        child: Column(children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [IOH.red, IOH.magenta]),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(children: [
+              const Text('Tanya peta', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, color: Colors.white, fontSize: 14)),
+              const Spacer(),
+              GestureDetector(
+                onTap: _refreshMap,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  child: Row(children: [
+                    Icon(Icons.restart_alt, color: Colors.white, size: 17),
+                    SizedBox(width: 2),
+                    Text('Reset', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => setState(() => _chatOpen = false),
+                child: const Icon(Icons.close, color: Colors.white, size: 20),
+              ),
+            ]),
+          ),
+          Expanded(
+            child: _turns.isEmpty
+                ? _exampleList()
+                : ListView.builder(
+                    controller: _scroll,
+                    padding: const EdgeInsets.all(12),
+                    itemCount: _turns.length,
+                    itemBuilder: (_, i) => _turnBubble(_turns[i]),
+                  ),
+          ),
+          _composer(),
+        ]),
+      ),
+    );
+  }
+
+  Widget _exampleList() {
+    return ListView(padding: const EdgeInsets.all(12), children: [
+      Text(_id ? 'Coba tanyakan:' : 'Try asking:', style: TextStyle(fontSize: 12, color: context.vMute)),
+      const SizedBox(height: 8),
+      for (final e in _examples)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: InkWell(
+            onTap: () => _send(e),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(11),
+              decoration: BoxDecoration(color: context.vPanel, borderRadius: BorderRadius.circular(10), border: Border.all(color: context.vRule)),
+              child: Text(e, style: TextStyle(fontSize: 13, color: context.vInk)),
+            ),
+          ),
+        ),
+    ]);
+  }
+
+  Widget _turnBubble(_Turn t) {
+    if (t.isUser) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10, left: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [IOH.red, IOH.magenta]),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12), bottomLeft: Radius.circular(12), bottomRight: Radius.circular(4)),
+          ),
+          child: Text(t.content, style: const TextStyle(color: Colors.white, fontSize: 13)),
+        ),
+      );
+    }
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        if (t.status != null) Text(t.status!, style: TextStyle(fontSize: 12, color: context.vMute, fontStyle: FontStyle.italic)),
+        if (t.error != null) Text(t.error!, style: const TextStyle(fontSize: 12, color: IOH.red)),
+        if (t.content.isNotEmpty)
+          MarkdownBody(
+            data: t.content,
+            styleSheet: MarkdownStyleSheet(
+              p: TextStyle(fontSize: 13, color: context.vInk, height: 1.5),
+              tableColumnWidth: const IntrinsicColumnWidth(),
+              tableHead: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: context.vInk),
+              tableBody: TextStyle(fontSize: 12, height: 1.3, color: context.vInk),
+              tableCellsPadding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              tableBorder: TableBorder.all(color: context.vRule, width: 1),
+              tableScrollbarThumbVisibility: true,
+            ),
+          ),
+      ]),
+    );
+  }
+
+  Widget _composer() {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: context.vRule))),
+      child: Row(children: [
+        Expanded(
+          child: TextField(
+            controller: _input,
+            minLines: 1,
+            maxLines: 3,
+            style: TextStyle(fontSize: 13, color: context.vInk),
+            onSubmitted: (_) => _send(),
+            decoration: InputDecoration(
+              hintText: _id ? 'Tampilkan 20 site revenue turun…' : 'Show 20 sites with revenue drop…',
+              hintStyle: TextStyle(color: context.vMute, fontSize: 12),
+              filled: true,
+              fillColor: context.vPanel,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.vRule)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.vRule)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: IOH.red)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: _busy ? null : () => _send(),
+          child: CircleAvatar(
+            radius: 19,
+            backgroundColor: _busy ? IOH.mute : IOH.red,
+            child: _busy
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.send, color: Colors.white, size: 17),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  String _mn(dynamic v) {
+    if (v == null) return '—';
+    final n = (v as num).toDouble();
+    if (n.abs() >= 1e6) return '${NumberFormat('#,##0.0', 'id').format(n / 1e6)} Mn';
+    return NumberFormat('#,##0', 'id').format(n);
+  }
+
+  Widget _fixSiteDetail(Map<String, dynamic> s) {
+    final perf = (s['perf'] as Map?)?.cast<String, dynamic>() ?? {};
+    final hist = (s['history'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    Widget kv(String k, String v) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1.5),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        Text(k, style: TextStyle(fontSize: 11.5, color: context.vMute)),
+        Flexible(child: Text(v, textAlign: TextAlign.right, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.vInk))),
+      ]),
+    );
+    Widget section(String title) => Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 4),
+      child: Text(title.toUpperCase(), style: TextStyle(fontFamily: 'Poppins', fontSize: 9.5, fontWeight: FontWeight.w700, color: IOH.teal600, letterSpacing: 0.5)));
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      section('Profil Site'),
+      kv('Site ID', (s['site_id'] ?? '—').toString()),
+      kv('Jarak', '${s['distance_km'] ?? '—'} km'),
+      kv('Type', (s['site_type'] ?? '—').toString()),
+      kv('Category', (s['category'] ?? '—').toString()),
+      kv('Addressable', (s['addressable'] ?? '—').toString()),
+      kv('Branch', (s['branch'] ?? '—').toString()),
+      kv('Micro Cluster', (s['micro_cluster'] ?? '—').toString()),
+      kv('Kecamatan', '${s['kecamatan'] ?? '—'}, ${s['kabupaten'] ?? '—'}'),
+      if (s['profitability_status_m1'] != null) kv('Profitability', s['profitability_status_m1'].toString()),
+      if (s['traffic_category'] != null) kv('Traffic', s['traffic_category'].toString()),
+      section('Performa Bulan Ini'),
+      kv('Revenue Prepaid', _mn(perf['rev_prepaid'])),
+      kv('Revenue Data', _mn(perf['rev_data'])),
+      kv('Revenue Trade', _mn(perf['rev_trade'])),
+      kv('Revenue Organic', _mn(perf['rev_organic'])),
+      kv('RGU 90D', _mn(perf['rgu_90d'])),
+      kv('Gross Add', _mn(perf['gross_add'])),
+      kv('Net Add 90D', _mn(perf['net_add_90d'])),
+      kv('Gross Churn 90D', _mn(perf['gross_churn_90d'])),
+      kv('Subs HVC', _mn(perf['subs_hvc'])),
+      kv('Usage Data (GB)', _mn(perf['usg_data_gb'])),
+      kv('VLR Daily', _mn(perf['vlr_daily'])),
+      if (hist.isNotEmpty) ...[
+        section('Histori Bulanan (Rev Prepaid · RGU90)'),
+        Table(columnWidths: const {0: FlexColumnWidth(1.1), 1: FlexColumnWidth(1.2), 2: FlexColumnWidth(1)}, children: [
+          TableRow(children: [
+            Text('Bulan', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute)),
+            Text('Rev', textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute)),
+            Text('RGU', textAlign: TextAlign.right, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute)),
+          ]),
+          ...hist.map((h) => TableRow(children: [
+            Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Text((h['month_id'] ?? '').toString(), style: TextStyle(fontSize: 11, color: context.vInk))),
+            Text(_mn(h['rev_prepaid']), textAlign: TextAlign.right, style: TextStyle(fontSize: 11, color: context.vInk)),
+            Text(_mn(h['rgu_90d']), textAlign: TextAlign.right, style: TextStyle(fontSize: 11, color: context.vInk)),
+          ])),
+        ]),
+      ],
+    ]);
+  }
+
+  Widget _detailCard(_MPoint p) {
+    return Positioned(
+      left: 12,
+      right: 12,
+      bottom: _chatOpen ? MediaQuery.of(context).size.height * 0.48 + 20 : 90,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: context.vWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: const Border(top: BorderSide(color: IOH.red, width: 4)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 16)],
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(child: Text(p.label, style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 15, color: context.vInk))),
+            GestureDetector(onTap: () => setState(() => _selected = -1), child: Icon(Icons.close, size: 18, color: context.vMute)),
+          ]),
+          Text('${p.lat.toStringAsFixed(5)}, ${p.lon.toStringAsFixed(5)}', style: TextStyle(fontSize: 11, color: context.vMute)),
+          const SizedBox(height: 8),
+          if (_fixMode && p.info['perf'] != null) ...[
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.42),
+              child: SingleChildScrollView(child: _fixSiteDetail(p.info)),
+            ),
+          ] else
+            ...p.info.entries.where((e) => !['latitude', 'longitude', 'site_name', 'outlet_name'].contains(e.key)).take(6).map((e) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                    Text(e.key, style: TextStyle(fontSize: 12, color: context.vMute)),
+                    Flexible(child: Text(_fmt(e.value), textAlign: TextAlign.right, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: context.vInk))),
+                  ]),
+                )),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: IOH.teal, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              icon: const Icon(Icons.navigation_outlined, size: 18),
+              label: const Text('Buka di Google Maps', style: TextStyle(fontWeight: FontWeight.w700)),
+              onPressed: () => launchUrl(Uri.parse('https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lon}'), mode: LaunchMode.externalApplication),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+}

@@ -1,0 +1,632 @@
+[
+  {
+    "id": 11,
+    "question": "Total gross add per site di Surabaya 30 hari terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 26,
+    "question": "Perbandingan traffic 5G bulan ini vs bulan lalu per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 27,
+    "question": "Site 5G dengan pertumbuhan traffic tertinggi MoM",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 28,
+    "question": "Total user 5G per territory di East Java",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 29,
+    "question": "OpenSignal download speed rata-rata per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 30,
+    "question": "Berapa availability 4G per kabkota di Central Java?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 31,
+    "question": "Top 5 territory dengan traffic 5G tertinggi MTD",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 32,
+    "question": "Network experience score per region dari OpenSignal",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 33,
+    "question": "Site 5G yang traffic-nya turun >30% dalam seminggu terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 34,
+    "question": "Rata-rata latency per region dari OpenSignal",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 35,
+    "question": "Jumlah site 5G baru yang aktif bulan ini",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 36,
+    "question": "Traffic 5G per branch di East Java MTD",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 37,
+    "question": "Perbandingan upload vs download speed antar operator dari OpenSignal",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 38,
+    "question": "Coverage 5G per kecamatan di Surabaya",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 39,
+    "question": "Bandingkan market share IM3 vs Telkomsel per kabkota di bulan terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 40,
+    "question": "Market share IOH per age group bulan terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 41,
+    "question": "Trend market share IM3 selama 6 bulan terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 42,
+    "question": "Kabkota mana yang market share IOH di bawah 20%?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 43,
+    "question": "Perbandingan market share semua operator per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 57,
+    "question": "Tampilkan forecast revenue untuk top 5 micro-cluster bulan depan",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 58,
+    "question": "Forecast revenue per branch di Central Java bulan depan",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 60,
+    "question": "Micro-cluster mana yang forecast revenue-nya naik >10%?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 63,
+    "question": "Total forecast revenue seluruh Java bulan depan",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 65,
+    "question": "Trend forecast revenue 3 bulan ke depan per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 69,
+    "question": "Apakah forecast revenue bulan ini on track?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 70,
+    "question": "Top 10 kabkota forecast revenue tertinggi bulan depan",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 72,
+    "question": "Micro-cluster dengan forecast paling akurat 3 bulan terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 74,
+    "question": "Status service order FTTH per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 81,
+    "question": "Average time to complete FTTH service order",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 82,
+    "question": "Sales FTTH bulan ini vs bulan lalu per branch",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 83,
+    "question": "Top 5 branch dengan growth FTTH tertinggi",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 84,
+    "question": "Berapa total FTTH SA (service agreement) yang aktif?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 85,
+    "question": "Total HVC subscriber per region bulan terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 86,
+    "question": "Revenue HVC vs non-HVC per kecamatan",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 88,
+    "question": "Trend HVC revenue harian 30 hari terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 90,
+    "question": "ARPU HVC per region MTD",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 91,
+    "question": "Perbandingan HVC subscriber bulan ini vs bulan lalu",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 92,
+    "question": "HVC revenue contribution per branch di East Java",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 93,
+    "question": "Site dengan HVC ARPU tertinggi di Central Java",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 102,
+    "question": "Perbandingan KPI bulan ini vs bulan lalu per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 125,
+    "question": "Branch dengan growth gross add tertinggi bulan ini",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 130,
+    "question": "Perbandingan marketing KPI bulan ini vs bulan lalu",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 131,
+    "question": "Top performing region berdasarkan marketing acquisition",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 132,
+    "question": "Marketing spend efficiency per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 146,
+    "question": "Sales per channel distribution per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 148,
+    "question": "SND KPI: gross add vs churn per branch bulan ini",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 170,
+    "question": "Berapa total site per region dari reference territory?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 177,
+    "question": "SND kecwise IS performance overview",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 181,
+    "question": "Korelasi antara 5G traffic dengan revenue per site",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 183,
+    "question": "Bandingkan HVC churn dengan overall churn per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 184,
+    "question": "Apakah site dengan coverage 5G memiliki revenue lebih tinggi?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 185,
+    "question": "Daerah mana yang perlu prioritas investasi berdasarkan forecast dan market share?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 186,
+    "question": "Kecamatan dengan market share tinggi tapi FTTH penetrasi rendah",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 187,
+    "question": "Bagaimana performance outlet berkorelasi dengan market share?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 189,
+    "question": "Bandingkan KPI summary dengan marketing KPI per region",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 191,
+    "question": "Berikan executive summary seluruh Java: revenue, market share, 5G, churn",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 192,
+    "question": "Top 3 masalah utama yang terlihat dari data bulan ini",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 193,
+    "question": "Rekomendasi area untuk ekspansi berdasarkan forecast dan competitive data",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 196,
+    "question": "Analisis gap: area market share tinggi tapi 5G coverage rendah",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 197,
+    "question": "Branch mana yang paling butuh improvement di semua KPI?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 198,
+    "question": "Summary data quality: berapa null/missing di kolom-kolom kunci?",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 199,
+    "question": "Ranking branch secara keseluruhan (composite score)",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  },
+  {
+    "id": 200,
+    "question": "Prediksi revenue kuartal depan berdasarkan trend 3 bulan terakhir",
+    "status": "CONNECTION_ERROR",
+    "domain": "",
+    "duration_sec": 0.0,
+    "row_count": 0,
+    "sql": "",
+    "error": "HTTP Error 404: Not Found"
+  }
+]

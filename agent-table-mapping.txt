@@ -1,0 +1,259 @@
+================================================================================
+IOH TELCO AI - MAPPING DOMAIN/AGENT -> TABEL BIGQUERY
+================================================================================
+Project : data-java-prd-97b9
+Dataset : java_precalc
+Total domain: 13
+
+================================================================================
+MODEL LLM PER AGENT (domain hanya menentukan tabel yang dipakai SQL Agent)
+================================================================================
+- Analyst Agent .......... Agent-Java-v02.3-Flash  (LLM_MODEL_FAST)
+- Orchestrator/Router .... Agent-Java-v02.3-Flash  (LLM_MODEL_FAST)
+- General Reply .......... Agent-Java-v02.3-Flash  (LLM_MODEL_FAST)
+- SQL Agent (semua domain) Agent-Java-v02.3-SQL    (LLM_MODEL_SQL)
+- Profile Planner ........ Agent-Java-v02.3-SQL    (LLM_MODEL_SQL)
+- Synthesizer ............ Agent-Java-v02.3-Coder  (LLM_MODEL_CODER)
+- Profile Compiler ....... Agent-Java-v02.3-Coder  (LLM_MODEL_CODER)
+- Export Agent ........... (tanpa LLM)
+
+STRUKTUR DOMAIN TERBARU (13 domain). Domain lama dihapus/digabung:
+- marketing -> jadi kpi_summary (tabel rham_mkt_highlevel_*)
+- reporting -> jadi competitive (tabel rham_report_fb_ms_*)
+- network dipecah: 5g (tabel 5G), network (availability+occupancy), network_benchmark (opensignal+fb_network)
+- geo, forecast, reference, misc -> DIHAPUS (tabel di-DROP, tidak dipakai agent)
+- territory_reference (BARU) = zz_territory_kecamatan
+36 tabel di dataset di-DROP (tidak masuk KB). Lihat precalc-table-audit.txt.
+
+
+================================================================================
+DOMAIN: site_performance   (Site Performance)
+================================================================================
+Deskripsi : Performance per cell SITE (subscriber, revenue, churn, usage, RGU, VLR, PAU) daily/mtd/monthly + site databank with coordinates & territory. Use for per-site metrics, top sites, and coordinate/map queries.
+Routing   : Metrik per SITE (subscriber/churn/usage/RGU/PAU/VLR per site) + databank/koordinat. JUGA query KOORDINAT/PETA/terdekat (force route ke sini).
+Jumlah tabel: 5
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_site_wise_addr_java                               282,399   Databank site: koordinat, type site, territory
+rham_site_wise_addr_java_perf                          847,156   Databank site + performance
+rham_site_wise_daily                                93,977,302   Performance site - DAILY
+rham_site_wise_monthly                               3,169,296   Performance site - MONTHLY
+rham_site_wise_mtd                                   1,899,895   Performance site - MTD
+
+================================================================================
+DOMAIN: revenue   (Revenue Deep-Dive)
+================================================================================
+Deskripsi : Deep-dive revenue at SITE level: breakdown by CHANNEL (ATL/BTL, channel_group, channel_detail, organic, trade, MOBO) and by PRICE SLAB (price band) with transaction hits. Grains daily/mtd/monthly. Channel-mix, slab-mix, ATL vs BTL.
+Routing   : Deep-dive revenue: breakdown by CHANNEL (ATL/BTL, organic, trade, MOBO) & by PRICE SLAB (slab harga) + hit transaksi. Site-level.
+Jumlah tabel: 6
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_site_data_rev_channel_daily                   873,036,037   Revenue per channel - DAILY
+rham_site_data_rev_channel_mtd                      42,329,394   Revenue per channel - MTD
+rham_site_data_rev_channel_mth                      50,326,304   Revenue per channel - MONTHLY
+rham_site_data_rev_price_slab_daily                736,398,653   Revenue per slab harga + hit transaksi - DAILY
+rham_site_data_rev_price_slab_mtd                   22,220,379   Revenue per slab harga + hit transaksi - MTD
+rham_site_data_rev_price_slab_mth                   42,340,348   Revenue per slab harga + hit transaksi - MONTHLY
+
+================================================================================
+DOMAIN: acquisition   (Acquisition (Gross Add))
+================================================================================
+Deskripsi : Acquisition / gross-add performance across ALL channels (modern, OLA, online, FWA, gerai, bank, H2H, traditional, DSF + biometric) at site & branch grain.
+Routing   : Akuisisi / gross add per channel (modern/OLA/online/gerai/bank/H2H/traditional/DSF/biometric), site & branch.
+Jumlah tabel: 2
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_site_ga_daily                                   3,657,452   Detail akuisisi per channel - site
+rham_branch_ga_daily                                    16,877   Akuisisi (gross add) per branch
+
+================================================================================
+DOMAIN: fwa   (FWA Business)
+================================================================================
+Deskripsi : Fixed Wireless Access (FWA) business performance per site: subscriber, traffic, RGU90D, revenue (pack/sim/regular), churn.
+Routing   : Bisnis FWA: subscriber, traffic, RGU90D, revenue FWA, churn.
+Jumlah tabel: 1
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_site_fwa_daily                                 56,152,936   FWA: subscriber, traffic, RGU90D, revenue
+
+================================================================================
+DOMAIN: ftth   (FTTH / HBB Home Broadband)
+================================================================================
+Deskripsi : FTTH / Home Broadband (HBB) business: Provisioning Activity (PA), Sales Activity (SA), Service Order (SO) detail. Sales funnel, provisioning, service-order tracking.
+Routing   : Bisnis FTTH/HBB Home Broadband: Provisioning (PA), Sales (SA), Service Order (SO).
+Jumlah tabel: 3
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_ftth_pa_detail                                    146,022   FTTH/HBB Provisioning Activity (PA)
+rham_ftth_sa_detail                                    148,120   FTTH/HBB Sales Activity (SA)
+rham_ftth_so_detail                                    451,905   FTTH/HBB Service Order (SO)
+
+================================================================================
+DOMAIN: 5g   (5G Performance)
+================================================================================
+Deskripsi : 5G coverage, traffic, device & user metrics at site / branch / territory grain (daily/monthly/mtd). Use for 5G traffic, 5G coverage, 5G device penetration, 5G funnel.
+Routing   : 5G performance: coverage, traffic, device/user, funnel (site/branch/territory).
+Jumlah tabel: 8
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_5g_site_daily                                  55,270,127   5G per site - daily
+rham_5g_site_monthly                                 1,846,367   5G per site - monthly
+rham_5g_territory_daily                              6,668,808   5G per territory - daily
+rham_5g_territory_monthly                              220,759   5G per territory - monthly
+rham_5g_territory_mtd                                    3,955   5G per territory - MTD
+rham_branch_5g_daily                                    95,890   5G per branch - daily
+rham_branch_5g_monthly                                   3,176   5G per branch - monthly
+rham_branch_5g_territory_daily                          95,528   5G branch x territory - daily
+
+================================================================================
+DOMAIN: network   (Network Quality & Availability)
+================================================================================
+Deskripsi : Network availability & quality KPIs: site/territory availability (2G/4G/5G), downtime, SLA, plus network occupancy/capacity per site (PRB, EUT/throughput, congestion, config).
+Routing   : Network quality & availability: availability 2G/4G/5G, downtime, SLA + occupancy/PRB/throughput/congestion per site.
+Jumlah tabel: 6
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_avail_stat_site_monthly                            79,115   Availability per site - monthly
+rham_avail_stat_territory_daily                        285,065   Availability per territory - daily
+rham_avail_stat_territory_monthly                        9,867   Availability per territory - monthly
+rham_availability_kpi_site                           7,779,922   Availability KPI per site
+rham_site_wise_occupancy                             5,384,901   Occupancy network (PRB, EUT, congestion) - WEEKLY
+rham_site_wise_occupancy_mth                           233,931   Occupancy network (PRB, EUT, congestion) - MONTHLY
+
+================================================================================
+DOMAIN: network_benchmark   (Network Benchmark (Competitor))
+================================================================================
+Deskripsi : Competitor network-experience benchmark: OpenSignal experience (video/voice/games/livevideo) and Facebook-derived network insight per operator (IOH/IM3/3ID vs Telkomsel/XL/SmartFren) at kabkota/kecamatan/territory grain (weekly).
+Routing   : Benchmark network kompetitor: OpenSignal experience + FB network insight (IOH vs Tsel/XL/SF).
+Jumlah tabel: 10
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_opensignal_experience_wly                       1,013,751   OpenSignal experience (weekly)
+rham_opensignal_kabkot_wly_wide                         20,560   OpenSignal kabkota (weekly wide)
+rham_opensignal_kec_wly_wide                           276,449   OpenSignal kecamatan (weekly wide)
+rham_opensignal_territory_wly_wide                     320,180   OpenSignal territory (weekly wide)
+rham_fb_network_insight_wly                            524,592   FB network insight (weekly)
+rham_fb_network_kabkot                                 392,527   FB network kabkota
+rham_fb_network_kabkot_wly_wide                         10,300   FB network kabkota (weekly wide)
+rham_fb_network_kec_wly_wide                           139,363   FB network kecamatan (weekly wide)
+rham_fb_network_kecamatan                            4,300,000   FB network kecamatan
+rham_fb_network_territory_wly_wide                     161,203   FB network territory (weekly wide)
+
+================================================================================
+DOMAIN: competitive   (Competitive Market Share)
+================================================================================
+Deskripsi : FB-derived market share (MS), gross-add share (SOGA), and churn share per operator at EVERY territory level (national, island, circle, region, province, area, branch, cluster, micro_cluster, kabkota, kecamatan, partner, age, SEA, GTM focus, kiosk).
+Routing   : Market share (MS), gross-add share (SOGA), churn share per operator di SEMUA level territory.
+Jumlah tabel: 27
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_report_fb_ms_age                                  132,197   
+rham_report_fb_ms_area                                   3,222   
+rham_report_fb_ms_branch_3id                            16,975   
+rham_report_fb_ms_branch_im3                            17,150   
+rham_report_fb_ms_circle                                   716   
+rham_report_fb_ms_cluster_3id                           75,425   
+rham_report_fb_ms_focus_gtm_bau                         10,561   
+rham_report_fb_ms_focus_gtm_high_potential               2,327   
+rham_report_fb_ms_focus_gtm_must_win                     4,117   
+rham_report_fb_ms_focus_gtm_super88                      4,296   
+rham_report_fb_ms_island                                 1,253   
+rham_report_fb_ms_kabkota                               91,804   
+rham_report_fb_ms_kecamatan                          1,183,516   
+rham_report_fb_ms_micro_cluster                         75,600   
+rham_report_fb_ms_mp3_3kiosk                             6,125   
+rham_report_fb_ms_mp3_3kiosk_branch                     29,925   
+rham_report_fb_ms_mp3_3kiosk_circle                      1,400   
+rham_report_fb_ms_mp3_3kiosk_region                      4,200   
+rham_report_fb_ms_mpc_sdp_im3                            4,200   
+rham_report_fb_ms_mpc_sdp_im3_branch                    31,150   
+rham_report_fb_ms_mpc_sdp_im3_circle                     1,400   
+rham_report_fb_ms_national                                 179   
+rham_report_fb_ms_partner_3id                          150,847   
+rham_report_fb_ms_partner_territory                    170,098   
+rham_report_fb_ms_province                               7,160   
+rham_report_fb_ms_region                                 2,148   
+rham_report_fb_ms_sea                                    4,475   
+
+================================================================================
+DOMAIN: kpi_summary   (KPI Summary (Marketing High-Level))
+================================================================================
+Deskripsi : High-level marketing KPI summary at kecamatan x brand grain (160-178 cols): revenue, subscriber, RGU, gross add, churn, usage, VLR, pack subs, FB MS, outlet, HVC, FWA, site counts, trade. DEFAULT for general KPI questions. Grains daily/mtd/monthly.
+Routing   : DEFAULT KPI umum kec/kabkota/branch/region (revenue umum, subscriber, RGU, gross add, churn, usage). Juga root-cause 'kenapa revenue turun'.
+Jumlah tabel: 3
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_mkt_kpi_highlevel_dly                           9,901,393   KPI marketing high-level - DAILY (160+ cols)
+rham_mkt_highlevel_mtd                                 328,748   KPI marketing high-level - MTD
+rham_mkt_highlevel_mth                                 328,928   KPI marketing high-level - MONTHLY
+
+================================================================================
+DOMAIN: customer_hvc   (High Value Customer)
+================================================================================
+Deskripsi : HVC (High Value Customer) subscriber & revenue metrics per kecamatan and per site (daily/mtd/monthly).
+Routing   : HVC (high value customer) subscriber & revenue per kecamatan/site.
+Jumlah tabel: 6
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_hvc_kec_daily                                   1,062,844   
+rham_hvc_kec_mtd                                       113,856   
+rham_hvc_kec_mth                                       113,852   
+rham_hvc_site_daily                                 10,173,619   
+rham_hvc_site_mtd                                    1,085,655   
+rham_hvc_site_mth                                    1,085,638   
+
+================================================================================
+DOMAIN: sales_distribution   (Sales & Distribution)
+================================================================================
+Deskripsi : Kecamatan-wise sales KPIs, outlet (NBS) data, SND high-level daily. Sales, outlet, NBS, SND, distribution, dealer.
+Routing   : Sales, outlet, NBS, SND, distribution, dealer.
+Jumlah tabel: 4
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+rham_outlet_nbs                                      4,045,812   Outlet NBS
+rham_snd_kecwise_mtd                                   580,695   SND kecamatan-wise - MTD
+rham_snd_kecwise_mth                                    58,708   SND kecamatan-wise - MONTHLY
+rham_snd_kpi_highlevel_dly                           2,272,586   SND KPI high-level - daily (165 cols)
+
+================================================================================
+DOMAIN: territory_reference   (Territory Reference)
+================================================================================
+Deskripsi : Master territory reference at kecamatan level (kec_id, kecamatan, kabkota, province, island, region, circle, branch, micro_cluster, partner mappings). Use to enrich/join geography or validate territory names.
+Routing   : Master reference territory (kec_id, kecamatan, kabkota, province, region, circle, branch, micro_cluster).
+Jumlah tabel: 1
+
+TABEL                                                     ROWS   DESKRIPSI
+--------------------------------------------------------------------------------
+zz_territory_kecamatan                                   7,175   Master reference territory per kecamatan
+
+
+================================================================================
+TABEL KHUSUS UNTUK QUERY KOORDINAT / PETA
+================================================================================
+Query koordinat/"terdekat"/"radius"/"peta" -> Router paksa ke site_performance,
+SQL Agent diberi tambahan tabel lintas-domain:
+  rham_site_wise_addr_java     <- REFERENSI UTAMA (koordinat lat/lon STRING + territory)
+  rham_site_wise_monthly       <- revenue/subs/usage (bulanan)
+  rham_site_wise_daily         <- revenue/subs/usage (harian)
+  rham_5g_site_monthly         <- traffic/coverage 5G
+  rham_site_fwa_daily          <- FWA
+  rham_avail_stat_site_monthly <- availability 4G/5G
+Pattern: addr_java JOIN tabel performance ON site_id.
+PENTING: latitude & longitude di addr_java bertipe STRING -> wajib SAFE_CAST(... AS FLOAT64).
+
+
+================================================================================
+END
+================================================================================

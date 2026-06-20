@@ -1,0 +1,851 @@
+================================================================================
+FTTH INSIGHT HUB — COMPLETE KNOWLEDGE BASE FOR REPLICATION
+================================================================================
+Purpose : A single self-contained reference to rebuild the entire FTTH sales &
+          territory monitoring platform on a NEW stack (mobile + web) with a
+          Google BigQuery backend.
+Source  : Reverse-engineered from the production PHP/MySQL app "FTTH Insight Hub"
+          (Circle Java, Indosat HiFi / IOH).
+Audience: Engineers + analysts implementing the replacement.
+Notes   : [BQ] callouts = how to translate a concept to BigQuery.
+          All times are Asia/Jakarta (WIB). Currency = IDR (Rupiah).
+================================================================================
+
+
+################################################################################
+# 0. EXECUTIVE SUMMARY — WHAT THIS SYSTEM IS
+################################################################################
+
+FTTH Insight Hub monitors the fiber-to-the-home (FTTH) SALES FUNNEL and
+TERRITORY/MARKET performance for "Circle Java" (Central Java + East Java) and
+the wider Indonesia circles. It answers:
+
+  1. SALES FUNNEL  : How many orders convert SO -> SA -> PA, by whom, where,
+                     which product, vs target, vs last month.
+  2. TERRITORY/TUR : How well is built fiber (homepass) being utilized
+                     (Take-Up Rate), where is idle capacity, net adds.
+  3. MARKET SHARE  : Indosat HiFi's share vs competitors per territory.
+  4. PEOPLE        : Per-person/team productivity, cost efficiency (cost ratio).
+  5. REPORTING     : Automated daily email (HTML + Excel + PDF) reports.
+
+THE THREE FUNNEL STAGES (the heart of everything):
+  SO = Service Order      (a customer ordered FTTH; counted on date_so)
+  SA = Service Active     (service was activated; counted on date_sa)
+  PA = Permanent Active   (became a permanent/billing subscriber; on date_pa)
+  Funnel: SO -> SA -> PA. PA is the money/revenue event.
+  IMPORTANT TERMINOLOGY:
+    PA = "Permanent Active" (NOT "provisioning active").
+    AP = "Advance Payment" product (multi-month prepaid FTTH package).
+    TUR = "Take-Up Rate" = PA / homepass.
+    MTD = Month-To-Date. LMTD = Last Month-To-Date. LLMTD = month before LMTD.
+
+CRITICAL DESIGN RULE #1 — MULTI-DATE COUNTING:
+  Each funnel stage is counted on ITS OWN event date, never a shared date.
+    SO count  = rows where date_so in period
+    SA count  = rows where has_sa=1 AND date_sa in period
+    PA count  = rows where has_pa=1 AND date_pa in period
+  This means a single order contributes to SO in the month it was ordered,
+  SA in the month it activated, PA in the month it became permanent — possibly
+  three different months. Do NOT use a single "transaction date".
+
+CRITICAL DESIGN RULE #2 — MTD CUTOFF ("apples-to-apples"):
+  "Today" for MTD is the MAX DATA DAY actually loaded (e.g. data up to the 14th),
+  NOT the calendar day. The same day-of-month cap is applied to the current
+  month AND prior months so MTD vs LMTD vs LLMTD compare equal windows:
+    current : date_so in current month AND DAY(date_so) <= cutoff_day
+    LMTD    : date_so in prev month    AND DAY(date_so) <= cutoff_day
+  Reports/files are titled with the DATA date, not the run date.
+
+CRITICAL DESIGN RULE #3 — TWO ANALYTIC DOMAINS, DIFFERENT GRAINS:
+  A) TRANSACTION/FUNNEL domain  -> per-order facts (SO/SA/PA), revenue, sales
+     hierarchy. Source = db_ftth_so/sa/pa -> pre-joined into ftth_raw_joined.
+  B) SITE/TUR domain            -> per-site MONTHLY snapshot (homepass, pa,
+     net add). Source = db_ftth_sitewise_monthly.
+  C) MARKET SHARE domain        -> per-kabkota WEEKLY snapshot of all operators.
+     Source = fb_ms_ftth.
+  These three never mix at the row level; keep them as separate fact tables.
+
+
+################################################################################
+# 1. SALES & TERRITORY HIERARCHY (the dimensional backbone)
+################################################################################
+
+SALES HIERARCHY (top -> bottom):
+  Circle  ->  Sales Region (Region Head/RM)  ->  Sales Manager (SM)
+          ->  Team Leader (TL)  ->  Account Executive (AE / sales_code)
+
+  - "Circle" is NOT stored on transaction rows; it is DERIVED from sales_region
+    via a mapping table (tbl_ftth_region_head). A circle filter expands to a
+    set of sales_region values.
+  - AE identity = sales_code (+ sales_name). TL = sales_tl. SM = sales_manager.
+    Region = sales_region.
+
+TERRITORY HIERARCHY (geographic, independent of sales hierarchy):
+  Circle -> Province (provinsi) -> Kabupaten/Kota (city/kabkota)
+         -> Kecamatan -> Kelurahan/Desa (ward)
+
+CURRENT CANONICAL TERRITORY CODES (post 2026-06 restructure — IMPORTANT):
+  The sales_region codes were renumbered/split. The NEW canonical set:
+    01. Jabodetabek 1   -> CIRCLE JAYA      (head: F Edwin Sukisman)
+    02. Jabodetabek 2   -> CIRCLE JAYA      (head: F Edwin Sukisman)
+    03. West Java       -> CIRCLE JAYA      (head: Arie Wibowo)
+    04. Central Java    -> CIRCLE JAVA      (head: Afdhalul Amri)
+    05. East Java       -> CIRCLE JAVA      (head: Jusuf Kurniawan)
+    06. North Sumatera  -> CIRCLE SUMATERA  (head: Reno Antonio)
+    07. South Sumatera  -> CIRCLE SUMATERA  (head: Reno Antonio)
+    08. Telesales       -> NON DIRECT       (head: Nisa Aprihatin)
+  OLD codes (pre-restructure), still present in some history -> map by NAME:
+    "03. Central Java"(old) -> "04. Central Java"(new); "04. East Java"(old) ->
+    "05. East Java"(new); "02. West Java"(old) -> "03. West Java"(new);
+    "01. Jabodetabek"(old) -> split into "01/02 Jabodetabek 1/2" per kecamatan;
+    "05. Sumatera"(old) -> split into "06/07 North/South Sumatera" per kecamatan;
+    "06. Non Direct"(old) -> "08. Telesales"(new).
+  LESSON FOR BQ: store region as a DIMENSION TABLE keyed by a stable region
+  NAME (Central Java, East Java, ...) + a circle. When mixing months, normalize
+  by NAME (strip the "NN. " numeric prefix) to avoid double-counting old vs new.
+
+PROVINCE -> CIRCLE mapping (used by geo views):
+  CIRCLE JAYA     = JAWA BARAT, DKI JAKARTA, BANTEN
+  CIRCLE JAVA     = JAWA TENGAH, JAWA TIMUR, DAERAH ISTIMEWA YOGYAKARTA, BALI
+  CIRCLE SUMATERA = anything containing "SUMATERA" + ACEH, BENGKULU, JAMBI,
+                    LAMPUNG, RIAU, KEPULAUAN RIAU, KEPULAUAN BANGKA BELITUNG
+  OTHER           = unmapped/junk
+
+REGION -> PROVINCES mapping (sales region scope to provinces):
+  01/02 Jabodetabek -> BANTEN, DKI JAKARTA
+  03. West Java     -> JAWA BARAT
+  04. Central Java  -> JAWA TENGAH, DI YOGYAKARTA, YOGYAKARTA
+  05. East Java     -> JAWA TIMUR, BALI
+  06. North Sumatera-> ACEH, SUMATERA UTARA, SUMATERA BARAT, RIAU, KEP. RIAU
+  07. South Sumatera-> SUMATERA SELATAN, BENGKULU, JAMBI, KEP. BANGKA BELITUNG, LAMPUNG
+  08. Telesales     -> (no province mapping; cross-province channel)
+
+JUNK / UNIDENTIFIED IDENTITY VALUES (exclude or bucket as "Unidentified"):
+  '0x17','0xf','0x2a','null','unknown sales','unknown','unknonwn sales','n/a',
+  '-','' and NULL/empty.
+
+
+################################################################################
+# 2. RAW (SOURCE) DATA MODEL
+################################################################################
+
+Currently MySQL DB "Kalisula" (loaded by an external ETL twice daily 03:30 &
+16:30). Three transaction tables + one sitewise-monthly + market-share tables.
+
+--------------------------------------------------------------------------------
+2.1 db_ftth_so  (one row per Service Order — the funnel entry)
+--------------------------------------------------------------------------------
+  bill_acc           BIGINT     -- billing account = the order key (join key)
+  date_so            DATE       -- order date (SO event date)
+  customer_id        VARCHAR
+  username           VARCHAR
+  province           VARCHAR     city VARCHAR     ward VARCHAR     street VARCHAR
+  site_sitac         VARCHAR
+  sales_code         VARCHAR     -- AE identity
+  sales_name         VARCHAR
+  sales_tl           VARCHAR     -- Team Leader
+  sales_manager      VARCHAR     -- Sales Manager
+  sales_region       VARCHAR     -- Region (maps to Circle)
+  product            VARCHAR     -- product name (encodes AP/Regular, see 4.2)
+  price              DECIMAL(15,2) -- monthly price (revenue basis)
+  year_month         VARCHAR     date_val INT
+  site_id            VARCHAR
+  site_project_awal  VARCHAR     -- raw project (maps to ORBIT/NON-ORBIT/IFORTE)
+  site_market        VARCHAR
+  month_so, month_dt_id VARCHAR
+  latitude DOUBLE    longitude DOUBLE   geocode_status VARCHAR
+  shp_kabkota, shp_kecamatan, shp_desa VARCHAR  -- shapefile-normalized geo
+
+--------------------------------------------------------------------------------
+2.2 db_ftth_sa  (Service Active events; subset of SO by bill_acc)
+--------------------------------------------------------------------------------
+  Same columns as SO plus: date_sa DATE, date_so DATE, so_index DATE.
+  Key = bill_acc. A bill_acc here means it reached SA.
+
+--------------------------------------------------------------------------------
+2.3 db_ftth_pa  (Permanent Active events; subset of SA by bill_acc)
+--------------------------------------------------------------------------------
+  Same columns as SO plus: date_pa DATE, date_so DATE, so_index DATE.
+  Key = bill_acc. A bill_acc here means it reached PA. price here = revenue.
+
+--------------------------------------------------------------------------------
+2.4 db_ftth_sitewise_monthly  (per-site MONTHLY snapshot — TUR domain)
+--------------------------------------------------------------------------------
+  PK ~ (month_id, site_id, brand). One row per site per month.
+  month_id        VARCHAR(6)  -- 'YYYYMM'
+  site_id, site_name, system_key, map_id, territory_id
+  brand           VARCHAR     -- "Orbit" / "Non Orbit" flag (FILTER: flag)
+  vendor, market, status_area
+  homepass        INT/DEC     -- total premises passed by fiber (capacity)
+  available_hp    INT/DEC     -- idle capacity = homepass - pa
+  pa              INT/DEC     -- CUMULATIVE active subscribers (snapshot)
+  pa_net_latest   INT/DEC     -- MONTHLY NET ADD (can be negative = churn)
+  ga              INT/DEC     -- gross add in month
+  grouping_pa_net VARCHAR     -- pre-bucketed TUR band ('0% - 10%'..'100%+')
+  lat, lng, area_size_m2, area_size_sqkm
+  provinsi, city, kecamatan, kelurahan, kota_v2
+  region_25       VARCHAR     -- territory region code (same codes as 1. above)
+  regional_head, manager, team_leader, nama_sales, sales_code
+  project_awal    VARCHAR     -- project (ORBIT/NON-ORBIT/IFORTE/Other)
+  NOTE: "pa" (cumulative subs) here is a DIFFERENT meaning from the funnel "PA
+        count" in the transaction domain. Keep them mentally separate.
+
+--------------------------------------------------------------------------------
+2.5 fb_ms_ftth  (per-kabkota WEEKLY market-share snapshot — MS domain)
+--------------------------------------------------------------------------------
+  PK (dt_id, kabkota). dt_id = snapshot DATE (weekly).
+  For each of 9 operators, 3 wide columns: {ga|churn|total}_{op}
+    operators: im3, hifi, xl_home, indihome_tsel, biznet, myrepublic, cbn,
+               icon, oth
+  BUSINESS RULE: "Industry total" EXCLUDES im3 (Indosat's mobile brand). The 8
+  operators counted for market share = hifi, indihome_tsel, xl_home, biznet,
+  myrepublic, cbn, icon, oth.
+  Operator display names: hifi=Indosat HiFi, indihome_tsel=IndieHome,
+    xl_home=XL Home, biznet=Biznet, myrepublic=MyRepublic, cbn=CBN,
+    icon=ICON+, oth=Others.
+  Territory join table: zz_territory_kecamatan (kabkota -> region, circle).
+    Must DEDUPE to one row per UPPER(kabkota) via MAX(region), MAX(circle).
+
+[BQ] Land all five as partitioned BigQuery tables:
+   - db_ftth_so/sa/pa: partition by date_so/date_sa/date_pa, cluster by
+     sales_region, sales_manager, city.
+   - sitewise_monthly: partition by a DATE derived from month_id, cluster by
+     region_25, city.
+   - fb_ms_ftth: partition by dt_id, cluster by kabkota.
+
+
+################################################################################
+# 3. TRANSFORMED (CACHE) DATA MODEL  +  ETL LOGIC
+################################################################################
+
+The app pre-computes cache tables (in MySQL DB "db_ftth_app") because querying
+380K+ source rows live is 5-6s. Refresh runs daily 05:00 via refresh_cache.php
+using a zero-downtime TEMP-TABLE SWAP:
+   CREATE <t>_tmp LIKE <t>;  bulk INSERT;  RENAME <t>->_old,_tmp-><t>;  DROP _old;
+   then UPDATE <t> SET circle = COALESCE(region_head.circle_name,'OTHER').
+[BQ] Replace swap with CREATE OR REPLACE TABLE / partition overwrite / MERGE,
+     and derive `circle` via JOIN to a region dimension during the SELECT.
+
+--------------------------------------------------------------------------------
+3.1 ftth_raw_joined  (THE MASTER FACT — 1 row per bill_acc)  *most important*
+--------------------------------------------------------------------------------
+  Built by: db_ftth_so so
+            LEFT JOIN db_ftth_sa sa ON so.bill_acc=sa.bill_acc
+            LEFT JOIN db_ftth_pa pa ON so.bill_acc=pa.bill_acc
+  Columns:
+    bill_acc, date_so, date_sa, date_pa
+    has_sa  = (sa.bill_acc IS NOT NULL) ? 1 : 0
+    has_pa  = (pa.bill_acc IS NOT NULL) ? 1 : 0
+    status  = CASE WHEN has_pa THEN 'PA' WHEN has_sa THEN 'SA_ONLY'
+                   ELSE 'SO_ONLY' END
+    days_so_sa = DATEDIFF(date_sa, date_so)   -- activation cycle time
+    days_so_pa = DATEDIFF(date_pa, date_so)   -- full conversion cycle time
+    customer_id, username, province, city, ward, street
+    sales_code, sales_name, sales_tl, sales_manager, sales_region
+    circle  (derived from sales_region via region dimension)
+    product, price, site_id, site_project_awal, site_market
+    latitude, longitude, shp_kabkota, shp_kecamatan, shp_desa
+  EVERY funnel metric in the app is computed from this table as:
+    SO  = COUNT(*) where date_so in window
+    SA  = COUNTIF(has_sa=1 AND date_sa in window)
+    PA  = COUNTIF(has_pa=1 AND date_pa in window)
+    Revenue(SO) = SUM(price) over SO-window rows
+    Revenue(PA) = SUM(IF(has_pa AND date_pa in window, price, 0))
+    Avg cycle days = AVG(days_so_pa) over PA rows
+[BQ] This is your central fact table. Model it exactly; all funnel dashboards
+     are GROUP BYs over it with the multi-date counting rule.
+
+--------------------------------------------------------------------------------
+3.2 ftth_daily_sales  (grain: day x sales_code x product x city)
+--------------------------------------------------------------------------------
+  GROUP BY date_so, sales_code, product, city (from SO LEFT JOIN SA LEFT JOIN PA)
+  Measures: so_count, sa_count, pa_count, revenue_so, revenue_pa,
+            sum_days_so_pa, cnt_days_so_pa (lead-time accumulators)
+  Dimensions carried via MAX(): sales_name/tl/manager/region/province, circle.
+  Powers: dashboard filter lists + as a daily aggregate.
+
+--------------------------------------------------------------------------------
+3.3 ftth_geo_summary  (grain: month x city x ward)
+--------------------------------------------------------------------------------
+  GROUP BY DATE_FORMAT(date_so,'%Y-%m'), city, ward
+  Measures: so_count, sa_count, pa_count, so_only_count, revenue_so,
+            revenue_pa, avg_price_pa, sum_days_so_pa, cnt_days_so_pa
+  Province/shp_*/lat/lng carried via MAX()/AVG() (NOT grouped).
+  GOTCHA: a city/ward under >1 province causes duplicate unique-keys -> use
+  MAX(province) so (month,city,ward) stays unique.
+
+--------------------------------------------------------------------------------
+3.4 ftth_mtd_tracker_daily  (+ geo variant)  — the MTD tracker pre-agg
+--------------------------------------------------------------------------------
+  Built by refresh_mtd_tracker_cache.php; trailing 24 months; idempotent
+  (DELETE month window then 3 INSERT..SELECT, one per metric):
+    SO: metric_type='SO', count by date_so
+    SA: metric_type='SA', count by date_sa where has_sa=1
+    PA: metric_type='PA', count by date_pa where has_pa=1
+  Grain: (tanggal, metric_type, sales_region, sales_manager, project_group)
+  Measures: cnt=COUNT(*), revenue=SUM(price); circle derived.
+  Geo variant ftth_mtd_tracker_geo_daily: grain (tanggal, metric_type,
+    province, city, project_group).
+  Auto-refresh: if MAX(date_*) in raw_joined newer than MAX(tanggal) in cache,
+  rebuild trailing 3 months on-the-fly.
+[BQ] Implement as a scheduled aggregate table (or just GROUP BY raw fact at
+     query time — BigQuery is fast enough to skip this pre-agg).
+
+--------------------------------------------------------------------------------
+3.5 Filter caches  (fast cascading dropdowns)
+--------------------------------------------------------------------------------
+  ftth_cache_hierarchy (~6K): distinct region>manager>tl>sales_code(+name)+circle
+  ftth_cache_geo (~150): distinct province, city
+  ftth_cache_product (~55): distinct product
+  Cross-filter rule: each field's option list is computed with a WHERE that
+  excludes its own key, so selecting Region narrows SM/TL/AE but not Region.
+
+--------------------------------------------------------------------------------
+3.6 ftth_cache_meta  (freshness tracking)
+--------------------------------------------------------------------------------
+  cache_name PK, last_refresh, row_count, duration_sec,
+  status ENUM('success','failed','running'), message.
+
+CRON SCHEDULE (WIB):
+  03:30 & 16:30  external ETL loads source into Kalisula
+  05:00          refresh_cache.php (raw_joined, daily, geo, filters, mtd)
+  06:00          daily_mtd_email.php  (MTD Sales Performance email)
+  06:30          netadd_profile_email.php (Subs & Net Add email)
+  Sun 04:00      prune_logs.php (trim access log by retention setting)
+
+
+################################################################################
+# 4. SHARED BUSINESS LOGIC / FORMULAS  (replicate as BQ UDFs / shared SQL)
+################################################################################
+
+4.1 GROWTH %  (universal)
+    growth = (curr - prev) / prev * 100
+    if prev = 0 and curr > 0 -> 100 ;  if both 0 -> 0
+    gap = curr - prev
+
+4.2 AP (ADVANCE PAYMENT) PRODUCT CLASSIFICATION
+    Detector regex on product name:  ^(AP|Super[ ]?)[0-9]+
+      type    = 'AP' if matches else 'Regular'
+      months  = leading integer = prepay duration (AP: 3,4,6,7,12 ; Super: 6,12)
+      family  = 'AP' (^AP[0-9]+) or 'Super' (^Super ?[0-9]+) or NULL
+      base    = product with the "AP{n}.../Super {n}..." prefix stripped
+    Bucket label = CONCAT('AP', months) e.g. AP3/AP4/AP6/AP7/AP12; else 'Regular'.
+    Filter modes: ''/'all'=no filter; 'AP'=all AP+Super; 'Regular'; 'AP12'
+      (matches ^AP12 and ^Super ?12); 'family:AP'; 'family:Super'.
+
+4.3 PROJECT GROUP CLASSIFICATION  (from site_project_awal, case-insensitive)
+    ORBIT     <- contains 'mplay'
+    NON-ORBIT <- contains 'seahawk' or 'spartan'
+    IFORTE    <- contains 'iforte' / 'i-forte' / 'i_forte'
+    Other     <- NULL/empty/anything else
+    Used as a filter ("mode": BLENDED=all, ORBIT, NON-ORBIT, IFORTE) and a
+    breakdown dimension across modules.
+
+4.4 CONVERSION RATES (funnel)
+    Conv SO->SA = SA/SO*100
+    Conv SA->PA = PA/SA*100
+    Conv SO->PA = PA/SO*100   (overall funnel efficiency)
+
+4.5 TUR (TAKE-UP RATE)  — site/territory domain
+    TUR % = SUM(pa) / SUM(homepass) * 100      (pa = cumulative active subs)
+    Available % = available_hp / homepass * 100
+    Net Add = SUM(pa_net_latest)               (monthly, can be negative)
+    Churn (derived) = max(0, GA - Net Add)
+    5-SLAB segmentation (acquisition view):
+      extreme_low <10% | low 10-20% | mid 20-30% | high 30-50% | strong >=50%
+    Map-tur summary buckets differ: low<20 | mid 20-30 | high 30-50 | elite>=50
+    Source pre-bucket grouping_pa_net (11 bands) maps to the 5 slabs:
+      0-10%->extreme_low; 10-20%->low; 20-30%->mid; 30-40%&40-50%->high;
+      everything >=50% (incl 100%+)->strong.
+    PA Extraction % = PA_month / available_hp * 100  (acquisition efficiency)
+    SO Extraction % = SO_month / available_hp * 100
+
+4.6 MARKET SHARE  (MS domain; industry excludes im3)
+    industry_X = SUM over 8 operators of X (X in {total,ga,churn})
+    Market Share % = operator_total / industry_total * 100
+    SoGA % (Share of Gross Add) = operator_ga / industry_ga * 100
+    SoChurn %                   = operator_churn / industry_churn * 100
+    Net Add = ga - churn
+    Delta WoW = current snapshot - previous snapshot value
+    Delta YoY = current - snapshot nearest to (current_date - 364 days)
+    Monthly mode = take the LATEST dt_id within each month (NOT sum of weeks).
+      [BQ] QUALIFY ROW_NUMBER() OVER(PARTITION BY month ORDER BY dt_id DESC)=1
+    Opportunity score = low operator MS% (< threshold, default 5%) AND high
+      industry GA (sort by industry_ga desc) = "where the market is moving but
+      we're weak".
+
+4.7 ACHIEVEMENT vs TARGET
+    Targets stored per Sales Manager per month for metric PA only
+      (table tbl_ftth_target_sm: sales_manager, target_bulan, metric_type='PA',
+       target_value).
+    Achievement % = PA_curr / target * 100   (ALWAYS measured on PA, not SA)
+    Gap = PA_curr - target
+    Traffic light: <80% red, 80-95% amber, >=95% green.
+
+4.8 COST RATIO  (people-cost efficiency)
+    Per-level monthly cost from config (defaults: AE=3,800,000; TL=7,000,000;
+      SM=20,000,000; RM configurable) in tbl_ftth_cost_config.
+    headcounts via COUNT(DISTINCT sales_code / sales_tl / sales_manager /
+      sales_region).
+    total_cost = AE_cnt*AE_cost + TL_cnt*TL_cost + SM_cnt*SM_cost + RM_cnt*RM_cost
+    cost_ratio % = total_cost / revenue_pa * 100   (999.99 if revenue=0)
+    gap = total_cost - revenue_pa  (positive = loss)
+    BEP_pa = ceil(total_cost / avg_price_pa)
+    SO_needed_BEP = ceil(BEP_pa / hist_conv_so_pa)
+    Ideal (10% target): ideal_pa = ceil(total_cost / (0.10*avg_price_pa))
+    Status: ratio>100 LOSS; >=95 BREAK-EVEN; >10 BELOW TARGET; else IDEAL.
+
+4.9 MTD CUTOFF / TRENDED TRIO (used by tracker + all reports)
+    cutoff_day = DAY( MAX(date_so) in data )   [the locked "today"]
+    Trio per metric: prev2 (LLMTD, month-2), prev1 (LMTD, month-1), curr (MTD),
+    each capped at DAY(col) <= cutoff_day. growth = (curr-prev1)/prev1*100.
+
+4.10 DORMANCY / STREAK (heatmap, evaluation, people)
+    dormant threshold (days) = max(3, floor(cutoff_day * 0.2)) (and cutoff>=5)
+    streak = consecutive active days; dormant_days = trailing zero days.
+    Evaluation issue flags (relative to team averages of active AEs, so>0):
+      zero_performer so=0; low_so 0<so<avgSO*0.5; low_conversion so>=3 AND
+      (pa/so)<avgConvPA*0.5; slow_activation avgDays>teamAvgDays*2;
+      low_rev_per_pa pa>0 AND rev/pa<avgRevPerPA*0.5; declining prevSO>3 AND
+      so<prevSO*0.5; dormant days since last_so > 10.
+
+
+################################################################################
+# 5. MENU MAP + ALL 32 MODULES (what each screen shows)
+################################################################################
+
+NAVIGATION (top bar groups -> items, route key in [brackets]):
+  Dashboard                                   [dashboard]
+  Map (dropdown):
+    - Map Viewer (SO/SA/PA)                    [map_viewer]
+    - Map TUR (Site-wise)                      [map_tur]
+  Analyze (dropdown):
+    - Product Analysis                         [product_analysis]
+    - Daily Trend                              [daily_trend]
+    - Daily Heatmap                            [daily_heatmap]
+    - AP Performance                           [ap_performance]
+    - Sales Evaluation                         [sales_evaluation]
+    - TUR Acquisition                          [tur_acquisition]
+  Performance (dropdown):
+    - MTD Sales Tracker                        [mtd_sales_tracker]
+    - Sales Performance (=Sales Insight)       [sales_performance -> sales-insight]
+    - SM Performance (=Team Performance)       [team_performance]
+    - TL Performance                           [tl_performance]
+    - AE Performance (=Sales Performance dir)  [ae_performance -> sales-performance]
+    - Territory Performance                    [territory_performance]
+    - Site Take-Up                             [site_takeup]
+    - TUR by Territory                         [tur_territory]
+    - PA Monthly Trend                         [pa_trend]
+  People (dropdown):
+    - Cost Ratio                               [cost_ratio]
+    - People Profile                           [people_profile]
+  Market Share (dropdown):
+    - Overview                                 [market_share]
+    - Operator Comparison                      [ms_operator]
+    - MS by Territory                          [ms_territory]
+    - Trend Explorer                           [ms_trend]
+    - Opportunity Finder                       [ms_opportunity]
+  Raw Data                                     [raw_data]
+  Pengaturan/Settings (dropdown):
+    - Profil Saya                              [profile]
+    - Ubah Password                            [password]
+    (Admin only:) Manajemen User [user_management], Email Recipients
+      [email_recipients], Statistik Akses [access_stats], Pengaturan Sistem
+      [settings]
+  NOTE the two route<->dir mismatches:
+    key 'ae_performance' -> dir modules/sales-performance/ (AE Performance)
+    key 'sales_performance' -> dir modules/sales-insight/   (Sales Insight)
+
+ROUTE-KEY -> DIRECTORY MAP (for completeness):
+  dashboard->dashboard; map_viewer->map-viewer; map_tur->map-tur;
+  product_analysis->product-analysis; daily_trend->daily-trend;
+  daily_heatmap->daily-heatmap; ap_performance->ap-performance;
+  sales_evaluation->sales-evaluation; tur_acquisition->tur-acquisition;
+  mtd_sales_tracker->mtd-sales-tracker; sales_performance->sales-insight;
+  team_performance->team-performance; tl_performance->tl-performance;
+  ae_performance->sales-performance; territory_performance->territory-performance;
+  site_takeup->site-takeup; tur_territory->tur-territory; pa_trend->pa-trend;
+  cost_ratio->cost-ratio; people_profile->people-profile;
+  market_share->market-share; ms_operator->ms-operator;
+  ms_territory->ms-territory; ms_trend->ms-trend; ms_opportunity->ms-opportunity;
+  raw_data->raw-data; profile->profile; password->password;
+  user_management->user-management; email_recipients->email-recipients;
+  access_stats->access-stats; settings->settings; people(profile) etc.
+
+================================================================================
+5.A  FUNNEL / SALES MODULES
+================================================================================
+
+[dashboard] DASHBOARD — executive funnel overview
+  Source: ftth_raw_joined.
+  KPI cards: SO, SA, PA, Revenue (current month vs LMTD growth chips).
+  Funnel rates: SO->SA, SA->PA, SO->PA. Avg/day = metric / (full days or cutoff).
+  Charts: Daily Trend (multi-line SO/SA/PA), Monthly Trend (12-mo combo bars+line),
+    Top 5 Product (SO & PA bars), Top 5 Territory/city (SO & PA bars),
+    Conversion Funnel, Recent Activity (last 10 SO/SA/PA).
+  Filters: month, mode(mtd/full), circle, region, SM, TL, AE, project group.
+
+[mtd_sales_tracker] MTD SALES TRACKER — flagship comparative table
+  Source: ftth_mtd_tracker_daily (and raw_joined for geo pivots).
+  For each metric a TRIO {prev2,prev1,curr,growth,gap} + TARGET block
+    {target, achieve=PA curr, pct, gap}. Hierarchy Circle->Region->SM with
+    rollups to Circle/National. "1 SM = 1 region" canonicalization (assign SM to
+    dominant region by PA, merge all numbers there).
+  6 pivots: (1) SM x Region (with target), (2) Province/Kabkota,
+    (3) CMM Direct Sales (region x project group), (4) CMM Territory Wise,
+    (5) Project Group, (6) AP/Regular per product.
+  Drilldowns: SM->TL->AE; 6-month trend per SM (line). Target CRUD (admin).
+  Filters: month, mode/project group, AP bucket, circle(multi), region(multi),
+    SM(multi).
+  Kabkota rows sorted by PA MTD desc; city consolidated to dominant province.
+
+[sales_performance -> sales-insight] SALES INSIGHT — MTD vs LMTD + projection
+  Source: ftth_raw_joined.
+  MTD, LMTD (prev month same cutoff), Prev-Full per SO/SA/PA + revenue + growth.
+  Projection(rate) = mtd/cutoff_day * days_in_full_month.
+  Projection(stat) = mtd + (prevFull - lmtd) * (mtd/lmtd).
+  Full Region->SM->TL->AE tree (each node recomputes growth/conv/projection).
+  Breakdown by dim: region|sm|tl|ae|product|city|project_type|project_group.
+  Charts: 3 cumulative line charts (cur vs prev + projection); people tree.
+
+[ae_performance -> sales-performance] AE PERFORMANCE — per Account Executive
+  Source: ftth_raw_joined, GROUP BY sales_code.
+  Metrics: so, sa, pa, revenue_so, revenue_pa, rev_per_pa, avg_days(SO->PA),
+    conv SO->SA, conv SA->PA. Product drilldown per AE.
+  Leaderboard top-3, top-20 bar, DataTable, XLSX export.
+
+[team_performance] SM PERFORMANCE (generic, level-switchable)
+  Source: ftth_raw_joined; level=sm|tl|sales chooses GROUP BY column.
+  Metrics: so, sa, pa, revenue_so, revenue_pa, rev_per_pa, avg_days.
+  Leaderboard + top-20 bar + table.
+
+[tl_performance] TL PERFORMANCE — Team Leaders + AE drilldown
+  GROUP BY sales_tl; num_sales=COUNT(DISTINCT sales_code); same metrics.
+  Drill: AEs under a TL.
+
+[territory_performance] TERRITORY PERFORMANCE — by city/province + top sites
+  Source: ftth_raw_joined; view=city|province (full-month, no MTD cap here).
+  Metrics so/sa/pa/revenue. Plus top-20 sites (by site_id).
+  Charts: territory comparison bar, distribution-by-province donut.
+
+[ap_performance] AP PERFORMANCE — Advance Payment products
+  Source: ftth_raw_joined; AP classification (4.2).
+  KPIs: ap_count, reg_count, ap_share% = ap/(ap+reg), ap_revenue_pa,
+    ap_avg_months (avg prepay duration), ap_conv_so_pa.
+  Breakdowns: AP vs Regular funnel; per duration bucket (AP3..AP12);
+    family AP vs Super; per SM; base-product x duration cross-tab.
+  6-month trends. Filters: month, circle, region, SM, ap mode.
+
+[product_analysis] PRODUCT ANALYSIS — product mix + price bands
+  GROUP BY product: so/sa/pa/revenue + conversions.
+  Price distribution buckets: <200K,200-300K,300-400K,400-500K,500-750K,>750K.
+  Charts: product mix donut, top-product SO/SA/PA bars, price dist bar.
+
+[sales_evaluation] SALES EVALUATION — flag under-performers
+  Per-AE metrics + 7 diagnostic issue flags (4.10). Team averages over active.
+  Summary: total/active sales, unproductive_count, pct_unproductive.
+  Charts: productivity scatter (SO vs conv), issue donut, revenue-quality bar.
+
+[daily_trend] DAILY TREND — intra-month daily movement
+  Per-day SO/SA/PA + revenue; cumulative run-rate; top-5 product daily stack;
+    day-of-week averages (=count / distinct active dates per DOW).
+
+[daily_heatmap] DAILY HEATMAP — per-person daily activity grid
+  Matrix rows=entity (Region/SM/TL/AE toggle), cols=days 1..cutoff, cell color
+    by count. Per row: total, active_days, max_streak, current_streak,
+    dormant_days, last_active, avg_daily, peak_day, mom_growth, is_dormant.
+  Metric toggle SO/SA/PA.
+
+[cost_ratio] COST RATIO — people-cost efficiency (4.8)
+  Month-range; headcount per level; total_cost vs revenue_pa; BEP & ideal-10%;
+    per-AE profitability; sensitivity sliders (live recompute).
+  Config table tbl_ftth_cost_config (admin-editable). XLSX+PDF export.
+
+[people_profile] PEOPLE PROFILE — 360 deg per AE/TL/SM/RM
+  Source: ftth_raw_joined (+ ftth_cache_hierarchy for the people list).
+  Identity + MTD vs LMTD + rank among peers; annual activity heatmap;
+    monthly trend (cur vs prev year); top products; sales-area table;
+    distribution map (Leaflet); productivity (consistency=monthsWithPA/12*100);
+    team composition with status (Zero/Dormant/Hot/Cold/Active) + per-member
+    cost coverage.
+
+================================================================================
+5.B  TUR / TERRITORY / MAP MODULES  (sitewise-monthly domain)
+================================================================================
+
+[site_takeup] SITE TAKE-UP — per-site fiber utilization
+  Source: db_ftth_sitewise_monthly (self-join cur vs prev month).
+  KPIs: Homepass, PA(cumulative)+MoM%, TUR%, GA+MoM%, Available HP+%,
+    Net Add, Churn=max(0,GA-NetAdd), site_count.
+  Lists: MoM/YoY/YTD winners & losers (by net-add delta), top-TUR sites,
+    opportunity ranking = available_hp*(1-TUR/100). 12-month trend; TUR
+    distribution (11 buckets). Full site DataTable.
+  Filters: period(month_id), flag(brand Orbit/Non Orbit), region(region_25),
+    province, SM(manager), TL(team_leader), market, vendor.
+
+[tur_territory] TUR BY TERRITORY — TUR health per geo
+  Source: sitewise_monthly. Level: province/kabkota/kecamatan.
+  TUR%, Net Add, Available HP, GA, Churn, MoM PA delta/%. 5 ranked bar charts
+    (highest/lowest TUR, highest available, highest/lowest PA).
+
+[tur_acquisition] TUR ACQUISITION — TUR + in-month acquisition + channel mix
+  Source: sitewise_monthly snapshot JOIN db_ftth_so/sa/pa transactions
+    (by kecamatan/city). TUR% + 5-slab; PA/SO extraction %; channel split
+    DIRECT vs INDIRECT (INDIRECT = sales_region='08. Telesales' OR
+    sales_manager='Telesales'); net add YoY (YTD PA cur year vs prev year).
+  Drilldown kabkota->kecamatan. Filters: month + acq_month, flag, region,
+    province, SM, TL, level, tur_slabs.
+
+[map_tur] MAP TUR — geospatial per-site TUR (Leaflet)
+  Source: sitewise_monthly (+ db_ftth_pa for YTD/YoY). Circle markers colored by
+    Mode (tur / available / ga / netadd_yoy), radius by homepass. Cluster
+    toggle, legend, search by site. Bounds: lat[-11,8], lng[94,142], homepass>0.
+
+[map_viewer] MAP VIEWER — transaction funnel map (Leaflet + heat)
+  Source: ftth_raw_joined. Markers per order with conversion/revenue/lead-time;
+    heat layer; aggregations by city/kecamatan/ward/sales. Full filter set
+    incl. project_group, ap_type, ap_duration. Default last 30 days by date_so.
+
+[pa_trend] PA MONTHLY TREND — net-add trend pivot
+  Source: sitewise_monthly. Pivot rows=territory (Circle/Region/Kabkota/
+    Kecamatan), cols=months, value=SUM(pa_net_latest)=monthly net add. Plus
+    cumulative PA, TUR snapshot, YoY growth (window net vs prior-12mo net).
+  Window 3-24 months (default 12). Filters: range, flag, region, province,
+    kabkota.
+
+================================================================================
+5.C  MARKET SHARE MODULES  (fb_ms_ftth weekly domain; im3 excluded)
+================================================================================
+
+[market_share] OVERVIEW — industry snapshot
+  KPI cards: Industry Subs/GA/Churn/Net Add (vs prev). Operator MS% donut.
+  Top movers (delta MS% vs prev snapshot). Trend mini-lines.
+  Filters: snapshot date, granularity(weekly/monthly), geo level/value.
+
+[ms_operator] OPERATOR COMPARISON — per-operator scorecard (8 rows)
+  subs, MS% now/WoW/YoY, GA, SoGA% now/YoY, Churn, SoChurn% now/YoY, Net Add.
+  Charts: subs bar, GA-vs-Churn bar, MS% trend line.
+
+[ms_territory] MS BY TERRITORY — where operator wins/loses
+  Per-territory ranking by chosen metric + territory x operator MS% heatmap.
+
+[ms_trend] TREND EXPLORER — multi-operator time series
+  MS%/SoGA/SoChurn/NetAdd series (+ optional YoY reference), subs stacked area,
+    net-add bars, two-period compare.
+
+[ms_opportunity] OPPORTUNITY FINDER — acquisition targets
+  Quadrant scatter (x=industry GA, y=operator MS%, median lines); top growers/
+    decliners (delta MS WoW, HAVING subs>5000); high-potential = MS% < threshold
+    (default 5%) AND high industry GA.
+
+================================================================================
+5.D  RAW DATA + ADMIN MODULES
+================================================================================
+
+[raw_data] RAW DATA — filterable transaction table + CSV export
+  Source: ftth_raw_joined. Row counts (total/so_only/sa/pa/ap/regular),
+    per-row status, prices, days, AP/project group. LIMIT 5000; streaming CSV.
+
+[profile] / [password] — self-service profile, avatar, email-recipient toggle,
+  password change.
+
+[user_management] (admin) — CRUD tbl_ftth_user: roles, email, email_recipient,
+  must_change_password, avatar; toggle active, force_logout, unlock,
+  reset_password, bulk CSV import.
+
+[email_recipients] (admin) — manage daily-email recipient list, inline email
+  edit, toggle email_recipient, Send Test, Send Now.
+
+[access_stats] (admin) — access analytics (90 days): usage (daily trend, peak
+  hours, top modules/users, dormant), security (failed logins, off-hours,
+  per-IP), timeline, per-user.
+
+[settings] (admin) — key/value tbl_ftth_setting: branding, security
+  (password rules, lockout), session timeout, working hours, EMAIL BLAST toggle
+  (email_blast_enabled kill-switch for both daily emails), maintenance mode,
+  log retention, welcome popup.
+
+
+################################################################################
+# 6. REPORTING & AUTOMATION  (the output layer)
+################################################################################
+
+Two automated daily emails. Both: scope = CIRCLE JAVA (Central + East Java /
+provinces JATENG, JATIM, DIY, BALI); recipients = users with email_recipient=1
+AND is_active=1 AND email set; single message to ALL recipients (each as a To);
+kill-switch tbl_ftth_setting.email_blast_enabled (0 = run but don't send);
+subject/filenames use DATA date not run date.
+
+--------------------------------------------------------------------------------
+6.1 REPORT A — "FTTH MTD Sales Performance" (06:00)
+--------------------------------------------------------------------------------
+  Subject: FTTH MTD Sales Performance — Circle JAVA · {data date}
+  Built from ftth_raw_joined / ftth_mtd_tracker_daily.
+  Three sections, each = KPI hero cards (SO/SA/PA + Ach%) + a 2-row-header
+  tracker table:
+    Section 01 Sales Force  : Region -> SM (WITH TARGET cols)
+    Section 02 Product Mix  : Regular vs AP buckets (no target)
+    Section 03 Geography    : Province -> Kab/Kota (no target)
+  Table column groups: MTD SO | MTD SA | MTD PA [| TARGET], each with sub-cols
+    LLMTD (prev2) · LMTD (prev1) · MTD (curr) · Growth ; target sub-cols
+    Tgt · Ach · Ach% · GAP. Hierarchy rows: Region -> SM -> Region Total ->
+    CIRCLE JAVA TOTAL. Traffic-light Ach (<80 red,<95 amber,>=95 green).
+  Attachments:
+    - XLSX (5 sheets): 01 SM x Region, 02 Regular AP, 03 Province Kabkota,
+      04 Detail Territory, 05 Detail Sales.
+    - 6 PDFs: 1 Circle comprehensive + 5 per-SM (one per non-vacant SM).
+
+--------------------------------------------------------------------------------
+6.2 REPORT B — "FTTH Subs & Net Add - Circle Java" (06:30)
+--------------------------------------------------------------------------------
+  Subject: FTTH Subs & Net Add - Circle Java - {Mon YYYY}
+  Built from db_ftth_sitewise_monthly (DIFFERENT source/grain — monthly snapshot).
+  Metric semantics: pa_c = PA snapshot current; pa_lytd = PA same-month-last-year;
+    Net Add YoY = pa_c - pa_lytd (snapshot delta, NOT sum of monthly net adds);
+    net_add_curr = SUM(pa_net_latest) current month; net_add_ytd = SUM Jan..cur;
+    TUR% = pa_c/homepass*100.
+  Sections (Circle->Region->Kab/Kota): A Geography rollup; B Project Group
+    (with Share% of subs); C Top 15 / D Bottom 15 kecamatan by net add;
+    E All kecamatan (Excel only).
+  Region codes normalized by NAME to collapse old/new codes (avoid double count).
+  Attachment: XLSX (5 sheets). No PDF.
+
+--------------------------------------------------------------------------------
+6.3 PDF REPORTS  (Python 3 + ReportLab; presentation over the report JSON)
+--------------------------------------------------------------------------------
+  Type 1 — Circle comprehensive: filename YYYYMMDD_FTTH_CIRCLE_JAVA.pdf
+    Cover -> KPI hero (SO/SA/PA MTD + growth) -> Daily Insight ->
+    01 Sales Force (SM x Region w/ target) -> 02 Product Mix (AP/Regular) ->
+    03 Product (top products) -> 04 Geography (Province/Kabkota).
+  Type 2 — Per-SM (one per real SM): filename YYYYMMDD_SM_{NAME}.pdf
+    Cover -> KPI (+ Achievement if target) -> Daily Insight (SM-scoped) ->
+    01 Sales Manager summary -> 02 Team Leaders breakdown (the headline:
+    per-TL LLMTD/LMTD/MTD/Growth for SO/SA/PA) -> 03 Product Mix -> 04 Product ->
+    05 Geography -> 06 Top 10 Sales persons (MTD: SO/SA/PA, SO->SA%, SO->PA%,
+    Avg Rev/PA).
+  All numeric tables use the LLMTD/LMTD/MTD/Growth trended trio.
+
+  "DAILY INSIGHT" (AI narrative, optional):
+    Calls a local LLM (OpenAI-compatible /v1/chat/completions) to write a short
+    Indonesian executive insight that dissects each parameter (SO/SA/PA growth,
+    drivers of decline, top & bottom performers). Achievement always measured on
+    PA. Has a deterministic RULE-BASED FALLBACK (top/bottom by PA, SO->PA
+    conversion, avg achievement) so the report never fails if the LLM is down.
+  [BQ/replatform] Treat PDFs/Excel/insight as a presentation layer over a single
+    REPORT JSON contract: { meta, sm/ap/province circles[], product_trio[],
+    tl_by_sm{}, *_trio_by_sm{}, raw_detail[] }. Mobile/web can render the same
+    JSON natively; PDF/Excel/LLM-insight are export enrichments.
+
+
+################################################################################
+# 7. AUTH, ROLES, SECURITY, SETTINGS  (platform layer)
+################################################################################
+
+ROLES & PERMISSIONS (tbl_ftth_user.hak_akses):
+  Administrator : all permissions (*)
+  Operator      : view_all_analytics, export, edit_data
+  Analyst       : view_all_analytics, export
+  Viewer        : view_basic
+  Admin-only modules: user_management, email_recipients, access_stats, settings.
+
+AUTH FLOW:
+  login -> bcrypt verify -> on success regenerate session, set keys
+    {id_user, nama_user, username, hak_akses, logged_in, login_time,
+     last_activity, must_change_password}.
+  Lockout: failed_attempts increments; at lockout_threshold (default 5) set
+    locked_until = now + lockout_duration_minutes (default 15).
+  Every request gated centrally: not-logged-in redirect; idle timeout
+    (session_timeout_minutes, default 60); force-logout (force_logout_at >
+    login_time) & is_active=0; must-change-password redirect; maintenance mode
+    (non-admin blocked); CSRF token on non-GET AJAX.
+
+ACCESS LOG (tbl_ftth_access_log): append-only; action_type in {login_success,
+  login_failed, logout, module_view, export, create, update, delete,
+  password_change}; fields user_id, username, action_type, module, target,
+  ip_address, user_agent, session_id(hashed), detail(JSON), created_at.
+  IP order: CF-Connecting-IP -> X-Forwarded-For -> X-Real-IP -> REMOTE_ADDR.
+  Retention: prune older than log_retention_days (Sun 04:00).
+  [BQ] partition by DATE(created_at).
+
+SETTINGS (tbl_ftth_setting key/value): app branding/logo, password rules,
+  lockout_threshold/duration, session_timeout_minutes, working_hours_start/end
+  (off-hours detection), email_blast_enabled (email kill-switch),
+  maintenance_mode/message, log_retention_days, welcome_* popup.
+
+KEY REFERENCE/CONFIG TABLES (db_ftth_app):
+  tbl_ftth_user            users + roles + email_recipient + lockout fields
+  tbl_ftth_region_head     sales_region -> circle_name + display_label +
+                           region_head_name + display_order + is_active
+                           (SOURCE OF TRUTH for circle mapping)
+  tbl_ftth_target_sm       per-SM monthly PA targets
+  tbl_ftth_cost_config     per-level monthly cost (AE/TL/SM/RM)
+  tbl_ftth_setting         key/value app settings
+  tbl_ftth_access_log      activity log
+  tbl_ftth_profil          branding (app name, logo)
+
+
+################################################################################
+# 8. REPLICATION BLUEPRINT — BIGQUERY BACKEND + MOBILE/WEB
+################################################################################
+
+8.1 DATASETS / TABLES (suggested)
+  raw (landing, partitioned):
+    so (date_so), sa (date_sa), pa (date_pa), sitewise_monthly (month date),
+    ms_ftth (dt_id)
+  core (modeled):
+    fact_funnel       = ftth_raw_joined equivalent: 1 row/bill_acc, has_sa/has_pa,
+                        status, days_so_sa, days_so_pa, sales hierarchy + circle
+                        (joined from dim_region), geo, product, price.
+    dim_region        = region_head (sales_region -> circle, head, order).
+    dim_date, dim_product (with AP type/months/family, project_group).
+    fact_sitewise     = monthly per-site (homepass, pa, pa_net_latest, ga,
+                        available_hp, tur fields, region_25 -> circle).
+    fact_market_share = weekly per-kabkota long-format (unpivot the wide
+                        operator columns into rows: operator, ga, churn, total)
+                        joined to dim_territory(kabkota->region->circle).
+    fact_access_log   = activity log (partition by created_at).
+    cfg_target_sm, cfg_cost, cfg_setting, dim_user.
+
+8.2 SEMANTIC LAYER (implement once, reuse on mobile+web)
+  - Funnel metrics (multi-date counting + MTD cutoff) as parameterized SQL /
+    views / a metrics layer (e.g. dbt metrics, Looker, or an API).
+  - Shared UDFs: growth%, ap_classify(product), project_group(site_project_awal),
+    tur_slab(tur), circle_from_region(name), province_to_circle(province).
+  - MTD cutoff = a single scalar (max data day) applied uniformly to compared
+    months. Never CURRENT_DATE for the data window.
+
+8.3 API CONTRACT (mobile + web share these endpoints; mirror current data.php)
+  GET /filters?...                 -> cascading filter options (cross-filter)
+  GET /funnel/kpi?month&mode&...   -> SO/SA/PA/Revenue + growth + conv
+  GET /funnel/daily-trend, /monthly-trend, /top-product, /top-territory
+  GET /tracker/main?month&mode     -> Circle->Region->SM trio + target
+  GET /tracker/{province|kabkota|pgroup|ap}
+  GET /performance/{ae|tl|sm|territory|product|ap}
+  GET /people/profile?level&code&month
+  GET /tur/{site-takeup|territory|acquisition|map}
+  GET /market-share/{overview|operator|territory|trend|opportunity}
+  GET /report/mtd?month            -> the REPORT JSON (drives PDF/Excel/UI)
+  Auth: bcrypt + JWT/session; RBAC by role; CSRF for web mutations.
+
+8.4 SCHEDULING (replace cron)
+  - Source load -> BQ (twice daily).
+  - Scheduled queries / dbt run to refresh core models 05:00.
+  - Cloud Scheduler + Cloud Run/Functions for the 2 daily email reports
+    (06:00, 06:30) and log pruning; reuse the report JSON + a renderer for
+    HTML/Excel/PDF; optional LLM insight with rule-based fallback.
+
+8.5 NON-NEGOTIABLE BEHAVIORS TO PRESERVE (or numbers won't match)
+  1. Multi-date counting (SO on date_so, SA on date_sa where has_sa,
+     PA on date_pa where has_pa).
+  2. MTD cutoff = max data day, applied to current AND comparison months.
+  3. PA (not SA) is the target/achievement and revenue basis.
+  4. Circle derived from region via dim_region; normalize old/new region codes
+     by NAME when mixing months.
+  5. Market share industry EXCLUDES im3; monthly = latest snapshot in month.
+  6. TUR = pa/homepass; net add = pa_net_latest (signed); the 5-slab cut-points.
+  7. AP/Regular regex + project group LIKE patterns shared everywhere.
+  8. Email reports scope to Circle Java; kill-switch respected; data-date titles.
+
+================================================================================
+END OF KNOWLEDGE BASE
+================================================================================

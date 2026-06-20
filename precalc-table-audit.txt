@@ -1,0 +1,203 @@
+================================================================================================
+AUDIT TABEL java_precalc  ->  DOMAIN
+================================================================================================
+Project : data-java-prd-97b9
+Dataset : java_precalc
+Total tabel di dataset BigQuery : 118
+Total tabel terpetakan di KB    : 82
+
+Kolom DOMAIN '<< BELUM DI KB >>' = tabel ada di BigQuery tapi belum
+masuk knowledge base (tidak akan dipakai agent). Audit & tentukan domainnya.
+
+ NO  TABEL                                                     ROWS   DOMAIN
+------------------------------------------------------------------------------------------------
+  1  ds_snd_kecwise_is_performance                                0   << BELUM DI KB >>
+  2  rham_5g_site_daily                                  55,601,697   5g
+  3  rham_5g_site_monthly                                 1,846,412   5g
+  4  rham_5g_territory_daily                              6,680,671   5g
+  5  rham_5g_territory_monthly                              220,759   5g
+  6  rham_5g_territory_mtd                                    3,955   5g
+  7  rham_avail_stat_site_monthly                            79,115   network
+  8  rham_avail_stat_territory_daily                        290,960   network
+  9  rham_avail_stat_territory_monthly                        9,867   network
+ 10  rham_availability_kpi_site                           7,942,166   network
+ 11  rham_branch_5g_daily                                    96,106   5g
+ 12  rham_branch_5g_monthly                                   3,176   5g
+ 13  rham_branch_5g_territory_daily                          95,744   5g
+ 14  rham_branch_ga_daily                                    17,265   acquisition
+ 15  rham_desa_perf_history                                  53,750   << BELUM DI KB >>
+ 16  rham_desa_perf_monthly                                  12,216   << BELUM DI KB >>
+ 17  rham_desa_perf_mtd                                       3,054   << BELUM DI KB >>
+ 18  rham_fb_ms_age                                         107,437   << BELUM DI KB >>
+ 19  rham_fb_ms_kabkota_v2                                  462,485   << BELUM DI KB >>
+ 20  rham_fb_ms_kecamatan_v2                              5,953,585   << BELUM DI KB >>
+ 21  rham_fb_network_insight_wly                            524,592   network_benchmark
+ 22  rham_fb_network_kabkot                                 392,527   network_benchmark
+ 23  rham_fb_network_kabkot_wly_wide                         10,300   network_benchmark
+ 24  rham_fb_network_kec_wly_wide                           139,363   network_benchmark
+ 25  rham_fb_network_kecamatan                            4,300,000   network_benchmark
+ 26  rham_fb_network_territory_wly_wide                     161,203   network_benchmark
+ 27  rham_forecast_daily_branch_output                      637,872   << BELUM DI KB >>
+ 28  rham_forecast_daily_branch_output_v3                 3,076,840   << BELUM DI KB >>
+ 29  rham_forecast_daily_branch_source                      165,288   << BELUM DI KB >>
+ 30  rham_forecast_daily_kabkota_output                   3,175,164   << BELUM DI KB >>
+ 31  rham_forecast_daily_kabkota_output_v3               15,363,210   << BELUM DI KB >>
+ 32  rham_forecast_daily_kabkota_source                     823,609   << BELUM DI KB >>
+ 33  rham_forecast_daily_mc_output                        2,834,256   << BELUM DI KB >>
+ 34  rham_forecast_daily_mc_output_v3                    13,671,320   << BELUM DI KB >>
+ 35  rham_forecast_daily_mc_source                          734,424   << BELUM DI KB >>
+ 36  rham_forecast_daily_rev_mc_input                       272,303   << BELUM DI KB >>
+ 37  rham_forecast_daily_rev_mc_output                      346,558   << BELUM DI KB >>
+ 38  rham_forecast_monthly_branch_output_v3                 100,880   << BELUM DI KB >>
+ 39  rham_forecast_monthly_kabkota_output_v3                503,420   << BELUM DI KB >>
+ 40  rham_forecast_monthly_mc_output_v3                     448,240   << BELUM DI KB >>
+ 41  rham_ftth_pa_detail                                    147,225   ftth
+ 42  rham_ftth_sa_detail                                    149,336   ftth
+ 43  rham_ftth_so_detail                                    453,487   ftth
+ 44  rham_fwa_site_raw                                    9,368,636   << BELUM DI KB >>
+ 45  rham_hvc_kec_daily                                   1,091,435   customer_hvc
+ 46  rham_hvc_kec_mtd                                       113,858   customer_hvc
+ 47  rham_hvc_kec_mth                                       113,853   customer_hvc
+ 48  rham_hvc_site_daily                                 10,447,739   customer_hvc
+ 49  rham_hvc_site_mtd                                    1,085,677   customer_hvc
+ 50  rham_hvc_site_mth                                    1,085,653   customer_hvc
+ 51  rham_kpi_highlevel_dly                              12,000,000   << BELUM DI KB >>
+ 52  rham_kpi_highlevel_mtd                                 431,164   << BELUM DI KB >>
+ 53  rham_kpi_highlevel_mth                                 433,151   << BELUM DI KB >>
+ 54  rham_master_tracker_fwa                                176,360   << BELUM DI KB >>
+ 55  rham_mkt_highlevel_mtd                                 328,847   kpi_summary
+ 56  rham_mkt_highlevel_mth                                 328,928   kpi_summary
+ 57  rham_mkt_kpi_highlevel_dly                           9,935,692   kpi_summary
+ 58  rham_opensignal_experience_wly                       1,013,751   network_benchmark
+ 59  rham_opensignal_kabkot_wly_wide                         20,560   network_benchmark
+ 60  rham_opensignal_kec_wly_wide                           276,449   network_benchmark
+ 61  rham_opensignal_territory_wly_wide                     320,180   network_benchmark
+ 62  rham_outlet_nbs                                      4,046,059   sales_distribution
+ 63  rham_project_desa_java                                   1,279   << BELUM DI KB >>
+ 64  rham_ref_site_desa                                     262,655   << BELUM DI KB >>
+ 65  rham_ref_super88                                           514   << BELUM DI KB >>
+ 66  rham_ref_territory                                       7,175   << BELUM DI KB >>
+ 67  rham_ref_territory2                                      7,175   << BELUM DI KB >>
+ 68  rham_ref_territory_3id_static                            7,175   << BELUM DI KB >>
+ 69  rham_ref_territory_zz                                    7,175   << BELUM DI KB >>
+ 70  rham_report_fb_ms_age                                  132,197   competitive
+ 71  rham_report_fb_ms_area                                   3,240   competitive
+ 72  rham_report_fb_ms_branch_3id                            17,072   competitive
+ 73  rham_report_fb_ms_branch_im3                            17,248   competitive
+ 74  rham_report_fb_ms_circle                                   720   competitive
+ 75  rham_report_fb_ms_cluster_3id                           75,856   competitive
+ 76  rham_report_fb_ms_focus_gtm_bau                         10,620   competitive
+ 77  rham_report_fb_ms_focus_gtm_high_potential               2,340   competitive
+ 78  rham_report_fb_ms_focus_gtm_must_win                     4,140   competitive
+ 79  rham_report_fb_ms_focus_gtm_super88                      4,320   competitive
+ 80  rham_report_fb_ms_island                                 1,260   competitive
+ 81  rham_report_fb_ms_kabkota                               92,317   competitive
+ 82  rham_report_fb_ms_kecamatan                          1,190,366   competitive
+ 83  rham_report_fb_ms_micro_cluster                         76,032   competitive
+ 84  rham_report_fb_ms_mp3_3kiosk                             6,160   competitive
+ 85  rham_report_fb_ms_mp3_3kiosk_branch                     30,096   competitive
+ 86  rham_report_fb_ms_mp3_3kiosk_circle                      1,408   competitive
+ 87  rham_report_fb_ms_mp3_3kiosk_region                      4,224   competitive
+ 88  rham_report_fb_ms_mpc_sdp_im3                            4,224   competitive
+ 89  rham_report_fb_ms_mpc_sdp_im3_branch                    31,328   competitive
+ 90  rham_report_fb_ms_mpc_sdp_im3_circle                     1,408   competitive
+ 91  rham_report_fb_ms_national                                 180   competitive
+ 92  rham_report_fb_ms_partner_3id                          151,709   competitive
+ 93  rham_report_fb_ms_partner_territory                    171,070   competitive
+ 94  rham_report_fb_ms_province                               7,200   competitive
+ 95  rham_report_fb_ms_region                                 2,160   competitive
+ 96  rham_report_fb_ms_sea                                    4,500   competitive
+ 97  rham_site_data_rev_channel_daily                   877,110,190   revenue
+ 98  rham_site_data_rev_channel_mtd                      42,975,650   revenue
+ 99  rham_site_data_rev_channel_mth                      50,372,992   revenue
+100  rham_site_data_rev_price_slab_daily              1,792,430,547   revenue
+101  rham_site_data_rev_price_slab_mtd                  139,802,162   revenue
+102  rham_site_data_rev_price_slab_mth                  173,978,518   revenue
+103  rham_site_fwa_daily                                 56,485,324   fwa
+104  rham_site_ga_daily                                   3,705,461   acquisition
+105  rham_site_wise_addr_java                               282,399   site_performance
+106  rham_site_wise_addr_java_perf                          847,156   site_performance
+107  rham_site_wise_addr_java_perf_yoy                      847,156   << BELUM DI KB >>
+108  rham_site_wise_daily                                94,309,690   site_performance
+109  rham_site_wise_daily_raw                           446,446,208   << BELUM DI KB >>
+110  rham_site_wise_monthly                               3,169,432   site_performance
+111  rham_site_wise_mtd                                   1,901,653   site_performance
+112  rham_site_wise_occupancy                             5,384,901   network
+113  rham_site_wise_occupancy_mth                           233,931   network
+114  rham_snd_kecwise_mtd                                   587,399   sales_distribution
+115  rham_snd_kecwise_mth                                    57,042   sales_distribution
+116  rham_snd_kpi_highlevel_dly                           2,297,951   sales_distribution
+117  rham_zz_ref_holiday                                        338   << BELUM DI KB >>
+118  zz_territory_kecamatan                                   7,175   territory_reference
+
+================================================================================================
+RINGKASAN PER DOMAIN
+================================================================================================
+  site_performance         5 tabel   (Site Performance)
+  revenue                  6 tabel   (Revenue Deep-Dive)
+  fwa                      1 tabel   (FWA Business)
+  ftth                     3 tabel   (FTTH / HBB Home Broadband)
+  network                  6 tabel   (Network Quality & Availability)
+  customer_hvc             6 tabel   (High Value Customer)
+  kpi_summary              3 tabel   (KPI Summary (Marketing High-Level))
+  sales_distribution       4 tabel   (Sales & Distribution)
+  competitive             27 tabel   (Competitive Market Share)
+  << BELUM DI KB >>       36 tabel   (<< BELUM DI KB >>)
+  5g                       8 tabel
+  acquisition              2 tabel
+  network_benchmark       10 tabel
+  territory_reference      1 tabel
+
+================================================================================================
+TABEL DI KB TAPI TIDAK ADA DI BIGQUERY (orphan / typo / sudah dihapus)
+================================================================================================
+  (tidak ada)
+
+================================================================================================
+TABEL TERPETAKAN DI >1 DOMAIN (duplikat)
+================================================================================================
+  (tidak ada)
+
+================================================================================================
+DAFTAR TABEL BELUM DI KB (36) - PERLU DITENTUKAN DOMAINNYA
+================================================================================================
+  ds_snd_kecwise_is_performance   (0 rows)
+  rham_desa_perf_history   (53,750 rows)
+  rham_desa_perf_monthly   (12,216 rows)
+  rham_desa_perf_mtd   (3,054 rows)
+  rham_fb_ms_age   (107,437 rows)
+  rham_fb_ms_kabkota_v2   (462,485 rows)
+  rham_fb_ms_kecamatan_v2   (5,953,585 rows)
+  rham_forecast_daily_branch_output   (637,872 rows)
+  rham_forecast_daily_branch_output_v3   (3,076,840 rows)
+  rham_forecast_daily_branch_source   (165,288 rows)
+  rham_forecast_daily_kabkota_output   (3,175,164 rows)
+  rham_forecast_daily_kabkota_output_v3   (15,363,210 rows)
+  rham_forecast_daily_kabkota_source   (823,609 rows)
+  rham_forecast_daily_mc_output   (2,834,256 rows)
+  rham_forecast_daily_mc_output_v3   (13,671,320 rows)
+  rham_forecast_daily_mc_source   (734,424 rows)
+  rham_forecast_daily_rev_mc_input   (272,303 rows)
+  rham_forecast_daily_rev_mc_output   (346,558 rows)
+  rham_forecast_monthly_branch_output_v3   (100,880 rows)
+  rham_forecast_monthly_kabkota_output_v3   (503,420 rows)
+  rham_forecast_monthly_mc_output_v3   (448,240 rows)
+  rham_fwa_site_raw   (9,368,636 rows)
+  rham_kpi_highlevel_dly   (12,000,000 rows)
+  rham_kpi_highlevel_mtd   (431,164 rows)
+  rham_kpi_highlevel_mth   (433,151 rows)
+  rham_master_tracker_fwa   (176,360 rows)
+  rham_project_desa_java   (1,279 rows)
+  rham_ref_site_desa   (262,655 rows)
+  rham_ref_super88   (514 rows)
+  rham_ref_territory   (7,175 rows)
+  rham_ref_territory2   (7,175 rows)
+  rham_ref_territory_3id_static   (7,175 rows)
+  rham_ref_territory_zz   (7,175 rows)
+  rham_site_wise_addr_java_perf_yoy   (847,156 rows)
+  rham_site_wise_daily_raw   (446,446,208 rows)
+  rham_zz_ref_holiday   (338 rows)
+
+================================================================================================
+END
+================================================================================================

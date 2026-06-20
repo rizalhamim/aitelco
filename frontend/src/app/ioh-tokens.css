@@ -1,0 +1,265 @@
+/* IOH Design Tokens
+ * Source of truth — never hardcode brand colors elsewhere. */
+
+:root {
+  /* ============================================================
+   * TEAL-PRIMARY DESIGN SYSTEM
+   * Teal is primary (buttons, links, active, focus).
+   * Red is tertiary — destructive / alerts only, used sparingly.
+   * ============================================================ */
+
+  /* ---------- Primary — Teal scale ---------- */
+  --teal-50:  #E6F7F5;
+  --teal-100: #C0EDE8;
+  --teal-200: #8FDFD7;
+  --teal-300: #5BCEC3;
+  --teal-400: #33BCAD;   /* hover */
+  --teal-500: #15A697;   /* PRIMARY */
+  --teal-600: #0E8579;   /* pressed */
+  --teal-700: #0A6A5F;   /* deep accents / brand-tinted headings */
+  --teal-800: #074D45;
+  --teal-900: #04332E;
+
+  /* ---------- Tertiary accent — Red (sparingly) ---------- */
+  --red-50:  #FDECEC;
+  --red-100: #FAD0D0;
+  --red-400: #EF5350;
+  --red-500: #E13838;
+  --red-600: #C42B2B;
+
+  /* ---------- Supporting ---------- */
+  --amber-500: #F5A623;
+  --green-500: #2FA84F;
+  --blue-500:  #2A74D4;
+
+  /* ---------- Brand palette (re-mapped to teal-primary) ----------
+   * NOTE: --ioh-red is the legacy PRIMARY token used across the app
+   * for buttons/links/active states, so it now points to TEAL.
+   * True destructive/error states use --ioh-danger / --red-500. */
+  --ioh-primary: var(--teal-500);
+  --ioh-red:     #15A697;   /* legacy primary token → teal (do not use for errors) */
+  --ioh-danger:  #E13838;   /* real red — destructive / error only */
+  --ioh-grey:    #5A6B68;
+  --ioh-pink:    #0E8579;   /* secondary brand accent → deep teal */
+  --ioh-yellow:  #F5A623;
+  --ioh-teal:    #15A697;
+  --ioh-magenta: #0A6A5F;   /* → deep teal accent */
+  --ioh-ink:     #0F1F1D;
+  --ioh-mute:    #5A6B68;
+  --ioh-rule:    #E1E9E7;
+  --ioh-panel:   #F5F9F8;
+  --ioh-white:   #FFFFFF;
+  --ioh-bg-soft: #F5F9F8;
+  --ioh-bg-muted:#ECF3F1;
+  /* Daily Reports surface tokens (flip in dark mode below) */
+  --ioh-teal-deep: #0E8579;
+  --ioh-zebra:     #FBFBF9;
+  --ioh-var-tint:  #DAE5EE;
+  --ioh-grow-tint: #F2EAD2;
+
+  /* Callout tints */
+  --tint-info:    #E6F7F5;
+  --tint-success: #E7F6EC;
+  --tint-warn:    #FDF3E2;
+  --tint-danger:  #FDECEC;
+
+  /* Typography */
+  --font-sans:    var(--font-prompt),  "Prompt",  system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-poppins), "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Spacing */
+  --gutter: 24px;
+
+  /* Surfaces (soft, teal-tinted shadows) */
+  --shadow-card: 0 1px 2px rgba(15, 31, 29, .06), 0 1px 1px rgba(15, 31, 29, .04);
+  --shadow-md:   0 4px 14px rgba(15, 31, 29, .08);
+  --shadow-teal: 0 8px 24px rgba(21, 166, 151, .24);
+  --radius-card: 16px;
+  --radius-pill: 999px;
+}
+
+/* Dark surfaces — applied via OS preference or an explicit .dark / [data-theme="dark"]. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) {
+    --ioh-ink:     #E8EEEC;
+    --ioh-mute:    #9AB0AC;
+    --ioh-rule:    #2A3A37;
+    --ioh-panel:   #121A19;
+    --ioh-white:   #1B2524;   /* card surface */
+    --ioh-bg-soft: #0E1413;
+    --ioh-bg-muted:#1B2524;
+    --ioh-zebra:   #18211F;
+    --ioh-var-tint:  #25323B;
+    --ioh-grow-tint: #2E2C20;
+    --ioh-teal-deep: #4FD2C1;
+  }
+}
+.dark, [data-theme="dark"] {
+  --ioh-ink:     #E8EEEC;
+  --ioh-mute:    #9AB0AC;
+  --ioh-rule:    #2A3A37;
+  --ioh-panel:   #121A19;
+  --ioh-white:   #1B2524;
+  --ioh-bg-soft: #0E1413;
+  --ioh-bg-muted:#1B2524;
+  --ioh-zebra:   #18211F;
+  --ioh-var-tint:  #25323B;
+  --ioh-grow-tint: #2E2C20;
+  --ioh-teal-deep: #4FD2C1;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--ioh-bg-soft);
+  color: var(--ioh-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Tabular numbers everywhere data shows */
+.tnum, .tnum * {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ─── Display-grade typography → Poppins ─── */
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ioh-ink);
+  letter-spacing: -0.01em;
+}
+h1 { font-size: 32px; font-weight: 800; }
+h2 { font-size: 24px; }
+h3 { font-size: 18px; }
+h4 { font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ioh-mute); }
+
+/* All these are subheaders, KPIs, labels, pills, captions — Poppins for consistency */
+.brand-name,
+.brand-sub,
+.app-header .title,
+.app-header .subtitle,
+.welcome h1,
+.welcome-stats .stat-num,
+.welcome-stats .stat-lbl,
+.eyebrow,
+.examples-eyebrow,
+.examples button.example .ex-label,
+.pill,
+.caps,
+.flow-eyebrow,
+.flow-status,
+.confidential,
+.data-table th,
+.data-table-meta,
+.composer button.send,
+.composer .hint,
+.status-row,
+.sql-panel .sql-label,
+.callout > .label,
+.agent-flow .flow-header,
+.msg-assistant .answer th {
+  font-family: var(--font-display);
+}
+
+.eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal-600);
+}
+
+.caps {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+/* Pill */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--ioh-red);
+  color: var(--ioh-white);
+  white-space: nowrap;
+}
+.pill.yellow  { background: var(--ioh-yellow);  color: var(--ioh-ink); }
+.pill.teal    { background: var(--ioh-teal);    color: var(--ioh-white); }
+.pill.pink    { background: var(--ioh-pink);    color: var(--ioh-white); }
+.pill.magenta { background: var(--ioh-magenta); color: var(--ioh-white); }
+.pill.grey    { background: var(--ioh-rule);    color: var(--ioh-ink); }
+
+/* Card */
+.card {
+  background: var(--ioh-white);
+  border: 1px solid var(--ioh-rule);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.card.stripe-red     { border-top: 6px solid var(--ioh-red); }
+.card.stripe-pink    { border-top: 6px solid var(--ioh-pink); }
+.card.stripe-yellow  { border-top: 6px solid var(--ioh-yellow); }
+.card.stripe-teal    { border-top: 6px solid var(--ioh-teal); }
+.card.stripe-magenta { border-top: 6px solid var(--ioh-magenta); }
+
+/* SideCard */
+.sidecard {
+  background: var(--ioh-white);
+  border: 1px solid var(--ioh-rule);
+  border-left: 4px solid var(--ioh-red);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Callouts */
+.callout {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.callout > .label {
+  display: block;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.callout.info    { background: var(--tint-info);    border-color: var(--ioh-magenta); color: var(--ioh-ink); }
+.callout.success { background: var(--tint-success); border-color: var(--ioh-teal);    color: var(--ioh-ink); }
+.callout.warn    { background: var(--tint-warn);    border-color: var(--ioh-yellow);  color: var(--ioh-ink); }
+.callout.danger  { background: var(--tint-danger);  border-color: var(--ioh-danger);  color: var(--ioh-ink); }
+
+a { color: var(--ioh-red); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ioh-rule); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ioh-mute); }

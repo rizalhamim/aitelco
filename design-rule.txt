@@ -1,0 +1,240 @@
+# IOH Analyst Deck — Visual Design System Reference
+
+## Brand identity
+
+This is the **Indosat Ooredoo Hutchison (IOH)** corporate brand system, applied to analyst-grade financial decks. Always 1920×1080, always confident, data-dense, never decorative for decoration's sake.
+
+## Color tokens (always use these — never invent new colors)
+
+```css
+--ioh-grey:    #4D4D4F   /* body text, neutral surfaces */
+--ioh-red:     #ED1C24   /* PRIMARY brand color, headline accents, key data series */
+--ioh-pink:    #EC008C   /* CTA, secondary accent, second data series */
+--ioh-yellow:  #FFCB05   /* PRIMARY co-accent, highlights, third series */
+--ioh-teal:    #32BCAD   /* positive/success state, fourth series */
+--ioh-magenta: #C6168D   /* fifth series, AI/digital chapters */
+--ioh-ink:     #1A1A1B   /* deepest text */
+--ioh-mute:    #7A7A7C   /* muted text, labels, captions */
+--ioh-rule:    #E5E5E7   /* borders, dividers */
+--ioh-panel:   #F7F7F8   /* card backgrounds, subtle surfaces */
+--ioh-white:   #FFFFFF
+```
+
+**Rules**:
+- Red is the primary brand. Default headline accent color.
+- Use only 4–5 colors max on a single chart. Order: red ? pink ? yellow ? teal ? magenta ? grey.
+- Never use raw black. Use `--ioh-ink` (#1A1A1B).
+- Never use saturated greens/blues outside the palette.
+- Positive deltas: teal. Negative deltas: red. Neutral: mute grey.
+
+## Typography
+
+- **Font family**: `"Indosat", "Inter", system-ui, sans-serif` everywhere. No serifs ever.
+- Weights used: 400 (body), 500 (emphasis), 700 (display + numbers).
+- Number tabularity: always `font-variant-numeric: tabular-nums` for any data column.
+
+**Type scale (1920×1080 slides)**:
+| Use case             | Size      | Weight | Tracking |
+|----------------------|-----------|--------|----------|
+| Cover headline       | 120–140px | 700    | -0.035em |
+| Section divider title| 96px      | 700    | -0.02em  |
+| Slide title          | 32px      | 700    | -0.01em  |
+| Slide subtitle       | 20px      | 500    | normal   |
+| Card eyebrow         | 13–14px   | 700    | 0.14em (CAPS) |
+| KPI mega number      | 64–96px   | 700    | -0.03em  |
+| KPI label            | 13–18px   | 700    | 0.04em (CAPS) |
+| Body                 | 14–20px   | 400    | normal   |
+| Footnote             | 11–13px   | 500    | normal   |
+| Chart axis tick      | 11px      | 500    | normal   |
+
+## Signature visual device — Circle System
+
+A cluster of 4–5 overlapping translucent circles in brand colors with `mix-blend-mode: multiply`. Used on **cover slide** (top-right corner, large) and **section dividers** (top-right, larger). Never on content slides.
+
+Anatomy: stack red 380×380 + pink 320×320 + yellow 200×200 + magenta 240×240 + teal 170×170, with offsets that create overlap. Opacity 0.80–0.95.
+
+## Slide grid
+
+- **Canvas**: 1920×1080, white background by default
+- **Outer margin**: 72px left/right, 56px top, 100px bottom
+- **Header zone**: top 170px — title (left) + logo (right, 260px wide, top:48 right:72)
+- **Footer zone**: bottom 100px — chapter name (left), page index (right, format "Chapter · idx/total")
+- **Body zone**: ~810px tall content area between header and footer
+- **Gutter**: 20–28px between cards
+
+## Chrome components
+
+### Slide header
+```
+[Title 32px/700/ink]
+[Subtitle 20px/500/mute]
+                                    [IOH logo, top:48 right:72]
+```
+
+### Slide footer
+```
+Confidential & Internal Use Only | Do Not Capture & Share        Chapter · 04/27
+```
+
+### Section divider (chapter break)
+- Full-bleed background in `--ioh-red`, `--ioh-pink`, `--ioh-grey`, or `--ioh-magenta`
+- Chapter number ~260px, weight 700, white at opacity 0.22 (huge ghost number)
+- Title 96px white below it
+- Subtitle 30px white at 0.92 opacity
+- Optional pull-quote 26px italic + attribution
+- Yellow circle bottom-left at 70% opacity, multiply blend
+- White IOH logo top-right
+
+## Component library
+
+### Card (with colored top stripe)
+- Background white, border 1px `--ioh-rule`, radius 14–18px
+- 6px-thick colored top border in accent color (thin variant: 4px)
+- Shadow: `0 1px 2px rgba(45,41,38,.06), 0 1px 1px rgba(45,41,38,.04)`
+- Padding 24–32px
+
+### SideCard (with colored left bar)
+- Same shell, but 4px colored left border instead of top
+- Used for inventory lists, person tiles, callouts
+
+### KPI block
+```
+[LABEL — 13px/700/mute/CAPS/0.04em]
+[Value 64–96px/700/ink][unit 22–28px/600/mute]
+[+12.4% 18–22px/700/accent-color] [YoY 13–15px/500/mute]
+```
+
+### Callout — 4 kinds
+- `info` (magenta): tinted `#F3F0FF` background, `--ioh-magenta` left bar
+- `success` (teal): `#E1F4EE` background, `--ioh-teal` left bar
+- `warn` (yellow): `#FFF3D9` background, `--ioh-yellow` left bar
+- `danger` (red): `#FFEBEC` background, `--ioh-red` left bar
+
+Internal padding 12–16px, radius 8px, 4px left border, optional bold label above content.
+
+### Pill / tag
+- 6px 14px padding, fully rounded (999px), 14px/700/0.04em CAPS
+- Default: red bg, white text. Variants: yellow bg/ink text, teal bg/white text, etc.
+
+### Eyebrow
+Pink text by default. 13–14px/700/0.14em CAPS. Used above titles and inside cards.
+
+## Chart conventions (all SVG, hand-rolled)
+
+### Universal rules
+- Background white, no chart border (the card provides it)
+- Y-axis grid lines: 1px solid `--ioh-rule`, 4 ticks max
+- Axis labels: 11px/500/mute
+- No tooltips (static print-ready)
+- Show data values on bars when there's room — 10px/700 in series color, positioned above the bar
+- Legend: external, above chart, right-aligned, 13px/500/grey with 10–12px swatches
+
+### Line chart
+- Line stroke: 2.5px, color of series, `stroke-linecap: round`
+- Points: 3.5px circle, white fill, 2px series-colored border
+- Dashed lines (`6 4` dash array) for benchmark/secondary series
+- Min 2 data points, max 12. Smooth interpolation off (straight segments).
+
+### Bar chart
+- Bar radius 2px on top corners
+- Max bar width 60px, grouped bars 2px apart within a category
+- Single series: solid brand color. Multi-series: red/pink/yellow/teal/magenta in order
+- Stacked variant: 0px radius, fully filled segments
+- Optional value labels above bars (10px/700)
+
+### Combo chart (bars + line)
+- Right Y-axis for secondary line (typically a ratio or percentage)
+- Bars on primary axis, line on secondary
+- Line gets points; bars don't
+
+### Donut
+- Cutout 68% (thick segment, not skinny ring)
+- 2px white separation between segments
+- Center: 24px bold ink label + 12px mute sub
+
+## Chart card wrapper
+
+Every chart goes inside a `ChartCard`:
+```
++-----------------------------------------+
+¦ Chart Title (18px/700/ink)              ¦ Legend (13px/500, swatches)
+¦ Subtitle (14px/500/mute)                ¦
+¦ +-----------------------------------+   ¦
+¦ ¦                                   ¦   ¦
+¦ ¦           [SVG chart]             ¦   ¦
+¦ ¦                                   ¦   ¦
+¦ +-----------------------------------+   ¦
+¦ Footnote — italic, 11px/mute            ¦
++-----------------------------------------+
+```
+
+## Data tables (P&L, Balance Sheet style)
+
+- White card shell
+- Header row: 2px solid ink bottom border, 14px/700/mute/CAPS/0.04em
+- Data rows: 1px rule top border, 17–18px text, tabular nums, right-aligned values
+- Total/subtotal rows: `--ioh-panel` background, 700 weight, ink color
+- Hover/highlight: not needed (static)
+- Delta columns (QoQ, YoY): green for positive, red for negative, with explicit + sign
+
+## Speaker notes
+
+Always include short bullet-style speaker notes per slide via:
+```html
+<script type="application/json" id="speaker-notes">[
+  "Slide 1: short conversational talking point...",
+  "Slide 2: ..."
+]</script>
+```
+Tone: conversational, executive-level, 2–4 sentences. Number-anchored. No marketing fluff.
+
+## Voice & tone
+
+- **Confident, not boastful**. "We grew 19.1%" not "We're proud to announce..."
+- **Numbers up front**. "Cost of Funds at 2.11% in 1Q24, up 42bps YoY" — not "CoF increased significantly."
+- **Strengths and challenges balanced** — never hide weaknesses. Use Callout danger boxes for them.
+- **No exclamation marks ever**. No emoji. No corporate jargon ("synergy", "best-in-class", "leverage" as verb).
+- **Subtitles do work**: every slide's subtitle should be one sentence that summarizes the takeaway.
+
+## Slide patterns (use these as templates)
+
+1. **Cover**: Circle Cluster top-right, big 120–140px headline with one word in red, eyebrow pink CAPS, 4-up metadata strip at bottom, logo + confidentiality line
+2. **Table of contents**: Two columns — left side big "Built for analysts." / "Built for clarity." statement; right side numbered list with chapter number in red, title in ink, subtitle in mute, page range right-aligned
+3. **Section divider**: Full-bleed red/pink/magenta/grey, giant ghost chapter number, 96px title, optional pull-quote
+4. **6-up KPI grid**: 3×2 grid of cards, each with colored top stripe, label / mega number+unit / delta line
+5. **2-chart layout**: 1.1fr/1fr grid, two chart cards side-by-side, optional 4-up KPI strip below
+6. **3-pillar layout** (used for AI strategy, guidance): 3 equal columns of tall cards with giant number, title, and bullet list
+7. **Strengths vs Challenges**: 2-up panel, teal-tinted on left (strengths) and red-tinted on right (challenges), each with 4-row mini-table of Metric / Value / Note
+8. **Big data table**: Full-width white card with P&L/balance-sheet rows, deltas in green/red
+
+## Don'ts
+
+- **No serif fonts.** Ever.
+- **No emoji** unless explicitly required by content.
+- **No gradients on charts.** Solid fills only.
+- **No drop shadows on text.**
+- **No more than 2 hero accent colors per slide.** Yellow + red is the canonical pair.
+- **No clip-art or stock icons.** SVG icons only if absolutely required, in brand colors, single-color.
+- **No dark mode.** White canvas always (except section dividers and cover which can be dark/colored full-bleed).
+- **Never use `<em>` with default italic styling**. Use color/weight to emphasize, not italic.
+- **Never put more than 5 data series on a single chart.** Split or aggregate.
+
+## File architecture (when implementing in HTML)
+
+```
+deck-stage.js              — slide stage web component
+ioh-tokens.css             — @font-face + CSS variables
+chrome.jsx                 — Slide, SlideHeader, SlideFooter, SlideLogo,
+                             SectionDivider, CircleCluster, Card, SideCard,
+                             Pill, Eyebrow
+analyst-charts.jsx         — LineChart, BarChart, ComboChart, Donut,
+                             ChartCard, LegendItem, KPI, Callout, AnalystSlide
+analyst-slides-a.jsx       — Cover, TOC, Ch 01 (intro)
+analyst-slides-b.jsx       — Ch 02–04 (highlights, financial, asset quality)
+analyst-slides-c.jsx       — Ch 05–07 (digital, subsidiaries, ESG) + closing
+[deck].html                — orchestrates everything; mounts each slide to <section>
+```
+
+## Final note
+
+The look is **"Bloomberg meets corporate sustainability report"** — dense enough that an analyst can extract numbers immediately, but typographically restrained and confident. Red is the brand. Numbers are sacred. White space earns its keep.

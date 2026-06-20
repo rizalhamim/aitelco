@@ -1,0 +1,29 @@
+.env
+__pycache__/
+*.pyc
+node_modules/
+.next/
+venv/
+
+# Flutter / Android build artifacts
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+
+# Binaries / large assets
+*.apk
+*.aab
+*.ipa
+
+# Backend data dumps (track separately if needed)
+backend/data/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

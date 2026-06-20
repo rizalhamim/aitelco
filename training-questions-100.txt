@@ -1,0 +1,111 @@
+================================================================================
+IOH TELCO AI — 100 TRAINING QUESTIONS
+20 BASIC | 20 MEDIUM | 60 HARD
+Digunakan untuk menguji & melatih akurasi AI agent eksplorasi data.
+================================================================================
+
+-------------------- BASIC (20) — single metric, single domain --------------------
+B01|kpi_summary|total revenue prepaid kota Surabaya bulan ini
+B02|kpi_summary|jumlah RGU 90 hari di kabupaten Sidoarjo bulan terakhir
+B03|kpi_summary|berapa gross add bulan ini di region East Java
+B04|competitive|market share IM3 di kabupaten Malang bulan terakhir
+B05|competitive|SOGA Telkomsel vs IM3 di kota Bandung
+B06|revenue|revenue per channel ATL vs BTL kota Surabaya bulan ini
+B07|revenue|top 5 channel detail dengan revenue tertinggi brand IM3
+B08|5g|traffic 5G di kota Surabaya bulan terakhir
+B09|5g|jumlah device 5G dengan traffic di kabupaten Gresik
+B10|network|availability 4G rata-rata di kota Semarang bulan ini
+B11|acquisition|gross add per channel akuisisi bulan ini di kota Surabaya
+B12|fwa|total revenue FWA bulan terakhir di region East Java
+B13|ftth|jumlah sales order FTTH bulan ini di kota Surabaya
+B14|customer_hvc|jumlah subscriber HVC di kabupaten Sidoarjo
+B15|sales_distribution|jumlah outlet aktif di kota Surabaya bulan ini
+B16|site_performance|top 10 site dengan revenue prepaid tertinggi di kota Surabaya
+B17|kpi_summary|berapa churn 90 hari di kabupaten Bekasi bulan terakhir
+B18|revenue|revenue per price slab di kota Surabaya bulan ini
+B19|territory_reference|daftar kecamatan di kabupaten Malang
+B20|competitive|churn share per operator di region Central Java
+
+-------------------- MEDIUM (20) — 2 metrics / filter / simple trend --------------------
+M01|kpi_summary|trend revenue prepaid 6 bulan terakhir di kota Surabaya
+M02|kpi_summary|revenue dan subscriber RGU 90d per region urutkan dari tertinggi
+M03|competitive|market share IM3 vs Telkomsel vs XL di kabupaten Sidoarjo bulan ini
+M04|revenue|revenue MOBO trade per channel detail trend 3 bulan di kota Surabaya
+M05|5g|5G penetration (device with traffic / total device) per region bulan ini
+M06|network|site dengan availability 4G di bawah SLA 99 di kota Surabaya
+M07|acquisition|perbandingan gross add modern vs traditional vs DSF per region
+M08|kpi_summary|revenue prepaid MoM bulan ini vs bulan lalu di kota Surabaya
+M09|fwa|FWA RGU90 dan net add per region bulan terakhir
+M10|customer_hvc|HVC subscriber masuk vs keluar per kecamatan di kota Surabaya
+M11|site_performance|jumlah site per kategori revenue slab kelipatan 10 juta bulan ini
+M12|revenue|kontribusi revenue data vs voice vs sms di kabupaten Malang
+M13|kpi_summary|usage data GB per subscriber di region East Java bulan ini
+M14|competitive|trend market share IM3 6 bulan terakhir di kota Bandung
+M15|sales_distribution|URO dan QSSO per branch di kota Surabaya bulan ini
+M16|ftth|funnel FTTH sales order vs service active vs permanent active kota Surabaya
+M17|kpi_summary|gross add per channel breakdown di region West Java bulan ini
+M18|5g|trend traffic 5G 6 bulan terakhir di kota Surabaya
+M19|kpi_summary|net add 90 hari per kabupaten di region East Java urutkan terendah
+M20|network|total downtime jam 4G per region bulan terakhir
+
+-------------------- HARD (60) — multi-domain / YoY / quarterly / cross-table / analytic --------------------
+H01|kpi_summary|revenue prepaid YoY bulan ini vs bulan sama tahun lalu di kota Surabaya
+H02|kpi_summary|pertumbuhan revenue quarterly (QoQ) 4 kuartal terakhir di region East Java
+H03|competitive|berapa kecamatan yang market share IM3 turun bulan ini vs bulan lalu breakdown per region
+H04|competitive|berapa kecamatan yang mengalami penurunan SOGA dan market share sekaligus, breakdown per region
+H05|site_performance|berapa site yang tidak menghasilkan gross add bulan ini
+H06|site_performance|jumlah site per revenue slab kelipatan 10 juta dari Januari sampai Mei 2026
+H07|kpi_summary|kenapa revenue turun bulan ini di kota Surabaya, analisa causal chain
+H08|kpi_summary|revenue prepaid vs market share IM3 per kabupaten, mana yang revenue tinggi tapi MS rendah
+H09|5g|5G adoption funnel data UU all vs UU 5G device vs 5G device with traffic kota Surabaya dengan conversion
+H10|network_benchmark|download speed IM3 vs Telkomsel di 4G dan 5G per kabupaten
+H11|kpi_summary|revenue prepaid MTD bulan ini vs MTD bulan lalu di kota Surabaya (apple to apple)
+H12|competitive|gap market share IOH vs Telkomsel per region urutkan gap terbesar
+H13|revenue|revenue ATL vs BTL trend YoY di kota Surabaya
+H14|kpi_summary|korelasi gross add dengan net add 90d per region, region mana paling efisien akuisisi
+H15|customer_hvc|kontribusi revenue HVC terhadap total revenue per kabupaten di region East Java
+H16|acquisition|kualitas akuisisi: persentase GA yang usage di atas 1GB per region
+H17|kpi_summary|revenue base vs revenue acquisition trend 6 bulan di kota Surabaya
+H18|fwa|pertumbuhan FWA RGU90 YoY per region dan kontribusi revenue FWA
+H19|site_performance|distribusi site berdasarkan profitability status di kota Surabaya
+H20|kpi_summary|top 10 kabupaten dengan pertumbuhan revenue MoM tertinggi (MTD basis)
+H21|competitive|kecamatan mana yang IM3 market share leader (di atas Telkomsel) di region East Java
+H22|kpi_summary|decompose revenue VSD (voice sms data) per region bulan ini dengan persentase
+H23|5g|region mana dengan 5G penetration tertinggi dan bandingkan dengan traffic 5G nya
+H24|network|site yang mengalami full outage 4G bulan ini per region
+H25|kpi_summary|revenue per RGU (ARPU proxy) per region urutkan tertinggi
+H26|acquisition|trend gross add biometric vs non-biometric 6 bulan di region East Java
+H27|kpi_summary|berapa kabupaten yang net add 90d negatif bulan ini, breakdown per region
+H28|competitive|trend SOGA IM3 quarterly 4 kuartal terakhir di kota Surabaya
+H29|revenue|channel detail mana yang revenue nya tumbuh MoM tertinggi di kota Surabaya
+H30|kpi_summary|perbandingan revenue prepaid antar 5 region terbesar dengan kontribusi persen
+H31|customer_hvc|net HVC (masuk minus keluar) per region trend 6 bulan
+H32|site_performance|site dengan revenue turun lebih dari 20 persen MoM di kota Surabaya
+H33|kpi_summary|analisa funnel akuisisi sampai revenue di kabupaten Sidoarjo bulan ini
+H34|sales_distribution|produktivitas outlet (revenue per outlet) per region urutkan tertinggi
+H35|5g|gap antara device 5G total vs device 5G with traffic per region (5G idle device)
+H36|competitive|market share IOH trend YoY per region mana yang naik mana yang turun
+H37|kpi_summary|revenue data organic vs mobo trade vs mobo non trade kontribusi per region
+H38|network|availability 4G vs 5G per region bandingkan mana yang lebih reliable
+H39|kpi_summary|kabupaten dengan gross churn 90d tertinggi dan analisa net churn nya
+H40|ftth|conversion rate FTTH dari sales order ke permanent active per kota
+H41|kpi_summary|pertumbuhan pack subscriber MoM per region (MTD basis)
+H42|acquisition|channel akuisisi mana yang paling produktif (GA usage 1GB+ ratio) per region
+H43|competitive|kecamatan mana yang churn share IM3 paling tinggi di region East Java
+H44|kpi_summary|revenue prepaid quarterly trend dengan growth rate per kuartal di region East Java
+H45|customer_hvc|HVC revenue per HVC subscriber (ARPU HVC) per region
+H46|5g|trend 5G device adoption YoY per region
+H47|kpi_summary|VLR daily vs RGU 90d ratio (activity rate) per region
+H48|site_performance|top 20 site terdekat dari koordinat -7.25 112.75 dengan revenue dan distance
+H49|kpi_summary|kabupaten mana revenue tumbuh tapi subscriber turun (efisiensi ARPU)
+H50|network_benchmark|benchmark OpenSignal video experience IM3 vs kompetitor per kabupaten
+H51|kpi_summary|kontribusi setiap region terhadap total revenue Java dengan ranking
+H52|revenue|revenue per price slab dengan jumlah hit transaksi dan avg revenue per hit kota Surabaya
+H53|competitive|region dengan market share IOH di bawah 30 persen, prioritas perbaikan
+H54|kpi_summary|trend net add 90d 6 bulan dan korelasi dengan gross add per region
+H55|acquisition|total gross add per channel YoY per region growth
+H56|kpi_summary|revenue MTD bulan ini vs full month bulan lalu — mana basis yang tepat dan kenapa
+H57|fwa|FWA penetration (FWA RGU vs total RGU) per region
+H58|site_performance|berapa site addressable yang 0 gross add (non produktif) per region
+H59|kpi_summary|analisa multi-domain Surabaya: revenue, market share, 5G, network availability ringkas
+H60|competitive|kabupaten mana yang IOH kalah market share dari Telkomsel dengan gap terbesar di East Java

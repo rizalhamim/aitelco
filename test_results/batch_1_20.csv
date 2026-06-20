@@ -1,0 +1,455 @@
+id,question,expected_domain,routed_domain,status,error,elapsed_s,sql,row_count,answer_preview,has_chart,has_table
+1,Top 10 site dengan revenue tertinggi 30 hari terakhir,site_performance,site_performance,OK,,28.8,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily`
+)
+SELECT
+  s.site_id,
+  ANY_VALUE(s.site_nm) AS site_name,
+  SUM(s.rev_prepaid) AS total_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily` s, latest l
+WHERE s.dt_id >= DATE_SUB(l.max_dt, INTERVAL 29 DAY)
+GROUP BY s.site_id
+ORDER BY total_revenue DESC
+LIMIT 10",10,"## Top 10 Site dengan Revenue Tertinggi (30 Hari Terakhir)
+
+Berikut adalah 10 site dengan total revenue prepaid tertinggi:
+
+| Peringkat | Site ID | Nama Site | Total Revenue |
+|:---------:|---------|-----------|-------------:|
+| 1 | NA | *(tidak teridentifikasi)* | **Rp 6,67 Miliar** |
+| 2 | 14SKH01",True,True
+2,Berapa total revenue per region 1 bulan terakhir?,site_performance,reporting,OK,,25.3,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_region`
+)
+SELECT
+  t.region,
+  t.month_id,
+  t.ms_amount_ioh,
+  t.ms_amount_im3,
+  t.ms_amount_3id,
+  t.ms_amount_tsel,
+  t.ms_amount_xl,
+  t.ms_amount_sf,
+  (t.ms_amount_ioh + t.ms_amount_im3 + t.ms_amount_3id + t.ms_amount_tsel + t.ms_amount_xl + t.ms_amount_sf) AS total_ms_amount_all_operators,
+  t.ms_ioh,
+  t.ms_im3,
+  t.ms_3id,
+  t.ms_tsel,
+  t.ms_xl,
+  t.ms_sf
+FROM `data-java-prd-",0,"## Hasil: Data Tidak Ditemukan
+
+Sayangnya, query tidak mengembalikan data apapun (0 baris) untuk **total revenue (market share amount) per region dalam 1 bulan terakhir**.
+
+### Kemungkinan Penyebab:
+- **Data bulan terbaru belum tersedia** di tabel `rham_report_fb_ms_region` — kemungkinan data belum ",False,False
+3,Site mana yang mengalami penurunan revenue terbesar bulan ini vs bulan lalu?,site_performance,site_performance,OK,,43.7,"WITH latest_months AS (
+  SELECT
+    MAX(month_id) AS curr_month,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+),
+curr AS (
+  SELECT
+    m.site_id,
+    m.site_nm,
+    m.brand,
+    m.region,
+    m.circle,
+    m.kabkot_nm,
+    m.kec_nm,
+    m.month_id,
+    m.rev_prepaid
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly` m,
+       latest_months lm
+  WHERE m.month_id =",1000,"## Site dengan Penurunan Revenue Terbesar (Juni vs Mei 2025)
+
+**Site dengan penurunan terbesar adalah `13CKR0490` (IM3) di Cikarang Selatan, Bekasi**, yang mengalami penurunan revenue sebesar **Rp 5,22 miliar** (turun **98,71%**) — dari Rp 5,29 miliar di bulan April menjadi hanya Rp 68 juta di bulan",True,True
+4,Rata-rata ARPU per site di East Java bulan terakhir,site_performance,site_performance,OK,,33.9,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+)
+SELECT
+  t.month_id,
+  t.site_id,
+  t.site_nm,
+  t.region,
+  t.circle,
+  t.kabkot_nm,
+  t.kec_nm,
+  t.rev_prepaid,
+  t.subs_rgu_90d,
+  SAFE_DIVIDE(t.rev_prepaid, t.subs_rgu_90d) AS arpu_per_site
+FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly` t
+JOIN latest l ON t.month_id = l.max_month
+WHERE UPPER(t.region) LIKE '%EAST JAVA%'
+  AND t.subs_rgu_90d > 0
+ORDER BY arpu_",1000,"## Rata-rata ARPU per Site di East Java — Juni 2025
+
+Berdasarkan data **1.000 site** di region East Java untuk periode **202605 (Juni 2025)**, berikut ringkasannya:
+
+### 🔝 Top 5 Site dengan ARPU Tertinggi
+
+| # | Site ID | Kab/Kota | Kecamatan | ARPU/Site |
+|---|---------|----------|-----------|-----",True,True
+5,Top 5 kecamatan dengan revenue data tertinggi 30 hari terakhir,site_performance,kpi_summary,OK,,28.0,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+)
+SELECT
+  t.kecamatan,
+  t.kabkot,
+  t.kec_id,
+  SUM(t.rev_data) AS total_rev_data
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_dly` t,
+     latest l
+WHERE t.dt_id BETWEEN DATE_SUB(l.max_dt, INTERVAL 29 DAY) AND l.max_dt
+GROUP BY t.kecamatan, t.kabkot, t.kec_id
+ORDER BY total_rev_data DESC
+LIMIT 5",0,"## Hasil: Tidak Ada Data Ditemukan
+
+Pencarian **Top 5 kecamatan dengan revenue data tertinggi 30 hari terakhir** mengembalikan **0 baris data**.
+
+### Kemungkinan Penyebab:
+- **Data belum tersedia** untuk periode 30 hari terakhir di tabel KPI harian.
+- **Kolom `rev_data`** mungkin bernilai `NULL` ata",False,False
+6,Berapa total subscriber aktif per branch di Central Java?,site_performance,kpi_summary,OK,,31.6,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth`
+)
+SELECT
+  t.kabkot,
+  SUM(t.rgu_90d) AS total_rgu_90d,
+  SUM(t.rgu_30d) AS total_rgu_30d
+FROM `data-java-prd-97b9.java_precalc.rham_kpi_highlevel_mth` t
+CROSS JOIN latest l
+WHERE t.month_id = l.max_month_id
+  AND LOWER(t.kabkot) LIKE '%jawa tengah%'
+     OR LOWER(t.kabkot) LIKE '%central java%'
+     OR LOWER(t.kabkot) IN (
+        'kota semarang','kab semarang','kab kendal','k",6,"## Total Subscriber Aktif per Kabkot di Central Java
+
+Berikut ringkasan **RGU (Revenue Generating Unit)** aktif untuk 6 kabupaten/kota di Jawa Tengah pada bulan terakhir yang tersedia:
+
+| Kabkot | RGU 90 Hari | RGU 30 Hari |
+|---|--:|--:|
+| **Kota Semarang** | **37.787.364** | **32.879.573** |
+| Kot",True,True
+7,Trend revenue harian top 5 site selama 7 hari terakhir,site_performance,site_performance,OK,,39.8,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+),
+date_range AS (
+  SELECT DATE_SUB(max_dt, INTERVAL 6 DAY) AS start_dt, max_dt
+  FROM latest
+),
+top5_sites AS (
+  SELECT s.site_id, SUM(s.rev_prepaid) AS total_revenue
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily` s, date_range d
+  WHERE s.dt_id BETWEEN d.start_dt AND d.max_dt
+  GROUP BY s.site_id
+  ORDER BY tota",70,"## Trend Revenue Harian Top 5 Site (7 Hari Terakhir: 20–26 Mei 2026)
+
+Berikut adalah **5 site dengan total revenue prepaid tertinggi** selama 7 hari terakhir:
+
+| # | Site ID | Total Rev 7 Hari | Keterangan |
+|---|---------|------------------|------------|
+| 1 | **NA** (tanpa site ID) | **Rp 1,64 mil",True,True
+8,Site dengan RGU 30d tertinggi di Bali Nusra,site_performance,site_performance,OK,,29.4,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+)
+SELECT
+  d.dt_id,
+  d.site_id,
+  d.site_nm,
+  d.brand,
+  d.kabkot_nm,
+  d.kec_nm,
+  d.provinsi_nm,
+  d.subs_rgu_30d
+FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily` d
+JOIN `data-java-prd-97b9.java_precalc.rham_site_wise_addr_java` a
+  ON d.site_id = a.site_id
+CROSS JOIN latest l
+WHERE d.dt_id = l.max_dt
+  AND UPPER(a.r",500,"## Site dengan RGU 30 Hari Tertinggi di Bali Nusra
+
+Berdasarkan data per **26 Mei 2026**, berikut **top 3 site** dengan RGU 30 hari tertinggi di region Bali Nusra:
+
+| # | Site ID | Brand | Lokasi | RGU 30d |
+|---|---------|-------|--------|--------:|
+| 1 | **18MAT0060** | 3ID | Cakranegara, Kota Mat",True,True
+9,Bandingkan revenue voice vs data per region bulan terakhir,site_performance,reporting,OK,,44.5,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_region`
+)
+SELECT
+  r.region,
+  r.month_id,
+  r.ms_ioh,
+  r.ms_tsel,
+  r.ms_xl,
+  r.ms_sf,
+  r.ms_amount_ioh,
+  r.ms_amount_tsel,
+  r.ms_amount_xl,
+  r.ms_amount_sf,
+  r.soga_ioh,
+  r.soga_tsel,
+  r.soga_xl,
+  r.soga_sf,
+  r.fb_ms_pop
+FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_region` r
+JOIN latest l ON r.month_id = l.max_month
+ORDER BY r.region
+LIMIT 100",24,"## Jawaban: Data Revenue Voice vs Data Tidak Tersedia
+
+Mohon maaf, **data revenue voice vs data per region tidak dapat ditampilkan** karena tabel yang tersedia (Market Share Reports) tidak memiliki kolom revenue voice maupun revenue data.
+
+Namun, sebagai alternatif, berikut **ringkasan Market Share ",True,True
+10,Berapa jumlah site yang revenue-nya turun >20% MoM?,site_performance,site_performance,OK,,21.6,"WITH latest_months AS (
+  SELECT 
+    MAX(month_id) AS current_month,
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+),
+current_rev AS (
+  SELECT 
+    site_id,
+    brand,
+    SUM(rev_prepaid) AS rev_current
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly` t, latest_months lm
+  WHERE t.month_id = lm.current_month
+  GROUP BY site_id, brand
+),
+prev_rev AS (
+  SELECT 
+",1,"## Jumlah Site dengan Revenue Turun >20% MoM
+
+**Total: 22.417 site** mengalami penurunan revenue prepaid lebih dari 20% dari April ke Mei 2025.
+
+### Breakdown per Brand:
+- **3ID**: 16.803 site (lebih banyak terdampak)
+- **IM3**: 13.291 site
+
+> ⚠️ **Catatan**: Jumlah per brand melebihi total karena k",True,True
+11,Total gross add per site di Surabaya 30 hari terakhir,site_performance,site_performance,ERROR,"400 POST https://bigquery.googleapis.com/bigquery/v2/projects/data-java-prd-97b9/jobs?prettyPrint=false: Name soga not found inside s at [11:9]
+
+Location: asia-southeast2
+Job ID: c2f4894e-67e3-4fee-9d",45.9,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_site_ga_daily`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+)
+SELECT
+  g.site_id,
+  g.brand,
+  g.kabkota,
+  SUM(g.ga_total) AS total_gross_add,
+  SUM(g.ga_modern) AS ga_modern,
+  SUM(g.ga_ola) AS ga_ola,
+  SUM(g.ga_online) AS ga_online,
+  SUM(g.ga_fwa) AS ga_fwa,
+  SUM(g.ga_gerai) AS ga_gerai,
+  SUM(g.ga_traditional) AS ga_traditional,
+  SUM(g.ga_dsf) AS ga_dsf,
+  SUM(g.ga_h2h) AS ga_h2h,
+  ",1000,"## Total Gross Add per Site di Surabaya (30 Hari Terakhir)
+
+Data mencakup **1.000 site** di Kota Surabaya untuk periode sekitar **28 April – 27 Mei 2026**.
+
+### 🏆 Top 10 Site dengan Gross Add Tertinggi
+
+| # | Site ID | Brand | Total GA | Channel Dominan |
+|---|---------|-------|----------|----------",True,True
+12,Top 10 site dengan churn tertinggi bulan ini,site_performance,site_performance,OK,,30.8,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+)
+SELECT
+  m.month_id,
+  m.site_id,
+  m.site_nm,
+  m.brand,
+  m.kabkot_nm,
+  m.kec_nm,
+  m.circle,
+  m.region,
+  m.gross_churn_90d,
+  m.gross_churn_30d
+FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly` m
+JOIN latest l ON m.month_id = l.max_month
+ORDER BY m.gross_churn_90d DESC
+LIMIT 10",10,"## Top 10 Site dengan Churn Tertinggi — Juni 2025 (Month ID: 202605)
+
+**Temuan utama:** Seluruh 10 site teratas menunjukkan **gross churn 90 hari = 0**, artinya **tidak ada churn 90 hari yang signifikan** pada periode ini.
+
+Berikut detailnya:
+
+| # | Site ID | Brand | Kabupaten/Kota | Kecamatan | Reg",True,True
+13,Revenue per price slab di Central Java bulan terakhir,site_performance,site_performance,OK,,25.0,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_data_rev_price_slab_mth`
+)
+SELECT
+  ps.month_id,
+  ps.price_slab,
+  SUM(ps.revenue) AS total_revenue,
+  SUM(ps.hit) AS total_hit
+FROM `data-java-prd-97b9.java_precalc.rham_site_data_rev_price_slab_mth` ps
+JOIN `data-java-prd-97b9.java_precalc.rham_site_wise_addr_java` addr
+  ON ps.site_id = addr.site_id
+CROSS JOIN latest l
+WHERE ps.month_id = l.max_month
+  AND UPPER(addr.circle) = 'CENTRAL JAVA",0,"## Revenue per Price Slab di Central Java - Bulan Terakhir
+
+**Hasil: Tidak ada data ditemukan.**
+
+Data revenue per price slab untuk region Central Java pada bulan terakhir tidak tersedia dalam sistem.
+
+### Kemungkinan Penyebab:
+- **Data belum di-upload** untuk periode bulan terakhir
+- **Filter regio",False,False
+14,Rata-rata usage data per site di East Java MTD,site_performance,site_performance,OK,,20.8,"WITH latest_month AS ( SELECT MAX(month_id) AS max_month_id FROM `data-java-prd-97b9.java_precalc.rham_site_wise_mtd` ) SELECT t.site_id, t.site_nm, t.circle, t.kabkot_nm AS kabupaten, t.kec_nm AS kecamatan, t.usg_data_gb AS usage_data_gb, ROUND(t.usg_data_gb * 1024, 2) AS usage_data_mb, t.subs_rgu_90d, CASE WHEN t.subs_rgu_90d > 0 THEN ROUND(t.usg_data_gb / t.subs_rgu_90d, 4) ELSE NULL END AS avg_usage_gb_per_subscriber FROM `data-java-prd-97b9.java_precalc.rham_site_wise_mtd` t, latest_month l",0,"## Hasil Analisis: Rata-rata Usage Data per Site di East Java (MTD)
+
+**Data tidak ditemukan** untuk query ini.
+
+### Kemungkinan Penyebab:
+- **Data MTD belum tersedia** untuk periode bulan berjalan
+- **Filter wilayah** ""East Java"" mungkin tidak cocok dengan format nama region di database (coba cek ap",False,False
+15,Berapa total revenue channel digital vs physical per region?,site_performance,site_performance,OK,,33.6,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month_id
+  FROM `data-java-prd-97b9.java_precalc.rham_site_data_rev_channel_mth`
+),
+rev AS (
+  SELECT
+    r.month_id,
+    a.region,
+    CASE
+      WHEN LOWER(r.channel_group) IN ('online', 'ola', 'digital', 'e-commerce') THEN 'Digital'
+      ELSE 'Physical'
+    END AS channel_type,
+    SUM(r.revenue) AS total_revenue
+  FROM `data-java-prd-97b9.java_precalc.rham_site_data_rev_channel_mth` r
+  JOIN latest l ON r.month_id = l.max_month_id
+  LEFT JOIN (",2,"## Total Revenue: Channel Digital vs Physical per Region (Mei 2026)
+
+**Temuan utama:** Seluruh revenue di kedua region **100% berasal dari channel Physical**. Tidak ada revenue dari channel Digital yang tercatat.
+
+| Region | Channel | Total Revenue | Kontribusi |
+|---|---|---|---|
+| **Central Java**",True,True
+16,Site dengan pertumbuhan revenue tertinggi 3 bulan terakhir,site_performance,site_performance,OK,,46.4,"WITH bounds AS (
+  SELECT
+    FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 2 MONTH)) AS m1,
+    MAX(month_id) AS m3
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+),
+rev_by_month AS (
+  SELECT
+    t.site_id,
+    t.brand,
+    ANY_VALUE(t.site_nm) AS site_nm,
+    ANY_VALUE(t.kabkot_nm) AS kabkot_nm,
+    ANY_VALUE(t.kec_nm) AS kec_nm,
+    SUM(CASE WHEN t.month_id = b.m1 THEN t.rev_prepaid END) AS rev_month1,
+    SUM(CASE WHEN t.month_id = b.m3 THEN t.rev",1000,"## Site dengan Pertumbuhan Revenue Tertinggi (3 Bulan Terakhir)
+
+**Periode:** Maret 2026 → Mei 2026 (prepaid revenue)
+
+Berikut **Top 10 site** dengan pertumbuhan revenue tertinggi:
+
+| # | Site | Kab/Kota | Brand | Rev Bulan 1 | Rev Bulan 3 | Growth |
+|---|------|----------|-------|-------------|----",True,True
+17,Distribusi revenue per price slab secara nasional,site_performance,site_performance,OK,,24.0,"WITH latest_month AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_data_rev_price_slab_mth`
+)
+SELECT 
+  t.price_slab,
+  SUM(t.revenue) AS total_revenue,
+  SUM(t.hit) AS total_hit,
+  ROUND(SUM(t.revenue) * 100.0 / SUM(SUM(t.revenue)) OVER(), 2) AS pct_revenue
+FROM `data-java-prd-97b9.java_precalc.rham_site_data_rev_price_slab_mth` t
+JOIN latest_month lm ON t.month_id = lm.max_month
+GROUP BY t.price_slab
+ORDER BY total_revenue DESC
+LIMIT 50",15,"## Distribusi Revenue per Price Slab (Nasional - Region Java)
+
+**Kontributor revenue terbesar** adalah price slab **10-20k** dengan total **Rp 611,7 miliar (18,27%)** dari total revenue.
+
+### Top 5 Price Slab berdasarkan Revenue:
+| Price Slab | Revenue | Kontribusi |
+|------------|---------|--------",True,True
+18,Top 20 site dengan subscriber terbanyak di Java,site_performance,site_performance,OK,,25.1,"WITH latest AS (
+  SELECT MAX(dt_id) AS max_dt
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily`
+  WHERE dt_id >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+)
+SELECT
+  s.site_id,
+  s.site_nm,
+  s.brand,
+  s.kabkot_nm,
+  s.kec_nm,
+  s.provinsi_nm,
+  s.dt_id,
+  s.subs_rgu_90d,
+  s.subs_rgu_30d
+FROM `data-java-prd-97b9.java_precalc.rham_site_wise_daily` s
+JOIN latest l ON s.dt_id = l.max_dt
+WHERE s.java_non_java = 'Java'
+ORDER BY s.subs_rgu_90d DESC
+LIMIT 20",0,"## Top 20 Site dengan Subscriber Terbanyak di Java
+
+**Hasil: Data tidak ditemukan (0 baris).**
+
+Query tidak mengembalikan data apapun. Beberapa kemungkinan penyebabnya:
+
+1. **Data belum tersedia** — Tabel `rham_site_wise_daily` mungkin belum terisi untuk tanggal terbaru di region Java.
+2. **Filter t",False,False
+19,Perbandingan revenue MTD vs bulan lalu full month per region,site_performance,reporting,OK,,52.4,"WITH latest AS (
+  SELECT MAX(month_id) AS curr_month,
+         FORMAT_DATE('%Y%m', DATE_SUB(PARSE_DATE('%Y%m', MAX(month_id)), INTERVAL 1 MONTH)) AS prev_month
+  FROM `data-java-prd-97b9.java_precalc.rham_report_fb_ms_region`
+),
+curr AS (
+  SELECT r.region,
+         r.month_id,
+         SUM(r.ms_amount_ioh) AS rev_ioh_curr,
+         SUM(r.ms_amount_im3) AS rev_im3_curr,
+         SUM(r.ms_amount_3id) AS rev_3id_curr,
+         SUM(r.ms_amount_tsel) AS rev_tsel_curr,
+         SUM(r.ms_amount_xl) A",12,"## Perbandingan Revenue MTD Mei 2025 vs Full Month April 2025
+
+**Secara umum, pencapaian MTD Mei 2025 sudah mencapai ~50% dari total revenue April 2025** di semua region dan semua operator. Ini mengindikasikan bulan berjalan sudah sekitar setengah jalan (data hingga pertengahan Mei).
+
+### Highlights",True,True
+20,Site yang memiliki ARPU di atas 50000 di Central Java,site_performance,site_performance,OK,,38.3,"WITH latest AS (
+  SELECT MAX(month_id) AS max_month
+  FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly`
+)
+SELECT
+  t.site_id,
+  t.site_nm AS site_name,
+  t.region,
+  SUM(t.rev_prepaid) AS total_revenue,
+  SUM(t.subs_rgu_90d) AS total_subs,
+  SAFE_DIVIDE(SUM(t.rev_prepaid), SUM(t.subs_rgu_90d)) AS arpu
+FROM `data-java-prd-97b9.java_precalc.rham_site_wise_monthly` t
+JOIN latest l ON t.month_id = l.max_month
+WHERE UPPER(t.region) LIKE '%CENTRAL JAVA%'
+GROUP BY t.site_id, t.site_nm, t.r",301,"## Site dengan ARPU di Atas Rp 50.000 di Central Java
+
+Terdapat **301 site** di region Central Java yang memiliki ARPU di atas Rp 50.000 pada bulan terakhir.
+
+### 🏆 Top 10 Site dengan ARPU Tertinggi
+
+| # | Site ID | Revenue | Subscriber (RGU 90d) | ARPU |
+|---|---------|---------|-------------------",True,True
