@@ -18,9 +18,29 @@ from google.cloud import bigquery
 
 from . import config
 
+# DDL/write keywords. We MUST allow scalar-function uses of REPLACE(...) (very
+# common in SQL: REPLACE(string, from, to)), and column/identifier names that
+# coincidentally contain words like "merge_status" or "load_dt". So the regex
+# below rejects the keyword only when it is NOT followed by '(' (function call)
+# and IS followed by whitespace + a SQL noun typical of write statements
+# (INTO/TABLE/DATABASE/VIEW/INDEX/SCHEMA/FUNCTION/PROCEDURE/MODEL/...).
+# This catches `INSERT INTO ...`, `DROP TABLE ...`, `CREATE OR REPLACE TABLE ...`
+# while leaving `REPLACE(s,'a','b')`, `merge_status` and similar alone.
+_DDL_FOLLOWERS = (
+    r"(?:into|from|table|tables|temp|temporary|database|view|index|schema|"
+    r"function|procedure|model|materialized|or\s+replace|external|"
+    r"role|user|warehouse|column)"
+)
 _FORBIDDEN = re.compile(
-    r"\b(insert|update|delete|merge|drop|create|alter|truncate|grant|revoke|"
-    r"call|export|load|replace)\b",
+    # Group 1: write/DDL keywords NOT used as function calls and followed by a DDL noun.
+    r"\b(insert|delete|drop|create|alter|truncate|grant|revoke)\s+(?!\()"
+    + _DDL_FOLLOWERS
+    + r"|"
+    # Group 2: keywords that always indicate write statements when followed by SET/whitespace.
+    r"\b(update\s+`?\w+`?\s+set)\b|"
+    # Group 3: CALL ... (stored procedure) and EXPORT DATA/MODEL.
+    # (Note: no trailing \b — \w followed by another \w isn't a word boundary, and we don't need one.)
+    r"\b(call\s+\w|export\s+(?:data|model)\b)",
     re.IGNORECASE,
 )
 _MULTI_STMT = re.compile(r";\s*\S")  # semicolon followed by more content

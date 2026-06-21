@@ -102,13 +102,33 @@ def chat(messages, model=None, max_tokens=2000, temperature=0.0) -> str:
 
 
 def chat_stream(messages, model=None, max_tokens=2000, temperature=0.0):
-    """Generator yielding content tokens as they arrive."""
+    """Generator yielding content tokens as they arrive.
+
+    Falls back to LLM_MODEL (the general, more stable model) when the
+    specialized model returns an HTTP error — same fallback strategy
+    chat_json uses. This protects against transient or permanent upstream
+    issues with specialized model routes (e.g. provider misconfig on
+    one specific model variant).
+    """
+    primary = model or config.LLM_MODEL
+    fallback = config.LLM_MODEL if primary != config.LLM_MODEL else None
     try:
-        resp = _post(messages, model=model, max_tokens=max_tokens,
+        resp = _post(messages, model=primary, max_tokens=max_tokens,
                      temperature=temperature, stream=True)
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:500]
-        raise RuntimeError(f"LLM HTTP {e.code}: {detail}")
+        if fallback:
+            # try fallback model once
+            try:
+                resp = _post(messages, model=fallback, max_tokens=max_tokens,
+                             temperature=temperature, stream=True)
+            except urllib.error.HTTPError as e2:
+                detail2 = e2.read().decode("utf-8", "replace")[:500]
+                raise RuntimeError(
+                    f"LLM HTTP {e.code} on {primary}, fallback {fallback} also failed: {detail2}"
+                )
+        else:
+            raise RuntimeError(f"LLM HTTP {e.code}: {detail}")
     yield from _parse_sse(resp)
 
 
@@ -152,18 +172,21 @@ def chat_json(messages, model=None, max_tokens=2000, retries=4) -> dict:
     """Call and parse a JSON object out of the reply (robust to code fences).
     Retries with backoff on empty or unparseable responses (the upstream
     endpoint intermittently returns empty bodies under load). If the primary
-    model keeps returning empty, falls back to the main model."""
+    model keeps returning empty OR raises an HTTP error, falls back to the
+    main model (LLM_MODEL) which historically is more stable.
+
+    Fallback timing: switch to LLM_MODEL on attempt 1 (the SECOND try) — earlier
+    code waited until attempt N-1 which wasted ~2 min when the specialized model
+    is permanently broken (e.g. provider-side config mismatch).
+    """
     import time as _t
     primary = model or config.LLM_MODEL
-    # fallback model: if a specialized model (SQL/Coder/Flash) is used, fall
-    # back to the general LLM_MODEL which is more stable under load.
     fallback = config.LLM_MODEL if primary != config.LLM_MODEL else None
     last_err = None
     for attempt in range(retries + 1):
-        # on the last 2 attempts, switch to the fallback model if available
-        use_model = primary
-        if fallback and attempt >= retries - 1:
-            use_model = fallback
+        # Switch to fallback on attempt >= 1 if available — faster recovery when
+        # the specialized model is broken upstream.
+        use_model = primary if (attempt == 0 or not fallback) else fallback
         try:
             text = chat(messages, model=use_model, max_tokens=max_tokens, temperature=0.0)
             if not text or not text.strip():
@@ -174,6 +197,13 @@ def chat_json(messages, model=None, max_tokens=2000, retries=4) -> dict:
         except (json.JSONDecodeError, ValueError) as e:
             last_err = e
             _t.sleep(0.4 * (attempt + 1))
+            if attempt < retries:
+                continue
+        except RuntimeError as e:
+            # chat() raises RuntimeError("LLM HTTP ...") for non-2xx upstream.
+            # Burn the attempt and continue — the fallback model will kick in next loop.
+            last_err = e
+            _t.sleep(0.3 * (attempt + 1))
             if attempt < retries:
                 continue
     raise last_err

@@ -87,7 +87,7 @@ The key signal: user wants MULTIPLE aspects (revenue + market share + network + 
 Available domains:
 {domains}
 
-Routing rules (IMPORTANT — follow this priority). There are 14 data domains:
+Routing rules (IMPORTANT — follow this priority). There are 15 data domains:
 1. site_performance — per-SITE performance (subscriber/churn/usage/RGU/PAU/VLR per site, site_id, "per site", "top sites") + site databank/coordinates. (occupancy/PRB/throughput is in `network`, see #7).
 2. revenue — REVENUE DEEP-DIVE: breakdown by CHANNEL (ATL/BTL, atl_btl_details = ATL ORI / ATL RENEWAL / ATL GIFT / BTL, channel_group, channel_detail, channel_wise = most granular channel, organic, trade, MOBO) or by PRICE SLAB (price band, slab harga) or transaction HITS. Site-level revenue mix. Use atl_btl_details for "renewal/perpanjangan vs purchasing/ori vs gift" questions.
 3. acquisition — ACQUISITION / GROSS ADD per CHANNEL (gross add, GA, akuisisi, channel akuisisi: modern/OLA/online/gerai/bank/H2H/traditional/DSF/biometric), site & branch.
@@ -102,6 +102,7 @@ Routing rules (IMPORTANT — follow this priority). There are 14 data domains:
 12. sales_distribution — sales, outlet, NBS, SND, distribution, dealer, AND all SND distribution KPIs: URO (Unique Recharge Outlet), QURO, SSO (SIM Selling Outlet), QSSO, QSC (Quality Subscriber), OSA (Outlet Sell-in Amount), ONO (Open New Outlet), M1S/M2S survival, CVM, RITA app, iSimpel app, primary/secondary/tertiary sales, trade supply/demand. Keywords: "URO","QURO","SSO","QSSO","QSC","OSA","ONO","outlet recharge","outlet jual SIM","primary/secondary/tertiary","trade supply","trade demand","M1S","M2S".
 13. territory_reference — master territory reference (kec_id, kecamatan, kabkota, province, region, circle, branch, micro_cluster mappings). Use to validate/enrich territory names.
 14. product - PRODUCT REVENUE: site-level revenue broken down by PRODUCT. Dimensions kpi_group (REVENUE DATA / NON DATA / PPU DATA), kpi (stream: MOBO/DATA ORGANIC/EWALLET/EVC/VOUCHER/VAS/RITA/LOAN/VOICE/SMS), service_type (BROADBAND/VOICE+VIDEO/SMS+MMS/VAS+LOAN), family_group (product family: FREEDOM INTERNET, HAPPY, CVM PACK, PAYU, RAMADAN, VAS), product_group (specific SKU/package), plus validity/quota & channel & brand. Metric revenue (IDR) + hit (transactions, ARPT). Tables rham_site_data_rev_product_daily/_mtd/_mth. USE FOR: revenue by product/package/family, product MIX/CONTRIBUTION/SHARE, product TREND/growth (MoM/MTD), data vs non-data, top/bottom packages or families, package-size & channel mix, ARPT, e-wallet/voucher/VAS/loan revenue. (For headline TOTAL revenue use kpi_summary/revenue; product = per-product composition.)
+15. forecast — FORECAST / PREDIKSI REVENUE: hasil model prediksi revenue di grain branch / kabupaten / micro-cluster. Keywords: "forecast", "prediksi", "ramalan", "proyeksi", "outlook revenue ke depan", "bulan depan", "kuartal depan". Tabel _v3 = model terbaru (prefer); _output = hasil prediksi; _source = input/features. JANGAN pakai forecast domain untuk pertanyaan TREND historis (itu kpi_summary) — forecast khusus untuk pertanyaan tentang masa depan / prediksi.
 
 Key distinctions (CRITICAL):
 - "revenue" general (tanpa "per site"/"channel"/"slab") → kpi_summary (DEFAULT general KPI).
@@ -119,7 +120,7 @@ Key distinctions (CRITICAL):
 - "kenapa revenue turun?", "penyebab", "root cause", "diagnosa" → kpi_summary (full causal chain metrics).
 - Multi-domain questions → pick the PRIMARY metric's domain.
 - If question is NOT about data (greeting, capability, chit-chat), set domain to "none".
-- NOTE: there is no longer a `marketing`, `reporting`, `geo`, `forecast`, or `reference` domain — use kpi_summary, competitive, territory_reference instead.
+- NOTE: there is no `marketing`, `reporting`, or `geo` domain — use kpi_summary, competitive, territory_reference instead. The `forecast` domain DOES exist (added recently) — use it ONLY for forward-looking prediction questions (see #15).
 - SPECIAL MODES (not data domains): "PROFILE" = full 360 territory deck; "CORRELATE" = relate TWO metrics from TWO DIFFERENT domains across territories. If the two metrics belong to the SAME domain, do NOT use CORRELATE — route to that single domain (e.g. SOGA + market share are both `competitive`; HVC ratio + HVC churn are both `customer_hvc`).
 - Detect the user's language.
 
@@ -327,6 +328,27 @@ SITE kec_id MAPPING:
 - When querying these tables AND you need kec_id (for geographic grouping/filtering), JOIN with `{project}.{dataset}.rham_site_wise_monthly` ref ON ref.site_id = t.site_id AND ref.month_id = <relevant month>. ref provides: kec_id, kec_nm, kabkot_nm, region, circle, branch.
 - For daily tables without month_id, use the latest month: ref.month_id = (SELECT MAX(month_id) FROM `{project}.{dataset}.rham_site_wise_monthly`).
 - If the table already has kec_id, do NOT add this join — it's unnecessary.
+
+FTTH TERRITORY RULES (CRITICAL — common cause of 0-row results):
+- FTTH detail tables (rham_ftth_* with _so/_sa/_pa) have NULL values for shp_kabkota and shp_kecamatan columns. NEVER join `rham_ref_territory` against these on shp_* columns — every row will drop.
+- FTTH uses its OWN territory taxonomy in native columns: `sales_region` (e.g. '04. Central Java'), `province`, `city`. Filter on THOSE directly, not via shp_* joins.
+- FTTH funnel = SO (Service Order, date_so) → SA (Service Active, date_sa) → PA (Permanent Active / billing, date_pa). Each stage has its OWN event-date column; do not assume one shared dt_id.
+- TUR % (FTTH conversion metric) = PA / homepass.
+- Brand for FTTH is hidden — output is always reported as IOH (do not split by IM3/3ID for FTTH metrics).
+
+YTD vs LYTD APPLE-TO-APPLE (CRITICAL):
+- For YTD vs LYTD comparisons, BOTH sides MUST use the MTD table for the partial current/prior month, never the full-month table. Using _mth for the partial month understates it because the month is incomplete.
+- Pattern: YTD = SUM(_mth Jan..mid-1 THIS year) + MTD-portion(_mtd mid THIS year). LYTD = SUM(_mth Jan..mid-1 LAST year) + MTD-portion(_mtd mid LAST year, cut to same day-of-month).
+- Cap LYTD to the same day-of-month as the YTD cutoff (so 28-Jun-2026 compares to 1-Jan..28-Jun-2025, not full June 2025).
+
+FORECAST DOMAIN USAGE (only when user asks about FUTURE / prediction):
+- Use rham_forecast_*_v3 (latest model). Prefer _output tables for the prediction itself; _source has actual+features used to train.
+- Grain options: branch (daily/monthly), kabkota (daily/monthly), micro-cluster (daily/monthly). Pick the grain the user asked for; default to branch if unclear.
+- "akurasi forecast" / "forecast vs actual" → compare _output table's predicted value against the actual revenue from rham_mkt_highlevel_mth (matched by month_id + branch/kabkota/mc).
+- DO NOT use forecast domain for historical trend questions — that's kpi_summary. Forecast is strictly future-looking.
+
+KEC_ID NORMALIZATION (when joining on kecamatan codes):
+- Different source tables use slightly different formatting for kec_id. When joining, normalize via UPPER(TRIM(...)) on both sides. Example: ON UPPER(TRIM(a.kec_id)) = UPPER(TRIM(b.kec_id)).
 
 REVENUE DEFAULTS:
 - When the user asks about "revenue" without specifying type, ALWAYS use rev_prepaid (prepaid revenue).
@@ -788,7 +810,10 @@ def write_sql(domain_key: str, question: str, prior_error: str | None = None,
             "on the core name; verify the latest available month_id/dt_id) rather than guessing."
         )
     msgs.append({"role": "user", "content": user})
-    return llm.chat_json(msgs, model=config.LLM_MODEL_SQL, max_tokens=4500)
+    # 8000 token budget: 4500 was truncating complex multi-CTE / CASE-heavy queries (QoQ, YoY,
+    # decomposition by service_type) — observed in baseline as "Unexpected keyword LIMIT" / "Expected )"
+    # errors when the model ran out of tokens mid-statement.
+    return llm.chat_json(msgs, model=config.LLM_MODEL_SQL, max_tokens=8000)
 
 
 # ---------------- Synthesizer ----------------
