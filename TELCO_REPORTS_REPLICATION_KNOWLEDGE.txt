@@ -1,5 +1,5 @@
 # TELCO AI - REPORTS REPLICATION KNOWLEDGE BASE
-Date Generated: 2026-06-15
+Date Generated: 2026-06-15  (last updated 2026-06-21)
 Purpose: 100% Exact replication guide for Web (Next.js/React) and Mobile (Flutter/Dart) dashboards.
 
 =============================================================================
@@ -17,10 +17,16 @@ Purpose: 100% Exact replication guide for Web (Next.js/React) and Mobile (Flutte
 =============================================================================
 **Data Source**: `rham_mkt_highlevel_mtd` (current month), `rham_mkt_highlevel_mth` (closed months history).
 **Logic**:
-- Timeframes: LLMTD (mid-2), LMTD (mid-1), MTD (mid), LYTD (mid-100), YTD (cumulative).
+- Timeframes: LLMTD (mid-2), LMTD (mid-1), MTD (mid), LYTD, YTD.
 - Metric Types:
-  * Flow Metrics (Revenue, Gross Add, Usage): YTD = SUM(Jan..MTD).
-  * Snapshot Metrics (Site, RGU, VLR, Outlets): YTD = point-in-time (MTD current vs MTD last year).
+  * Flow Metrics (Revenue, Gross Add, Usage): YTD/LYTD are APPLE-TO-APPLE (fixed 2026-06):
+      YTD  = SUM(_mth, Jan..mid-1 THIS year) + MTD(_mtd, mid)            [partial current month]
+      LYTD = SUM(_mth, Jan..mid-1 LAST year) + MTD(_mtd, mid-100)        [partial current month LY]
+    The current month on BOTH sides comes from the cutoff-capped _mtd table, never the full _mth
+    table, so a partial June is never compared against a full June. The _mtd prior-year snapshot is
+    symmetric (dt_id_snapshot day-of-month matches). Implemented in reports_comprehensive.py and
+    reports_data.py (all 4 cumulative blocks). reports_city_profile.py inherits it.
+  * Snapshot Metrics (Site, RGU, VLR, Outlets): point-in-time (MTD current vs MTD last year), NOT a YTD sum.
 - Computed Ratios: Computed POST-aggregation. e.g., ARPU = (Rev Prepaid MTD) / (RGU 90D MTD).
 **UI/UX**:
 - Brand-Banded Table: 1st column is "Metric" (Sticky Left, z-index 3).
@@ -71,7 +77,61 @@ Purpose: 100% Exact replication guide for Web (Next.js/React) and Mobile (Flutte
 - Top Products, Price Slabs, and Channel Revenue are filtered specific to the Site ID.
 
 =============================================================================
-5. DESIGN SYSTEM TOKENS (CSS / FLUTTER)
+6. INDOSAT HiFi (FTTH) REPORT  (reports_ftth.py, added 2026-06)
+=============================================================================
+**Endpoints**: `GET /api/reports/ftth?circle=&filter_type=&filter_value=`,
+               `GET /api/reports/ftth/scope-options?circle=&level=`.
+**Brand**: FTTH has NO brand split. Always render brand="ioh"; the global
+IOH/IM3/3ID brand bar is HIDDEN on this tab (web + mobile).
+
+**Data sources & grains**:
+- Detail (per-customer funnel): `rham_ftth_{so,sa,pa}_detail`. Funnel SO -> SA -> PA,
+  each counted on ITS OWN event date (date_so/date_sa/date_pa). price on PA = revenue.
+- Sitewise (monthly per-site SUBSCRIBER snapshot): `rham_ftth_sitewise_monthly`.
+  pa = cumulative active subscribers; homepass = capacity; available_hp = idle;
+  ga = monthly gross add; pa_net_latest = monthly net add (can be negative).
+  TUR % = SUM(pa)/SUM(homepass)*100. Total subs = SUM(pa) at MAX(month_id) (never sum across months).
+
+**FTTH-native territory (does NOT use rham_ref_territory)**:
+- shp_kabkota / shp_kecamatan on the detail tables are NULL -> never join them.
+- Filter on native columns: detail = sales_region/province/city; sitewise =
+  region_25/provinsi/city/kecamatan. region codes are like "04. Central Java",
+  "05. East Java" (different vocabulary from IM3 region).
+- API filter levels: ftth_region / ftth_province / ftth_kabkota / ftth_kecamatan.
+  Detail tables have NO kecamatan column -> a kecamatan filter scopes the sitewise
+  sections only; the funnel falls back to the parent kab/kota.
+- My Coordinate passes IM3 kec_id like "ADIWERNA|KAB. TEGAL"; FTTH stores bare
+  "ADIWERNA". _norm_kec() strips the "|kabkota" suffix. IM3 region/area/branch/
+  microcluster have no FTTH equivalent -> degrade to circle scope.
+- Circle JAVA provinces (gate): JAWA TENGAH, JAWA TIMUR, DI YOGYAKARTA, BALI, YOGYAKARTA.
+
+**Sections (payload order)**, first section is "FTTH Infrastructure & Utilization":
+1. FTTH Infrastructure & Utilization (layout=grid): Homepass, Available HP, Total
+   Active Subs, Net Add, Gross Add, TUR%, Extraction Rate.
+2. Infrastructure Coverage (layout=ftth_counts): #kecamatan w/ HP, #kab-kota w/ HP,
+   #low-TUR sites (pa/homepass < 0.2 AND homepass > 0).
+3. Footprint by Project (ftth_counts, cols Homepass+Subs): ORBIT(mplay) /
+   NON-ORBIT(seahawk|spartan) / IFORTE(iforte) / OTHER from project_awal.
+4. Sales Funnel (grid): SO, SA, PA, PA Revenue, Avg Rev per PA, conversions SO->SA,
+   SA->PA, SO->PA. (YTD/LYTD by date range on detail tables; LYTD =
+   [(year-1)-01-01 .. cur_dt minus 1 year].)
+5. Product Mix (ftth_counts): Advance Payment vs Regular (AP regex ^(AP|Super ?)[0-9]+).
+6. Man Power Productivity (ftth_counts): AE generated SO/SA/PA + AE hit >= 5 PA.
+7. Sales Hierarchy SM -> TL -> AE (layout=hierarchy): nested, expandable, each node
+   carries [SO,SA,PA] MTD, sorted by SO MTD desc. Caps: 20 SM / 20 TL / 50 AE.
+
+**Frontend renderers**:
+- Web (page.tsx): ComprehensiveView routes layout -> CompTable(grid) / FtthCountTable
+  (ftth_counts) / FtthHierarchyTable(hierarchy). FTTH View dropdown uses
+  FTTH_SCOPE_LEVELS + the ftth scope-options endpoint; searchable scope value via
+  <input list> + <datalist>; brand bar hidden when tab==="ftth".
+- Mobile (reports_screen.dart): _comprehensiveSections routes ftth_counts ->
+  _ftthCountTable, hierarchy -> _FtthHierTree (expandable). FTTH View dropdown +
+  ApiClient.reportFtthScopeOptions; searchable scope picker = _ScopeSearchSheet
+  (bottom sheet w/ search field); _brandBar() hidden when _tab=='ftth'.
+
+=============================================================================
+7. DESIGN SYSTEM TOKENS (CSS / FLUTTER)
 =============================================================================
 - Primary Teal: #15A697
 - IOH Brand Band: #15A697 (Teal)

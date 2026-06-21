@@ -1,5 +1,14 @@
 ================================================================================
-FTTH INSIGHT HUB — COMPLETE KNOWLEDGE BASE FOR REPLICATION
+FTTH INSIGHT HUB - COMPLETE KNOWLEDGE BASE FOR REPLICATION
+================================================================================
+IMPLEMENTATION STATUS (2026-06): The FTTH "Indosat HiFi" report is now LIVE in
+this Telco AI platform. For the ACTUAL BigQuery tables, column quirks (shp_* are
+NULL, FTTH-native territory via sales_region/region_25, kec_id normalization),
+the apple-to-apple YTD/LYTD rule, the section layouts (grid / ftth_counts /
+hierarchy), and the frontend renderers, see SESSION_KNOWLEDGE_2026-06.md,
+TELCO_REPORTS_REPLICATION_KNOWLEDGE.txt (section 6), and AGENTS.md (Reports). The
+text below is the original reverse-engineered reference from the legacy PHP app
+and may differ in column/table names from the live BigQuery implementation.
 ================================================================================
 Purpose : A single self-contained reference to rebuild the entire FTTH sales &
           territory monitoring platform on a NEW stack (mobile + web) with a

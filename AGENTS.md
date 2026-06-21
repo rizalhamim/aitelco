@@ -89,3 +89,32 @@ Backend base URL is compile-time via `--dart-define=API_BASE=...` (`lib/src/conf
 - `GET /api/domains`, `POST /api/run_sql` (raw read-only SQL), `POST /api/export`, `GET /api/export/last/{session_id}`.
 - `POST /api/geo/locate`, `GET /api/geo/shapes/{kecamatan|kabupaten}`, `GET /api/geo/territory-map`.
 - `/api/auth/*`, `/api/admin/*`, history routes (in `routes_auth.py`), `/api/health`, `/api/memory/*`, `/api/analytics/*`, `/api/learnings`.
+
+## Reports - "Performance Outlook" (web `src/app/reports/page.tsx`, mobile `lib/src/screens/reports_screen.dart`)
+
+Routes under `routes_reports.py` (`/api/reports/*`), cached via `reports_cache.py` (family markers `highlevel`/`data`/`benchmark`; payloads keyed by `report|marker|params`). Builders: `reports_comprehensive.py`, `reports_data.py`, `reports_network.py`, `reports_market_insight.py`, `reports_ftth.py`. UI has 3 modes (My Coordinate / Territory Wise / Daily Snapshot) and sub-tabs (Comprehensive, Data Revenue, Product Demand, Network Benchmark, Market Insight, Indosat HiFi (FTTH)). Brand model: IOH = IM3 + 3ID; bottom IOH/IM3/3ID brand bar is GLOBAL except hidden on the FTTH tab.
+
+### YTD / LYTD must be apple-to-apple (critical, fixed 2026-06)
+Both YTD and LYTD mix full closed months + a PARTIAL current month capped at the same data cutoff day. The current month (this year AND last year) ALWAYS comes from the MTD table (`rham_mkt_highlevel_mtd`, `rham_site_data_rev_*_mtd`, etc., which are cutoff-capped), never the full-month `_mth` table:
+- `YTD  = SUM(_mth, Jan..mid-1 this year) + MTD(this year, mid)`
+- `LYTD = SUM(_mth, Jan..mid-1 last year) + MTD(last year, mid-100)`
+The prior-year month snapshot is symmetric (e.g. `_mtd[202506].dt_id_snapshot = 2025-06-16` matches `202606 = 2026-06-16`). Implemented in `reports_comprehensive.py` (flow metrics) and `reports_data.py` (all 4 cumulative blocks: channel chunks, price slabs, product-demand slabs, top products). FTTH (`reports_ftth.py`) computes YTD/LYTD by date range on the event-dated detail tables: `LYTD = [(year-1)-01-01 .. cur_dt minus 1 year]`. Snapshot metrics (site/RGU/VLR/outlets) use point-in-time MTD-this-year vs MTD-last-year, NOT a YTD sum. `reports_city_profile.py` consumes these, so it inherits the fix.
+
+### FTTH / Indosat HiFi report (`reports_ftth.py`)
+- FTTH has its OWN territory vocabulary: `sales_region` (detail) / `region_25` (sitewise) coded like `04. Central Java`, `05. East Java`, plus `province`/`city`/`kecamatan`. It does NOT align with the IM3 `rham_ref_territory` hierarchy, and the detail tables' `shp_kabkota`/`shp_kecamatan` are NULL. So FTTH filters on native columns, never via `rham_ref_territory`. Filter levels: `ftth_region`/`ftth_province`/`ftth_kabkota`/`ftth_kecamatan` (helpers `_detail_scope_clause`/`_sitewise_scope_clause`). Options endpoint: `GET /api/reports/ftth/scope-options?circle=&level=` (from sitewise).
+- My Coordinate sends IM3 `kecamatan` filter as a `kec_id` like `ADIWERNA|KAB. TEGAL`; FTTH stores bare `ADIWERNA`. `_norm_kec()` strips the `|kabkota` suffix. IM3 region/area/branch/microcluster levels have no FTTH equivalent and degrade to circle scope.
+- Two grains: detail tables (`rham_ftth_{so,sa,pa}_detail`, per-customer funnel SO→SA→PA on each event date) and `rham_ftth_sitewise_monthly` (monthly per-site SUBSCRIBER snapshot: `pa`=cumulative active subs, `homepass`, `available_hp`, `ga`, `pa_net_latest`; TUR = SUM(pa)/SUM(homepass)*100; total subs = SUM(pa) at MAX(month_id), never summed across months). Footprint from `project_awal`: mplay=ORBIT, seahawk/spartan=NON-ORBIT, iforte=IFORTE. Product mix AP regex `^(AP|Super ?)[0-9]+`. Low TUR site = `pa/homepass < 0.2 AND homepass > 0`.
+- Section layouts the frontends render: `grid` (CompTable), `ftth_counts` (label+number table), `hierarchy` (expandable SM→TL→AE, sorted SO MTD desc). "FTTH Infrastructure & Utilization" is the first section.
+
+### Build / deploy / services
+- Services (systemd, need `sudo`): `telco-backend` (127.0.0.1:8000), `telco-frontend` (127.0.0.1:3000). After backend edits run `sudo systemctl restart telco-backend` (the KB loader `knowledge.py:load_kb()` is `@lru_cache`d, so a restart is required to reload `knowledge_base.json`).
+- Web: `cd frontend && npm run build` then `sudo systemctl restart telco-frontend`.
+- Mobile: flutter is at `/home/ubuntu/flutter/bin`. `flutter build apk --release`, then copy `build/app/outputs/flutter-apk/app-release.apk` to `/home/ubuntu/telco-ai/Bizplan-Java-Agent.apk`. Bump `mobile/pubspec.yaml` version AND `backend/data/app_release.json` (`version_name`/`version_code`/`notes`). Current release: 1.43.1+49.
+- Prod host: `agent-02.bizplan-java.com` (nginx `/etc/nginx/sites-available/sysmonitor`: `/api/`→8000 with `proxy_buffering off`, `/`→3000). A separate `system-monitor.service` serves `server-02.bizplan-java.com` on port 8080.
+- HARD STYLE RULE: never use em-dashes anywhere (code, comments, labels, copy).
+
+### Training / answer-quality knowledge (chat agent)
+The agent's only prompt-injected knowledge is `backend/data/knowledge_base.json` (`data_facts` + per-domain `agent.key_facts`). The `learning_notes` SQLite table is write-only telemetry (exposed at `/api/learnings`, NEVER fed back into prompts), so to improve answers, edit `knowledge_base.json`. Past questions for review live in `backend/data/sessions.db` table `analytics` (cols: question, domain, sql, success, error_msg, response_summary, ts=unix epoch). Key facts added 2026-06: circle->region mapping (`data_facts.circle_region_mapping`: JAVA=Central Java/East Java/Bali Nusra; JAKARTA RAYA=Inner/Outer Jakarta+West Java; SUMATERA=North/Central/South; KALISUMAPA=Kalimantan/Sulawesi/MAPA); the `rham_report_fb_ms_*` monthly tables use column `kabkot` (NOT `kabkota`) and have no branch/circle col; product `_mth` table needs an EXACT `month_id` filter (never `LIKE '%05'`) to stay under the 50 GB scan cap; FWA = `family_group='09. FWA'`, unlimited = `product_group='HIFI AIR UNLIMITED'`. FTTH `rham_ftth_sitewise_monthly` was added to the `ftth` domain (subscriber/homepass/TUR snapshot).
+
+### Backups
+KB edits leave timestamped `.bak*` copies next to `backend/data/knowledge_base.json`. When probing BigQuery from the venv, output is often swallowed by a `RequestsDependencyWarning`; redirect script output to a `/tmp` file and read it back.
