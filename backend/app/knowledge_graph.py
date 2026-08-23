@@ -390,6 +390,18 @@ def select_tables(
     ranked = sorted(scores, key=lambda name: (-scores[name], name))
     selected = ranked[:limit]
 
+    # A validated hint is a GUARANTEE, not a scoring nudge. The caller only sends one
+    # after the policy gate rejected that exact table or a scope gate named it as
+    # missing, so dropping it means the next attempt fails for the same reason. Score
+    # alone was not enough: the territory-reference swap below could evict it.
+    for hint in hints:
+        if hint not in selected:
+            selected.insert(0, hint)
+    if len(selected) > limit:
+        keep = [name for name in selected if name in hints]
+        rest = [name for name in selected if name not in hints]
+        selected = (keep + rest)[:max(limit, len(keep))]
+
     # Region and cross-territory questions often need the canonical reference.
     ref_name = "zz_territory_kecamatan"
     needs_ref = bool(q_tokens.intersection({
@@ -398,7 +410,12 @@ def select_tables(
     }))
     if needs_ref and ref_name in tables and ref_name not in selected:
         if len(selected) >= limit:
-            selected[-1] = ref_name
+            # Evict the lowest-scoring NON-hinted table; never a validated hint.
+            victim = next((name for name in reversed(selected) if name not in hints), None)
+            if victim:
+                selected[selected.index(victim)] = ref_name
+            else:
+                selected.append(ref_name)
         else:
             selected.append(ref_name)
         score_reasons[ref_name].append("territory_reference")

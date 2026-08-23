@@ -9,6 +9,28 @@ updated: 2026-08-18
 Append-only. Newest first. Record durable decisions/changes with an absolute date. Link to the
 node that changed.
 
+## 2026-08-23: charts moved to the backend, answers made unit-aware
+
+User reported charts and answers were not representative. Root cause was not styling:
+the clients split columns into numeric and non-numeric and plotted the FIRST numeric
+one, so `rank` was drawn as bars, rupiah and percent shared one axis (21 percent of
+real results carry both), and a wide result produced no chart at all.
+
+- New `backend/app/chart_spec.py` classifies a result by column ROLE and streams a
+  `chart_spec` SSE event. Web and mobile now render it; both keep a fixed fallback for
+  old chat history. Decision recorded in [[chart-spec-backend-owned]].
+- Charts now carry units, dual axes, honest pie rules, funnel detection, ranked-subset
+  captions ("24 teratas dari 38 kabkota"), and period spans instead of row counts.
+- `SYNTH_SYS` gained answer-first structure, period plus scope in the opening sentence,
+  Indonesian number and unit formatting (one magnitude per column), and a requirement
+  that the narration agree with the chart it sits next to.
+- Fixed a real retrieval bug found on the way: a validated table hint was only a scoring
+  nudge, so the territory-reference injection could evict the very table the policy gate
+  had just demanded. Hints are now guaranteed to survive selection.
+- Gates: backend 223 tests, mobile 50 tests, flutter analyze clean, frontend lint and
+  build clean, knowledge benchmark 13/13. Verified live on ranking, trend, composition
+  and funnel questions.
+
 ## 2026-08-21 (later): agent improvement plan executed, phases 1 to 6
 
 Full detail and numbers in `docs/agent-improvement-plan.md` phase log. Durable rules
@@ -39,6 +61,10 @@ extracted to [[agent-quality-gates]].
   that broke 17 of 30 questions while all 165 unit tests stayed green. `/api/chat/stream` is
   one generator no unit test executes. Smoke-run 3 questions after any pipeline edit, BEFORE
   a full benchmark. Now mandated in CLAUDE.md, AGENTS.md and [[agent-quality-gates]].
+- hard-30 reached 28/30 on the first run with a correct pipeline, then both remaining
+  failures were fixed: an "aggregations of aggregations" SQL error (prompt rule added) and
+  the retrieval-miss guard being too narrow. Case 6 verified stable across 3 consecutive
+  runs after the fix.
 - **Pipeline bug fixed: a domain rerouting to ITSELF killed the turn.** The scope gate sees
   only a bounded table subset; when the table it needs is missing it names that table and
   suggests its own domain. That suggestion was discarded, the turn bounced, and the user got

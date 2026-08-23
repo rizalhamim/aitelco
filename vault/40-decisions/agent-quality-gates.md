@@ -125,11 +125,20 @@ table I need is not in my retrieval", it names that table and suggests its OWN d
 The old code discarded a suggestion equal to the current domain, bounced to another
 domain, and ended with "di luar cakupan data" for a question the warehouse answers.
 
-Now a self-reroute extracts the table named in the gate's own reason and feeds it back
-as a retrieval hint (`orchestrator.tables_named_in`, filtered to approved tables of that
-same domain, so the policy gate is never widened). Guarded by `tests/test_self_reroute.py`,
-including the ordering requirement that the check runs BEFORE the domain is added to
-`_tried_domains`.
+Key off the TABLE NAMED IN THE REASON, not the suggested domain. The gate usually blames
+some other domain while still describing a retrieval miss ("... tersedia di
+rham_report_fb_ms_kabkota (domain competitive)"), so a guard that only catches
+`suggested == domain` fires intermittently at best. Two lookups handle it:
+`tables_named_in` (does the reason name a table of THIS domain? then retry here with it
+hinted) and `domain_owning_named_table` (does it name a table owned by ANOTHER domain?
+then go there with it hinted, instead of declaring the question out of scope). Both are
+restricted to governance-approved tables, so the policy gate never widens. Guarded by
+`tests/test_self_reroute.py`, including the ordering requirement that the check runs
+BEFORE the domain is added to `_tried_domains`.
+
+This was the root of an intermittent failure: whether the question worked depended on
+which domain the gate happened to blame that run. An intermittent result is a signal to
+look for a branch that is taken only sometimes, not a reason to rerun until it passes.
 
 ## Where a fact belongs: KB facts describe data, prompt rules constrain SQL shape
 

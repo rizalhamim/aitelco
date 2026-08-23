@@ -553,6 +553,15 @@
   margin-bottom: 0;
   font-family: var(--font-display);
 }
+/* Coverage and period of the plotted rows. The chart is not self-explanatory without
+   it: "10 kabkota" and "10 dari 38 kabkota (dipotong)" are different claims. */
+.chart-caption {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--v-mute, #5A6B68);
+  line-height: 1.4;
+}
 .chart-switch {
   display: inline-flex;
   gap: 4px;

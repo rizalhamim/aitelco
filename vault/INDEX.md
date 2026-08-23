@@ -35,6 +35,7 @@ tells you to. Vault = distilled why/what. graphify = where/how in code (`graphif
 | Why opus not fable (cost policy) | [[opus-cost-policy]] |
 | Operating loop + verify gates | [[workflow-operating-loop]] |
 | Agent answer-quality rules | [[agent-quality-gates]] |
+| Why charts are built in the backend | [[chart-spec-backend-owned]] |
 | Agent quality improvement plan | `docs/agent-improvement-plan.md` |
 | Style + IOH brand | [[style-brand]] |
 | Deploy / restart / version bump | [[deploy-restart]] |

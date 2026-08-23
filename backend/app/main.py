@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from . import knowledge, orchestrator, llm, memory, config
 from .bigquery_tool import run_query, QueryError
 from .result_profiler import profile_result, empty_result_hint
+from .chart_spec import build_chart_spec
 from .export_agent import export_xlsx, export_pdf
 from .analyst_agent import analyze as analyst_analyze
 from . import profile_engine
@@ -923,28 +924,49 @@ def chat_stream(req: ChatReq, request: Request):
                     return
 
                 # verdict == "reroute": ask orchestrator for the next best domain.
-                # A domain that reroutes to ITSELF is describing a retrieval miss, not a
-                # scope problem: the table it wants is in its own domain but was not in
-                # the retrieved subset it was shown. Answer it here with the named table
-                # forced into retrieval rather than bouncing the user out of scope.
+                # But first: a gate whose REASON names a table from its own domain is
+                # describing a RETRIEVAL MISS, not a scope problem. The table it wants
+                # exists here; it just was not in the bounded subset it was shown. That
+                # is true whether it suggests itself or blames another domain, so key
+                # off the named table rather than the suggested domain.
                 suggested = (fit.get("suggested_domain") or "").strip()
-                if suggested == domain and domain not in _tried_domains:
+                _hint_tables = orchestrator.tables_named_in(fit.get("reason", ""), domain)
+                if _hint_tables and domain not in _tried_domains:
+                    scope_table_hints = _hint_tables
                     yield sse("scope", {
                         "domain": domain, "verdict": "answerable",
                         "confidence": fit.get("confidence"),
-                        "reason": "self-reroute treated as a retrieval miss; retrying "
-                                  "with the table named in the reason",
+                        "reason": ("retrieval miss, not out of scope: the reason names "
+                                   + ", ".join(_hint_tables)
+                                   + " which belongs to this domain; retrying with it "
+                                     "forced into retrieval"),
                         "round": _gate_round,
                         "deterministic": True,
                     })
-                    _hint_tables = orchestrator.tables_named_in(
-                        fit.get("reason", ""), domain)
-                    if _hint_tables:
-                        scope_table_hints = _hint_tables
                     break
 
                 _tried_domains.append(domain)
                 next_domain = None
+                # A gate can also name a table that belongs to a domain ALREADY tried:
+                # the earlier gate simply was not shown that table. Rather than declaring
+                # the question out of scope, go back to the owning domain with the table
+                # forced into retrieval. Bounded: only once, and only for an approved
+                # table of that domain.
+                _owner, _owner_tables = orchestrator.domain_owning_named_table(
+                    fit.get("reason", ""))
+                if (_owner and _owner != domain and not scope_table_hints
+                        and _owner in kb["domains"]):
+                    scope_table_hints = _owner_tables
+                    yield sse("reroute", {
+                        "from": domain, "to": _owner,
+                        "reason": (f"{fit.get('reason', '')} | retrieval miss: "
+                                   + ", ".join(_owner_tables) + f" lives in {_owner}"),
+                        "suggested": _owner,
+                    })
+                    domain = _owner
+                    _tried_domains = [d for d in _tried_domains if d != _owner]
+                    continue
+
                 if suggested and suggested in kb["domains"] and suggested not in _tried_domains:
                     next_domain = suggested
                 else:
@@ -1072,10 +1094,29 @@ def chat_stream(req: ChatReq, request: Request):
                         "bytes_processed": result["bytes_processed"],
                         "refine_round": refine_round,
                     })
+                    # Chart rendering is decided here, not in the clients: a column's
+                    # TYPE says nothing about its meaning, so web and mobile used to
+                    # plot whichever numeric column came first (drawing `rank` as bars,
+                    # or squashing a percentage against rupiah on one axis).
+                    try:
+                        chart = build_chart_spec(
+                            result["columns"], result["rows"],
+                            question=req.message, result_profile=result_profile)
+                    except Exception as _ce:
+                        chart = {"mode": "none", "reason": f"spec_failed: {_ce}"}
+                    yield sse("chart_spec", chart)
                     break
                 except Exception as e:
                     prior_error = str(e)[:600]
                     prior_sql = sql
+                    # A policy rejection names a table the model insists on. Carry it
+                    # forward as a retrieval hint for EVERY later attempt, not just the
+                    # next one: prior_error is reset each time the outer refine loop
+                    # restarts, so a hint derived from it alone would be forgotten.
+                    _rejected = orchestrator._policy_rejected_tables(prior_error)
+                    if _rejected:
+                        scope_table_hints = sorted(
+                            set(scope_table_hints or []) | set(_rejected))
                     yield sse("retry", {"error": prior_error, "attempt": attempt + 1})
                     result = None
 
@@ -1231,6 +1272,25 @@ def chat_stream(req: ChatReq, request: Request):
                 payload["best_effort_note"] = best_effort
             if alt_suggestion:
                 payload["alternative_suggestion"] = alt_suggestion
+            # The narration must agree with the chart the user is looking at: same
+            # metric, same units, same coverage. Without this the text says "seluruh
+            # kabkota" while the chart shows a top-10.
+            try:
+                _chart = build_chart_spec(
+                    result["columns"], result["rows"], question=req.message,
+                    result_profile=payload["result_profile"])
+                if _chart.get("mode") != "none":
+                    payload["chart_spec"] = {
+                        "mode": _chart["mode"],
+                        "category": _chart.get("category"),
+                        "series": [
+                            {"column": s["column"], "unit": s["unit"], "role": s["role"]}
+                            for s in _chart.get("series", [])
+                        ],
+                        "caption": _chart.get("caption"),
+                    }
+            except Exception:
+                pass
             msgs = [
                 {"role": "system", "content":
                     orchestrator.SYNTH_SYS.format(language=language)},

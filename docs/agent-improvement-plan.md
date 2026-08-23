@@ -337,6 +337,22 @@ takes about 90 seconds and would have caught it immediately. Two guards added:
 `test_scope_table_hints_is_initialised_outside_the_gate` and an AST check that every
 name passed to `write_sql` is not branch-local.
 
+Fifth round, on the 28/30 run (the first with a correct pipeline):
+
+- **#19 aggregation of aggregations.** The generated SQL wrote
+  `HAVING SUM(total_ga) > 0` where `total_ga` was ALREADY a `SUM()` from the CTE, which
+  BigQuery rejects outright. Added a prompt rule: never wrap an already-aggregated CTE
+  column in another aggregate; reference it directly, or add another CTE level.
+  Verified: 97 rows.
+- **#6 was the self-reroute guard being too narrow.** My first version keyed off
+  `suggested_domain == domain`, but the live gate usually blames ANOTHER domain while
+  still describing a retrieval miss ("... tersedia di rham_report_fb_ms_kabkota (domain
+  competitive)"). The guard now keys off the TABLE NAMED IN THE REASON, and a new
+  `domain_owning_named_table` sends the turn back to the table's real owner with it
+  forced into retrieval, instead of ending with "di luar cakupan data". This is why the
+  case was intermittent: whether it passed depended on which domain the gate happened to
+  blame. Verified stable: 3 consecutive runs, 10 rows each.
+
 A self-reroute is a retrieval miss, not a scope problem. The gate now detects it, extracts
 the table named in its own reason (`orchestrator.tables_named_in`, restricted to approved
 tables of that same domain so the policy gate cannot widen), and passes it into

@@ -129,6 +129,38 @@ type Result = {
   bytes_processed?: number;
 };
 
+// Decided by the backend (see backend/app/chart_spec.py) so web and mobile draw the
+// same thing. A column's TYPE says nothing about its meaning, and the client-side
+// guess used to plot whichever numeric column came first.
+export type ChartSeries = {
+  column: string;
+  role: string;
+  unit: string;
+  label: string;
+  axis_side: "left" | "right";
+  can_be_negative: boolean;
+};
+export type ChartAxis = {
+  unit: string;
+  side: "left" | "right";
+  columns: string[];
+  zero_line: boolean;
+};
+export type ChartSpec = {
+  mode: "bar" | "line" | "pie" | "matrix" | "funnel" | "none";
+  category?: string;
+  series?: ChartSeries[];
+  axes?: ChartAxis[];
+  dual_axis?: boolean;
+  title?: string;
+  caption?: string;
+  truncated?: boolean;
+  /** Present when the result had more categories than fit as bars: the ranked subset
+   *  the chart should plot, already sorted. The caption says it is a subset. */
+  rows?: Record<string, unknown>[];
+  ranked_subset?: boolean;
+};
+
 type Msg = {
   role: "user" | "assistant";
   content: string;
@@ -137,6 +169,7 @@ type Msg = {
   sql?: string;
   sqlExplanation?: string;
   result?: Result;
+  chartSpec?: ChartSpec;
   status?: string;
   error?: string;
   exportReady?: { format: string; url: string };
@@ -808,6 +841,9 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
               feedback: `${cols.length} kolom · ${rowCount.toLocaleString("id-ID")} baris data diterima`,
               meta: { "columns": cols.length, "rows": rowCount },
             });
+          } else if (event === "chart_spec") {
+            const spec = data as unknown as ChartSpec;
+            if (spec && spec.mode && spec.mode !== "none") update({ chartSpec: spec });
           } else if (event === "export_ready") {
             update({
               exportReady: {
@@ -1289,7 +1325,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
                                 lonKey={geo.lonKey}
                               />
                             )}
-                            <ChartPanel columns={m.result.columns} rows={m.result.rows} />
+                            <ChartPanel columns={m.result.columns} rows={m.result.rows} spec={m.chartSpec} />
                             <DataTable
                               columns={m.result.columns}
                               rows={m.result.rows}

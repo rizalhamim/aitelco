@@ -127,6 +127,11 @@ class ChatScreenState extends State<ChatScreen> {
             final rows = (data['rows'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
             setState(() => a.result = ResultTable(cols, rows, (data['row_count'] as int?) ?? rows.length));
             break;
+          case 'chart_spec':
+            if ((data['mode'] ?? 'none').toString() != 'none') {
+              setState(() => a.chartSpec = Map<String, dynamic>.from(data));
+            }
+            break;
           case 'profile_domain_result':
             a.profileResults.add(ProfileSection(
               title: (data['section_title'] ?? '').toString(), domain: (data['domain'] ?? '').toString(),
@@ -310,7 +315,7 @@ class ChatScreenState extends State<ChatScreen> {
               child: DataTableView(columns: p.columns, rows: p.rows, maxRows: 30)),
         // 4. Chart
         if (m.result != null && m.result!.rows.isNotEmpty)
-          ChartPanel(columns: m.result!.columns, rows: m.result!.rows),
+          ChartPanel(columns: m.result!.columns, rows: m.result!.rows, spec: m.chartSpec),
         // 5. AI summary (the streamed answer)
         if (m.content.isNotEmpty)
           Container(

@@ -89,13 +89,64 @@ def test_every_write_sql_call_site_can_reach_its_arguments():
         "the scope-gate hint is no longer passed into write_sql")
 
 
-def test_self_reroute_is_handled_before_the_tried_domains_bounce():
-    """Guards the ordering in main.py: the self-reroute check must run BEFORE the
+def test_retrieval_miss_is_handled_before_the_tried_domains_bounce():
+    """Guards the ordering in main.py: the retrieval-miss check must run BEFORE the
     domain is appended to _tried_domains, otherwise it can never be retried."""
     from pathlib import Path
 
     source = (Path(__file__).resolve().parents[1] / "app" / "main.py").read_text()
-    self_check = source.find("if suggested == domain and domain not in _tried_domains")
-    append = source.find("_tried_domains.append(domain)", self_check)
-    assert self_check != -1 and append != -1
-    assert self_check < append
+    check = source.find("_hint_tables = orchestrator.tables_named_in")
+    append = source.find("_tried_domains.append(domain)", check)
+    assert check != -1 and append != -1
+    assert check < append
+
+
+def test_the_gate_keys_off_the_named_table_not_the_suggested_domain():
+    """A gate that blames another domain while naming a table from its OWN domain is
+    still reporting a retrieval miss, so the check must not require suggested == domain.
+    """
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "app" / "main.py").read_text()
+    assert "if suggested == domain and domain not in _tried_domains" not in source, (
+        "keying off suggested_domain misses the common case where the gate blames "
+        "another domain but names a table it owns itself")
+    assert "if _hint_tables and domain not in _tried_domains" in source
+
+
+# ---------------- owner lookup ----------------
+
+OWNER_REASON = ("Butuh region filter (East Java) dan FB market share/SOGA di grain "
+                "kabkota yang tersedia di rham_report_fb_ms_kabkota (domain competitive), "
+                "bukan di domain saya")
+
+
+def test_owner_of_a_named_table_is_found():
+    owner, tables = orchestrator.domain_owning_named_table(OWNER_REASON)
+    assert owner == "competitive"
+    assert tables == ["rham_report_fb_ms_kabkota"]
+
+
+def test_reason_without_a_table_name_yields_no_owner():
+    assert orchestrator.domain_owning_named_table("tidak ada tabel disebut") == ("", [])
+    assert orchestrator.domain_owning_named_table("") == ("", [])
+    assert orchestrator.domain_owning_named_table(None) == ("", [])
+
+
+def test_owner_lookup_only_returns_approved_tables():
+    approved = orchestrator.knowledge.approved_table_names()
+    _owner, tables = orchestrator.domain_owning_named_table(OWNER_REASON)
+    for name in tables:
+        assert name in approved
+
+
+def test_retrieval_miss_is_checked_before_declaring_out_of_scope():
+    """Guards ordering in main.py: the owner lookup must run before the reroute that
+    can end the turn with 'di luar cakupan data'."""
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[1] / "app" / "main.py").read_text()
+    owner = source.find("domain_owning_named_table")
+    out_of_scope = source.find("di luar cakupan data")
+    assert owner != -1 and out_of_scope != -1
+    assert owner < out_of_scope

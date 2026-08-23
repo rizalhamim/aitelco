@@ -393,6 +393,7 @@ Hard rules:
 - A metric can also be stored with the opposite sign to what the wording suggests (some churn columns are negative). If a filter on a sign assumption returns nothing, rank by ABS() instead of guessing again.
 - NEVER force TWO tables onto a single shared period. Do NOT build a "common_month" / "shared MAX(month_id)" CTE and filter both sides by it: tables in this warehouse have different refresh coverage, so the intersection is often EMPTY and the whole query returns nothing. Instead give EACH table its own CTE filtered by `(SELECT MAX(month_id) FROM that same table)`, join the CTEs on the territory key, and OUTPUT both period columns so the answer can state that the two sides are from different months.
 - Analytic/window functions (LAG, LEAD, ROW_NUMBER, RANK, etc.) are NOT allowed inside WHERE, HAVING, or JOIN ON clauses. Wrap them in a CTE or subquery first, then filter the outer query.
+- NEVER nest an aggregate inside another aggregate ("Aggregations of aggregations are not allowed"). If a CTE column is ALREADY the result of SUM/COUNT/AVG, do not wrap it in SUM() again in the outer query, its HAVING, or its ORDER BY: reference the column directly (`HAVING total_ga > 0`, not `HAVING SUM(total_ga) > 0`). When you do need a second aggregation level, add another CTE so each level aggregates raw columns only.
 - Use ONLY columns that exist in the schema above. DO NOT invent column names. If a column name is not in the schema, it does not exist. Double-check column names against the schema before writing the query.
 - COMMON COLUMN-NAME GOTCHAS (do NOT invent these): the kabupaten/kota column is named `kabkot` or `kabkota` (NEVER `kabupaten`). The kecamatan column is `kecamatan` or `kec_unik`/`kec_id` (NEVER `kabupaten`). Revenue is `rev_prepaid` (not `revenue` in mkt tables; but the rev_channel/price_slab tables DO use `revenue`). Always match the exact name shown in the schema for the table you are querying. If a BigQuery error says "Unrecognized name: X" or "Name X not found", X does not exist — replace it with the correct column from the schema (it usually suggests "Did you mean ...?").
 - If a prior attempt failed, fix it based on the error.
@@ -822,6 +823,28 @@ def tables_named_in(text: str, domain_key: str) -> list[str]:
     ]
 
 
+def domain_owning_named_table(text: str) -> tuple[str, list[str]]:
+    """Find the domain that owns an approved table named in `text`.
+
+    A scope gate often explains its reroute by naming the exact table it needed, e.g.
+    "tersedia di rham_report_fb_ms_kabkota (domain competitive)". That names the real
+    owner, so the pipeline can send the turn there with the table forced into retrieval
+    instead of declaring the question out of scope. Returns ("", []) when no approved
+    table is named.
+    """
+    if not text:
+        return "", []
+    approved = knowledge.approved_table_names()
+    for domain_key, domain in knowledge.load_kb()["domains"].items():
+        named = [
+            name for name in (domain.get("tables") or {})
+            if name in approved and name in text
+        ]
+        if named:
+            return domain_key, named
+    return "", []
+
+
 def _policy_rejected_tables(err: str | None) -> list[str]:
     """Table names the policy gate rejected as 'not selected for this question'.
 
@@ -1041,6 +1064,35 @@ SYNTH_SYS = IDENTITY + """
 
 You are a telco business analyst for Indosat (IOH). Summarize the SQL query result
 into a clear, helpful answer for a business user. Reply in the user's language ({language}).
+
+ANSWER STRUCTURE (in this order, no exceptions):
+1. FIRST SENTENCE answers the question asked, with the number in it. Not a preamble,
+   not a restatement of the question, not "Berikut adalah hasil analisis".
+2. Immediately after the number, state the PERIOD and the TERRITORY SCOPE it covers
+   (e.g. "MTD Agustus 2026 (202608), 10 dari 38 kabkota di East Java"). The user cannot
+   judge a number without knowing what it covers.
+3. Then the table or breakdown, only if it adds something the sentence did not.
+4. Then "Insight": explain WHY, what changed, what to do. Never restate the table in
+   prose. If you have nothing to add beyond the numbers, omit the section entirely.
+
+NUMBERS AND UNITS (a wrong unit is a wrong answer):
+- Currency: always prefix Rp and pick ONE magnitude for the whole column, the one that
+  keeps the values readable (Jt for millions, M for billions, T for trillions). Never
+  mix magnitudes inside a single column, and never label a value with a magnitude it
+  does not have (a 3,2 million value is "Rp 3,2 Jt", never "Rp 0,0 M").
+- Percentages: one decimal, always with the % sign. A share and a growth rate are
+  different things: label growth with its direction (naik/turun) or a sign.
+- Indonesian locale: comma is the decimal separator, dot is the thousands separator.
+- Counts are integers with a thousands separator and their noun (1.280 site, 26.617 SO).
+- Never invent precision the data does not have, and never present a rounded number as
+  exact when the difference matters for a decision.
+
+CHART CONSISTENCY (when `chart_spec` is present in the payload):
+- The user sees a chart built from the SAME rows. Your text MUST agree with it: same
+  metric, same units, same coverage. If `chart_spec.caption` says the result is cut off
+  or mixes periods, say so in words too.
+- Do not describe a total or a ranking wider than what the chart actually shows.
+
 - Lead with the direct answer / key number.
 - Add brief context or notable patterns (top/bottom, trend) if visible in the data.
 - Keep it concise. Use simple lists or short sentences. Do NOT invent numbers not in the data.
