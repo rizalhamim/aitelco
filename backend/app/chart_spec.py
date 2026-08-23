@@ -188,6 +188,7 @@ def build_chart_spec(
     rows: list[dict],
     question: str = "",
     result_profile: dict | None = None,
+    sql: str = "",
 ) -> dict[str, Any]:
     """Classify a result into a render spec. Never raises; returns mode 'none' instead."""
     columns = list(columns or [])
@@ -246,8 +247,10 @@ def build_chart_spec(
                            if _is_number(r.get(primary)) else 0),
         )[:MAX_BAR_CATEGORIES]
         ranked_subset = True
-    elif _pie_is_honest(series, rows, truncated,
-                        has_dropped_period=any(roles[c] == ROLE_TEMPORAL for c in columns)):
+    elif _pie_is_honest(
+            series, rows, truncated,
+            has_dropped_period=any(roles[c] == ROLE_TEMPORAL for c in columns),
+            ranked_top_n=_is_ranked_top_n(sql, question)):
         mode = "pie"
         series = series[:1]
     else:
@@ -324,16 +327,33 @@ def _build_axes(series: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return axes
 
 
+def _is_ranked_top_n(sql: str, question: str) -> bool:
+    """True when the result is the top N of a larger set rather than a whole.
+
+    `ORDER BY ... LIMIT 10` returns ten of many kecamatan, so the ten values do not sum
+    to anything meaningful. The BigQuery `truncated` flag does NOT cover this: the query
+    asked for ten rows and got exactly ten, so nothing was truncated. Without this check
+    a "top 10" question was drawn as a pie, implying the slices were a complete
+    composition.
+    """
+    text = (sql or "")
+    if re.search(r"\border\s+by\b", text, re.I) and re.search(r"\blimit\s+\d+", text, re.I):
+        return True
+    return bool(re.search(r"\b(top|teratas|terbesar|tertinggi|terendah|terburuk|"
+                          r"paling|bottom|ranking|peringkat)\b", question or "", re.I))
+
+
 def _pie_is_honest(series: list[dict[str, Any]], rows: list[dict], truncated: bool,
-                   has_dropped_period: bool = False) -> bool:
+                   has_dropped_period: bool = False, ranked_top_n: bool = False) -> bool:
     """A pie is only honest for a complete, non-negative composition of one metric.
 
-    A truncated top-N is a comparison, not a composition: drawing it as a pie implies
-    the slices add up to the whole when they do not. A result that also carries a
-    period column is a slice of time rather than a self-contained whole, so it reads
-    more honestly as bars.
+    A top-N is a comparison, not a composition: drawing it as a pie implies the slices
+    add up to the whole when they do not. A result that also carries a period column is
+    a slice of time rather than a self-contained whole, so it reads more honestly as
+    bars.
     """
-    if truncated or has_dropped_period or len(series) != 1 or len(rows) > MAX_PIE_SLICES:
+    if (truncated or has_dropped_period or ranked_top_n
+            or len(series) != 1 or len(rows) > MAX_PIE_SLICES):
         return False
     column = series[0]["column"]
     values = [r.get(column) for r in rows]

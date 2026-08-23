@@ -300,3 +300,49 @@ def test_a_single_period_is_named_not_ranged():
     spec = build_chart_spec(["month_id", "revenue"], rows)
     # One constant period is context, so this is a bar chart, not a trend.
     assert spec["mode"] != "line"
+
+
+# ---------------- top-N is a comparison, not a composition ----------------
+
+_COMPOSITION = (["family_group", "revenue"],
+                [{"family_group": f, "revenue": v}
+                 for f, v in [("FREEDOM", 5e8), ("HAPPY", 3e8), ("CVM", 2e8)]])
+
+
+def test_an_order_by_limit_result_is_not_a_pie():
+    """`ORDER BY revenue DESC LIMIT 10` returns 10 of many, so the slices sum to nothing.
+
+    BigQuery's `truncated` flag does not catch this: the query asked for 10 rows and got
+    exactly 10. Observed live: a "Top 10 kecamatan" question was drawn as a pie.
+    """
+    cols, rows = _COMPOSITION
+    spec = build_chart_spec(cols, rows,
+                            sql="SELECT family_group, revenue FROM t "
+                                "ORDER BY revenue DESC LIMIT 10")
+    assert spec["mode"] == "bar"
+
+
+def test_a_top_n_question_is_not_a_pie_even_without_sql():
+    cols, rows = _COMPOSITION
+    for question in ("Top 10 kecamatan dengan revenue tertinggi",
+                     "kecamatan mana yang revenue-nya paling rendah",
+                     "5 besar family group terbesar"):
+        spec = build_chart_spec(cols, rows, question=question)
+        assert spec["mode"] == "bar", question
+
+
+def test_a_genuine_composition_is_still_a_pie():
+    cols, rows = _COMPOSITION
+    spec = build_chart_spec(cols, rows,
+                            question="Komposisi revenue per family group",
+                            sql="SELECT family_group, SUM(revenue) revenue FROM t "
+                                "GROUP BY family_group")
+    assert spec["mode"] == "pie"
+
+
+def test_ordering_without_a_limit_is_still_a_composition():
+    # Sorting for readability does not make a result a top-N.
+    cols, rows = _COMPOSITION
+    spec = build_chart_spec(cols, rows,
+                            sql="SELECT family_group, revenue FROM t ORDER BY revenue DESC")
+    assert spec["mode"] == "pie"

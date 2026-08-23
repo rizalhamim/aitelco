@@ -1101,7 +1101,8 @@ def chat_stream(req: ChatReq, request: Request):
                     try:
                         chart = build_chart_spec(
                             result["columns"], result["rows"],
-                            question=req.message, result_profile=result_profile)
+                            question=req.message, result_profile=result_profile,
+                            sql=result.get("sql", ""))
                     except Exception as _ce:
                         chart = {"mode": "none", "reason": f"spec_failed: {_ce}"}
                     yield sse("chart_spec", chart)
@@ -1278,7 +1279,8 @@ def chat_stream(req: ChatReq, request: Request):
             try:
                 _chart = build_chart_spec(
                     result["columns"], result["rows"], question=req.message,
-                    result_profile=payload["result_profile"])
+                    result_profile=payload["result_profile"],
+                    sql=result.get("sql", ""))
                 if _chart.get("mode") != "none":
                     payload["chart_spec"] = {
                         "mode": _chart["mode"],
