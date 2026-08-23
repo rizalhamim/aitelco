@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:intl/intl.dart';
+import '../format/report_format.dart';
 import '../theme.dart';
 
 class MapPoint {
@@ -126,8 +126,8 @@ class _MapPageState extends State<MapPage> {
   }
 
   String _fmt(dynamic v) {
-    if (v == null) return '—';
-    if (v is num) return v is int || v == v.roundToDouble() ? NumberFormat.decimalPattern('id').format(v) : NumberFormat('#,##0.0', 'id').format(v);
+    if (v == null) return kReportNotAvailable;
+    if (v is num) return reportMagnitude(v, decimals: 1, useThousand: false);
     return v.toString();
   }
 }

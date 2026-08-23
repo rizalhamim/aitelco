@@ -1,0 +1,82 @@
+[
+  {
+    "name": "5g_nr2600_rollout",
+    "domain": "5g",
+    "question": "Status rollout NR2600 5G per site dan vendor",
+    "required_any": ["rham_5g_nr2600"]
+  },
+  {
+    "name": "competitive_5g_experience",
+    "domain": "network_benchmark",
+    "question": "Bandingkan speed dan latency 5G IOH vs TSEL per kabkota",
+    "required_any": ["rham_network_comp", "rham_fb_network_5g"]
+  },
+  {
+    "name": "internal_driver_tree",
+    "domain": "network",
+    "question": "Internal performance availability, complaint, dan revenue per kabkota",
+    "required_any": ["rham_network_internal", "rham_network_internal_kec"]
+  },
+  {
+    "name": "ftth_kecamatan_mtd",
+    "domain": "ftth",
+    "question": "FTTH TUR homepass dan subscriber MTD per kecamatan",
+    "required_any": ["rham_ftth_kec_wise_mtd"]
+  },
+  {
+    "name": "fwa_retention",
+    "domain": "fwa",
+    "question": "FWA retention D90 dan gross adds per area bulan ini",
+    "required_any": ["rham_fwa_monthly_kpi"]
+  },
+  {
+    "name": "demand_origin_destination",
+    "domain": "customer_demand",
+    "question": "Demand inner outer dari source kecamatan ke destination MTD",
+    "required_any": ["rham_demand_inner_outer_mtd"]
+  },
+  {
+    "name": "daily_demand_origin_destination",
+    "domain": "customer_demand",
+    "question": "Demand inner outer harian dari kecamatan asal ke tujuan",
+    "required_any": ["rham_demand_inner_outer"]
+  },
+  {
+    "name": "subscriber_migration",
+    "domain": "customer_demand",
+    "question": "Migration matrix pack dan channel subscriber bulan terbaru",
+    "required_any": ["rham_subs_traffic_agg_migration_matrix_monthly"]
+  },
+  {
+    "name": "gaming_demand",
+    "domain": "customer_demand",
+    "question": "Top game berdasarkan revenue dan hit MTD",
+    "required_any": ["rham_game_mtd"]
+  },
+  {
+    "name": "outlet_spacing",
+    "domain": "sales_distribution",
+    "question": "Outlet spacing dan kepadatan dalam radius 500 meter",
+    "required_any": ["rham_outlet_spacing_java"]
+  },
+  {
+    "name": "sellin_ga_location",
+    "domain": "acquisition",
+    "question": "Hubungan sellin dan gross add location per branch",
+    "required_any": ["rham_sellin_ga_location"]
+  },
+  {
+    "name": "market_share_kecamatan",
+    "domain": "competitive",
+    "question": "Market share IOH per kecamatan bulan terbaru",
+    "required_any": ["rham_report_fb_ms_kecamatan"],
+    "forbidden": ["rham_fb_ms_kecamatan_v2", "rham_fb_ms_kabkota_v2"]
+  },
+  {
+    "name": "fwa_no_customer_level",
+    "domain": "fwa",
+    "question": "Ringkas performa FWA per kecamatan",
+    "required_any": ["rham_fwa_kec_wise_mtd", "rham_fwa_kec_wise_mth"],
+    "forbidden": ["rham_fwa_subscriber_base", "rham_fwa_lead_scores"]
+  }
+]

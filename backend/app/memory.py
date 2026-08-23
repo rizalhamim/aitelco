@@ -16,6 +16,7 @@ LLM message list, and the last result via `last_result()` so follow-ups like
 from __future__ import annotations
 
 import json
+import hashlib
 import sqlite3
 import time
 from pathlib import Path
@@ -89,6 +90,28 @@ def init() -> None:
                 territory    TEXT,
                 payload      TEXT NOT NULL,   -- JSON: profile sections or query result
                 ts           REAL NOT NULL
+            );
+
+            -- Evidence-backed routing graph. Terms must already exist in the
+            -- approved runtime graph. New business facts and schema objects are
+            -- never created from user text.
+            CREATE TABLE IF NOT EXISTS knowledge_route_edges (
+                term           TEXT NOT NULL,
+                domain         TEXT NOT NULL,
+                table_name     TEXT NOT NULL,
+                success_count  INTEGER NOT NULL DEFAULT 0,
+                failure_count  INTEGER NOT NULL DEFAULT 0,
+                state          TEXT NOT NULL DEFAULT 'candidate',
+                last_seen      REAL NOT NULL,
+                PRIMARY KEY(term, domain, table_name)
+            );
+            CREATE INDEX IF NOT EXISTS idx_knowledge_route_active
+                ON knowledge_route_edges(domain, state, term);
+
+            CREATE TABLE IF NOT EXISTS knowledge_route_events (
+                evidence_hash  TEXT PRIMARY KEY,
+                domain         TEXT NOT NULL,
+                created_at     REAL NOT NULL
             );
             """
         )
@@ -256,6 +279,65 @@ def log_analytics(
             (session_id, question, domain, sql, success, error_msg,
              response_summary, row_count, latency_ms, time.time()),
         )
+    if success and domain and sql:
+        _record_knowledge_evidence(question, domain, sql)
+
+
+def _record_knowledge_evidence(question: str, domain: str, sql: str) -> None:
+    """Propose or promote weights only on existing approved graph edges."""
+    try:
+        from . import knowledge, knowledge_graph
+
+        if domain not in knowledge.load_kb().get("domains", {}):
+            return
+        approved = knowledge.approved_table_names()
+        used_tables = sorted(knowledge_graph.extract_sql_tables(sql).intersection(approved))
+        terms = knowledge_graph.known_terms(knowledge.load_kb(), question)
+        if not used_tables or not terms:
+            return
+        digest_source = "|".join([domain, ",".join(terms), ",".join(used_tables), sql.strip()])
+        evidence_hash = hashlib.sha256(digest_source.encode("utf-8")).hexdigest()
+        now = time.time()
+        with _LOCK, _conn() as c:
+            inserted = c.execute(
+                "INSERT OR IGNORE INTO knowledge_route_events(evidence_hash, domain, created_at) VALUES (?,?,?)",
+                (evidence_hash, domain, now),
+            ).rowcount
+            if not inserted:
+                return
+            for term in terms:
+                for table_name in used_tables:
+                    c.execute(
+                        """INSERT INTO knowledge_route_edges
+                           (term, domain, table_name, success_count, state, last_seen)
+                           VALUES (?,?,?,1,'candidate',?)
+                           ON CONFLICT(term, domain, table_name) DO UPDATE SET
+                             success_count=knowledge_route_edges.success_count + 1,
+                             state=CASE
+                               WHEN knowledge_route_edges.success_count + 1 >= 3
+                               THEN 'active' ELSE 'candidate' END,
+                             last_seen=excluded.last_seen""",
+                        (term, domain, table_name, now),
+                    )
+    except Exception:
+        # Learning is advisory and must never affect answer delivery.
+        return
+
+
+def get_knowledge_routing(limit: int = 200) -> list[dict]:
+    with _LOCK, _conn() as c:
+        rows = c.execute(
+            """SELECT term, domain, table_name, success_count, failure_count,
+                      state, last_seen
+                 FROM knowledge_route_edges
+                ORDER BY success_count DESC, last_seen DESC LIMIT ?""",
+            (limit,),
+        ).fetchall()
+    columns = [
+        "term", "domain", "table_name", "success_count", "failure_count",
+        "state", "last_seen",
+    ]
+    return [dict(zip(columns, row)) for row in rows]
 
 
 def get_analytics(limit: int = 100) -> list[dict]:

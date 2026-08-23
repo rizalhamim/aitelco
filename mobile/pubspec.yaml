@@ -1,7 +1,7 @@
 name: bizplan_java_agent
-description: "Bizplan Java Agent — IOH Java telco analytics AI (Android client)."
+description: "Bizplan Java Agent - IOH Java telco analytics AI (Android client)."
 publish_to: 'none'
-version: 1.43.1+49
+version: 1.47.0+62
 
 environment:
   sdk: ^3.6.0
@@ -26,6 +26,8 @@ dependencies:
   flutter_foreground_task: ^8.10.0
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   flutter_lints: ^5.0.0
 
 flutter:

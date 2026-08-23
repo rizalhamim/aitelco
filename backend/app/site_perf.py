@@ -1,10 +1,10 @@
 """Site Performance: per-site profile + monthly history + channel/subs/usage/
-top-products/price-slab/quota-validity slab/funnel — for the Site Performance menu.
+top-products/price-slab/quota-validity slab/funnel - for the Site Performance menu.
 
 Data sources (all keyed by site_id):
-  rham_site_wise_addr_java     — site attributes (lat/long, type, branch, ...)
-  rham_site_wise_monthly       — monthly performance (revenue/subs/usage/churn/HVC)
-  rham_site_data_rev_product_mtd / _channel_mtd / _price_slab_mtd — data revenue detail
+  rham_site_wise_addr_java     - site attributes (lat/long, type, branch, ...)
+  rham_site_wise_monthly       - monthly performance (revenue/subs/usage/churn/HVC)
+  rham_site_data_rev_product_mtd / _channel_mtd / _price_slab_mtd - data revenue detail
 """
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from .bigquery_tool import run_query
 from .geo_locate import _haversine_sql
 from .reports_data import (PRICE_SLAB_ORDER, QUOTA_BINS, VALIDITY_BINS,
                            _quota_case, _validity_case)
+from .site_fwa import build_site_fwa
 
 _P = config.BQ_PROJECT
 _D = config.BQ_DATASET
@@ -205,7 +206,7 @@ WHERE {cond}{bmon} AND FORMAT_DATE('%Y%m', dt_id)='{yr_mo}'
                 ga_rows.append({"channel": lbl, "ga": v, "pct": (v / tot * 100) if tot else None})
             ga_rows.sort(key=lambda x: x["ga"], reverse=True)
 
-    # 5. data-revenue channel — detail list (current month) + group-level
+    # 5. data-revenue channel - detail list (current month) + group-level
     #    LMTD/MTD/growth (from _mtd) + 6-month history (from _mth).
     channels = run_query(f"""
 SELECT channel_group, channel_detail, COALESCE(SUM(revenue),0) AS revenue
@@ -233,7 +234,7 @@ GROUP BY channel_group
                            "growth": ((mtd - lmtd) / lmtd * 100) if lmtd else None})
     ch_metrics.sort(key=lambda x: x["mtd"], reverse=True)
 
-    # Full-month history per channel group — `months` closed months BEFORE the
+    # Full-month history per channel group - `months` closed months BEFORE the
     # current MTD month (same window as the metric history).
     ch_hist_rows = run_query(f"""
 WITH lastfull AS (
@@ -371,6 +372,20 @@ WHERE {cond}{bmon} GROUP BY month_id ORDER BY month_id
         "history": [{"month_id": m, **_fwa(fwa_by_month[m])} for m in fmonths[-(int(months) + 1):]],
     }
 
+    # Complete FWA contract from the canonical monthly site-wise tables. Keep
+    # the legacy daily block above unchanged for older mobile builds.
+    try:
+        fwa_summary = build_site_fwa(sid, brand=brand, months=months)
+    except Exception as exc:
+        fwa_summary = {
+            "schema_version": "site-fwa.v1",
+            "source": "rham_fwa_site_wise_mtd/mth",
+            "available": False,
+            "error": str(exc)[:300],
+            "categories": [],
+            "history": [],
+        }
+
     return {
         "attributes": a,
         "brand": brand,
@@ -379,6 +394,7 @@ WHERE {cond}{bmon} GROUP BY month_id ORDER BY month_id
         "network": network,
         "availability": availability,
         "fwa": fwa,
+        "fwa_summary": fwa_summary,
         "performance": perf,
         "funnel": {"m1s": _f(pf, "ga_m1s_mtd"), "m2s": _f(pf, "ga_m2s_mtd"),
                    "p1m": _f(pf, "ga_p1m_mtd"), "p2m": _f(pf, "ga_p2m_mtd"),

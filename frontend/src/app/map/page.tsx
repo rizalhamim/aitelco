@@ -1,11 +1,20 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import MapCanvas, { type MapPoint, type Choropleth } from "../components/MapCanvas";
+import MapCanvas, { type MapPoint, type Choropleth, type SiteChannel, type SiteChannelGroup, type SiteHistory, type SiteMetric } from "../components/MapCanvas";
 import Markdown from "../components/Markdown";
 import { isLoggedIn, getAccessToken, getUser } from "@/lib/auth";
 
 type ChatTurn = { role: "user" | "assistant"; content: string; status?: string; error?: string };
+
+type FixSite = {
+  latitude: number; longitude: number; site_id: string; site_name: string; distance_km: number;
+  site_type?: string; category?: string; addressable?: string; branch?: string; micro_cluster?: string;
+  kecamatan?: string; kabupaten?: string; profitability_status_m1?: string; traffic_category?: string;
+  perf?: Record<string, number | null>; mom?: Record<string, number | null>; yoy?: Record<string, number | null>;
+  metrics?: Record<string, SiteMetric>;
+  channels?: SiteChannel[]; channel_groups?: SiteChannelGroup[]; history?: SiteHistory[];
+};
 
 function detectLatLon(columns: string[]): { latKey: string; lonKey: string } | null {
   const lat = columns.find((c) => /^lat(itude)?$/i.test(c) || /_lat(itude)?$/i.test(c) || /(addr_)?latitude/i.test(c));
@@ -278,6 +287,9 @@ export default function MapQueryPage() {
   const [fixLoading, setFixLoading] = useState(false);
   const [fixMonth, setFixMonth] = useState<string | null>(null);
   const [fixAuto, setFixAuto] = useState(false);
+  const [labelOn, setLabelOn] = useState(false);
+  const [labelMetric, setLabelMetric] = useState<"revenue" | "site_id" | "site_name" | "vlr">("revenue");
+  const fixSitesRef = useRef<FixSite[]>([]);
   const sessionIdRef = useRef<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -288,6 +300,42 @@ export default function MapQueryPage() {
     if (v === null || v === undefined) return "—";
     if (Math.abs(v) >= 1e6) return `${(v / 1e6).toLocaleString("id-ID", { maximumFractionDigits: 1 })} Mn`;
     return v.toLocaleString("id-ID", { maximumFractionDigits: 0 });
+  }
+
+  function fixLabelText(s: FixSite, metric: typeof labelMetric): string | undefined {
+    if (metric === "site_id") return String(s.site_id ?? "");
+    if (metric === "site_name") return String(s.site_name ?? s.site_id ?? "");
+    if (metric === "vlr") return fmtMn(s.perf?.vlr_daily);
+    return fmtMn(s.perf?.rev_prepaid); // revenue (default)
+  }
+
+  function buildFixPoints(sites: FixSite[], on: boolean, metric: typeof labelMetric, monthId: string | null): MapPoint[] {
+    return sites.filter((s) => s.latitude != null && s.longitude != null).map((s) => {
+      const pf = s.perf || {};
+      const attrs = [
+        { key: "Site ID", value: String(s.site_id ?? "—") },
+        { key: "Jarak", value: `${s.distance_km ?? "—"} km` },
+        { key: "Type", value: String(s.site_type ?? "—") },
+        { key: "Category", value: String(s.category ?? "—") },
+        { key: "Branch", value: String(s.branch ?? "—") },
+        { key: "Micro Cluster", value: String(s.micro_cluster ?? "—") },
+        { key: "Kecamatan", value: `${s.kecamatan ?? "—"}, ${s.kabupaten ?? "—"}` },
+      ];
+      const metrics = [
+        { key: "Rev Prepaid", value: fmtMn(pf.rev_prepaid) },
+        { key: "RGU 90D", value: fmtMn(pf.rgu_90d) },
+        { key: "VLR Daily", value: fmtMn(pf.vlr_daily) },
+      ];
+      return {
+        lat: s.latitude, lon: s.longitude,
+        title: s.site_name || s.site_id, metrics, fix: true,
+        labelText: on ? fixLabelText(s, metric) : undefined,
+        detail: {
+          perf: s.perf || {}, mom: s.mom || {}, yoy: s.yoy || {}, metrics: s.metrics || {},
+          channels: s.channels || [], channel_groups: s.channel_groups || [], history: s.history || [], attrs, month_id: monthId,
+        },
+      } as MapPoint;
+    });
   }
 
   async function loadFixSites() {
@@ -307,36 +355,21 @@ export default function MapQueryPage() {
       const r = await fetch("/api/geo/nearest-sites", { method: "POST", headers: { "Content-Type": "application/json", ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}) }, body: JSON.stringify(loc) });
       const d = await r.json();
       if (d.ok) {
-        type Site = { latitude: number; longitude: number; site_id: string; site_name: string; distance_km: number; site_type?: string; category?: string; addressable?: string; branch?: string; micro_cluster?: string; kecamatan?: string; kabupaten?: string; profitability_status_m1?: string; traffic_category?: string; perf?: Record<string, number | null>; history?: { month_id: string; rev_prepaid: number; rgu_90d: number }[] };
-        const pts: MapPoint[] = (d.sites as Site[]).filter((s) => s.latitude != null && s.longitude != null).map((s) => {
-          const pf = s.perf || {};
-          const metrics: { key: string; value: string }[] = [
-            { key: "Site ID", value: String(s.site_id ?? "—") },
-            { key: "Jarak", value: `${s.distance_km ?? "—"} km` },
-            { key: "Type", value: String(s.site_type ?? "—") },
-            { key: "Category", value: String(s.category ?? "—") },
-            { key: "Addressable", value: String(s.addressable ?? "—") },
-            { key: "Branch", value: String(s.branch ?? "—") },
-            { key: "Micro Cluster", value: String(s.micro_cluster ?? "—") },
-            { key: "Kecamatan", value: `${s.kecamatan ?? "—"}, ${s.kabupaten ?? "—"}` },
-            { key: "— Performa —", value: "" },
-            { key: "Rev Prepaid", value: fmtMn(pf.rev_prepaid) },
-            { key: "Rev Data", value: fmtMn(pf.rev_data) },
-            { key: "RGU 90D", value: fmtMn(pf.rgu_90d) },
-            { key: "Net Add 90D", value: fmtMn(pf.net_add_90d) },
-            { key: "Gross Churn 90D", value: fmtMn(pf.gross_churn_90d) },
-            { key: "Subs HVC", value: fmtMn(pf.subs_hvc) },
-            { key: "Usage Data GB", value: fmtMn(pf.usg_data_gb) },
-          ];
-          for (const h of (s.history || [])) metrics.push({ key: `Hist ${h.month_id}`, value: `${fmtMn(h.rev_prepaid)} · RGU ${fmtMn(h.rgu_90d)}` });
-          return { lat: s.latitude, lon: s.longitude, title: s.site_name || s.site_id, metrics };
-        });
-        setPoints(pts);
+        const sites = (d.sites as FixSite[]) || [];
+        fixSitesRef.current = sites;
         setFixMonth(d.month_id ?? null);
+        setPoints(buildFixPoints(sites, labelOn, labelMetric, d.month_id ?? null));
       }
     } catch { /* ignore */ }
     setFixLoading(false);
   }
+
+  // Rebuild fix-mode labels when the label toggle/metric changes (no refetch).
+  useEffect(() => {
+    if (!fixMode || fixSitesRef.current.length === 0) return;
+    setPoints(buildFixPoints(fixSitesRef.current, labelOn, labelMetric, fixMonth));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labelOn, labelMetric, fixMode]);
 
   function setMode(fix: boolean) {
     setFixMode(fix);
@@ -634,32 +667,39 @@ export default function MapQueryPage() {
     <div className="mq-root">
       <MapCanvas points={points} userLoc={userLoc} choropleth={choropleth} />
 
-      {/* Top bar */}
+      {/* Top bar — AI/Fix toggle blended into the header */}
       <div className="mq-topbar">
         <button className="mq-back" onClick={() => router.push("/")} title="Kembali ke chat">←</button>
-        <div className="mq-title">Map Query</div>
+        <div className="mq-mode-seg">
+          {([[false, "🤖", "AI"], [true, "📡", "Fix"]] as const).map(([k, ic, lbl]) => (
+            <button key={String(k)} onClick={() => setMode(k)} title={k ? "Fix Mode" : "AI Mode"}
+              className={`mq-mode-btn${fixMode === k ? " active" : ""}`}><span style={{ fontSize: 12 }}>{ic}</span>{lbl}</button>
+          ))}
+        </div>
         <div className="mq-loc">
-          {locating ? "📍 Mencari lokasi…" : userLoc ? `📍 ${userLoc.lat.toFixed(4)}, ${userLoc.lon.toFixed(4)}` : "📍 Lokasi tidak tersedia"}
+          {locating ? "📍 …" : userLoc ? `📍 ${userLoc.lat.toFixed(3)}, ${userLoc.lon.toFixed(3)}` : "📍 N/A"}
         </div>
         <button className="mq-recenter" onClick={recenter} title="Perbarui lokasi saya">⟳</button>
         <button className="mq-recenter" onClick={refreshMap} title="Refresh map (hapus hasil)">🗑</button>
       </div>
 
-      {/* Mode toggle */}
-      <div style={{ position: "absolute", top: 56, left: "50%", transform: "translateX(-50%)", zIndex: 1000, display: "flex", gap: 4, background: "rgba(255,255,255,.96)", border: "1px solid #E1E9E7", borderRadius: 999, padding: 3, boxShadow: "0 2px 10px rgba(0,0,0,.12)" }}>
-        {([[false, "🤖 AI Mode"], [true, "📡 Fix Mode"]] as const).map(([k, lbl]) => (
-          <button key={String(k)} onClick={() => setMode(k)}
-            style={{ border: "none", borderRadius: 999, padding: "6px 16px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "Poppins,sans-serif", background: fixMode === k ? "#E60012" : "transparent", color: fixMode === k ? "#fff" : "#5A6B68" }}>{lbl}</button>
-        ))}
-      </div>
-
-      {/* Fix panel */}
+      {/* Fix panel — compact: status + label toggle/picker + auto + refresh */}
       {fixMode && (
-        <div style={{ position: "absolute", top: 104, left: 12, right: 12, zIndex: 1000, display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,.96)", border: "1px solid #E1E9E7", borderRadius: 12, padding: "8px 12px", boxShadow: "0 2px 8px rgba(0,0,0,.1)" }}>
-          <span style={{ fontSize: 16 }}>📡</span>
-          <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: "#0F1F1D" }}>{fixLoading ? "Memuat site terdekat…" : `${points.length} site terdekat${fixMonth ? ` · ${fixMonth}` : ""}`}</span>
-          <button onClick={() => setFixAuto((v) => !v)} style={{ border: `1px solid ${fixAuto ? "#33BCAD" : "#E1E9E7"}`, background: fixAuto ? "#33BCAD" : "#fff", color: fixAuto ? "#fff" : "#5A6B68", borderRadius: 999, padding: "4px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>⟲ Auto</button>
-          <button onClick={loadFixSites} disabled={fixLoading} style={{ border: "1px solid #E1E9E7", background: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}>↻</button>
+        <div style={{ position: "absolute", top: 64, left: 12, right: 12, zIndex: 1000, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, background: "rgba(255,255,255,.96)", border: "1px solid #E1E9E7", borderRadius: 10, padding: "6px 10px", boxShadow: "0 2px 8px rgba(0,0,0,.1)" }}>
+          <span style={{ flex: 1, minWidth: 120, fontSize: 12, fontWeight: 600, color: "#0F1F1D" }}>{fixLoading ? "Memuat…" : `${points.length} site${fixMonth ? ` · ${fixMonth}` : ""}`}</span>
+          <button onClick={() => setLabelOn((v) => !v)} title="Tampilkan label di marker"
+            style={{ border: `1px solid ${labelOn ? "#15A697" : "#E1E9E7"}`, background: labelOn ? "#15A697" : "#fff", color: labelOn ? "#fff" : "#5A6B68", borderRadius: 999, padding: "4px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>🏷 Label</button>
+          {labelOn && (
+            <select value={labelMetric} onChange={(e) => setLabelMetric(e.target.value as typeof labelMetric)}
+              style={{ border: "1px solid #E1E9E7", borderRadius: 8, padding: "4px 6px", fontSize: 11.5, color: "#0F1F1D", background: "#fff", fontFamily: "Prompt,sans-serif" }}>
+              <option value="revenue">Revenue</option>
+              <option value="site_id">Site ID</option>
+              <option value="site_name">Site Name</option>
+              <option value="vlr">VLR</option>
+            </select>
+          )}
+          <button onClick={() => setFixAuto((v) => !v)} title="Auto refresh 60s" style={{ border: `1px solid ${fixAuto ? "#33BCAD" : "#E1E9E7"}`, background: fixAuto ? "#33BCAD" : "#fff", color: fixAuto ? "#fff" : "#5A6B68", borderRadius: 999, padding: "4px 9px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>⟲</button>
+          <button onClick={loadFixSites} disabled={fixLoading} title="Refresh" style={{ border: "1px solid #E1E9E7", background: "#fff", borderRadius: 8, padding: "4px 9px", fontSize: 12, cursor: "pointer" }}>↻</button>
         </div>
       )}
 

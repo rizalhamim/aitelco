@@ -1,0 +1,14 @@
+# Synthesis-quality review set. Format: shape|question
+# Not a pass/fail runner: run these against the live backend and score the ANSWER
+# text against the rubric in docs/agent-improvement-plan.md Phase 6. Deliberately
+# mixes shapes so one prompt tweak cannot pass all ten by luck.
+single_metric|Berapa total revenue prepaid di Kota Surabaya bulan ini
+ranking|Top 10 kecamatan dengan revenue tertinggi di Kota Surabaya bulan ini
+mom_trend|Bagaimana tren revenue data di region East Java 3 bulan terakhir, naik atau turun
+yoy_compare|Bandingkan market share IM3 YoY di kabkota Sidoarjo
+composition|Komposisi revenue per family group product di Kota Malang bulan ini
+empty_expected|Berapa revenue prepaid di Kota Manado bulan ini
+degenerate_risk|Conversion funnel FTTH SO ke SA ke PA per kabkota di Jawa Timur, mana yang konversinya paling jelek
+vague_clarify|Bagaimana performanya
+truncation_risk|Bandingkan kontribusi revenue Freedom Internet vs Happy vs CVM Pack per region bulan ini, dan tunjukkan family mana yang share-nya naik MoM
+caveat_visible|Tampilkan forecast revenue bulan depan per branch di East Java

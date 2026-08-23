@@ -1,0 +1,4294 @@
+{
+  "schema_version": 1,
+  "tool_version": "1.0",
+  "project": "data-java-prd-97b9",
+  "dataset": "java_precalc",
+  "review_id": "five-agent-panel-2026-08-19",
+  "reversal_policy": "A rejected or quarantined decision can change only through a new reviewed history entry with reviewer, evidence, and explicit override=true.",
+  "objects": {
+    "geo_osm_junction_java": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "07fb5e258e8b47563bfa154034438801e2e2934b849626cb395b24387d411dec",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "geo_osm_junction_java_raw": {
+      "lifecycle": "quarantined",
+      "object_class": "raw",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class raw is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "848bcfb3eef50727c68bb2cf9c8d33cd4af93d7ff57103e721c77d52f42476fb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class raw is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "geo_osm_road_java": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "8a939ebec64511374cb0bf2dbfdbbd8101cae2929e1d6fe8b0cfc65e9f2055e9",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "geo_osm_road_java_raw": {
+      "lifecycle": "quarantined",
+      "object_class": "raw",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class raw is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "45f24cb4a0c574388bfb8604cb7cd40a832f199c02b2f7e4e03b8bea53a78fc9",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class raw is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_nr2600": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "74748d79861f9e17c4e4bbade18327624bd11f7ac1b91ce049d4038c50f8b757",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_nr2600_stg": {
+      "lifecycle": "quarantined",
+      "object_class": "staging",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class staging is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "93db1e30073e3676b6410a4dc5d6a6a90d21ed7431eeb626344b5bbf8f400ce5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class staging is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_nr2600_upd": {
+      "lifecycle": "quarantined",
+      "object_class": "staging",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class staging is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "581248bfdd86f8121fc53425a14123f4b46040171aa42a17e9b9b9861b135565",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class staging is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_site_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "cdff1561e8fbbf07084405053c540ce029d44a73cc994178cff3649036267504",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_site_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f0a38237f0be425016fd89c3bcaf1551f62361eeb1b8bad048de1595cfccf43b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_territory_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b658cc88d1e4a7905f81fb01fcc46f78a4d97f7173596ab486100b62333cbce9",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_territory_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f81b2e8a6175872bfaf459a27cc374cd18398d50022824b7583324d12d5573cb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_5g_territory_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f81b2e8a6175872bfaf459a27cc374cd18398d50022824b7583324d12d5573cb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_avail_stat_site_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "39c528c66aef5b954d93df3f7342bb5d011bbc0da81b6d5453bc9b4a2dac320f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_avail_stat_territory_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b414dd1bcc59e4292ae77bd20ca1949c8ec3e7614cea1d04d453bfc3d319e6fb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_avail_stat_territory_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "9a1943446c4a4f2185ddb5cbd30a2d18dd5bc2a2c0ca08b783400108b8c43f46",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_availability_kpi_site": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a0186851750cdd08966e3cca6330bae178902a3cc76d425ecd0dafa9adabc69b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_branch_5g_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e2d0518a73195a56e9517f284ecf05c18fb68b73d9328d5297739a41c1656ac1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_branch_5g_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "25349bb6d1a0aadf4b71ee7a942e5fbc5a1fc9df0f1a043ae0a55fcf1554ea76",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_branch_5g_territory_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "5g",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "fe39da0e098e1758f8ba265f56d82cca54a38f47276e9b9b70c97fc75ca5fd94",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_branch_ga_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "acquisition",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "1e9c90ba617e2f3bf7c949d21c7a48df0eeafecf492b93c54aac38ee80345c0c",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_cohort_voucher_mobotrade": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "26a4d3d25c70f3416bac26870afd41c0de3652c1d767535874d6ee6ab8708a9b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_data_rev_digicommerce_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "2eb7a5d757f51822220e1e61bfa421b282832eb02b79f91d04f43fff32c1de63",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_demand_inner_outer": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "8c84b07fa618df0da176b8123605117589b86c719b3b312fa4413624bdc3bd3a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_demand_inner_outer_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "edf2752821f4ab4ba75d5366746e3d46b0fd6bbdab2c429c912e81686051078f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_demand_inner_outer_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "edf2752821f4ab4ba75d5366746e3d46b0fd6bbdab2c429c912e81686051078f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_desa_perf_history": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d3da61b6ac5751c71d47d0950a0c35aa94784dd2b33faface2b5f0f596172186",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_desa_perf_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "dd555cbc02a592543d292a94948fffcec1cd90c0958cce5d3144d62fc8e8bd7a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_desa_perf_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d9ca18b7429250546e9694a970eac353f80c274e12b13c86064c592466aca87f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_ms_5g_device": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "19cca0c0fb177788f59259abf0efc687d978aa52cc1933400fa4ad4a875b60ae",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_ms_5g_network": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "19cca0c0fb177788f59259abf0efc687d978aa52cc1933400fa4ad4a875b60ae",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_ms_age": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "0189a0bd54d81e9d725530d7953657218a94a3a381bf99ababc909d0c9431b62",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_ms_kabkota_v2": {
+      "lifecycle": "rejected",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Deprecated market-share source. Use rham_report_fb_ms_*.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f56d71ffb6bbd1d1896801d73b40467ac7d97e0ee9d9e04107afdd2f46798a5e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Deprecated market-share source. Use rham_report_fb_ms_*.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": "rham_report_fb_ms_kabkota"
+    },
+    "rham_fb_ms_kecamatan_v2": {
+      "lifecycle": "rejected",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Deprecated market-share source. Use rham_report_fb_ms_*.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "560775f2014f607288943bacafa1e268512747118f77e7a131b79c7beb24f4bb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Deprecated market-share source. Use rham_report_fb_ms_*.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": "rham_report_fb_ms_kecamatan"
+    },
+    "rham_fb_network_5g": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3bb6bcdc22ae39db59ae510b798c3bad247fcbcb2120ff4169c06ad56b69ba31",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_network_insight_wly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d515563346a4ca231981272d8abed2ae68969c369c11cf80e44f30f69bd8dac6",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_network_kabkot": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "2328cc9deddf1f5e864c5474f5a04e85a278de74f578c76a00cb024676109afe",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_network_kabkot_wly_wide": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "0cb7930fe2fef2d146a51c7e48145ae4e017a647830c557b32ffbc9c51ad1aab",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_network_kec_wly_wide": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ff98c31d2fddb8428a3edca9262fabb6ba3ec48521a545a9a34800e211ecb7a8",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_network_kecamatan": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "61d3d66f5b005a79808e286f9c970ba14d7e1bcacc0a70de01d930444166f14e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fb_network_territory_wly_wide": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "43936805195dc6d70d7a6cf9602c96c7d553dc742a791cb468bf4bfe575e46ac",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_branch_output": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "8cc6a50f45d6b8073f84fe606a6711be75323712ff723724fd42f8c61a0c9bb6",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_branch_output_v3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "55a51ed428b531b58cda8386d538e7f4d3c984ace14fae239b9f51e921ce1970",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_branch_source": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "81070c007d08387830ef8a725f89173f095cfdf0cc792dfe6e3b41a7e528fd6e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_kabkota_output": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "efcd6b01e9e1334ac24a14fcba89af155eba01617ebed2b748c875d5a6d88609",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_kabkota_output_v3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "da5b21964aa4fa5b7d85ae09fc6effd24e42ed6bfe77767fa171a4598f24621a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_kabkota_source": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a9ed7bafe723df14ab4fe981ec44675b5130ec38e06dc0c514a0dbee3e861745",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_mc_output": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3d63720609d261a98da3e3c60f70f8d044d103691827350717d73e1f3b509f05",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_mc_output_v3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a5b69265f896eb21487528734e44ac39f475ee8eb7f77cd0e9671e6780639f6e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_mc_source": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "740688588fcf0018eb16519eddd06ec5870eec614787106f704c784584b0bac4",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_rev_mc_input": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "4a59d21aa7e4db4b2000e9bc69030808c80dbe74d36d95d2d9f2b489c8bbc5b1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_daily_rev_mc_output": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "1b463efbb2fc38b7d9393b3eddbc174643338cca4ba56d00cfb9c1e492f6f746",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_monthly_branch_output_v3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "4c8cc9a88bf689fa71e0a26adf7f5ed2d167c8b390d1a4a2574cddae311d6509",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_monthly_kabkota_output_v3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "14d56c223428008c80c6a60958d026b7c2b12d11aa74dc103f989053d9c1cf8d",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_forecast_monthly_mc_output_v3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "forecast",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a4e4f6762cfe63c99ea562f7bd660dacab5356426dac0a37d2bb5ba7fd4aaff9",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_ae_profile_3m": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a12b350418ea109d6b4b0bb58259a5e636c992ecae8d9f5121936c8de237ba59",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_ae_site_portfolio": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "afa8ef8b88a5ffcd68d87e26cf5af6a9bcf85f5f1cabca184bcced033d614ba1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l0_admin_bridge": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b0b460ec524b8ebc1322e4265e5a61231331c474c5fe84851000e36b1405e204",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l0_params": {
+      "lifecycle": "quarantined",
+      "object_class": "helper",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class helper is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "2eed4ace9100985a9fccb3794d65d79ff87780e24ea0b1abb8c52e871e9a3e7c",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class helper is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l0_rejected_records": {
+      "lifecycle": "quarantined",
+      "object_class": "helper",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class helper is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a02b47781bc7ed77700df98bb81908fb5b9ab4cb2b666c5f7e22ec6fd11f78a0",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class helper is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l1_ae_base": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "433a6bbdc6ca3f8d457991b28d8594c3dc433a70924a1b7524be5d0bd0a17d47",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l1_area_base": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "73396c7ede8ca5ec48e8aae509898c768d86438c0940dfc2264909655f817b50",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l1_site_base": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "9241917a24200658dac223e28d463fcf6c95a0fb630174df6b87c47923820259",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l2_achievable_tur": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "2216eb0b95fb7166384143e43d967a39d847624fac9014a369bb6778dc1c3dd1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l2_ae_capability": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "5dc12c9ad4b4b958f317d2550b47e00d1bd62a24485b4cfe2f9ee3e9873d4884",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l2_ae_footprint": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "977dde9ec46592d388cd0068c6386116f3bbaacd39544aa544208236adef5542",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l2_econ_score": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3c903dd45a70297245b098a54ff8cac9eb591961fb2d76526eebf1da9afd87d6",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l2_funnel": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "fd417b22fbf093abd25550fc349cddc3486c27ac959629562ef7c9b03ae87c43",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l2_monetization": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "1123fdfbfd31fc01eee0f901c1ad1fadd93f61618084aaf7aff340e6f271dff7",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l2_substitute_flag": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "65d3b85fede1ae118b19babaff7aa30772e4b9b2767bfc87d0e9126247095e7d",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l3_area_opportunity": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3acff4dce88cfa7eed2226fe8a6d65c7642ed5d2bdb147164a0d254195a8d169",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l3_attack_cluster": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a54ac4fe9d36df774e97ac413ec333b6abc4898944fa6ed261bfccdfe90aba40",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l3_cluster_site": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "5a963c5b818d8675ca09c9e67e59eaab0f5598b12bd46c81e3fab34942f3053f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l4_ae_cluster_match": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d0b18c4ebde5a261c01ab4c0d2f246cbf7f0813e66eae20b16e61c9995c2fd09",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l4_territory_plan": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a23554e2d3846f3a4f906951deeef79dbb4d9a7f622cd14b0a4b193a8cdcd50b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l4_territory_site": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "084e40561a12fd32b81449ac5332ac4deeb5c4a5cf4e272a168924b000bad8c9",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_l5_rtm_deployment": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "170fc738535f042a7ed40b79739750ff09a7c7c088849623767df8565ceaa4c5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_ins_tl_site_portfolio": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "ftth",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "54ed9c5ed467e5f565c6b6689e10289685e3a24f2a61688a14723e5d33aaa775",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_kec_wise_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "97765d03c108efa808d54eeb54a691016ee31fc7e0dd2c6fc6b3a2c3216af17b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_kec_wise_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d644c09f1dfc03b676cc96faa0447805bbff83631a2b64349559eba9a4b64bb1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_kec_wise_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d644c09f1dfc03b676cc96faa0447805bbff83631a2b64349559eba9a4b64bb1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_pa_detail": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "81bc33987778a7dfa8dc760bbd8057fed693f7f7b1230ef4a122937e4c599250",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_sa_detail": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "5be03b708323e950780a6389b4cba1bd64758c65508e2d607595021ccccde0cf",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_site_daily": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "9788354febbdbeafa62df867437047501015eb01d9d36562f57b4d87e7b674d0",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_site_wise_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "1ff12e1e08a53b452fcc7f007d84eaa4b31d1c4c2bf3c304cd201d7a09735da5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_site_wise_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "466181e6c2d4efcf2d731028913c700c55417b511943480c27d2897d7f82a44a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_site_wise_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "466181e6c2d4efcf2d731028913c700c55417b511943480c27d2897d7f82a44a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_sitewise_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f66c88450520880717d61490a16f4eb680439e7e2a870c5bc3eec4612c6ee854",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ftth_so_detail": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "ftth",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "7faff0ac2147d7692c4d57794cb6e48166fd1167ec7b66bacd4cf2aff4c405b5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_area_score": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "fwa",
+      "reason": "Scoring output requires formula ownership and validation before promotion.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "6295f2bd146ad5ba3ba250369ba50a115f6edbccb9cc95a03ba48ddf1d973448",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Scoring output requires formula ownership and validation before promotion.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_integrity_flags": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Detailed integrity records require a separate reviewed use case.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "9e7bc9b16dc091497dc1c770efaf1f8657b15ae755b00e70d4b2083d6469b3fa",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Detailed integrity records require a separate reviewed use case.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_kec_wise_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "09ceda78438a0c2ab30d08e4f166d527426f877f0db827c795f614d60e5c1110",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_kec_wise_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "488f306ad39d3ee25d74109c46feaf860585d9dd9ea3d97a41bb598272da6a25",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_kec_wise_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "488f306ad39d3ee25d74109c46feaf860585d9dd9ea3d97a41bb598272da6a25",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_lead_scores": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Customer-level lead scoring is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b7352582e4f7044da9400d3fde994470862b100463f9398736d4a0962188ab34",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Customer-level lead scoring is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d0d35d11280b22a0f4fefc15ac55fc15cf89a90d7b2d99259e31dc7d2abe9492",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_monthly_kpi": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b5f3c9349aa3d96ce1202d83e4abe5e22c7ac2a655b6b283b0eff778d7cdeaa5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_outlet_score": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "fwa",
+      "reason": "Scoring output requires formula ownership and validation before promotion.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "66ccae06b13477287277b635bdb1286af1e01284806085f5e324a49befdaf290",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Scoring output requires formula ownership and validation before promotion.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_site_raw": {
+      "lifecycle": "quarantined",
+      "object_class": "raw",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Raw FWA source superseded by governed aggregate summaries.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d6697022bb0bcf57f890b7974f96c01ab6ec72d4fd4c4b2296c78398750ea30e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Raw FWA source superseded by governed aggregate summaries.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_site_wise_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "bff072fcf712bd2ab40701cfb9adb594dfac4b8c5e33440ad4b5ccbd1ab70227",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_site_wise_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "114be0a52445bf688e6e66ab95d471cc37e6bac9f79aeb382ec38d3302499cd1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_site_wise_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "114be0a52445bf688e6e66ab95d471cc37e6bac9f79aeb382ec38d3302499cd1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_fwa_subscriber_base": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Customer-level FWA base is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "006f3d37956a3a0d6383ff247c8917161b42a3d0295021a6ff3ddab33c4834f7",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Customer-level FWA base is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ga_recharge": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Contains GA subscriber identifiers. Use aggregate acquisition tables.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "887f58bbe04b95cd4119dd4a130c45be6df7a674a34270e0a4ec45f26bff0869",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Contains GA subscriber identifiers. Use aggregate acquisition tables.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_game_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "c6a8efa8d9fc01ae8617713613f8d6581525a18de6eb0f16ae753dbe5a3f33e5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_game_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e4d6a21e6db092ee819ada790a8d56a3d46773f714d554eff502601be250f55e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_game_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e4d6a21e6db092ee819ada790a8d56a3d46773f714d554eff502601be250f55e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_hvc_kec_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_hvc",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "087f44786d4ba44616bfde348f60a5aebb41b8a7f994148621b45b9f8d687613",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_hvc_kec_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_hvc",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "c7c9a21a7face2fd3db4173d0da0b2c8abddb4a0ac872c909cb34d4aef1b6e17",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_hvc_kec_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_hvc",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "c7c9a21a7face2fd3db4173d0da0b2c8abddb4a0ac872c909cb34d4aef1b6e17",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_hvc_revenue": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Very large source requires a reviewed aggregate contract before use.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "2c2314d5ffdafd523bf57dffa39b2344602fdbfab8b69c274652ce669f80ab7b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Very large source requires a reviewed aggregate contract before use.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_hvc_site_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_hvc",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e7065f62e39395ba5d942d38dac2d00d8edbdc0b10166eaebb3221864e260598",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_hvc_site_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_hvc",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "4cce9ce9c0bff76aa8d09c76e456109855acc4da7e87eb9a5e864494d5d1e02c",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_hvc_site_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_hvc",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "4cce9ce9c0bff76aa8d09c76e456109855acc4da7e87eb9a5e864494d5d1e02c",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_kpi_highlevel_dly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "dc2b42b6aa342ad36c8d4c861f8b58b60e61e2c129f22182231cee36f132ef0d",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_kpi_highlevel_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d210bd50db246bf29f5098c62a259e8556d864bb6872a3ca63659445f1041af5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_kpi_highlevel_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "5f217807bcce256685f1d9eb0c0af8dedaa2882ba1fcd39ab715fc0e3c38fa6e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_master_tracker_fwa": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ef4e3143cf3cf954b9ce5c8946663ebcde42193bc853a15af8a6a101c1dca594",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_mkt_highlevel_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d61b223223a43122e91439affab2d0bfe5b911125a80b37d9baded23ad7cee88",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_mkt_highlevel_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "5b0a4c20a8d75dac9dd079236ca07213adbb1e0b17d1f6707e7e2e7ab8336078",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_mkt_kpi_highlevel_dly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a42de98568aa9d9dea358b939bc0d4fc5368400de5e999e98695dc5d832f436c",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_msisdn_ucg_program": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Subscriber-level program membership is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "909507f93e1c59dd1fb5450d827320f560c89c8c84600bdbe6afcc71aabaa981",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Subscriber-level program membership is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_network_comp": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "fc83bff4e08b60b2606ff70e3e18b9516efe4642c83253c34a32b3a4397a5f2e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_network_comp_kec": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b0ac43cf65a94f561235e6bd1a440c630e4afcdfda6bd36eb542b4875e486fd5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_network_internal": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a1a7b1d9dcbcbddf02beb4995aeccca30259e7acff36b59624724d7dd7008acc",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_network_internal_kec": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3405202d8ef875da709af2ee3f49ea30b5b7fc20ca38e3dea02157a8b0da5594",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_opensignal_experience_wly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "10652aa78a7b3d9a8a0b02cd40d6880c1ec9c7acc41c8da6ae4781082fc2a1ba",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_opensignal_kabkot_wly_wide": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "67554a55459a7cdad1fef53eca4cd7efb161b6fdc2921d946c9e6793271e5d18",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_opensignal_kec_wly_wide": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "036424436d82bb227b72d2b2bc2b8148df3bf4c62843e0a2528885160ac0506a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_opensignal_territory_wly_wide": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network_benchmark",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "42a28f90d91642f8e240f59119a5949806fab8ddc0058fd957c31b68b5249df5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_junction_java": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "862b57367792ceb7ea87217545091c0510cb16849ea9459ac0e4b3bd2d66153e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_nbs": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "cb7c3747e084e9b77185b8fb715e6fcd4e50bde9c368a0f1993a892038e2e6f4",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_population_java": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "0b92d717954153d221f2487bd5cc89ba99d8c1e1c70368347a36daa45fc4f34f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_road_java": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "dfcdc9838d4282e01a69908a8613822f8cc40a5487aad41737cff5db39d64acc",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_spacing_java": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "84b22546b702d3709466005476314ea5e60d6a96859b1b81b981eff3ff1a5324",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_transaction_java": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d395ccf9e349171db6c13dd23c3aa72d982aea30186f73a4759c37e90f295a16",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_wise_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "4e2d493d7e4227f7627da8bfe1c10fa8c270a7c8e4f7d31dec957b02cb807fee",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outlet_wise_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "4e2d493d7e4227f7627da8bfe1c10fa8c270a7c8e4f7d31dec957b02cb807fee",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_outletwise_daily_pjp": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "8ceac2b9b6958b4788c60b9ea6ab66ae63dbd9a7cbcd4d0dc44ebea99b42d2cf",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_area_brand_dynamics": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "0f60c1c667208f6ec889e1ffeadc416c7f8253e8492e39bd4c474ad571b7c27a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_area_growth_score": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "037892d13d05097a0a1418edb67e249bad1bbf7878bd109536cf626d905997ae",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_area_growth_score_ext": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e2c2a4ddfb29f2ff80502a8acf2e1d2f57b754e6809ce0e711ce73d4ddc43c1e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_area_month_metrics": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "01fc0b71c5d4f47b9cc21083f32d8056c6df83096d94f20b8afd2c922037b83e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_area_peer_group": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e9a8c30b968f06767494fe23b1fc3d32b6f10c87cd23feef9304e506601a8fb8",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_area_trend": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b879b3f55ac79fc57f1e99c94803ada099ce27e77ea49da6aa0774bc9200654f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_final_recommendation": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e30465a723d29c539f6a9d0cc84f5198caa12af329c4a39b7cd9e62410acebaa",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_score_snapshot": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "5c10450f3e6e62b87aeaf480e31d0198d0267cccad3845523b6365e6346bcfe0",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_v_area_alerts": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "735cb68b87fbfd5fd224eed1747fda7a0a08819ddb27929ca75bb432c1294b95",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_v_area_coverage": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "24fa08fc5e34eca6b0a65432b40b9b75ea8a5fdfdf5dc2f4f91d1d362ae56549",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_v_area_headroom": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "aaf7eeae1d6baa09d20dc2d8faca39c69990fad466a3aa416c5dd19ed42645ec",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_v_area_scorecard": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "17a0256eef24e0969a490328122774f5b735edb9aa6568c6245cdad8e3373ee8",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_v_area_strategic_map": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "08260bbca96886050117fceacfd440a0b9cb9005d889552a0460fc721cd34fd9",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_v_area_trend": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "12a845d658b764f0b1789f64d3d249b1e813d3616b6623aac7cc1699dc6e8e22",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_pag_v_final_recommendation": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "95b61b737d30b9159850ed56bf93ec8188eb3f5cfd0e84616ce0afcc310a36a7",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_project_desa_java": {
+      "lifecycle": "rejected",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Previously deferred because the semantics were not verified.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "7244a0139bb38af6121c614f40bfc8eb6a8b5c7967d15991323c2e0758f7944c",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Previously deferred because the semantics were not verified.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ref_site_desa": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "territory_reference",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "70621d3ce03f3712a4893be2848a264357c7ae0625e89ddc26e0ae3ce9c7661b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ref_super88": {
+      "lifecycle": "rejected",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Previously deferred because the semantics were not verified.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "c4cafe6cb21557f21b0135b1a9634b35751db8c8ed72b0a1a224f004d09aa6a7",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Previously deferred because the semantics were not verified.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ref_territory": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "territory_reference",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "1c8f4b27c5760d4a4d03fcd188da97584a5e729c214ea8dc78ba4733e221515e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ref_territory2": {
+      "lifecycle": "rejected",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Alternate territory reference rejected in favor of canonical references.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "cfbd81bbda30a33eeae84d7b19ac54d83c0e8c9d7f6829f23d2ff8af3e804320",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Alternate territory reference rejected in favor of canonical references.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ref_territory_3id_static": {
+      "lifecycle": "rejected",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Duplicate static territory reference.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e55236bf9ac07c6613d8f03e7f724f035e90e88df8412f66573532b3b2867142",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Duplicate static territory reference.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ref_territory_zz": {
+      "lifecycle": "rejected",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Experimental or legacy territory reference.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b60d192efaa091373c082e3dfcdb5506b45b6543dbf45d955831bd04ef78b442",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Experimental or legacy territory reference.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_age": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "148da14899adf588d473352440b97803eb546aa1ec3b49b60833c2e502eb16b0",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_area": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "4c1c15a5849acab6f6808df064309ba36bf67f2d4951bb8b4f35f95875ac0fa2",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_branch_3id": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "1a23cacfe7788631f626974af63bdb5235ef5305272854c69abd53277d083e71",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_branch_im3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "1a23cacfe7788631f626974af63bdb5235ef5305272854c69abd53277d083e71",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_circle": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "564264aa1767884d9300576783e5e18e547d1a1325665bccf0d0e4aa3c0492e3",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_cluster_3id": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "facda9c0fdf8a82e7d705e09aa30ab78ca5e91df9a5506208dd0a06f49d45c37",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_focus_gtm_bau": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "bb8bb8165f88546a2228a2ec24549b9596dcc0f5df619eab56a960cb5c27f409",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_focus_gtm_high_potential": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "bb8bb8165f88546a2228a2ec24549b9596dcc0f5df619eab56a960cb5c27f409",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_focus_gtm_must_win": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "bb8bb8165f88546a2228a2ec24549b9596dcc0f5df619eab56a960cb5c27f409",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_focus_gtm_super88": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "bb8bb8165f88546a2228a2ec24549b9596dcc0f5df619eab56a960cb5c27f409",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_island": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b75aade5a8a9f8a8ccc148f611948d0bcf87e5a43526d2ed2e3191b320bc45cb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_kabkota": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e2be35ed6eb0e89a5e621f8f7b86a7439916930dab36584f825a1f679e095829",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_kecamatan": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "632fceaacb926695e96bd19d3dbbe1d227f263af0b5b2ad3543bc29a25bedcd2",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_micro_cluster": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "05ebedfbdf0760d38a4a328a6fba36675ea6a8d109df407b3ed9567ad366b53f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_mp3_3kiosk": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "65ee3560791a7a8512ba9fb43024ba3565a81590aaeb3b6d4ee2b018ca9a23f1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_mp3_3kiosk_branch": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a64fb8a662fafeb3844242c177a036b15d5b3d7500a427f78591de0f169ad665",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_mp3_3kiosk_circle": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f0fb9ed9242a52cd98da226e3a960e2b0162c78bdf5a9dff19c01016cb725c40",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_mp3_3kiosk_region": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3402d88edd8f25d7d38cd6ca793ba3e387850faf7cdf1bddaa401ec052d6d969",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_mpc_sdp_im3": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ca39299f35876e8a13ffe9d8af29bf01f04a621dafbb32d1e69769f934c2a7a3",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_mpc_sdp_im3_branch": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "8770d16810b0bad321d80aa01039e35e829d486dbdfe91b786bcaf631dfef153",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_mpc_sdp_im3_circle": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "75c03d5f8f63cfca6454c4d07bb4089369cc3e8d86d5ee6c7658cac9b4d8cb28",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_national": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "8e2587b0dbf8e4208463848e938cef2c4eaf2d6e75a8a85516fccb4df12cde47",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_partner_3id": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "51bcce0105e3ac087e450c256e4058952909852bddc2047509c8913317375a01",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_partner_territory": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f39a8bbd83aea989a7e12a6cfa78cb58070150f685c5e3d46c16ca977946947d",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_province": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "15df13b4b1d0266ef85ab21a8f7163def4de04e07a6bd180d1edc80a408ccbc7",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_region": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f1da51b01ef358e65c31bfa95e68021c82cd48010264f65639c1c70bd64463ed",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_report_fb_ms_sea": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "competitive",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "6a1d047c5fe87720996f67db72fce7325f0f39d1016c8045c2d3267455909f67",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_satu_target": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "00cc85ec00968f005669a39fdc962bd4f71d2edf22d98aa6d79bf1a65f53f218",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_sellin_ga_location": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "acquisition",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "377ede0834bd97cb3d8c43e59928281f60bfeb0611035e6e68380707ef4707c7",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_acquisition_rev": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "acquisition",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e2f5b61b15288a77c2b23871fec6340fb643741e7841435e9974b7c6d779b11a",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_channel_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "revenue",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f68f737b01777071bea60d6a9c1702e6af1414a5fd720fd6efef4663c36fe3f2",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_channel_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "revenue",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ee7a22710637245a9e6b083c1d3ec316dc864def630cefb17e370d5538a6d382",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_channel_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "revenue",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ee7a22710637245a9e6b083c1d3ec316dc864def630cefb17e370d5538a6d382",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_price_slab_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "revenue",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "e8d5b14d78927d06bbb13709d37fd305df44cf8cb3a8b37889fb8c809524b032",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_price_slab_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "revenue",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "659f9751ee224d6ee71dcba100092c5c932eca5b5394897e775aa06de09ef818",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_price_slab_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "revenue",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "659f9751ee224d6ee71dcba100092c5c932eca5b5394897e775aa06de09ef818",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_product_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "product",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ac8fe06dc9954ee8b5f52be6f4e1699fa25e158552ae28a1e909996e91ff427e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_product_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "product",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "61d7a2ac705ecdfdcd89b97f6681b23065b0355129422bd8a7892be7f436e221",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_data_rev_product_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "product",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "61d7a2ac705ecdfdcd89b97f6681b23065b0355129422bd8a7892be7f436e221",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_fwa_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "fwa",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "302ba2891c645e45c077413ee060ea349b86e71fcaba21e6cdd83d6da23e930e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_ga_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "acquisition",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "84f57a319f0db79e67282cc835e70d7209cb26ef66f51698303676ad097244eb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_addr_java": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "site_performance",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "f8ce326067c914fe7fb9f55acb89007236dd5d7ec8b04231f407049a338f8f08",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_addr_java_perf": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "site_performance",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "15ab4fd034765a25a44823442c2777d7904ca40934e013c2506b1d4f7e727a45",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_addr_java_perf__bak": {
+      "lifecycle": "quarantined",
+      "object_class": "backup",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class backup is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "15ab4fd034765a25a44823442c2777d7904ca40934e013c2506b1d4f7e727a45",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class backup is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_addr_java_perf_yoy": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "site_performance",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "963dbb77e01c35cbbb882195c2fa452bb935d47357397d836dccf21bd83b97b3",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_daily": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "site_performance",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "2ec0981f5497310f3204ac9efbded42aad807fb746978a6255ea22ec9703d20b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_daily_raw": {
+      "lifecycle": "rejected",
+      "object_class": "raw",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Oversized raw source. Use approved daily or monthly aggregates.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "6f965eb0cf3bba2a8e73ea3c059e811a66cf12a0df4200d31c8c279374e46385",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "rejected",
+          "reason": "Oversized raw source. Use approved daily or monthly aggregates.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "site_performance",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ec6a82133fdb98b18c259b4512f10df26586d068d7fd01e459dfb118a9cc1cd8",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "site_performance",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ec6a82133fdb98b18c259b4512f10df26586d068d7fd01e459dfb118a9cc1cd8",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_mtd__bak": {
+      "lifecycle": "quarantined",
+      "object_class": "backup",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class backup is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "ec6a82133fdb98b18c259b4512f10df26586d068d7fd01e459dfb118a9cc1cd8",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class backup is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_occupancy": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "05cc5dca6c9fc2a1e7fc5a98b0f19ae5039527ffcde7e439f6910927ce6e9dce",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_site_wise_occupancy_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "network",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "17d6393f1ea1ccc5c73fa97a5d9411532f761dedd85f5f4670ebc993567f2b0e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_sitekec_gap_ref": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b24e482d21c7b35dbcd76525338bc32fb0a9ca7eb0f39effe59b6d7767d7559e",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_snd_kecwise_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "91a14a8ab56bba5b0befae8b984c9cc8c1e1b7dd41465cc111c96efb4b94752f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_snd_kecwise_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "91a14a8ab56bba5b0befae8b984c9cc8c1e1b7dd41465cc111c96efb4b94752f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_snd_kpi_highlevel_dly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "cc50d5df0dd909a92286123fbbca77b6a7baabc0d3a1aba22186d6ced130fd2c",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_snd_kpi_highlevel_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "506566ef14bd48da5e1fb69f1624af090082dc8296612a2113ccc370150479db",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_snd_kpi_highlevel_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "sales_distribution",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "506566ef14bd48da5e1fb69f1624af090082dc8296612a2113ccc370150479db",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ssd_details_daily": {
+      "lifecycle": "candidate",
+      "object_class": "aggregate",
+      "policy": "not_runtime_allowed",
+      "domain": null,
+      "reason": "New object discovered. Semantic and business-value review is pending.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b4f24960259550f82e72e5b729fbe47f750eb2b95a6512342aed40331eb48f93",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "New object discovered. Semantic and business-value review is pending.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ssd_details_mtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3aa847f59b1e8203d1c11efce8708b26130180e7eaf55bfb3200016063e8865b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_ssd_details_mth": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3aa847f59b1e8203d1c11efce8708b26130180e7eaf55bfb3200016063e8865b",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_subs_traffic_agg_geo_mtd_lmtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "3e54b2ecfb28a702c77e4955437c62d27ef1b0b54a702c8c30c21625bd4f7571",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_subs_traffic_agg_migration_matrix_monthly": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "a1dda3dd80554ea74f0aa2884695e843bc5a4b7a79c3823a7f0c2aa28151ae00",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_subs_traffic_agg_segment_mtd_lmtd": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "customer_demand",
+      "reason": "Reviewed aggregate or observed source approved by the design panel.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "d62992293fa2aaca2f916ad0f1b57af1bc38d545641001e1e5518ee5cdc53833",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Reviewed aggregate or observed source approved by the design panel.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_subs_traffic_dim_subs_segment_monthly": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Subscriber-grain table is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "6c0c39d46e98226e7b87f1241f88b7c7d006dc0f55c4fc3ede4635ea2123f514",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Subscriber-grain table is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_subs_traffic_fact_subs_mtd_lmtd": {
+      "lifecycle": "quarantined",
+      "object_class": "aggregate",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Subscriber-grain table is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "eed795bdb80146b5baa6e657225302ac0130effff9c7b6a57558956653feb803",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Subscriber-grain table is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_subs_traffic_raw_purchase_txn": {
+      "lifecycle": "quarantined",
+      "object_class": "raw",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Raw customer transaction data is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "9bb3af74f7e96abd6161954f691cf8380d2857b2b70b8724cd8aa3fae2af1d60",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Raw customer transaction data is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_subs_traffic_raw_subs_daily": {
+      "lifecycle": "quarantined",
+      "object_class": "raw",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Raw customer daily data is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "849f8e5617657874e9faa19deffc8e5e153bcd29f37cce2af2d8400a76332fbe",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Raw customer daily data is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "rham_zz_ref_holiday": {
+      "lifecycle": "approved",
+      "object_class": "aggregate",
+      "policy": "runtime_allowed",
+      "domain": "territory_reference",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "8028dc4d416d2c13fa15cf644e196e7b22337ff9ffe3d191e5c6403be3df3fa9",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "v_dashboard_channel": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "0384fd07bd5f60fdfeab101a06bd42e49a30d66dd90089c97dce1fa04ffb6f1f",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "v_dashboard_combined": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "9e3b7f1f4ba5d0cbff761d7d7d03d5a0cf96a1d0ef6058dcc1a3cc52a366fd55",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "v_dashboard_integrity": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "c0b5c864a1e31581c902a42907f3de093ff40c1dc64a2adb23ba14812a98f9dc",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "v_dashboard_quality": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "b20b6e790e09842bb12ad43178229987d0f1b7d84831c98888991d08b25efee8",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "v_dashboard_volume": {
+      "lifecycle": "candidate",
+      "object_class": "view",
+      "policy": "not_runtime_allowed",
+      "domain": "kpi_summary",
+      "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "46ab1b67515f4431867f59aca78c99734193a3fa90c8570c849c836894bd39b1",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "candidate",
+          "reason": "Derived or recommendation output requires formula ownership and backtest review.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "zz_rham_branch_not_unique": {
+      "lifecycle": "quarantined",
+      "object_class": "helper",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class helper is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "55126b448adab9e40b61c8a5f1b1f3825b68306c3f9caab821d24f0866eef7df",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class helper is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "zz_rham_flag_ssd": {
+      "lifecycle": "quarantined",
+      "object_class": "helper",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class helper is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "bab12af0e9a5b86eed299ce52e71c3aae15a1b06e7ca85e1f6ad6a8eb4ef3be5",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class helper is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "zz_rham_mc_not_unique": {
+      "lifecycle": "quarantined",
+      "object_class": "helper",
+      "policy": "hard_block",
+      "domain": null,
+      "reason": "Object class helper is unavailable to general chat.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "5cb86a1755a888e3affd29de0833667dd7613f3355bc1c3d612d5672d996e6eb",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "quarantined",
+          "reason": "Object class helper is unavailable to general chat.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    },
+    "zz_territory_kecamatan": {
+      "lifecycle": "approved",
+      "object_class": "helper",
+      "policy": "runtime_allowed",
+      "domain": "territory_reference",
+      "reason": "Existing runtime KB table retained after governance audit.",
+      "review_id": "five-agent-panel-2026-08-19",
+      "schema_hash": "da4b8af904630730caf8658bc8782b1e74b046f1854f0f84b4622635c6041d54",
+      "decision_history": [
+        {
+          "review_id": "five-agent-panel-2026-08-19",
+          "decision": "approved",
+          "reason": "Existing runtime KB table retained after governance audit.",
+          "reviewed_at": "2026-08-19"
+        }
+      ],
+      "replacement_table": null
+    }
+  }
+}

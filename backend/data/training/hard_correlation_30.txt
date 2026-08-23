@@ -1,0 +1,43 @@
+# Correlation routing corpus. Format: EXPECTED|question
+# EXPECTED is either CORRELATE (two metrics in two DIFFERENT domains) or a single
+# domain key (both metrics live in ONE domain, so single-domain routing is CORRECT).
+# Corrected 2026-08-21: cases 13, 17, 18, 26 and 30 previously expected CORRELATE, but
+# both of their metrics belong to ONE domain, which the router prompt explicitly excludes
+# from CORRELATE. The old expectation measured the benchmark's bug, not the agent's.
+# Verified against the KB schema before changing each one:
+#   13 SOGA + market share      -> competitive (both are FB-derived share metrics)
+#   17 HVC ratio + HVC churn    -> customer_hvc
+#   18 voice/SMS + data revenue -> product (kpi_group splits DATA vs NON DATA; kpi_summary
+#                                  also carries rev_voice/rev_sms/rev_data in one table)
+#   26 new site + site revenue  -> site_performance
+#   30 VLR + usage + revenue    -> kpi_summary (all three live in rham_mkt_kpi_highlevel_*)
+CORRELATE|Kabkota mana yang ratio HVC-nya tinggi namun site congestion-nya juga tinggi
+CORRELATE|Korelasikan kabkota dengan VLR YoY decline terhadap trend FB download speed
+CORRELATE|Tunjukkan kabkota dengan market share IM3 rendah tapi network availability 4G bagus (peluang rebut share)
+CORRELATE|Kecamatan mana yang revenue paket data turun MoM tapi 5G penetration justru naik
+CORRELATE|Hubungan antara kabkota yang churn 90d tinggi dengan OpenSignal video experience yang buruk
+CORRELATE|Kabkota dengan gross add tinggi tapi M1S survival rendah, silang dengan kondisinya
+CORRELATE|Korelasi antara density outlet (URO) per kabkota dengan revenue prepaid-nya
+CORRELATE|Kabkota mana yang HVC revenue naik tapi total subscriber RGU justru turun
+CORRELATE|Silangkan kabkota dengan FB congestion tinggi dan revenue data yang menurun
+CORRELATE|Kecamatan dengan site availability rendah dan market share IOH yang juga rendah
+CORRELATE|Kabkota dengan trade secondary tinggi tapi tertiary (sell-out) rendah, korelasikan dengan revenue
+CORRELATE|Hubungan antara 5G traffic per device dengan revenue paket data per kabkota
+competitive|Kabkota dengan SOGA IM3 tinggi tapi market share masih rendah (momentum akuisisi)
+CORRELATE|Korelasikan availability 5G dengan adopsi device 5G per region
+CORRELATE|Kabkota mana yang FWA churn tinggi dan FB latency-nya juga buruk
+CORRELATE|Silang kabkota dengan revenue MOBO trade tinggi dan jumlah outlet QSSO rendah
+customer_hvc|Kecamatan dengan HVC ratio tinggi tapi gross churn HVC juga tinggi (base rapuh)
+product|Korelasi antara penurunan revenue voice & SMS dengan kenaikan revenue paket data per kabkota
+CORRELATE|Kabkota dengan download speed IM3 kalah dari Telkomsel dan market share-nya turun MoM
+CORRELATE|Hubungan jumlah site congest dengan churn back rate per kabkota
+CORRELATE|Kabkota dengan acquisition revenue M0 tinggi tapi base revenue rendah, silang trennya
+CORRELATE|Korelasikan FTTH PA (permanent active) dengan revenue FWA per kabkota (kanibalisasi?)
+CORRELATE|Kecamatan dengan market share IOH naik YoY tapi network availability turun
+CORRELATE|Kabkota dengan ARPT produk rendah dan churn tinggi
+CORRELATE|Silang revenue per kapita (revenue/subscriber) dengan OpenSignal games experience per region
+site_performance|Kabkota dengan site baru banyak (new site) tapi revenue addressable belum naik
+CORRELATE|Korelasi antara penetrasi 5G dengan FB 5G download speed per kabkota
+CORRELATE|Kabkota dengan churn share IOH memburuk dan availability 4G yang menurun
+CORRELATE|Hubungan antara revenue digital (e-wallet/voucher) dengan jumlah outlet digital per kabkota
+kpi_summary|Kecamatan dengan VLR tinggi tapi usage data rendah (base tidak produktif), korelasikan dengan revenue

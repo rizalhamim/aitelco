@@ -10,6 +10,59 @@ mobile/     Flutter Android client (bizplan_java_agent), talks to the same backe
 
 The three are separate git repos / loosely coupled; there is no root workspace manifest. Work in one component at a time.
 
+## Operating protocol (all coding agents: Claude, codex, others)
+
+Quality comes from process, not model tier. For every non-trivial task:
+
+1. **Orient**: `vault/INDEX.md` route table (why/what/which), then `graphify query "..."`
+   (where/how in code). Never bulk-read source or big docs to orient. One node or one query,
+   not a directory sweep.
+2. **Plan**: 2-3 lines naming target files, the change, and the verification gate you will run.
+   No exploratory edits.
+3. **Execute**: smallest diff. Match surrounding style. Never use em-dashes.
+4. **Verify** (mandatory, every gate that applies):
+   - Backend logic: `cd backend && venv/bin/python -m pytest tests/ -q` (34+ tests, ~2s)
+   - Knowledge/routing/KB: `cd backend && venv/bin/python tools_agent_knowledge_benchmark.py`
+     (must stay at full pass; add a case when adding a domain/table)
+   - Chat pipeline: spot-run 3-5 questions from `backend/data/training/hard_questions_30.txt`
+     against the restarted local server
+   - Frontend: `npm run lint && npm run build`. Mobile: `flutter analyze`.
+   - Any claim about live behavior: curl the running API, never assert from memory.
+5. **Self-review**: read `git diff` once before declaring done.
+6. **Record**: durable fact/decision goes to the ONE relevant vault node + a line in
+   `vault/99-log/session-log.md` (absolute date). Code changed: `graphify update .`.
+   Runtime KB changed: `tools_graphify_kb.py` + backend restart (KB is lru_cached).
+
+Agent-quality work (routing, SQL generation, knowledge, synthesis) additionally follows
+`docs/agent-improvement-plan.md`: measure before/after with the training runners, change one
+lever per experiment, fix knowledge in `knowledge_base.json` not in per-case prompt patches.
+
+## 5-agent design panel (SIGNIFICANT UI work only)
+
+Run the design panel ONLY when creating a new page/screen/report section or doing a major
+visual redesign of one (web or mobile). Do NOT run it for: backend work, bug fixes, copy or
+styling tweaks, refactors, small component edits, agent/knowledge work, or anything the user
+asked to be quick. For those, apply the panel's hard constraints yourself and proceed.
+
+The panel (defined in `.kilo/agent/`, dispatched via subagent/Task calls):
+1. `ui-ux-designer` - layout, hierarchy, readability, interaction, a11y.
+2. `business-planner-analyst` - business question, KPIs, decision value, data correctness.
+3. `dataviz-expert` - chart/encoding strategy, perceptual accuracy.
+4. `dataviz-engineer` - buildable React/Tailwind/SVG implementation plan.
+5. `frontend-architect` - architecture, state, data flow, reuse, maintainability.
+
+### Flow (one condensed round)
+1. Dispatch the 5 agents in parallel with the same brief. Each returns its TOP 2-3 proposals
+   with a confidence score (not 5+; depth over volume).
+2. One debate/reconcile pass: you (the primary agent) merge the proposals, resolve conflicts,
+   note rejected alternatives in one line each.
+3. Execute the merged plan, then run the normal validation gates (lint/build/deploy).
+
+### Hard constraints (apply even without the panel)
+- NEVER remove or hide data to make a page look cleaner. If density is a problem, use grouping, progressive disclosure (expand/collapse, tabs, tooltips), small multiples, or better encoding. Every field the backend returns must remain reachable in the UI.
+- Never use em-dashes anywhere (matches the repo-wide style rule).
+- After execution, do the normal repo validation (lint/typecheck/build) and deploy/restart steps for the component you touched.
+
 ## Backend
 
 ### Setup & run
@@ -23,9 +76,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 `python`/`pip` are only available inside the venv — activate it before running anything.
 
-### requirements.txt is INCOMPLETE
+### requirements.txt
 
-`requirements.txt` lists only fastapi/uvicorn/bigquery/pydantic. The app also imports, at runtime, packages that are NOT declared: `python-jose` (`jose`), `passlib`, `sqlalchemy`, `openpyxl`, `reportlab`, `pyshp` (`shapefile`), `shapely`, `requests`. Many are imported lazily inside functions, so the server starts fine and only fails when you hit the relevant endpoint (auth, export, geo). If you add a feature, install the dep and add it here.
+Many of these deps are imported LAZILY inside functions (auth via `jose`/`passlib`, export via `openpyxl`/`reportlab`, geo via `shapefile` (pyshp)/`shapely`), so the server starts fine even if one is missing and only fails when you hit the relevant endpoint. If you add a feature, install the dep AND add it to `requirements.txt`.
 
 ### Environment
 
@@ -109,12 +162,98 @@ The prior-year month snapshot is symmetric (e.g. `_mtd[202506].dt_id_snapshot = 
 ### Build / deploy / services
 - Services (systemd, need `sudo`): `telco-backend` (127.0.0.1:8000), `telco-frontend` (127.0.0.1:3000). After backend edits run `sudo systemctl restart telco-backend` (the KB loader `knowledge.py:load_kb()` is `@lru_cache`d, so a restart is required to reload `knowledge_base.json`).
 - Web: `cd frontend && npm run build` then `sudo systemctl restart telco-frontend`.
-- Mobile: flutter is at `/home/ubuntu/flutter/bin`. `flutter build apk --release`, then copy `build/app/outputs/flutter-apk/app-release.apk` to `/home/ubuntu/telco-ai/Bizplan-Java-Agent.apk`. Bump `mobile/pubspec.yaml` version AND `backend/data/app_release.json` (`version_name`/`version_code`/`notes`). Current release: 1.43.1+49.
+- Mobile: flutter is at `/home/ubuntu/flutter/bin`. `flutter build apk --release`, then copy `build/app/outputs/flutter-apk/app-release.apk` to `/home/ubuntu/telco-ai/Bizplan-Java-Agent.apk`. Bump `mobile/pubspec.yaml` version AND `backend/data/app_release.json` (`version_name`/`version_code`/`notes`). Current release: 1.47.0+62 (authoritative source: `backend/data/app_release.json`, do not trust this line if they disagree).
 - Prod host: `agent-02.bizplan-java.com` (nginx `/etc/nginx/sites-available/sysmonitor`: `/api/`→8000 with `proxy_buffering off`, `/`→3000). A separate `system-monitor.service` serves `server-02.bizplan-java.com` on port 8080.
 - HARD STYLE RULE: never use em-dashes anywhere (code, comments, labels, copy).
 
 ### Training / answer-quality knowledge (chat agent)
 The agent's only prompt-injected knowledge is `backend/data/knowledge_base.json` (`data_facts` + per-domain `agent.key_facts`). The `learning_notes` SQLite table is write-only telemetry (exposed at `/api/learnings`, NEVER fed back into prompts), so to improve answers, edit `knowledge_base.json`. Past questions for review live in `backend/data/sessions.db` table `analytics` (cols: question, domain, sql, success, error_msg, response_summary, ts=unix epoch). Key facts added 2026-06: circle->region mapping (`data_facts.circle_region_mapping`: JAVA=Central Java/East Java/Bali Nusra; JAKARTA RAYA=Inner/Outer Jakarta+West Java; SUMATERA=North/Central/South; KALISUMAPA=Kalimantan/Sulawesi/MAPA); the `rham_report_fb_ms_*` monthly tables use column `kabkot` (NOT `kabkota`) and have no branch/circle col; product `_mth` table needs an EXACT `month_id` filter (never `LIKE '%05'`) to stay under the 50 GB scan cap; FWA = `family_group='09. FWA'`, unlimited = `product_group='HIFI AIR UNLIMITED'`. FTTH `rham_ftth_sitewise_monthly` was added to the `ftth` domain (subscriber/homepass/TUR snapshot).
 
+### Agent-quality tooling and gates (run from `backend/` with the venv)
+
+Durable rules behind these: `vault/40-decisions/agent-quality-gates.md`. Phased work and
+measured numbers: `docs/agent-improvement-plan.md`.
+
+```bash
+venv/bin/python -m pytest tests/ -q                    # unit gate (fast, no network)
+venv/bin/python tools_agent_knowledge_benchmark.py     # routing/governance/prompt-size gate
+venv/bin/python data/training/run_correlation_questions.py   # router + correlation planner
+venv/bin/python data/training/run_hard_questions.py --run-tag <tag>   # live, needs the server
+venv/bin/python tools_weekly_review.py --days 7        # report-only failure buckets
+venv/bin/python tools_column_population.py <table> --date-col dt_id --like 90
+```
+
+`tools_column_population.py` answers "is this column actually populated, and what sign
+are its values?" Run it FIRST whenever a metric returns an empty result: a column can
+exist in the schema and still be empty in practice, which makes the SQL writer rank on
+nothing. It also surfaces sign conventions (FWA churn is stored negative).
+
+KB edit order (all four steps, in order, or the runtime graph goes stale):
+
+```bash
+venv/bin/python tools_kb_edit.py add-fact --domain <d> --text "..."   # atomic + .bak
+venv/bin/python tools_runtime_graph.py                 # rebuild the SHA-keyed artifact
+venv/bin/python ../tools_graphify_kb.py                # regenerate the dev projection
+sudo systemctl restart telco-backend                   # load_kb() is lru_cached
+```
+
+Non-negotiables when changing agent behaviour: measure before and after (never claim an
+improvement without numbers), verify a benchmark expectation against the KB schema before
+treating a miss as a model failure, and change one lever per experiment.
+
+Two BigQuery facts that cost real debugging time (details in the ADR):
+- Partition pruning needs a LITERAL filter value. `month_id = (SELECT MAX(month_id) ...)`
+  or a JOIN to a MAX() CTE scans every partition: measured 45.0 GB versus 1.6 GB for the
+  same aggregate on `rham_site_data_rev_product_mth`.
+- Tables inside one domain can have different coverage. `rham_site_wise_occupancy` stops
+  at 202512 while `rham_avail_stat_site_monthly` runs to the current month, so joining
+  them on a shared MAX(month_id) always returns zero rows.
+
+Never restart the backend while a benchmark run is in flight, and never let a partial run
+(`--only`/`--limit`) overwrite the stored baseline.
+
+**Smoke-run before benchmarking.** `/api/chat/stream` is one long generator that no unit
+test executes, so a scoping or import error on the hot path passes every unit test and
+only shows up live. After ANY chat-pipeline edit, restart the backend and run
+`venv/bin/python data/training/run_hard_questions.py --only 2,11,20 --run-tag smoke`
+(about 90 seconds) BEFORE starting a full run.
+
 ### Backups
 KB edits leave timestamped `.bak*` copies next to `backend/data/knowledge_base.json`. When probing BigQuery from the venv, output is often swallowed by a `RequestsDependencyWarning`; redirect script output to a `/tmp` file and read it back.
+
+## Graphify project workflow
+
+Knowledge ownership:
+- `backend/data/knowledge_base.json` is the only runtime knowledge injected into chat prompts.
+- `vault/` holds durable rationale, decisions, domain rules, and operating conventions.
+- `graphify-knowledge/` is a generated safe projection of runtime KB metadata for developer discovery.
+- `graphify-out/` is derived developer tooling for code topology and cross-file relationships.
+
+Use `vault/INDEX.md` for domain rationale and project decisions. Use Graphify for code location,
+relationships, and impact analysis. `graphify affected "<concept>"` is the preferred impact command.
+
+After a runtime KB change, run:
+
+```bash
+backend/venv/bin/python tools_graphify_kb.py
+backend/venv/bin/python tools_graphify_kb.py --check
+```
+
+Then perform a semantic Graphify refresh because the generated projection is Markdown. Code-only
+changes use `graphify update .` for the deterministic AST refresh. Never add Graphify to the
+FastAPI request path, frontend bundle, mobile app, or production chat retrieval without a separate
+product requirement. Full ownership and recovery rules are in
+`vault/40-decisions/graphify-development-index.md`.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

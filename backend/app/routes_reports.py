@@ -1,4 +1,4 @@
-"""Daily Reports API — recreates the daily reporting views (live dashboards,
+"""Daily Reports API - recreates the daily reporting views (live dashboards,
 KPI tiles, brand-banded drill-down tables, slab distribution) outside of the
 email/PDF/Excel pipeline.
 
@@ -27,8 +27,12 @@ from .bigquery_tool import run_query, QueryError
 from . import reports_comprehensive
 from . import reports_data
 from . import reports_network
+from . import reports_competitive
+from . import reports_internal
+from . import reports_fwa
 from . import reports_market_insight
 from . import reports_ftth
+from . import reports_ftth_summary
 from . import reports_city_profile as reports_profile_analysis
 from . import reports_cache
 
@@ -138,6 +142,13 @@ def _latest_month() -> int:
     return int(r["rows"][0]["m"])
 
 
+def _shift_month(month_id: int, delta: int) -> int:
+    """Shift YYYYMM using calendar arithmetic, including January boundaries."""
+    year, month = divmod(int(month_id), 100)
+    absolute = year * 12 + month - 1 + delta
+    return (absolute // 12) * 100 + absolute % 12 + 1
+
+
 def _brand_split(expr: str, prefix: str) -> str:
     """Emit IOH/IM3/3ID columns for a value expression at one timeframe."""
     return (
@@ -174,8 +185,8 @@ def _level_summary(metric: dict, level: str, circle: str, month_id: int,
     grain = lv["col"]
     parent = lv["parent"]
     expr = metric["expr"]
-    lmtd = month_id - 1
-    llmtd = month_id - 2
+    lmtd = _shift_month(month_id, -1)
+    llmtd = _shift_month(month_id, -2)
 
     parent_sel = f"MIN({parent}) AS parent," if parent else ""
 
@@ -219,13 +230,13 @@ SELECT
   {parent_col},
   COALESCE(l2.v_ioh,0) AS llmtd_ioh, COALESCE(l1.v_ioh,0) AS lmtd_ioh, m.v_ioh AS mtd_ioh,
   (m.v_ioh - COALESCE(l1.v_ioh,0)) AS abs_growth_ioh,
-  SAFE_DIVIDE(m.v_ioh - COALESCE(l1.v_ioh,0), NULLIF(l1.v_ioh,0)) * 100 AS growth_pct,
+  SAFE_DIVIDE(m.v_ioh - COALESCE(l1.v_ioh,0), NULLIF(ABS(l1.v_ioh),0)) * 100 AS growth_pct,
   COALESCE(l2.v_im3,0) AS llmtd_im3, COALESCE(l1.v_im3,0) AS lmtd_im3, m.v_im3 AS mtd_im3,
   (m.v_im3 - COALESCE(l1.v_im3,0)) AS abs_growth_im3,
-  SAFE_DIVIDE(m.v_im3 - COALESCE(l1.v_im3,0), NULLIF(l1.v_im3,0)) * 100 AS growth_pct_im3,
+  SAFE_DIVIDE(m.v_im3 - COALESCE(l1.v_im3,0), NULLIF(ABS(l1.v_im3),0)) * 100 AS growth_pct_im3,
   COALESCE(l2.v_3id,0) AS llmtd_3id, COALESCE(l1.v_3id,0) AS lmtd_3id, m.v_3id AS mtd_3id,
   (m.v_3id - COALESCE(l1.v_3id,0)) AS abs_growth_3id,
-  SAFE_DIVIDE(m.v_3id - COALESCE(l1.v_3id,0), NULLIF(l1.v_3id,0)) * 100 AS growth_pct_3id
+  SAFE_DIVIDE(m.v_3id - COALESCE(l1.v_3id,0), NULLIF(ABS(l1.v_3id),0)) * 100 AS growth_pct_3id
 FROM mtd m
 LEFT JOIN lmtd l1 ON m.grain = l1.grain
 LEFT JOIN llmtd l2 ON m.grain = l2.grain
@@ -324,8 +335,8 @@ ORDER BY t.region, area, branch
 
     tree: dict = {}
     for r in res["rows"]:
-        reg = r.get("region") or "—"
-        area = r.get("area") or "—"
+        reg = r.get("region") or "N/A"
+        area = r.get("area") or "N/A"
         br = r.get("branch")
         tree.setdefault(reg, {})
         tree[reg].setdefault(area, [])
@@ -413,6 +424,157 @@ def snapshot(
         "snapshot", key,
         lambda: _snapshot_build(metric, circle, filter_type, filter_value, month_id),
         force=refresh)
+
+
+@router.get("/map-explore")
+def map_explore(
+    metric: str = Query("rev_prepaid"),
+    circle: str = Query("JAVA"),
+    level: str = Query("kecamatan"),
+    brand: str = Query("ioh"),
+    value_mode: str = Query("growth", description="value|delta|growth"),
+    filter_type: str = Query("all"),
+    filter_value: str = Query(""),
+    month_id: Optional[int] = Query(None),
+):
+    """Deterministic map exploration contract for the mobile Map Query page.
+
+    This endpoint complements, but does not replace, the AI and nearest-site
+    modes. It returns the complete selected territory grain without truncating
+    top or bottom rows.
+    """
+    selected_metric = _METRIC_BY_CODE.get(metric)
+    if not selected_metric:
+        return {"error": f"unknown metric '{metric}'", "kind": "validation"}
+    if not _is_all(circle) and circle not in CIRCLES:
+        return {"error": f"unknown circle '{circle}'", "kind": "validation"}
+    if level not in LEVELS:
+        return {"error": f"unknown level '{level}'", "kind": "validation"}
+    if brand not in {"ioh", "im3", "3id"}:
+        return {"error": f"unknown brand '{brand}'", "kind": "validation"}
+    if value_mode not in {"value", "delta", "growth"}:
+        return {"error": f"unknown value_mode '{value_mode}'", "kind": "validation"}
+
+    try:
+        mid = int(month_id) if month_id else _latest_month()
+        result = _level_summary(
+            selected_metric,
+            level,
+            circle,
+            mid,
+            _territory_filter(filter_type, filter_value),
+            order="mtd_desc",
+        )
+    except QueryError as exc:
+        return {"error": str(exc), "kind": "validation"}
+    except Exception as exc:
+        return {"error": str(exc)[:400], "kind": "execution"}
+
+    suffix = "ioh" if brand == "ioh" else brand
+    mtd_key = f"mtd_{suffix}"
+    lmtd_key = f"lmtd_{suffix}"
+    delta_key = f"abs_growth_{suffix}"
+    growth_key = "growth_pct" if brand == "ioh" else f"growth_pct_{suffix}"
+    inverse = any(
+        token in metric.lower()
+        for token in ("churn", "days_down", "downtime", "latency")
+    )
+    rows = []
+    for raw in result.get("rows", []):
+        current = raw.get(mtd_key)
+        previous = raw.get(lmtd_key)
+        delta = raw.get(delta_key)
+        growth = raw.get(growth_key)
+        value = {"value": current, "delta": delta, "growth": growth}[value_mode]
+        favorable = None
+        if value_mode != "value" and value is not None and float(value) != 0:
+            favorable = float(value) < 0 if inverse else float(value) > 0
+        rows.append({
+            **raw,
+            "geo_key": raw.get("name"),
+            "territory_name": raw.get("name"),
+            "value": value,
+            "metric_value": current,
+            "comparison_value": previous,
+            "delta": delta,
+            "growth": growth,
+            "favorable": favorable,
+        })
+
+    available = [row for row in rows if row.get("value") is not None]
+    descending = not inverse
+    ranked = sorted(
+        available,
+        key=lambda row: (
+            -float(row["value"]) if descending else float(row["value"]),
+            str(row.get("territory_name") or ""),
+        ),
+    )
+    rank_by_name: dict[str, int] = {}
+    prior_value: float | None = None
+    prior_rank = 0
+    for index, row in enumerate(ranked, start=1):
+        row_value = float(row["value"])
+        if prior_value is None or row_value != prior_value:
+            prior_rank = index
+            prior_value = row_value
+        rank_by_name[str(row.get("territory_name"))] = prior_rank
+    for row in rows:
+        row["rank"] = rank_by_name.get(str(row.get("territory_name")))
+
+    present_values = [float(row["value"]) for row in available]
+    id_geometry = level == "kecamatan"
+    return {
+        "schema_version": "map-explore.v1",
+        "metric": {
+            "code": selected_metric["code"],
+            "name": selected_metric["name"],
+            "unit": selected_metric["unit"],
+            "category": selected_metric["category"],
+            "inverse_polarity": inverse,
+        },
+        "scope": {
+            "circle": circle,
+            "level": level,
+            "brand": brand,
+            "month_id": mid,
+            "comparison_month_id": _shift_month(mid, -1),
+            "filter_type": filter_type,
+            "filter_value": filter_value,
+        },
+        "value_mode": value_mode,
+        "columns": list(rows[0].keys()) if rows else [],
+        "rows": rows,
+        "map_spec": {
+            "mode": "choropleth",
+            "level": level,
+            "dissolve_by": "id" if id_geometry else "name",
+            "geo_key": "geo_key",
+            "group_key": "territory_name",
+            "label_key": "territory_name",
+            "metric_key": "value",
+            "legend": f"{selected_metric['name']} · {value_mode}",
+            "coloring": (
+                "favorable_sign" if value_mode != "value" else "range"
+            ),
+        },
+        "summary": {
+            "territory_count": len(rows),
+            "covered_count": len(available),
+            "missing_count": len(rows) - len(available),
+            "min": min(present_values) if present_values else None,
+            "max": max(present_values) if present_values else None,
+            "average": (
+                sum(present_values) / len(present_values)
+                if present_values else None
+            ),
+        },
+        "meta": {
+            "complete_grain": True,
+            "bytes_processed": result.get("bytes_processed", 0),
+            "source": "rham_mkt_highlevel_mtd",
+        },
+    }
 
 
 def _snapshot_build(metric, circle, filter_type, filter_value, month_id):
@@ -629,7 +791,7 @@ def my_coordinate(
 ):
     """My Coordinate: locate the GPS point to a kecamatan via the SHP, resolve
     its full territory hierarchy, then return a Comprehensive payload for each
-    level (kecamatan / kabkota / microcluster / branch / area / region) — same
+    level (kecamatan / kabkota / microcluster / branch / area / region) - same
     structure & UI as the Comprehensive report, scoped automatically."""
     from . import geo_locate
     loc = geo_locate.locate_kecamatan(lat, lon)
@@ -692,10 +854,128 @@ def network_benchmark(
     if not _is_all(circle) and circle not in CIRCLES:
         return {"error": f"unknown circle '{circle}'", "kind": "validation"}
     key = f"{circle}|{filter_type}|{filter_value}"
+
+    def build_network_payload():
+        legacy = reports_network.build_network_benchmark(
+            circle, filter_type, filter_value)
+        if filter_type not in {"all", "", "region", "kabkota", "kecamatan"}:
+            catalog = reports_competitive.competitive_catalog()
+            page = {
+                "sections": catalog["sections"],
+                "metrics": [
+                    {
+                        **metric,
+                        "_served_availability": "unsupported",
+                        "_served_source": None,
+                        "_unavailable_reason": (
+                            "Requested territory grain is not available for "
+                            "Competitive."
+                        ),
+                    }
+                    for metric in catalog["metrics"]
+                ],
+            }
+            competitive = {
+                **catalog,
+                "report": "competitive",
+                "available": False,
+                "unavailable_reason": (
+                    "Competitive supports circle, region, kabkota, and "
+                    "metric-dependent kecamatan grain."
+                ),
+                "requested_filter_type": filter_type,
+                "brands": ["IOH", "TSEL", "XLSMART"],
+                "periods": [],
+                "sections": reports_internal._sections_payload(
+                    page, {}, [], None, ("IOH", "TSEL", "XLSMART")),
+            }
+        else:
+            competitive = reports_competitive.build_competitive(
+                circle, filter_type, filter_value)
+        return {
+            **legacy,
+            "schema_version": "network-benchmark.v2",
+            "competitive": competitive,
+            "legacy": legacy,
+        }
+
     return reports_cache.get_or_build(
         "network-benchmark", key,
-        lambda: _guarded(lambda: reports_network.build_network_benchmark(circle, filter_type, filter_value)),
+        lambda: _guarded(build_network_payload),
         force=refresh)
+
+
+@router.get("/fwa")
+def fwa(
+    circle: str = Query("JAVA"),
+    filter_type: str = Query("all"),
+    filter_value: str = Query(""),
+    month_id: Optional[int] = Query(None),
+    basis: str = Query("mtd", description="mtd|monthly"),
+    refresh: bool = Query(False),
+):
+    """Complete 64-metric FWA Performance Outlook report."""
+    if not _is_all(circle) and circle not in CIRCLES:
+        return {"error": f"unknown circle '{circle}'", "kind": "validation"}
+    key = f"{circle}|{filter_type}|{filter_value}|{month_id}|{basis}"
+    return reports_cache.get_or_build(
+        "fwa",
+        key,
+        lambda: _guarded(lambda: reports_fwa.build_fwa(
+            circle, month_id, filter_type, filter_value, basis)),
+        force=refresh,
+    )
+
+
+@router.get("/internal-performance")
+def internal_performance(
+    circle: str = Query("JAVA"),
+    filter_type: str = Query("all"),
+    filter_value: str = Query(""),
+    refresh: bool = Query(False),
+):
+    """Complete 229-metric Internal Net Performance report."""
+    if not _is_all(circle) and circle not in CIRCLES:
+        return {"error": f"unknown circle '{circle}'", "kind": "validation"}
+    if filter_type not in {"all", "", "region", "kabkota", "kecamatan"}:
+        catalog = reports_internal.internal_catalog()
+        page = {
+            "sections": catalog["sections"],
+            "metrics": [
+                {
+                    **metric,
+                    "_served_availability": "unsupported",
+                    "_served_source": None,
+                    "_unavailable_reason": (
+                        "Requested territory grain is not available for "
+                        "Internal Net Performance."
+                    ),
+                }
+                for metric in catalog["metrics"]
+            ],
+        }
+        return {
+            **catalog,
+            "report": "internal",
+            "available": False,
+            "unavailable_reason": (
+                "Internal Net Performance supports circle, region, kabkota, "
+                "and kecamatan grain."
+            ),
+            "requested_filter_type": filter_type,
+            "brands": ["IOH"],
+            "periods": [],
+            "sections": reports_internal._sections_payload(
+                page, {}, [], None, ("IOH",)),
+        }
+    key = f"{circle}|{filter_type}|{filter_value}"
+    return reports_cache.get_or_build(
+        "internal-performance",
+        key,
+        lambda: _guarded(lambda: reports_internal.build_internal(
+            circle, filter_type, filter_value)),
+        force=refresh,
+    )
 
 
 @router.get("/market-insight")
@@ -725,9 +1005,34 @@ def ftth(
     if not _is_all(circle) and circle not in CIRCLES:
         return {"error": f"unknown circle '{circle}'", "kind": "validation"}
     key = f"{circle}|{filter_type}|{filter_value}"
+
+    def build_ftth_payload():
+        legacy = reports_ftth.build_ftth(circle, filter_type, filter_value)
+        if filter_type == "ftth_province" and filter_value:
+            executive = {
+                "schema_version": "ftth-summary.v1",
+                "available": False,
+                "unavailable_reason": (
+                    "The FTTH kecamatan summary source has no province column. "
+                    "The legacy FTTH report remains filtered by province."
+                ),
+                "catalog": reports_ftth_summary.catalog_payload("ftth"),
+                "sections": [],
+            }
+        else:
+            executive = reports_ftth_summary.build_ftth_summary(
+                circle, None, filter_type, filter_value)
+            executive["available"] = True
+        return {
+            **legacy,
+            "schema_version": "ftth-report.v2",
+            "executive_summary": executive,
+            "legacy": legacy,
+        }
+
     return reports_cache.get_or_build(
         "ftth", key,
-        lambda: _guarded(lambda: reports_ftth.build_ftth(circle, filter_type, filter_value)),
+        lambda: _guarded(build_ftth_payload),
         force=refresh)
 
 _FTTH_SITEWISE = f"`{_PROJECT}.{_DATASET}.rham_ftth_sitewise_monthly`"

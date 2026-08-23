@@ -1,0 +1,30 @@
+product|Bandingkan kontribusi revenue Freedom Internet vs Happy vs CVM Pack per region bulan ini, dan tunjukkan family mana yang share-nya naik MoM
+product|Hitung ARPT (revenue per transaksi) per channel_group untuk produk paket data di Kota Surabaya, urutkan terbesar
+product|Kecamatan mana di Jawa Timur yang share revenue non-data (kpi_group) paling tinggi, top 10
+revenue|Untuk circle Java, channel_detail mana yang revenue-nya turun paling dalam DoD per 29 Mei 2026, breakdown ATL vs BTL
+revenue|Bandingkan revenue MOBO TRADE vs ORGANIC per kabkota di region East Java bulan ini dan rasionya
+competitive|Tampilkan 10 kabkota dengan market share IM3 terendah tapi SOGA-nya tinggi (potensi rebut share), di region East Java
+competitive|Pertumbuhan market share IOH YoY di level branch, mana yang paling turun dan paling naik
+kpi_summary|Kenapa revenue prepaid di Kota Malang turun bulan ini, telusuri dari akuisisi, subscriber, churn, sampai usage
+site_performance|Top 20 site dengan revenue tinggi tapi VLR rendah (indikasi base tidak aktif) di Surabaya
+site_performance|Site mana di sekitar -7.25,112.75 dalam radius 5km yang revenue-nya turun MoM, sertakan koordinat
+network|Kabkota mana yang punya banyak site congest (occupancy tinggi) tapi availability 4G-nya juga rendah
+network_benchmark|Berdasarkan OpenSignal, di region mana IOH kalah video experience dari Telkomsel paling jauh, dan berapa gap-nya
+network_benchmark|Bandingkan FB download speed dan latency IM3 vs Telkomsel 4G dan 5G per kabkota di Jawa Timur
+customer_hvc|Kecamatan dengan HVC ratio (subs_hvc terhadap subscriber) tertinggi di Kota Surabaya dan trend HVC-nya
+sales_distribution|Hitung rasio secondary/primary dan tertiary/secondary per branch di circle Java, flag yang overstock
+sales_distribution|Outlet IM3 dengan QSSO rendah tapi URO tinggi di kecamatan Wonocolo
+5g|Funnel adopsi 5G per branch di region Central Java: dari data UU all sampai 5G traffic, dengan conversion tiap step
+5g|Kabkota dengan penetrasi 5G tertinggi tapi traffic 5G per device rendah
+acquisition|Channel gross add mana yang paling efektif (M1S survival tinggi) per branch bulan ini
+ftth|Conversion funnel FTTH SO ke SA ke PA per kabkota di Jawa Timur, mana yang konversinya paling jelek
+fwa|Site FWA dengan churn 90d tinggi tapi net add masih positif, di Surabaya
+kpi_summary|Bandingkan trend revenue saat Idul Adha 2024, 2025, 2026 (before vs after) untuk circle Java
+competitive|Visualisasikan pertumbuhan market share MoM di level kecamatan untuk region East Java di peta, hijau naik merah turun
+product|Visualisasikan di peta kabkota mana yang revenue paket data-nya turun MoM, beri warna merah
+kpi_summary|Tampilkan 15 site terdekat dari lokasi saya yang revenue di bawah 30 Mn dan tampilkan revenue di tooltip
+sales_distribution|Tampilkan 10 outlet terdekat dari -7.32,112.73 dengan QSSO di tooltip, warnai 3 terdekat hijau
+revenue|Trend mingguan revenue by price slab di Kota Surabaya 8 minggu terakhir, slab mana yang tumbuh
+competitive|Churn share IOH vs kompetitor per kabkota, mana yang churn share IOH-nya memburuk MoM
+network|Trend availability 5G per region 6 bulan terakhir, region mana yang paling tidak stabil
+multi|Untuk Kota Surabaya: tampilkan revenue per product, market share vs Telkomsel, dan kondisi network (availability + opensignal) dalam satu profil

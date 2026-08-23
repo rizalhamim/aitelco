@@ -31,6 +31,7 @@ class _BizplanAppState extends State<BizplanApp> {
     super.initState();
     AppState.I.addListener(() => setState(() {}));
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -41,16 +42,9 @@ class _BizplanAppState extends State<BizplanApp> {
       themeMode: AppState.I.themeMode,
       // WithForegroundTask lets the keep-alive foreground service coordinate
       // with the app lifecycle so in-flight requests survive backgrounding.
-      // Slightly shrink all text (~ -1px on ~13px base) for a denser UI, while
-      // still respecting (and capping) the user's OS font-scale setting.
-      builder: (context, child) {
-        final mq = MediaQuery.of(context);
-        final base = mq.textScaler.scale(1.0).clamp(1.0, 1.3);
-        return MediaQuery(
-          data: mq.copyWith(textScaler: TextScaler.linear(base * 0.92)),
-          child: WithForegroundTask(child: child ?? const SizedBox.shrink()),
-        );
-      },
+      // Keep the platform MediaQuery unchanged so OS text scaling is respected.
+      builder: (context, child) =>
+          WithForegroundTask(child: child ?? const SizedBox.shrink()),
       initialRoute: AuthState.isLoggedIn ? '/chat' : '/login',
       routes: {
         '/login': (_) => const LoginScreen(),

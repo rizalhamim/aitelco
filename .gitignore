@@ -1,4 +1,6 @@
 .env
+token_github.txt
+*token*.txt
 __pycache__/
 *.pyc
 node_modules/
@@ -20,10 +22,38 @@ mobile/ios/.symlinks/
 *.aab
 *.ipa
 
-# Backend data dumps (track separately if needed)
-backend/data/
+# Backend data dumps (track separately if needed).
+# Written as `dir/*` plus targeted negations: git cannot re-include a file whose
+# parent directory is excluded, so each level has to be re-opened explicitly.
+backend/data/*
+
+# The training corpora and their runners are CODE, not data dumps: they are the
+# agent-quality benchmark and must be reviewable in git. Generated results and the
+# weekly review reports stay out.
+!backend/data/training/
+backend/data/training/*
+!backend/data/training/*.py
+!backend/data/training/*.txt
+backend/data/training/*_results_*.txt
 
 # OS / editor
 .DS_Store
 .idea/
 .vscode/
+
+# Vault: local symlinks to obsidian-skills (absolute paths, break on clone).
+# Vault markdown nodes are tracked; only the local skill symlinks are ignored.
+vault/.claude/
+vault/.obsidian/workspace.json
+vault/.obsidian/workspace-mobile.json
+
+# Graphify output is a DERIVED artifact (about 33 MB, graph.json alone is 3.3 MB) and
+# is rebuilt by `graphify update .`, so none of it belongs in git. The generated
+# knowledge projection in graphify-knowledge/ IS tracked: it is small, reviewable, and
+# regenerated deterministically by tools_graphify_kb.py.
+graphify-out/
+
+# Android release signing. Credentials stay on the build host only.
+mobile/android/key.properties
+*.jks
+*.keystore

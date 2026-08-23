@@ -168,6 +168,19 @@ export default function SitePerformancePage() {
     else if (selected) openSite(selected, b);
   }, [selected, openSite]);
 
+  // Deep-link: open a specific site when arriving with ?site_id=... (e.g. from Map Query).
+  const deepLinkedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkedRef.current || typeof window === "undefined") return;
+    const sid = new URLSearchParams(window.location.search).get("site_id");
+    if (sid) {
+      deepLinkedRef.current = true;
+      setMode("search");
+      setQuery(sid);
+      openSite(sid, "ioh");
+    }
+  }, [openSite]);
+
   return (
     <div style={{ minHeight: "100vh", background: C.panel, fontFamily: "Prompt, sans-serif", color: C.ink }}>
       <header style={{ background: C.white, borderBottom: `1px solid ${C.rule}`, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, position: "sticky", top: 0, zIndex: 10 }}>

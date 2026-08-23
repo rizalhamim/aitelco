@@ -9,9 +9,11 @@ Flow:
 Self-correction: if SQL fails, the error is fed back to the agent once to retry.
 """
 import json
+import re
 
-from . import llm, knowledge, memory
+from . import llm, knowledge, knowledge_graph, memory
 from .bigquery_tool import run_query, QueryError, dry_run, validate_sql, _ensure_limit
+from .result_profiler import profile_result
 from . import config
 
 # ---------------- Router ----------------
@@ -74,6 +76,16 @@ CROSS-DOMAIN CORRELATION DETECTION (check BEFORE single-domain routing):
 If the user wants to RELATE / CORRELATE / CROSS-REFERENCE TWO different metrics that live in DIFFERENT domains, joined per territory — set domain to "CORRELATE".
 Signals: "korelasi/korelasikan", "hubungan antara X dan Y", "kabkota/kecamatan mana yang X tinggi NAMUN/TAPI/SEKALIGUS Y juga tinggi", "X tinggi dan Y rendah", "bandingkan X (domain 1) dengan Y (domain 2) per wilayah", "cross-reference", "overlay".
 The key signal: TWO metrics from TWO DIFFERENT domains compared/joined across territories (e.g. "HVC ratio tinggi DAN site congestion tinggi", "VLR YoY decline DIKORELASIKAN dengan FB speed trend", "market share rendah TAPI network availability bagus").
+
+IMPLICIT correlation (no "korelasi" word at all) still counts. A CONTRAST PAIR (two metrics set against each other with "tapi / namun / sementara / padahal / justru / vs / sedangkan", or one metric falling while another rises) is a CORRELATE signal whenever the two metrics sit in DIFFERENT domains. Work out which domain owns EACH metric before deciding:
+- "penurunan revenue voice & SMS dengan kenaikan revenue paket data per kabkota" → voice/SMS and data package revenue are both product composition (product) → SAME domain → route product, NOT CORRELATE.
+- "VLR tinggi tapi usage data rendah, korelasikan dengan revenue" → VLR + usage + revenue are all kpi_summary headline KPIs → SAME domain → route kpi_summary.
+- "site baru banyak tapi revenue addressable belum naik" → new site count and site revenue are both per-site metrics → site_performance.
+- "SOGA tinggi tapi market share rendah" → SOGA and market share are both competitive → competitive.
+- "HVC ratio tinggi tapi gross churn HVC tinggi" → both HVC → customer_hvc.
+- "gross add tinggi tapi M1S survival rendah" → gross add is acquisition, M1S survival is sales_distribution → DIFFERENT → CORRELATE.
+- "revenue paket data turun MoM tapi 5G penetration naik" → product vs 5g → DIFFERENT → CORRELATE.
+So: contrast pair is necessary but NOT sufficient. Map each metric to its owning domain first; only two DIFFERENT owners give CORRELATE.
 Do NOT use CORRELATE when both metrics live in the SAME domain (then route to that single domain). Do NOT use CORRELATE for a full territory profile (that is PROFILE).
 
 PROFILE MODE DETECTION:
@@ -87,7 +99,7 @@ The key signal: user wants MULTIPLE aspects (revenue + market share + network + 
 Available domains:
 {domains}
 
-Routing rules (IMPORTANT — follow this priority). There are 15 data domains:
+Routing rules (IMPORTANT - follow this priority). There are 16 data domains:
 1. site_performance — per-SITE performance (subscriber/churn/usage/RGU/PAU/VLR per site, site_id, "per site", "top sites") + site databank/coordinates. (occupancy/PRB/throughput is in `network`, see #7).
 2. revenue — REVENUE DEEP-DIVE: breakdown by CHANNEL (ATL/BTL, atl_btl_details = ATL ORI / ATL RENEWAL / ATL GIFT / BTL, channel_group, channel_detail, channel_wise = most granular channel, organic, trade, MOBO) or by PRICE SLAB (price band, slab harga) or transaction HITS. Site-level revenue mix. Use atl_btl_details for "renewal/perpanjangan vs purchasing/ori vs gift" questions.
 3. acquisition — ACQUISITION / GROSS ADD per CHANNEL (gross add, GA, akuisisi, channel akuisisi: modern/OLA/online/gerai/bank/H2H/traditional/DSF/biometric), site & branch.
@@ -103,6 +115,7 @@ Routing rules (IMPORTANT — follow this priority). There are 15 data domains:
 13. territory_reference — master territory reference (kec_id, kecamatan, kabkota, province, region, circle, branch, micro_cluster mappings). Use to validate/enrich territory names.
 14. product - PRODUCT REVENUE: site-level revenue broken down by PRODUCT. Dimensions kpi_group (REVENUE DATA / NON DATA / PPU DATA), kpi (stream: MOBO/DATA ORGANIC/EWALLET/EVC/VOUCHER/VAS/RITA/LOAN/VOICE/SMS), service_type (BROADBAND/VOICE+VIDEO/SMS+MMS/VAS+LOAN), family_group (product family: FREEDOM INTERNET, HAPPY, CVM PACK, PAYU, RAMADAN, VAS), product_group (specific SKU/package), plus validity/quota & channel & brand. Metric revenue (IDR) + hit (transactions, ARPT). Tables rham_site_data_rev_product_daily/_mtd/_mth. USE FOR: revenue by product/package/family, product MIX/CONTRIBUTION/SHARE, product TREND/growth (MoM/MTD), data vs non-data, top/bottom packages or families, package-size & channel mix, ARPT, e-wallet/voucher/VAS/loan revenue. (For headline TOTAL revenue use kpi_summary/revenue; product = per-product composition.)
 15. forecast — FORECAST / PREDIKSI REVENUE: hasil model prediksi revenue di grain branch / kabupaten / micro-cluster. Keywords: "forecast", "prediksi", "ramalan", "proyeksi", "outlook revenue ke depan", "bulan depan", "kuartal depan". Tabel _v3 = model terbaru (prefer); _output = hasil prediksi; _source = input/features. JANGAN pakai forecast domain untuk pertanyaan TREND historis (itu kpi_summary) — forecast khusus untuk pertanyaan tentang masa depan / prediksi.
+16. customer_demand - CUSTOMER DEMAND AND DIGITAL BEHAVIOR: origin-destination demand, subscriber traffic segments, migration between packs/channels, gaming, SSD/product demand, voucher cohorts, and digicommerce. Use aggregate tables only. Keywords: "inner outer", "asal tujuan", "demand flow", "migration matrix", "traffic segment", "game", "gaming", "digicommerce", "cohort voucher", "SSD".
 
 Key distinctions (CRITICAL):
 - "revenue" general (tanpa "per site"/"channel"/"slab") → kpi_summary (DEFAULT general KPI).
@@ -118,6 +131,7 @@ Key distinctions (CRITICAL):
 - "sales", "outlet", "NBS", "SND", "dealer" → sales_distribution.
 - SND KPI acronyms "URO","QURO","SSO","QSSO","QSC","OSA","ONO","M1S","M2S","primary/secondary/tertiary sales","trade supply/demand" → sales_distribution (NEVER ftth — these are distribution outlet KPIs, not fiber).
 - "kenapa revenue turun?", "penyebab", "root cause", "diagnosa" → kpi_summary (full causal chain metrics).
+- "demand inner outer", "asal tujuan pembelian", "segment traffic", "migration matrix", "game", "digicommerce", "cohort voucher", "SSD" → customer_demand.
 - Multi-domain questions → pick the PRIMARY metric's domain.
 - If question is NOT about data (greeting, capability, chit-chat), set domain to "none".
 - NOTE: there is no `marketing`, `reporting`, or `geo` domain — use kpi_summary, competitive, territory_reference instead. The `forecast` domain DOES exist (added recently) — use it ONLY for forward-looking prediction questions (see #15).
@@ -153,9 +167,53 @@ def _strip_map_hints(question: str) -> str:
     return _re.sub(r"\s{2,}", " ", q).strip()
 
 
+_CONTRAST_MARKERS = (
+    "tapi", "namun", "sementara", "padahal", "justru", "sedangkan", "vs",
+    "but", "while", "whereas",
+)
+
+
+def contrast_domain_hint(question: str, top_n: int = 2, min_conf: float = 0.55) -> str:
+    """Deterministic assist for IMPLICIT cross-domain questions.
+
+    A contrast pair ("X tinggi TAPI Y rendah") only means CORRELATE when the two
+    metrics belong to two DIFFERENT domains, which the router alone often misjudges.
+    This scores every domain's table retrieval for the question and, when two
+    different domains both come back strong, tells the router which two they are.
+    It only ever adds information: the router still makes the call, and the
+    same-domain exclusion in the prompt still applies.
+    """
+    lower = (question or "").lower()
+    if not any(f" {m} " in f" {lower} " for m in _CONTRAST_MARKERS):
+        return ""
+    scored: list[tuple[float, str]] = []
+    for domain_key in knowledge.load_kb().get("domains", {}):
+        try:
+            selection = knowledge.selection_for_question(domain_key, question, max_tables=2)
+        except Exception:
+            continue
+        confidence = float(selection.get("confidence") or 0.0)
+        if confidence >= min_conf and selection.get("tables"):
+            scored.append((confidence, domain_key))
+    scored.sort(reverse=True)
+    top = scored[:top_n]
+    if len(top) < 2 or top[0][1] == top[1][1]:
+        return ""
+    pair = ", ".join(f"{key} ({conf:.2f})" for conf, key in top)
+    return (
+        "\n\nRETRIEVAL HINT (deterministic, advisory): this question contains a contrast "
+        f"pair, and table retrieval scores highest in these domains: {pair}. If the two "
+        "metrics the user contrasts really are owned by these two DIFFERENT domains, this "
+        "is a CORRELATE question. If both metrics actually belong to ONE of them, ignore "
+        "this hint and route to that single domain."
+    )
+
+
 def route(question: str, history: list | None = None,
           avoid_domains: list | None = None) -> dict:
-    sys = ROUTER_SYS.format(domains=knowledge.domain_overview_text())
+    sys = ROUTER_SYS.format(domains=knowledge.domain_overview_text(question))
+    if config.ROUTER_CONTRAST_HINT:
+        sys += contrast_domain_hint(question)
     if avoid_domains:
         sys += (
             "\n\nIMPORTANT — RE-ROUTING: the following domain(s) already reviewed this "
@@ -174,6 +232,46 @@ def route(question: str, history: list | None = None,
     except Exception as e:
         return {"domain": "none", "reason": f"router_error: {e}", "language": "id",
                 "rephrased": question}
+
+
+def fast_path_intent(domain_key: str, question: str) -> dict:
+    """Deterministically identify low-risk questions that need no Analyst call."""
+    if not config.KNOWLEDGE_FAST_PATH or domain_key not in knowledge.load_kb()["domains"]:
+        return {"safe": False, "reason": "disabled_or_unknown"}
+    lower = (question or "").lower()
+    if any(term in lower for term in (
+        "export", "download", "excel", "pdf", "korelasi", "correlate",
+        "profile", "profil", "dashboard", "semua kpi", "analisa lengkap",
+    )):
+        return {"safe": False, "reason": "special_or_export"}
+    if knowledge_graph.question_is_high_risk(question):
+        return {"safe": False, "reason": "high_risk_terms"}
+    selection = knowledge.selection_for_question(domain_key, question)
+    if selection.get("confidence", 0.0) < 0.72 or not selection.get("tables"):
+        return {"safe": False, "reason": "low_retrieval_confidence", "selection": selection}
+    return {"safe": True, "reason": "bounded_graph_match", "selection": selection}
+
+
+def needs_llm_critique(
+    question: str, domain_key: str, result: dict, result_profile: dict | None = None
+) -> tuple[bool, str]:
+    """Use LLM critique only where deterministic checks cannot establish safety."""
+    profile = result_profile or profile_result(
+        result, question, table_contracts=knowledge.table_contracts()
+    )
+    if profile.get("qa", {}).get("status") != "verified":
+        return True, "result_profile_warning"
+    if knowledge_graph.question_is_high_risk(question):
+        return True, "high_risk_question"
+    q_tokens = knowledge_graph.tokenize(question)
+    if q_tokens.intersection({
+        "area", "branch", "circle", "kabkota", "kabkot", "kabupaten",
+        "kecamatan", "kota", "per", "province", "provinsi", "region", "wilayah",
+    }):
+        return True, "territory_or_grain_validation"
+    if len(profile.get("source_tables") or []) > 1:
+        return True, "multi_table_result"
+    return False, "deterministic_profile_verified"
 
 
 # ---------------- Domain scope gate (per-domain knowledge self-assessment) ----------------
@@ -233,11 +331,14 @@ def assess_domain_fit(domain_key: str, question: str,
         d = kb["domains"].get(domain_key)
         if not d:
             return {"verdict": "answerable", "confidence": 0.5, "reason": "unknown domain"}
+        schema, _selection = knowledge.schema_for_question(
+            domain_key, question, max_cols_per_table=40
+        )
         sys = SCOPE_SYS.format(
             label=d["label"],
             persona=knowledge.agent_persona(domain_key),
-            schema=knowledge.schema_for_domain(domain_key, max_cols_per_table=40),
-            facts=knowledge.data_facts_text(),
+            schema=schema,
+            facts=knowledge.data_facts_text(domain_key, question),
         )
         msgs = [{"role": "system", "content": sys}]
         if history:
@@ -288,6 +389,9 @@ Hard rules:
 - When filtering by a subquery (MAX(month_id) or MAX(dt_id)), always JOIN it rather than using correlated subquery in WHERE.
 - Prefer aggregations; avoid SELECT * on huge tables.
 - Add ORDER BY and a reasonable LIMIT (<= 1000).
+- RANK, DO NOT GUESS A THRESHOLD. When the user says "tinggi", "rendah", "bagus", "jelek", "buruk" WITHOUT giving a number, express it as an ORDER BY plus LIMIT (or a quantile computed from the data with APPROX_QUANTILES), NEVER as an invented absolute cut-off. A guessed cut-off on a tightly-distributed metric silently returns ZERO rows and looks to the user like the data is missing. Real example: kabkota 4G availability spans 98.8 to 100.0, so `WHERE avail_pct < 95` can never match. The same applies to "churn tinggi", "revenue rendah", "occupancy tinggi": rank them, or derive the cut-off from the distribution in a CTE.
+- A metric can also be stored with the opposite sign to what the wording suggests (some churn columns are negative). If a filter on a sign assumption returns nothing, rank by ABS() instead of guessing again.
+- NEVER force TWO tables onto a single shared period. Do NOT build a "common_month" / "shared MAX(month_id)" CTE and filter both sides by it: tables in this warehouse have different refresh coverage, so the intersection is often EMPTY and the whole query returns nothing. Instead give EACH table its own CTE filtered by `(SELECT MAX(month_id) FROM that same table)`, join the CTEs on the territory key, and OUTPUT both period columns so the answer can state that the two sides are from different months.
 - Analytic/window functions (LAG, LEAD, ROW_NUMBER, RANK, etc.) are NOT allowed inside WHERE, HAVING, or JOIN ON clauses. Wrap them in a CTE or subquery first, then filter the outer query.
 - Use ONLY columns that exist in the schema above. DO NOT invent column names. If a column name is not in the schema, it does not exist. Double-check column names against the schema before writing the query.
 - COMMON COLUMN-NAME GOTCHAS (do NOT invent these): the kabupaten/kota column is named `kabkot` or `kabkota` (NEVER `kabupaten`). The kecamatan column is `kecamatan` or `kec_unik`/`kec_id` (NEVER `kabupaten`). Revenue is `rev_prepaid` (not `revenue` in mkt tables; but the rev_channel/price_slab tables DO use `revenue`). Always match the exact name shown in the schema for the table you are querying. If a BigQuery error says "Unrecognized name: X" or "Name X not found", X does not exist — replace it with the correct column from the schema (it usually suggests "Did you mean ...?").
@@ -683,6 +787,53 @@ def _domain_directive(domain_key: str, question: str) -> str:
     return ("\n\n" + "\n\n".join(parts)) if parts else ""
 
 
+def _is_truncation_error(err: str | None) -> bool:
+    """True when the previous attempt was CUT OFF rather than merely wrong.
+
+    Truncation needs a bigger budget as well as a simpler target: reusing the budget
+    that just overflowed makes the retry likely to overflow again.
+    """
+    if not err:
+        return False
+    e = err.lower()
+    return (
+        "structurally invalid" in e or "looks cut off" in e
+        or "unbalanced parentheses" in e or "dangling keyword" in e
+        or "unterminated" in e
+        or ("expected" in e and ("end of script" in e or "end of input" in e))
+    )
+
+
+def tables_named_in(text: str, domain_key: str) -> list[str]:
+    """Approved tables of `domain_key` that are mentioned by name in `text`.
+
+    Used when a scope gate reroutes a domain to ITSELF: its reason usually names the
+    table it wanted but was not shown, so that name becomes a retrieval hint instead of
+    the turn dying as out-of-scope. Only tables that genuinely belong to the domain are
+    returned, so this cannot widen the policy gate.
+    """
+    if not text:
+        return []
+    domain = knowledge.load_kb()["domains"].get(domain_key) or {}
+    approved = knowledge.approved_table_names()
+    return [
+        name for name in (domain.get("tables") or {})
+        if name in approved and name in text
+    ]
+
+
+def _policy_rejected_tables(err: str | None) -> list[str]:
+    """Table names the policy gate rejected as 'not selected for this question'.
+
+    Used to retry retrieval with the table as a hint instead of burning all three
+    attempts on the same rejection. Retrieval still filters the hint against the
+    domain's approved tables, so this cannot smuggle in a blocked table.
+    """
+    if not err or "was not selected for this question" not in err:
+        return []
+    return re.findall(r"Table `([A-Za-z0-9_.\-]+)` was not selected", err)
+
+
 def _error_hint(err: str | None) -> str:
     """Translate a known BigQuery / validator error signature into an explicit,
     actionable correction instruction for the retry attempt. Generic errors get a
@@ -709,7 +860,24 @@ def _error_hint(err: str | None) -> str:
             "history), SELECT only the few columns you actually need (never SELECT *), and prefer the _mth/_mtd "
             "monthly table over the _daily table unless daily is explicitly required."
         )
-    if "syntax error" in e or "unclosed string" in e or "expected" in e:
+    # Truncation looks like a syntax error but the fix is different: the query must get
+    # SMALLER, not just corrected in place. Check it before the generic syntax hint.
+    truncated = (
+        "structurally invalid" in e or "looks cut off" in e or "unbalanced parentheses" in e
+        or "dangling keyword" in e
+        or ("expected" in e and ("but got end of script" in e or "but got \"\"" in e
+                                 or "but got end of input" in e))
+    )
+    if truncated:
+        hints.append(
+            "Your previous SQL was CUT OFF before it finished (it ran out of room), so correcting it in "
+            "place will not help. Write a SIMPLER query that fits comfortably in one complete statement: "
+            "use the FEWEST possible CTEs (merge or drop intermediate ones), compute shares/ratios with "
+            "SAFE_DIVIDE over window functions instead of extra self-joins, avoid repeating the same "
+            "subquery, and select only the columns actually needed. Prefer one aggregate pass with "
+            "conditional SUM(CASE WHEN ...) over several CTEs joined together."
+        )
+    elif "syntax error" in e or "unclosed string" in e or "expected" in e:
         hints.append(
             "Fix the SQL syntax. Check for: unbalanced parentheses, an unterminated string literal (a missing "
             "closing quote), a CTE missing its closing ), or a misplaced clause (e.g. ORDER BY/LIMIT inside a "
@@ -728,10 +896,21 @@ def _error_hint(err: str | None) -> str:
 def write_sql(domain_key: str, question: str, prior_error: str | None = None,
               prior_sql: str | None = None, history: list | None = None,
               last_result: dict | None = None, map_context: bool = False,
-              refine_hint: str | None = None, prior_attempt_sql: str | None = None) -> dict:
+              refine_hint: str | None = None, prior_attempt_sql: str | None = None,
+              table_hints: list[str] | None = None) -> dict:
     kb = knowledge.load_kb()
     d = kb["domains"][domain_key]
-    schema = knowledge.schema_for_domain(domain_key)
+    table_budget = 6 if domain_key in {"competitive", "network_benchmark"} else None
+    # When the previous attempt was rejected for using a table outside the retrieved
+    # selection, retry with that table as a hint. Retrieval only honours hints for
+    # tables that are approved inside THIS domain, so the policy gate is never
+    # widened, but the model stops failing three times over one missing join table.
+    retry_hints = _policy_rejected_tables(prior_error) + list(table_hints or [])
+    schema, selection = knowledge.schema_for_question(
+        domain_key, question, max_tables=table_budget,
+        table_hints=retry_hints or None,
+    )
+    allowed_tables = list(selection.get("tables", []))
     # For map/coordinate questions, ensure the canonical site tables (reference
     # coordinates + cross-domain metric tables) are always visible, even if the
     # routed domain doesn't normally include them.
@@ -739,7 +918,10 @@ def write_sql(domain_key: str, question: str, prior_error: str | None = None,
     # we then treat ANY question as map-renderable (the existing agent logic is
     # unchanged; we only widen the visible schema + add an output directive).
     if map_context or _is_map_query(question):
-        map_schema = knowledge.map_site_schema()
+        map_schema = knowledge.map_site_schema(question)
+        allowed_tables.extend(
+            name for name in knowledge.MAP_SITE_TABLES if name not in allowed_tables
+        )
         schema = (
             schema
             + "\n\n=== ADDITIONAL SITE TABLES FOR MAP / COORDINATE QUERIES ===\n"
@@ -747,11 +929,38 @@ def write_sql(domain_key: str, question: str, prior_error: str | None = None,
             "reference (coordinates) and JOIN on site_id to these tables for metrics:\n"
             + map_schema
         )
+    # Territory reference: most fact tables carry kabkota/kecamatan but no province,
+    # region, or branch column, so a province-scoped question can only be answered by
+    # joining the canonical reference. Offer it whenever the question needs one and
+    # the routed domain does not already own it, otherwise the policy gate rejects a
+    # legitimate join and the whole turn fails.
+    if (domain_key != "territory_reference"
+            and knowledge.question_needs_territory_ref(question)
+            and not any(name in allowed_tables
+                        for name in knowledge.TERRITORY_REF_TABLES)):
+        # Governance decides what may be offered: a quarantined or rejected reference
+        # must drop out of the allowed set, not just out of the schema text.
+        ref_tables = knowledge.approved_territory_ref_tables()
+        ref_schema = knowledge.territory_ref_schema(question) if ref_tables else ""
+        if ref_schema:
+            allowed_tables.extend(
+                name for name in ref_tables if name not in allowed_tables
+            )
+            schema = (
+                schema
+                + "\n\n=== TERRITORY REFERENCE (join only when you need a level your "
+                "fact table lacks) ===\n"
+                + "Fact tables above expose kabkota/kecamatan. For province, region, "
+                "branch, circle, or micro-cluster scoping, JOIN zz_territory_kecamatan "
+                "on the kecamatan/kabkota key. Do NOT join it when the fact table "
+                "already has the level you need:\n"
+                + ref_schema
+            )
     sys = SQL_SYS.format(
         persona=knowledge.agent_persona(domain_key),
         label=d["label"],
         schema=schema,
-        facts=knowledge.data_facts_text(),
+        facts=knowledge.data_facts_text(domain_key, question),
         project=kb["project"], dataset=kb["dataset"],
     )
     msgs = [{"role": "system", "content": sys}]
@@ -813,7 +1022,17 @@ def write_sql(domain_key: str, question: str, prior_error: str | None = None,
     # 8000 token budget: 4500 was truncating complex multi-CTE / CASE-heavy queries (QoQ, YoY,
     # decomposition by service_type) — observed in baseline as "Unexpected keyword LIMIT" / "Expected )"
     # errors when the model ran out of tokens mid-statement.
-    return llm.chat_json(msgs, model=config.LLM_MODEL_SQL, max_tokens=8000)
+    # A retry AFTER a truncation must not reuse the budget that just overflowed: the
+    # simplify instruction alone did not converge on some question shapes (share by
+    # category), so give the retry more room as well as a simpler target.
+    budget = config.SQL_MAX_TOKENS_TRUNCATED if _is_truncation_error(prior_error) \
+        else config.SQL_MAX_TOKENS
+    generated = llm.chat_json(msgs, model=config.LLM_MODEL_SQL, max_tokens=budget)
+    if not isinstance(generated, dict):
+        generated = {}
+    generated["_allowed_tables"] = allowed_tables
+    generated["_retrieval"] = selection
+    return generated
 
 
 # ---------------- Synthesizer ----------------
@@ -826,6 +1045,11 @@ into a clear, helpful answer for a business user. Reply in the user's language (
 - Add brief context or notable patterns (top/bottom, trend) if visible in the data.
 - Keep it concise. Use simple lists or short sentences. Do NOT invent numbers not in the data.
 - If the result is empty, say so and suggest why (e.g. date filter).
+- Treat `result_profile` as the evidence boundary for the complete returned result.
+- Never claim global top, bottom, total, distribution, or complete coverage from
+  `rows_preview` alone. Ranking claims require result_profile.profile.ranking_verified=true.
+- If result_profile.truncated=true, explicitly say the result is limited.
+- Keep source warnings and interpretation-warning columns visible in the answer.
 
 BEST-EFFORT / EMPTY HANDLING (when the payload includes "best_effort_note" or the data is empty
 after the agent already tried hard to find a relevant answer):
@@ -835,6 +1059,16 @@ after the agent already tried hard to find a relevant answer):
   "alternative_suggestion" if present), e.g. periode terbaru yang tersedia, level agregasi yang
   lebih luas, atau metrik pengganti. Phrase it as a concrete next question the user could ask.
 - Stay in {language}. Keep the tone helpful, not apologetic-and-empty.
+- State plainly WHAT was checked (tabel/filter/periode) so the user can judge the gap. Never
+  fabricate a number or a ranking to fill the hole.
+
+DEGENERATE RESULTS (result_profile.qa.degenerate is a non-empty list):
+- The query returned rows but they do NOT answer the question: the metric or the ranking
+  column is NULL throughout. Treat this as a non-answer, never as a real ranking.
+- Say explicitly that the rows carry no usable value for the requested metric, name the
+  reason from the degenerate list, and suggest the concrete fix or next question (mis. level
+  territory yang berbeda, join ke tabel komponen, atau periode lain).
+- Do NOT present a top-N table built on NULL values, and do not call NULL "0" or "terburuk".
 
 SIGNIFICANCE-WEIGHTED HIGHLIGHTING (apply when the table has BOTH a growth/change
 metric AND a size/contribution metric, e.g. revenue + growth_pct, or value + contribution%):
@@ -863,18 +1097,62 @@ OUTPUT FORMAT:
 def synthesize(question: str, result: dict, language: str, explanation: str) -> str:
     # cap rows sent to the LLM
     preview = result["rows"][:50]
+    result_profile = profile_result(
+        result, question, table_contracts=knowledge.table_contracts()
+    )
     payload = {
         "question": question,
         "what_it_computes": explanation,
         "columns": result["columns"],
         "row_count": result["row_count"],
         "rows_preview": preview,
+        "result_profile": result_profile,
     }
     msgs = [
         {"role": "system", "content": SYNTH_SYS.format(language=language)},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False, default=str)},
     ]
-    return llm.chat(msgs, model=config.LLM_MODEL_CODER, max_tokens=1200)
+    answer = llm.chat(msgs, model=config.LLM_MODEL_CODER, max_tokens=1200)
+    if isinstance(answer, str) and answer.strip():
+        return answer
+    return deterministic_fallback_answer(result, language, result_profile)
+
+
+def deterministic_fallback_answer(
+    result: dict, language: str = "id", result_profile: dict | None = None
+) -> str:
+    """Return an evidence-only answer if the narrative model yields no text."""
+    profile = result_profile or profile_result(
+        result, table_contracts=knowledge.table_contracts()
+    )
+    rows = result.get("rows") or []
+    columns = result.get("columns") or []
+    if not rows:
+        return (
+            "Data tidak ditemukan untuk filter yang digunakan. Coba periode terbaru "
+            "atau cakupan wilayah yang lebih luas."
+            if language == "id"
+            else "No data was found for the applied filters. Try the latest period or a broader scope."
+        )
+    title = "Hasil terverifikasi" if language == "id" else "Verified result"
+    source_label = "Sumber" if language == "id" else "Sources"
+    row_label = "Baris" if language == "id" else "Rows"
+    lines = [f"## {title}", ""]
+    lines.append(f"{row_label}: {profile.get('row_count', len(rows))}.")
+    if profile.get("source_tables"):
+        lines.append(f"{source_label}: {', '.join(profile['source_tables'])}.")
+    visible_columns = columns[:10]
+    lines.extend([
+        "",
+        "| " + " | ".join(visible_columns) + " |",
+        "| " + " | ".join("---" for _ in visible_columns) + " |",
+    ])
+    for row in rows[:10]:
+        values = [str(row.get(column, "")).replace("|", "\\|") for column in visible_columns]
+        lines.append("| " + " | ".join(values) + " |")
+    for warning in profile.get("qa", {}).get("warnings", []):
+        lines.append(f"\nCatatan: {warning}" if language == "id" else f"\nNote: {warning}")
+    return "\n".join(lines)
 
 
 # ---------------- Reflection / self-check critique ----------------
@@ -931,6 +1209,9 @@ def critique_result(question: str, sql: str, result: dict,
             "row_count": result.get("row_count", 0),
             "rows_sample": rows,
             "attempt_number": attempt,
+            "result_profile": profile_result(
+                result, question, table_contracts=knowledge.table_contracts()
+            ),
         }
         msgs = [
             {"role": "system", "content": CRITIQUE_SYS},
@@ -1041,7 +1322,7 @@ def answer(question: str, history: list | None = None,
         trace["steps"].append({"agent": label, "action": "write_sql",
                                "attempt": attempt + 1, "sql": sql})
         try:
-            result = run_query(sql)
+            result = run_query(sql, allowed_tables=gen.get("_allowed_tables"))
             last = (result, explanation)
             trace["steps"].append({"agent": label, "action": "execute",
                                    "row_count": result["row_count"],

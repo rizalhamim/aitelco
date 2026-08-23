@@ -44,6 +44,7 @@ CLARIFY_PROMPT = """Anda ingin melihat profile {territory}. Pilih format:
    • Base Revenue vs Acquisition Revenue
    • Site profile (total, addressable, new, avg rev/site)
    • FWA (revenue, subs, gross add, churn, net add)
+   • FTTH / Indosat HiFi (homepass, subscribers, TUR, footprint ORBIT/NON-ORBIT/IFORTE, SO→SA→PA funnel)
    • 5G penetration & device funnel
    • Market Share & SOGA by operator
    • HVC profile
@@ -105,9 +106,18 @@ PROFILE_SECTIONS_FULL = [
     {"section_title": "FWA Business Profile", "domain": "kpi_summary",
      "question_template": "FWA {territory}: rev_fwa_total/pack/sim/regular, fwa_rgu90, fwa_net_add, churn, vlr aging.",
      "table_hint": "rham_mkt_highlevel_mth"},
-    # ── FTTH ──
+    # ── FTTH (Indosat HiFi) ──
+    {"section_title": "FTTH Infrastructure & Utilization (TUR)", "domain": "ftth",
+     "question_template": "FTTH Indosat HiFi {territory}: homepass, subscribers (PA), available homepass, gross add, net add, Take-Up Rate (TUR = PA/homepass), sites with homepass, and low-TUR sites (<20%) trend.",
+     "table_hint": "rham_ftth_sitewise_monthly"},
+    {"section_title": "FTTH Footprint by Project (ORBIT / NON-ORBIT / IFORTE)", "domain": "ftth",
+     "question_template": "FTTH Indosat HiFi {territory}: footprint split ORBIT (mplay) vs NON-ORBIT (seahawk/spartan) vs IFORTE by sites, homepass, subscribers (PA), and TUR.",
+     "table_hint": "rham_ftth_sitewise_monthly"},
     {"section_title": "FTTH / HBB Funnel", "domain": "ftth",
      "question_template": "FTTH {territory}: funnel SO (Sales Order, pasang baru) -> SA (Service Active, terinstalasi) -> PA (Permanent Active, bayar & aktif) trend bulanan + conversion rate.",
+     "table_hint": "rham_ftth_so_detail"},
+    {"section_title": "FTTH Product Mix (Advance Payment vs Regular)", "domain": "ftth",
+     "question_template": "FTTH {territory}: product mix Advance Payment (AP/Super) vs Regular by SO accounts.",
      "table_hint": "rham_ftth_so_detail"},
     # ── 5G ──
     {"section_title": "5G Penetration & Device Funnel", "domain": "5g",
@@ -152,12 +162,15 @@ PROFILE_SECTIONS_FULL = [
      "table_hint": "rham_mkt_highlevel_mth"},
 ]
 
-PROFILE_SECTIONS_SIMPLE = [
-    PROFILE_SECTIONS_FULL[0],   # Revenue Overview
-    PROFILE_SECTIONS_FULL[7],   # Subscriber & RGU
-    PROFILE_SECTIONS_FULL[17],  # Market Share
-    PROFILE_SECTIONS_FULL[11],  # Site Profile
+# Pick SIMPLE-deck sections by title so they stay correct if FULL is reordered.
+_SIMPLE_TITLES = [
+    "Revenue Overview (Trend 360)",
+    "Subscriber & RGU (Trend 360)",
+    "Market Share (Trend 360)",
+    "Site Infrastructure Profile",
 ]
+_FULL_BY_TITLE = {s["section_title"]: s for s in PROFILE_SECTIONS_FULL}
+PROFILE_SECTIONS_SIMPLE = [_FULL_BY_TITLE[t] for t in _SIMPLE_TITLES]
 
 
 # ── Profile Planner ──
@@ -332,6 +345,10 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
         if tn.startswith(pfx):
             tn = tn[len(pfx):]
     tn = tn.replace("'", "")
+    # FTTH funnel detail tables (rham_ftth_{so,sa,pa}_detail) have NULL
+    # shp_kabkota/shp_kecamatan; they filter on FTTH-native cols (city/province).
+    # The sitewise table (rham_ftth_sitewise_monthly) keys on city/kecamatan/
+    # provinsi/region_25. f_ftth = detail-table scope, f_ftth_sw = sitewise scope.
     if territory_type == "kabkota":
         f_mkt = f"UPPER(kabkot) LIKE '%{tn}%'"
         f_chan = f"UPPER(kabkota) LIKE '%{tn}%'"
@@ -340,6 +357,7 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
         f_avail = f"territory_level = 'kabkot' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_nb = f"UPPER(kabkot) LIKE '%{tn}%'"
         f_ftth = f"UPPER(city) LIKE '%{tn}%'"
+        f_ftth_sw = f"UPPER(city) LIKE '%{tn}%'"
         f_snd = f"kec_unik IN (SELECT kec_id FROM `{_PROJECT}.{_DATASET}.zz_territory_kecamatan` WHERE UPPER(kabkota) LIKE '%{tn}%')"
     elif territory_type == "kecamatan":
         f_mkt = f"UPPER(kecamatan) LIKE '%{tn}%'"
@@ -348,7 +366,10 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
         f_report = f"UPPER(kecamatan) LIKE '%{tn}%'"
         f_avail = f"territory_level = 'kecamatan' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_nb = f"UPPER(kecamatan) LIKE '%{tn}%'"
-        f_ftth = f"UPPER(shp_kecamatan) LIKE '%{tn}%'"
+        # detail tables have no usable kecamatan col -> funnel falls back to none;
+        # sitewise has a real kecamatan column.
+        f_ftth = None
+        f_ftth_sw = f"UPPER(kecamatan) LIKE '%{tn}%'"
         f_snd = f"UPPER(kec_unik) LIKE '%{tn}%'"
     elif territory_type in ("region", "circle", "branch", "province", "area"):
         col = {"region": "region", "circle": "circle", "branch": "branch",
@@ -365,13 +386,27 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
         f_avail = f"territory_level = '{territory_type}' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_nb = kec_sub
         f_ftth = None
+        # FTTH sitewise scope for higher levels (FTTH-native cols only):
+        #   province -> provinsi; region -> region_25 (e.g. '05. East Java');
+        #   circle   -> the set of FTTH provinces in that circle. branch/area have
+        #   no FTTH equivalent -> None (section is skipped, not wrong).
+        if territory_type == "province":
+            f_ftth_sw = f"UPPER(provinsi) LIKE '%{tn}%'"
+        elif territory_type == "region":
+            f_ftth_sw = f"UPPER(region_25) LIKE '%{tn}%'"
+        elif territory_type == "circle":
+            from .reports_ftth import _circle_provinces
+            _provs = _circle_provinces(tn)
+            f_ftth_sw = ("UPPER(provinsi) IN (" + ",".join(f"'{p}'" for p in _provs) + ")") if _provs else None
+        else:
+            f_ftth_sw = None
         f_snd = kec_sub
         _territory_grain = territory_type  # used to switch report table to kecamatan
     else:
         f_mkt = f"UPPER(kabkot) LIKE '%{tn}%'"; f_chan = f"UPPER(kabkota) LIKE '%{tn}%'"
         f_5g = f"territory_level = 'kabkot' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_report = f"UPPER(kabkota) LIKE '%{tn}%'"; f_avail = f_5g
-        f_nb = f"UPPER(kabkot) LIKE '%{tn}%'"; f_ftth = None; f_snd = None
+        f_nb = f"UPPER(kabkot) LIKE '%{tn}%'"; f_ftth = None; f_ftth_sw = None; f_snd = None
 
     t = f"`{_PROJECT}.{_DATASET}"
     out = {}
@@ -572,6 +607,54 @@ SELECT '3. PA (Permanent Active - bayar & aktif)', year_month, COUNT(DISTINCT bi
 FROM {t}.rham_ftth_pa_detail` WHERE {f_ftth} GROUP BY year_month
 ORDER BY period DESC, funnel_stage""".strip()
 
+        # ── FTTH product mix (SO MTD): Advance Payment vs Regular ──
+        out["FTTH Product Mix (Advance Payment vs Regular)"] = f"""
+WITH mx AS (SELECT MAX(year_month) AS m FROM {t}.rham_ftth_so_detail`)
+SELECT year_month AS period,
+       CASE WHEN REGEXP_CONTAINS(product, r'^(AP|Super ?)[0-9]+') THEN 'Advance Payment' ELSE 'Regular' END AS product_mix,
+       COUNT(DISTINCT bill_acc) AS so_accounts
+FROM {t}.rham_ftth_so_detail`, mx
+WHERE {f_ftth} AND year_month = mx.m
+GROUP BY period, product_mix ORDER BY so_accounts DESC""".strip()
+
+    # ===== FTTH infrastructure & utilization (sitewise: subscriber/homepass/TUR) =====
+    # Subscribers (pa) is CUMULATIVE active at each month_id; per-period totals are
+    # correct (never sum pa across months). TUR = SUM(pa)/SUM(homepass)*100.
+    if f_ftth_sw:
+        out["FTTH Infrastructure & Utilization (TUR)"] = f"""
+WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_ftth_sitewise_monthly`)
+SELECT month_id AS period,
+       SUM(homepass) AS homepass,
+       SUM(pa) AS subscribers_pa,
+       SUM(available_hp) AS available_hp,
+       SUM(ga) AS gross_add,
+       SUM(pa_net_latest) AS net_add,
+       SAFE_DIVIDE(SUM(pa), SUM(homepass)) * 100 AS tur_pct,
+       COUNT(DISTINCT IF(homepass > 0, site_id, NULL)) AS sites_with_hp,
+       COUNT(DISTINCT IF(homepass > 0 AND SAFE_DIVIDE(pa, homepass) < 0.2, site_id, NULL)) AS low_tur_sites
+FROM {t}.rham_ftth_sitewise_monthly`, mx
+WHERE {f_ftth_sw}
+  AND PARSE_DATE('%Y%m', month_id) >= DATE_SUB(PARSE_DATE('%Y%m', mx.m), INTERVAL 15 MONTH)
+GROUP BY period ORDER BY period DESC""".strip()
+
+        # ── FTTH footprint by project (current month): ORBIT / NON-ORBIT / IFORTE ──
+        out["FTTH Footprint by Project (ORBIT / NON-ORBIT / IFORTE)"] = f"""
+WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_ftth_sitewise_monthly`)
+SELECT
+  CASE
+    WHEN LOWER(project_awal) LIKE '%mplay%' THEN 'ORBIT'
+    WHEN LOWER(project_awal) LIKE '%seahawk%' OR LOWER(project_awal) LIKE '%spartan%' THEN 'NON-ORBIT'
+    WHEN LOWER(project_awal) LIKE '%iforte%' OR LOWER(project_awal) LIKE '%i-forte%' OR LOWER(project_awal) LIKE '%i_forte%' THEN 'IFORTE'
+    ELSE 'OTHER'
+  END AS footprint,
+  COUNT(DISTINCT site_id) AS sites,
+  SUM(homepass) AS homepass,
+  SUM(pa) AS subscribers_pa,
+  SAFE_DIVIDE(SUM(pa), SUM(homepass)) * 100 AS tur_pct
+FROM {t}.rham_ftth_sitewise_monthly`, mx
+WHERE {f_ftth_sw} AND month_id = mx.m
+GROUP BY footprint ORDER BY homepass DESC""".strip()
+
     # ===== Sales & Distribution =====
     if f_snd:
         out["Sales & Distribution KPI"] = f"""
@@ -644,7 +727,7 @@ def _run_one_domain(domain_key: str, question: str, section_title: str) -> dict:
             continue
 
         try:
-            qr = run_query(sql)
+            qr = run_query(sql, allowed_tables=gen.get("_allowed_tables"))
             result_entry["rows"] = qr["rows"][:50]
             result_entry["columns"] = qr["columns"]
             result_entry["row_count"] = qr["row_count"]
@@ -747,8 +830,17 @@ SECTION ORDER (group logically):
 A. Executive Summary
 B. REVENUE: Overview (MoM/YoY/QoQ) → Decomposition → Base vs Acquisition → Channel (ATL/BTL) → Channel Detail → MOBO Trade → Price Slab
 C. CUSTOMER: Subscriber & RGU → Gross/Net Add → Churn → Acquisition by Channel → HVC
-D. INFRASTRUCTURE: Site Profile → FWA → FTTH/HBB Funnel
-   - FTTH funnel: show SO (Sales Order) → SA (Service Active) → PA (Permanent Active) with stage-to-stage conversion % (SA/SO, PA/SA).
+D. INFRASTRUCTURE: Site Profile → FWA → FTTH (Indosat HiFi)
+   - FTTH (Indosat HiFi) is a FULL sub-section. Cover ALL of:
+     1) Infrastructure & Utilization: homepass, subscribers (PA), available homepass,
+        gross add, net add, and Take-Up Rate (TUR = PA/homepass, %), plus sites with
+        homepass and low-TUR sites (<20%). Show MoM/YoY trend and flag low TUR 🔴.
+     2) Footprint by project: ORBIT vs NON-ORBIT vs IFORTE (sites/homepass/subs/TUR), with composition %.
+     3) Sales Funnel: SO (Sales Order) → SA (Service Active) → PA (Permanent Active) with
+        stage-to-stage conversion % (SA/SO, PA/SA).
+     4) Product Mix: Advance Payment vs Regular share.
+     NOTE: PA (subscribers) is CUMULATIVE active per month — do NOT sum it across months.
+     If FTTH sections are empty/errored (territory has no FTTH footprint), say so briefly and continue.
 E. NETWORK: 5G Funnel → Network Availability & SLA → Network Benchmark (vs competitor)
    - 5G funnel: show Data UU all → Data UU with 5G device → 5G device with 5G traffic, with conversion % at each step (conv_5g_device_pct, conv_5g_traffic_pct).
 F. COMPETITIVE: Market Share → SOGA → Churn Share
@@ -833,6 +925,11 @@ def _group_sections(domain_results: list[dict]) -> list[tuple[str, list[dict]]]:
             if i in used:
                 continue
             title = (dr.get("section_title") or "").lower()
+            # Keep ALL FTTH sections together in INFRA_NET, even when a generic
+            # keyword (e.g. "product") would otherwise pull one into BUSINESS.
+            is_ftth = ("ftth" in title or "hbb" in title)
+            if is_ftth and name != "INFRA_NET":
+                continue
             if any(k in title for k in keys):
                 bucket.append(dr)
                 used.add(i)
@@ -902,7 +999,10 @@ def compile_profile_stream(territory_type: str, territory_name: str,
         yield from _run(
             "INFRA_NET",
             "Write the detailed sections under '" + part_titles["INFRA_NET"] + "'. For each: data "
-            "table + trend (MoM/YoY/QoQ), arrows, 🔴/🟢. Include BOTH network condition (availability/"
+            "table + trend (MoM/YoY/QoQ), arrows, 🔴/🟢. Give FTTH (Indosat HiFi) a FULL treatment: "
+            "infrastructure & utilization (homepass, subscribers PA, TUR %, gross/net add, low-TUR sites), "
+            "footprint by project (ORBIT/NON-ORBIT/IFORTE), the SO->SA->PA funnel with conversion %, and "
+            "product mix (Advance Payment vs Regular). Include BOTH network condition (availability/"
             "SLA/congestion) AND network competition (FB speed/congestion + OpenSignal vs Telkomsel/XL/SF). "
             "Finish every sentence. Do NOT repeat earlier parts.",
             infra, 5000)

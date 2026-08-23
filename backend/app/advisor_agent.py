@@ -87,7 +87,7 @@ _PLAN_SYS = (
 
 def plan(question: str, ctx: dict, language: str = "id") -> dict:
     digest = _context_digest(ctx)
-    domains = knowledge.domain_overview_text()
+    domains = knowledge.domain_overview_text(question)
     sys = _PLAN_SYS.format(domains=domains)
     msgs = [
         {"role": "system", "content": sys},
@@ -121,7 +121,7 @@ def fetch_supporting(domain: str, question: str) -> dict:
         sql = gen.get("sql", "")
         if not sql:
             return {"domain": domain, "question": question, "error": "no_sql"}
-        res = run_query(sql)
+        res = run_query(sql, allowed_tables=gen.get("_allowed_tables"))
         return {
             "domain": domain, "question": question, "sql": sql,
             "columns": res.get("columns", []),

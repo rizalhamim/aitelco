@@ -1,0 +1,39 @@
+{
+  "model": "opus",
+  "effortLevel": "high",
+  "enabledPlugins": {
+    "playwright@claude-plugins-official": false,
+    "ralph-loop@claude-plugins-official": false,
+    "skill-creator@claude-plugins-official": false,
+    "claude-code-setup@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false,
+    "feature-dev@claude-plugins-official": false,
+    "superpowers@claude-plugins-official": false
+  },
+  "skillOverrides": {
+    "dataviz": "user-invocable-only",
+    "deep-research": "user-invocable-only"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/ubuntu/.local/bin/graphify hook-guard search"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/ubuntu/.local/bin/graphify hook-guard read"
+          }
+        ]
+      }
+    ]
+  }
+}

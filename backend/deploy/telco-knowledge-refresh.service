@@ -1,0 +1,10 @@
+[Unit]
+Description=Telco AI java_precalc knowledge catalog refresh
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/telco-ai/backend
+ExecStart=/home/ubuntu/telco-ai/backend/venv/bin/python /home/ubuntu/telco-ai/backend/tools_knowledge_refresh.py --write-catalog --check
+

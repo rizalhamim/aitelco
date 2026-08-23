@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// TEAL-PRIMARY design system.
-/// Teal is primary (buttons, links, active, focus). Red is tertiary —
+/// Teal is primary (buttons, links, active, focus). Red is tertiary,
 /// destructive / alerts only, used sparingly.
 class IOH {
   // Teal scale (primary)
@@ -17,7 +17,7 @@ class IOH {
   // Legacy primary token `red` now points to TEAL (used app-wide as primary).
   // Use `danger` for real destructive/error states.
   static const red = Color(0xFF15A697);     // legacy primary -> teal
-  static const danger = Color(0xFFE13838);  // tertiary red — errors/destructive only
+  static const danger = Color(0xFFE13838);  // tertiary red, errors and destructive only
   static const pink = Color(0xFF0E8579);    // secondary accent -> deep teal
   static const yellow = Color(0xFFF5A623);  // warnings (amber)
   static const teal = Color(0xFF15A697);
@@ -47,6 +47,83 @@ class IOH {
       default: return mute;
     }
   }
+}
+
+/// One brand identity: how an operator is named and coloured everywhere.
+@immutable
+class BrandIdentity {
+  /// Canonical lowercase key: ioh, im3, 3id, tsel, xlsmart, industry.
+  final String key;
+
+  /// Display label in upper case.
+  final String label;
+
+  /// Text and band colour.
+  final Color color;
+
+  /// Readable foreground when [color] is used as a background.
+  final Color onColor;
+
+  const BrandIdentity(this.key, this.label, this.color, this.onColor);
+}
+
+/// Single source of truth for operator colours.
+///
+/// IOH teal, IM3 orange, 3ID magenta, TSEL red, XLSMART blue. XL and SF are
+/// both XLSMART, so they resolve to the same identity.
+class Brands {
+  static const ioh =
+      BrandIdentity('ioh', 'IOH', Color(0xFF15A697), Color(0xFFFFFFFF));
+  static const im3 =
+      BrandIdentity('im3', 'IM3', Color(0xFFF5A623), Color(0xFF161616));
+  static const tri =
+      BrandIdentity('3id', '3ID', Color(0xFFEB008B), Color(0xFFFFFFFF));
+  static const tsel =
+      BrandIdentity('tsel', 'TSEL', Color(0xFFE13838), Color(0xFFFFFFFF));
+  static const xlsmart =
+      BrandIdentity('xlsmart', 'XLSMART', Color(0xFF1B6FD4), Color(0xFFFFFFFF));
+  static const industry = BrandIdentity(
+      'industry', 'INDUSTRY', Color(0xFF5A6B68), Color(0xFFFFFFFF));
+
+  /// Operator bands in the order the reports present them.
+  static const List<BrandIdentity> all = [ioh, im3, tri, tsel, xlsmart];
+
+  /// Resolves any spelling found in payloads or UI state. Never returns null.
+  static BrandIdentity of(String? raw) {
+    final key =
+        (raw ?? '').trim().toLowerCase().replaceAll(RegExp(r'[\s_-]'), '');
+    switch (key) {
+      case 'ioh':
+      case 'indosat':
+      case 'indosatooredoohutchison':
+        return ioh;
+      case 'im3':
+      case 'im3ooredoo':
+        return im3;
+      case '3id':
+      case 'tri':
+      case '3':
+      case 'three':
+        return tri;
+      case 'tsel':
+      case 'telkomsel':
+        return tsel;
+      case 'xl':
+      case 'sf':
+      case 'smartfren':
+      case 'xlsmart':
+      case 'xlaxiata':
+        return xlsmart;
+      case 'industry':
+      case 'total':
+        return industry;
+      default:
+        return BrandIdentity(
+            key, (raw ?? '').toUpperCase(), IOH.mute, IOH.white);
+    }
+  }
+
+  static Color colorOf(String? raw) => of(raw).color;
 }
 
 class AppTheme {

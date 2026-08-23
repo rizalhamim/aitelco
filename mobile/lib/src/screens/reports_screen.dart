@@ -1,8 +1,12 @@
-import 'dart:math' as math;
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../api/api_client.dart';
+import '../format/report_format.dart';
+import '../services/report_cache_service.dart';
 import '../theme.dart';
+import '../widgets/catalog_report.dart';
+import '../widgets/performance_visuals.dart';
+import '../widgets/report_ui.dart';
 import 'location_sheet.dart' show getCurrentCoord;
 
 const _circles = ['JAVA', 'KALISUMAPA', 'JAKARTA RAYA', 'SUMATERA'];
@@ -28,25 +32,37 @@ class _ReportsScreenState extends State<ReportsScreen> {
   String _scopeValue = '';
   List<String> _scopeOptions = [];
   String _brand = 'ioh'; // ioh | im3 | 3id
-  bool _showFilters = false;
-  String _deckTab = 'circle'; // circle | region | branch | microcluster | kabkota | kecamatan
-  Map<String, dynamic>? _data;
-  Map<String, dynamic>? _comp;
-  Map<String, dynamic>? _drev;
-  Map<String, dynamic>? _prod;
-  Map<String, dynamic>? _bench;
-  Map<String, dynamic>? _insight;
-  Map<String, dynamic>? _ftth;
+  String _deckTab =
+      'circle'; // circle | region | branch | microcluster | kabkota | kecamatan
+  // Payloads are read straight from the cache, keyed by the current scope.
+  // Holding them in fields let a tab keep painting data from a scope the user
+  // had already moved away from.
+  Map<String, dynamic>? _payload(String tab) =>
+      _cache.peek(_cacheKeyForTab(tab));
+  Map<String, dynamic>? get _data => _payload('snapshot');
+  Map<String, dynamic>? get _comp => _payload('comprehensive');
+  Map<String, dynamic>? get _drev => _payload('datarev');
+  Map<String, dynamic>? get _prod => _payload('product');
+  Map<String, dynamic>? get _bench => _payload('benchmark');
+  Map<String, dynamic>? get _fwa => _payload('fwa');
+  Map<String, dynamic>? get _internal => _payload('internal');
+  Map<String, dynamic>? get _insight => _payload('insight');
+  Map<String, dynamic>? get _ftth => _payload('ftth');
   bool _loading = false;
   String? _error;
+  int _requestEpoch = 0;
   String _dataVer = '';
-  final Map<String, Map<String, dynamic>> _cache = {};
+  final ReportCacheService _cache = ReportCacheService.I;
+  final Set<String> _expandedSections = {};
+  bool _expandAllSections = false;
   final Set<String> _drExpanded = {}; // expanded data-revenue channels
   String _slabScope = 'total'; // total | organic | digital | trade
   String _slabDetail = ''; // selected channel_detail within scope
   String _pdSlabScope = 'total'; // product-demand slab scope tab
   String _pdSlabDetail = ''; // product-demand channel detail within scope
   String _pdSlabDim = 'quota'; // quota | validity
+  final Map<String, String> _catalogQueries = {};
+  final Map<String, String> _catalogCategories = {};
 
   @override
   void initState() {
@@ -57,133 +73,193 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Future<void> _init() async {
     try {
       final m = await ApiClient.reportMetrics();
-      final cats = (m['categories'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final cats =
+          (m['categories'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       if (mounted) setState(() => _categories = cats);
     } catch (_) {}
     try {
       _dataVer = await ApiClient.reportDataVersion();
+      ReportCacheService.I.invalidateIfVersionChanged(_dataVer);
     } catch (_) {}
-    _load();
+    // Warm every tab on first load so later tab switches never spin.
+    _prefetchAll();
   }
 
   // Re-check the server data marker; if it changed, drop the cache so the next
   // load pulls fresh data.
   Future<void> _refreshDataVersion() async {
     final v = await ApiClient.reportDataVersion();
-    if (v.isNotEmpty && v != _dataVer) {
+    if (v.isNotEmpty) {
       _dataVer = v;
-      _cache.clear();
+      ReportCacheService.I.invalidateIfVersionChanged(v);
     }
   }
 
-  Future<void> _loadScopeOptions() async {
+  Future<void> _loadScopeOptions({VoidCallback? onUpdated}) async {
     if (_scopeType == 'all') {
-      setState(() { _scopeOptions = []; _scopeValue = ''; });
+      setState(() {
+        _scopeOptions = [];
+        _scopeValue = '';
+      });
+      onUpdated?.call();
       return;
     }
     try {
       final vals = _tab == 'ftth'
-          ? await ApiClient.reportFtthScopeOptions(circle: _circle, level: _scopeType)
-          : await ApiClient.reportScopeOptions(circle: _circle, level: _scopeType);
-      if (mounted) setState(() => _scopeOptions = vals);
+          ? await ApiClient.reportFtthScopeOptions(
+              circle: _circle, level: _scopeType)
+          : await ApiClient.reportScopeOptions(
+              circle: _circle, level: _scopeType);
+      if (mounted) {
+        setState(() => _scopeOptions = vals);
+        onUpdated?.call();
+      }
     } catch (_) {}
   }
 
-  void _assign(String tab, Map<String, dynamic> d) {
-    if (tab == 'snapshot') _data = d;
-    else if (tab == 'comprehensive') _comp = d;
-    else if (tab == 'datarev') _drev = d;
-    else if (tab == 'benchmark') _bench = d;
-    else if (tab == 'insight') _insight = d;
-    else if (tab == 'ftth') _ftth = d;
-    else _prod = d;
+  String _cacheKeyForTab(String tab) {
+    final ft =
+        (_scopeType != 'all' && _scopeValue.isNotEmpty) ? _scopeType : 'all';
+    final fv = _scopeType != 'all' ? _scopeValue : '';
+    if (tab == 'snapshot') {
+      return 'snap|$_dataVer|$_circle|$_metric|$ft|$fv';
+    }
+    if (tab == 'comprehensive') {
+      return 'comp|$_dataVer|$_circle|$ft|$fv';
+    }
+    if (tab == 'datarev') {
+      return 'drev|$_dataVer|$_circle|$_brand|$ft|$fv';
+    }
+    if (tab == 'benchmark') {
+      return 'bench|$_dataVer|$_circle|$ft|$fv';
+    }
+    if (tab == 'fwa') {
+      return 'fwa|$_dataVer|$_circle|$ft|$fv';
+    }
+    if (tab == 'internal') {
+      return 'internal|$_dataVer|$_circle|$ft|$fv';
+    }
+    if (tab == 'insight') return 'ins|$_dataVer|$_circle|$ft|$fv';
+    if (tab == 'ftth') return 'ftth|$_dataVer|$_circle|$ft|$fv';
+    return 'prod|$_dataVer|$_circle|$_pdScope|$_brand';
+  }
+
+  /// Builds the request for [tab] under the current scope.
+  Future<Map<String, dynamic>> _requestFor(String tab) {
+    final ft =
+        (_scopeType != 'all' && _scopeValue.isNotEmpty) ? _scopeType : 'all';
+    final fv = (_scopeType != 'all') ? _scopeValue : '';
+    switch (tab) {
+      case 'snapshot':
+        return ApiClient.reportSnapshot(
+            metric: _metric, circle: _circle, filterType: ft, filterValue: fv);
+      case 'comprehensive':
+        return ApiClient.reportComprehensive(
+            circle: _circle, filterType: ft, filterValue: fv);
+      case 'datarev':
+        return ApiClient.reportDataRevenue(
+            circle: _circle, brand: _brand, filterType: ft, filterValue: fv);
+      case 'benchmark':
+        return ApiClient.reportNetworkBenchmark(
+            circle: _circle, filterType: ft, filterValue: fv);
+      case 'fwa':
+        return ApiClient.reportFwa(
+            circle: _circle, brand: _brand, filterType: ft, filterValue: fv);
+      case 'internal':
+        return ApiClient.reportInternalPerformance(
+            circle: _circle, brand: _brand, filterType: ft, filterValue: fv);
+      case 'insight':
+        return ApiClient.reportMarketInsight(
+            circle: _circle, filterType: ft, filterValue: fv);
+      case 'ftth':
+        return ApiClient.reportFtth(
+            circle: _circle, filterType: ft, filterValue: fv);
+      default:
+        return ApiClient.reportProductDemand(
+            circle: _circle, scope: _pdScope, brand: _brand);
+    }
   }
 
   Future<void> _load({bool force = false}) async {
     // My Coordinate: wait until a located level is picked (scope set).
-    if (_mode == 'mycoord' && _scopeValue.isEmpty) { setState(() => _loading = false); return; }
-    final ft = (_scopeType != 'all' && _scopeValue.isNotEmpty) ? _scopeType : 'all';
-    final fv = (_scopeType != 'all') ? _scopeValue : '';
-    // snapshot/comprehensive payloads carry all brands → brand not in key.
-    // _dataVer makes keys change when server data is refreshed.
-    String keyFor() => _tab == 'snapshot' ? 'snap|$_dataVer|$_circle|$_metric|$ft|$fv'
-        : _tab == 'comprehensive' ? 'comp|$_dataVer|$_circle|$ft|$fv'
-        : _tab == 'datarev' ? 'drev|$_dataVer|$_circle|$_brand|$ft|$fv'
-        : _tab == 'benchmark' ? 'bench|$_dataVer|$_circle|$ft|$fv'
-        : _tab == 'insight' ? 'ins|$_dataVer|$_circle|$ft|$fv'
-        : _tab == 'ftth' ? 'ftth|$_dataVer|$_circle|$ft|$fv'
-        : 'prod|$_dataVer|$_circle|$_pdScope|$_brand';
-
+    if (_mode == 'mycoord' && _scopeValue.isEmpty) {
+      setState(() => _loading = false);
+      return;
+    }
     if (force) {
       _cache.clear();
       await _refreshDataVersion();
       // tell the server to rebuild fresh too
-      try { await ApiClient.reportCacheClear(); } catch (_) {}
+      try {
+        await ApiClient.reportCacheClear();
+      } catch (_) {}
     }
-    final key = keyFor();
-    if (_cache.containsKey(key)) {
-      setState(() { _error = null; _assign(_tab, _cache[key]!); _loading = false; });
+    final key = _cacheKeyForTab(_tab);
+    final requestedTab = _tab;
+    final requestEpoch = ++_requestEpoch;
+
+    // A warm key paints immediately. This is what makes tab switches instant
+    // once the first load has finished warming every tab.
+    final cached = _cache.peek(key);
+    if (cached != null) {
+      setState(() {
+        _error = null;
+        _loading = false;
+      });
       return;
     }
 
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      Map<String, dynamic> d;
-      if (_tab == 'snapshot') {
-        d = await ApiClient.reportSnapshot(metric: _metric, circle: _circle, filterType: ft, filterValue: fv);
-      } else if (_tab == 'comprehensive') {
-        d = await ApiClient.reportComprehensive(circle: _circle, filterType: ft, filterValue: fv);
-      } else if (_tab == 'datarev') {
-        d = await ApiClient.reportDataRevenue(circle: _circle, brand: _brand, filterType: ft, filterValue: fv);
-      } else if (_tab == 'benchmark') {
-        d = await ApiClient.reportNetworkBenchmark(circle: _circle, filterType: ft, filterValue: fv);
-      } else if (_tab == 'insight') {
-        d = await ApiClient.reportMarketInsight(circle: _circle, filterType: ft, filterValue: fv);
-      } else if (_tab == 'ftth') {
-        d = await ApiClient.reportFtth(circle: _circle, filterType: ft, filterValue: fv);
-      } else {
-        d = await ApiClient.reportProductDemand(circle: _circle, scope: _pdScope, brand: _brand);
+      // fetch joins an in-flight request for the same key rather than issuing
+      // a duplicate one, so racing a background prefetch is free.
+      final d = await _cache.fetch(key, () => _requestFor(requestedTab));
+      if (!mounted ||
+          requestEpoch != _requestEpoch ||
+          requestedTab != _tab ||
+          key != _cacheKeyForTab(requestedTab)) {
+        return;
       }
-      if (!mounted) return;
       if (d['error'] != null) {
         setState(() => _error = d['error'].toString());
       } else {
-        _cache[key] = d;
-        setState(() => _assign(_tab, d));
+        setState(() {});
       }
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      if (mounted && requestEpoch == _requestEpoch) {
+        setState(() => _error = e.toString());
+      }
     }
-    if (mounted) setState(() => _loading = false);
+    if (mounted && requestEpoch == _requestEpoch) {
+      setState(() => _loading = false);
+    }
   }
 
   // ── number helpers ──
   double _div() => ((_data?['display']?['divisor']) as num?)?.toDouble() ?? 1;
-  String _unit() => (_data?['display']?['unit'] ?? _data?['metric']?['unit'] ?? '').toString();
+  String _unit() =>
+      (_data?['display']?['unit'] ?? _data?['metric']?['unit'] ?? '')
+          .toString();
 
-  String _fmt(dynamic v, {int dec = 1}) {
-    if (v == null) return '—';
-    final n = (v as num).toDouble() / _div();
-    return NumberFormat('#,##0.${'0' * dec}', 'id').format(n);
-  }
+  String _fmt(dynamic v, {int dec = 1}) =>
+      reportNumber(v, decimals: dec, divisor: _div());
 
-  String _pct(dynamic v) {
-    if (v == null) return '—';
-    final n = (v as num).toDouble();
-    final s = n >= 0 ? '+' : '';
-    return '$s${NumberFormat('#,##0.0', 'id').format(n)}%';
-  }
+  String _pct(dynamic v) => reportPercent(v, signed: true);
 
-  String _var(dynamic v) {
-    if (v == null) return '—';
-    final n = (v as num).toDouble();
-    return '${n >= 0 ? '▲' : '▼'} ${_fmt(n.abs())}';
-  }
+  String _var(dynamic v) => reportVariance(v, divisor: _div());
 
   @override
   Widget build(BuildContext context) {
-    final t = _data?['totals'] as Map<String, dynamic>?;
-    final up = (t?['trend'] ?? 'up') == 'up';
+    final reportContent = _reportContent();
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final contextExtent = textScale >= 1.6
+        ? 112.0
+        : textScale >= 1.3
+            ? 84.0
+            : 64.0;
     return Scaffold(
       backgroundColor: context.vPanel,
       appBar: AppBar(
@@ -192,213 +268,1145 @@ class _ReportsScreenState extends State<ReportsScreen> {
           IconButton(
             icon: _loading
                 ? const SizedBox(
-                    width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: IOH.teal500))
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: IOH.teal500))
                 : const Icon(Icons.refresh),
-            onPressed: _loading ? null : () => _load(force: true),
+            onPressed: _loading ? null : () => _prefetchAll(force: true),
           ),
         ],
       ),
       body: Column(children: [
-        Expanded(child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _tabs(),
-          if (_mode != 'snapshot') ...[
-            const SizedBox(height: 10),
-            _subTabs(),
-          ],
-          if (_mode == 'mycoord') ...[
-            const SizedBox(height: 10),
-            _myCoordHeader(),
-          ],
-          if (_mode != 'mycoord') ...[
-            const SizedBox(height: 8),
-            _filterBar(),
-            if (_showFilters) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: context.vWhite, borderRadius: BorderRadius.circular(12), border: Border.all(color: context.vRule)),
-                child: _controls(),
-              ),
-            ],
-          ],
-          _dataAsOfBar(),
-          const SizedBox(height: 14),
-          if (_error != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: IOH.danger.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12)),
-              child: Text(_error!, style: const TextStyle(color: IOH.danger, fontSize: 13)),
+        Expanded(
+          child: RefreshIndicator(
+            color: IOH.teal500,
+            onRefresh: () => _prefetchAll(force: true),
+            child: CustomScrollView(
+              key: PageStorageKey<String>('reports:$_mode:$_tab'),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+                  sliver: SliverToBoxAdapter(child: _topControls()),
+                ),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _PinnedContextDelegate(
+                    extent: contextExtent,
+                    child: _contextStrip(),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return RepaintBoundary(
+                          key: ValueKey('$_tab:$index'),
+                          child: reportContent[index],
+                        );
+                      },
+                      childCount: reportContent.length,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          if (_mode == 'mycoord' && _scopeValue.isEmpty) ...[
-            _panel('My Coordinate', Text('Tekan “Gunakan Lokasi Saya”, lalu pilih level wilayah untuk menampilkan laporan.', style: TextStyle(color: context.vMute, fontSize: 12.5))),
-          ] else if (_tab == 'snapshot' && _data != null) ...[
-            _kpiTile(t!, up),
-            const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: _chip('Best Branch', _data!['best'], good: true)),
-              const SizedBox(width: 10),
-              Expanded(child: _chip('Worst Branch', _data!['worst'], good: false)),
-            ]),
-            const SizedBox(height: 12),
-            _panel(
-                'Kecamatan Health · ${(_data!['slabs']?['kecamatan']?['total']) ?? 0} kecamatan',
-                _slabBars(_data!['slabs']?['kecamatan'] as Map<String, dynamic>?)),
-            const SizedBox(height: 12),
-            ..._snapshotDeck(),
-          ] else if (_tab == 'comprehensive' && _comp != null) ...[
-            ..._comprehensiveSections(),
-          ] else if (_tab == 'datarev' && _drev != null) ...[
-            ..._dataRevSections(),
-          ] else if (_tab == 'product' && _prod != null) ...[
-             ..._productSections(),
-          ] else if (_tab == 'benchmark' && _bench != null) ...[
-             ..._benchmarkSections(),
-           ] else if (_tab == 'insight' && _insight != null) ...[
-              ..._insightSections(),
-           ] else if (_tab == 'ftth' && _ftth != null) ...[
-              ..._ftthSections(),
-           ] else if (_loading)
-            const Padding(
-              padding: EdgeInsets.only(top: 60),
-              child: Center(child: CircularProgressIndicator(color: IOH.teal500)),
-            ),
-        ],
-        )),
+          ),
+        ),
         if (_tab != 'ftth') _brandBar(),
       ]),
+    );
+  }
+
+  Widget _topControls() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _tabs(),
+      if (_mode != 'snapshot') ...[
+        const SizedBox(height: 6),
+        _subTabs(),
+      ],
+      if (_mode == 'mycoord') ...[
+        const SizedBox(height: 10),
+        _myCoordHeader(),
+      ],
+    ]);
+  }
+
+  Widget _contextStrip() {
+    final scope = _scopeValue.isNotEmpty ? _scopeValue : _circle;
+    final asOf = _dataAsOf();
+    final tabLabel = _tab == 'snapshot'
+        ? 'Daily Snapshot'
+        : {
+              'comprehensive': 'Comprehensive',
+              'datarev': 'Data Revenue',
+              'product': 'Product Demand',
+              'benchmark': 'Network Benchmark',
+              'fwa': 'FWA Summary',
+              'internal': 'Internal Net Performance',
+              'insight': 'Market Insight',
+              'ftth': 'Indosat HiFi',
+            }[_tab] ??
+            _tab;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: ReportContextBar(
+        semanticLabel:
+            'Konteks laporan $tabLabel, wilayah $scope${asOf == null ? '' : ', data per $asOf'}',
+        values: [
+          ReportContextValue(
+            label: 'View',
+            value:
+                '$tabLabel · ${_activeBrandLabel()}${asOf == null ? '' : ' · Data $asOf'}',
+            icon: Icons.analytics_outlined,
+          ),
+          ReportContextValue(
+            label: 'Scope',
+            value: scope,
+            icon: Icons.location_on_outlined,
+          ),
+        ],
+        onTap: _mode == 'mycoord' ? null : _openFiltersSheet,
+        actionLabel: _activeFilterCount() == 0
+            ? 'Filter'
+            : 'Filter ${_activeFilterCount()}',
+      ),
+    );
+  }
+
+  List<Widget> _reportContent() {
+    final out = <Widget>[];
+    if (_error != null) {
+      out.add(Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: IOH.danger.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Icon(Icons.error_outline, color: IOH.danger),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Text(_error!,
+                  style: const TextStyle(color: IOH.danger, fontSize: 13))),
+          TextButton(onPressed: _load, child: const Text('Coba lagi')),
+        ]),
+      ));
+      out.add(const SizedBox(height: 12));
+    }
+    if (_mode == 'mycoord' && _scopeValue.isEmpty) {
+      out.add(_panel(
+        'My Coordinate',
+        Text(
+          'Tekan "Gunakan Lokasi Saya", lalu pilih level wilayah untuk menampilkan laporan.',
+          style: TextStyle(color: context.vMute, fontSize: 12.5),
+        ),
+      ));
+      return out;
+    }
+    if (!_hasCurrentData && _loading) {
+      out.addAll(List.generate(
+          3,
+          (index) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _loadingSkeleton(index == 0 ? 150 : 110),
+              )));
+      return out;
+    }
+    if (_tab == 'snapshot' && _data != null) {
+      final totals = _data!['totals'] as Map<String, dynamic>? ?? {};
+      final up = (totals['trend'] ?? 'up') == 'up';
+      out.add(_kpiTile(totals, up));
+      out.add(const SizedBox(height: 12));
+      out.add(Row(children: [
+        Expanded(child: _chip('Best Branch', _data!['best'], good: true)),
+        const SizedBox(width: 10),
+        Expanded(child: _chip('Worst Branch', _data!['worst'], good: false)),
+      ]));
+      out.add(const SizedBox(height: 12));
+      final buckets = _snapshotBuckets(
+        _data!['slabs']?['kecamatan'] as Map<String, dynamic>?,
+      );
+      out.add(SnapshotDistribution100(
+        title: 'Kecamatan Health',
+        subtitle:
+            '${(_data!['slabs']?['kecamatan']?['total']) ?? 0} kecamatan, komposisi growth dan decline',
+        buckets: buckets,
+      ));
+      out.add(const SizedBox(height: 12));
+      out.add(_detailPanel(
+        'Detail Bucket Kecamatan',
+        SnapshotMirroredBuckets(
+          title: 'Growth vs Decline',
+          subtitle: 'Jumlah absolut pada skala yang sama',
+          buckets: buckets,
+          padding: EdgeInsets.zero,
+        ),
+        sectionKey: 'snapshot-buckets',
+        meta: '8 bucket, count dan share',
+      ));
+      out.add(const SizedBox(height: 12));
+      out.addAll(_snapshotDeck());
+      return out;
+    }
+    if (_hasCurrentData) {
+      out.add(_decisionCockpit());
+      out.add(const SizedBox(height: 12));
+      out.add(_sectionToolbar());
+      out.add(const SizedBox(height: 12));
+      if (_tab == 'comprehensive') out.addAll(_comprehensiveSections());
+      if (_tab == 'datarev') out.addAll(_dataRevSections());
+      if (_tab == 'product') out.addAll(_productSections());
+      if (_tab == 'benchmark') out.addAll(_benchmarkSections());
+      if (_tab == 'fwa') {
+        out.add(_catalogReport(_fwa!, includeAllBrands: false));
+      }
+      if (_tab == 'internal') {
+        out.add(_catalogReport(_internal!, includeAllBrands: true));
+      }
+      if (_tab == 'insight') out.addAll(_insightSections());
+      if (_tab == 'ftth') out.addAll(_ftthSections());
+    }
+    return out;
+  }
+
+  /// True when the current tab and scope already hold a cached payload, so the
+  /// screen paints content rather than a skeleton.
+  bool get _hasCurrentData => _cache.contains(_cacheKeyForTab(_tab));
+
+  Widget _loadingSkeleton(double height) {
+    return ExcludeSemantics(
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: context.vWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.vRule),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(width: 120, height: 12, color: context.vPanel),
+          const SizedBox(height: 18),
+          Container(width: double.infinity, height: 22, color: context.vPanel),
+          const SizedBox(height: 10),
+          Container(width: 180, height: 12, color: context.vPanel),
+        ]),
+      ),
+    );
+  }
+
+  List<SnapshotBucketDatum> _snapshotBuckets(Map<String, dynamic>? slabs) {
+    int? count(String key) => (slabs?[key] as num?)?.toInt();
+    return [
+      SnapshotBucketDatum(
+          label: '> 5%',
+          declineCount: count('decline_gt5'),
+          growthCount: count('growth_gt5')),
+      SnapshotBucketDatum(
+          label: '3% to 5%',
+          declineCount: count('decline_3_5'),
+          growthCount: count('growth_3_5')),
+      SnapshotBucketDatum(
+          label: '1% to 3%',
+          declineCount: count('decline_1_3'),
+          growthCount: count('growth_1_3')),
+      SnapshotBucketDatum(
+          label: '0% to 1%',
+          declineCount: count('decline_0_1'),
+          growthCount: count('growth_0_1')),
+    ];
+  }
+
+  Widget _decisionCockpit() {
+    final metrics = _summaryMetrics();
+    final scope = _scopeValue.isNotEmpty ? _scopeValue : _circle;
+    return Semantics(
+      container: true,
+      label:
+          'Ringkasan keputusan untuk $scope, ${metrics.length} indikator utama',
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              IOH.teal600,
+              Color.lerp(IOH.teal600, const Color(0xFF073B4C), 0.72)!,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: IOH.teal600.withValues(alpha: 0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'PERFORMANCE COCKPIT',
+                      style: TextStyle(
+                        color: Color(0xFFBFEDE8),
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      scope,
+                      softWrap: true,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 17,
+                      ),
+                    ),
+                  ]),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _activeBrandLabel(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 10),
+          if (metrics.isEmpty)
+            const Text(
+                'Ringkasan belum tersedia. Detail lengkap tetap ada di bawah.',
+                style: TextStyle(color: Colors.white70))
+          else
+            LayoutBuilder(builder: (context, constraints) {
+              final scale = MediaQuery.textScalerOf(context).scale(1);
+              final oneColumn = scale >= 1.6 || constraints.maxWidth < 310;
+              final gap = 8.0;
+              final cardWidth = oneColumn
+                  ? constraints.maxWidth
+                  : (constraints.maxWidth - gap) / 2;
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: metrics
+                    .map((metric) => SizedBox(
+                          width: cardWidth,
+                          child: _summaryMetricCard(metric),
+                        ))
+                    .toList(),
+              );
+            }),
+        ]),
+      ),
+    );
+  }
+
+  Widget _summaryMetricCard(_SummaryMetric metric) {
+    final delta = metric.delta;
+    final favorable = delta == null ? null : _isFavorable(metric.code, delta);
+    final deltaColor = favorable == null
+        ? Colors.white70
+        : favorable
+            ? const Color(0xFF8FF3C7)
+            : const Color(0xFFFFB4B4);
+    final deltaLabel = delta == null
+        ? 'Perubahan N/A'
+        : reportGrowth(delta, suffix: metric.deltaUnit);
+    return Semantics(
+      label: '${metric.label}, ${metric.value}, $deltaLabel',
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 88),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(
+            metric.label,
+            softWrap: true,
+            style: const TextStyle(color: Color(0xFFD8F5F1), fontSize: 10.5),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            metric.value,
+            softWrap: true,
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(deltaLabel,
+              style: TextStyle(
+                  color: deltaColor,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600)),
+        ]),
+      ),
+    );
+  }
+
+  /// Picks one actor out of a Market Insight panel, preferring [wanted].
+  ///
+  /// Falls back to any non-Industry actor so the card never silently shows
+  /// industry totals under a brand label.
+  Map<String, dynamic>? _insightActor(
+      List<Map<String, dynamic>> actors, String wanted) {
+    for (final candidate in actors) {
+      if (candidate['actor']?.toString().toUpperCase() == wanted) {
+        return candidate;
+      }
+    }
+    for (final candidate in actors) {
+      if (candidate['actor']?.toString().toUpperCase() != 'INDUSTRY') {
+        return candidate;
+      }
+    }
+    return actors.isEmpty ? null : actors.first;
+  }
+
+  /// The IOH row of the FB Market Share flat section, as a cockpit card.
+  ///
+  /// Market share is the headline competitive number, so it replaces net add
+  /// on the Comprehensive cockpit. The MoM move comes from the Market Insight
+  /// tab when that payload is already warm; Comprehensive itself only carries
+  /// a single closed month.
+  _SummaryMetric? _fbMarketShareMetric(List<Map<String, dynamic>> sections) {
+    for (final section in sections) {
+      if (section['layout'] != 'flat') continue;
+      if (!(section['title']?.toString().toLowerCase().contains('market share') ??
+          false)) {
+        continue;
+      }
+      final rows = (section['rows'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      for (final row in rows) {
+        if (row['actor']?.toString().toUpperCase() != 'IOH') continue;
+        final cells = (row['cells'] as List?) ?? [row['value']];
+        if (cells.isEmpty) return null;
+        return _SummaryMetric(
+          code: 'fb_ms',
+          label: 'FB MS (IOH)',
+          value: reportPercent(cells.first, decimals: 2),
+          delta: _insightIohGrowth('pct_ms'),
+          deltaUnit: 'pp',
+        );
+      }
+    }
+    return null;
+  }
+
+  /// Latest MoM move for an IOH insight panel, or null when that tab is cold.
+  double? _insightIohGrowth(String kind) {
+    final panels =
+        (_insight?['panels'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    for (final panel in panels) {
+      if (panel['kind']?.toString() != kind) continue;
+      final actors =
+          (panel['actors'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final actor = _insightActor(actors, 'IOH');
+      final history =
+          (actor?['history'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      if (history.isEmpty) return null;
+      return (history.first['growth'] as num?)?.toDouble();
+    }
+    return null;
+  }
+
+  List<_SummaryMetric> _summaryMetrics() {
+    if (_tab == 'comprehensive' || _tab == 'ftth') {
+      final payload = _tab == 'ftth' ? _ftth : _comp;
+      final sections =
+          (payload?['sections'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final all = <Map<String, dynamic>>[];
+      for (final section in sections) {
+        all.addAll(
+            (section['metrics'] as List?)?.cast<Map<String, dynamic>>() ?? []);
+      }
+      // Comprehensive shows FB Market Share as its fourth card, so it needs
+      // only three catalog metrics. FTTH has no market share and keeps four.
+      final marketShare = _tab == 'ftth' ? null : _fbMarketShareMetric(sections);
+      final slots = marketShare == null ? 4 : 3;
+      final preferred = _tab == 'ftth'
+          ? ['ftth_hp', 'ftth_pa_cum', 'ftth_tur', 'ftth_netadd']
+          : ['rev_prepaid', 'ga_total', 'rgu_90d'];
+      final byCode = {
+        for (final metric in all) metric['code'].toString(): metric
+      };
+      final chosen = <Map<String, dynamic>>[];
+      for (final code in preferred) {
+        if (byCode[code] != null) chosen.add(byCode[code]!);
+      }
+      if (chosen.length < slots) {
+        for (final metric in all) {
+          if (chosen.length >= slots) break;
+          if (!chosen.contains(metric)) chosen.add(metric);
+        }
+      }
+      final cards = chosen.map((metric) {
+        final brand = _tab == 'ftth' ? 'ioh' : _brand;
+        final values = (metric[brand] as Map?)?.cast<String, dynamic>() ?? {};
+        final unit = (metric['unit'] ?? '').toString();
+        return _SummaryMetric(
+          code: metric['code'].toString(),
+          label: metric['name']?.toString() ?? metric['code'].toString(),
+          value: _summaryNumber(values['mtd'], unit),
+          delta: (values['growth_mom_pct'] as num?)?.toDouble(),
+        );
+      }).toList();
+      if (marketShare != null) cards.add(marketShare);
+      return cards;
+    }
+    if (_tab == 'datarev') {
+      final chunks =
+          (_drev?['chunks'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final result = <_SummaryMetric>[];
+      for (final chunk in chunks.take(3)) {
+        final h = (chunk['headline'] as Map?)?.cast<String, dynamic>() ?? {};
+        result.add(_SummaryMetric(
+          code: 'revenue',
+          label: chunk['name']?.toString() ?? 'Revenue',
+          value: '${_mn(h[_brand])} IDR',
+          delta: (h['growth_mom_pct'] as num?)?.toDouble(),
+        ));
+      }
+      final ratio = (_drev?['ratios'] as Map?)?.cast<String, dynamic>() ?? {};
+      result.add(_SummaryMetric(
+        code: 'contribution',
+        label: 'ATL Contribution',
+        value: _summaryNumber(ratio['atl_pct'], '%'),
+        delta: null,
+      ));
+      return result;
+    }
+    if (_tab == 'product') {
+      final top =
+          (_prod?['top_3'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      return top
+          .take(4)
+          .map((item) => _SummaryMetric(
+                code: 'product',
+                label:
+                    '#${item['rank'] ?? ''} ${item['quota'] ?? ''} x ${item['validity'] ?? ''}',
+                value: '${_mn(item['value'])} IDR',
+                delta: null,
+              ))
+          .toList();
+    }
+    if (_tab == 'fwa') {
+      return _catalogSummaryMetrics(
+        _fwa,
+        preferred: const [
+          'fwa_rev_total_v2',
+          'fwa_rgu90',
+          'ga_fwa_all',
+          'fwa_arpu_total',
+        ],
+      );
+    }
+    if (_tab == 'internal') {
+      return _catalogSummaryMetrics(_internal);
+    }
+    if (_tab == 'benchmark') {
+      final catalog = CatalogReportData.fromPayload(_bench);
+      if (catalog.hasMetrics) return _catalogSummaryMetrics(_bench);
+      final fb =
+          (_bench?['fb_benchmark'] as List?)?.cast<Map<String, dynamic>>() ??
+              [];
+      final av =
+          (_bench?['availability'] as List?)?.cast<Map<String, dynamic>>() ??
+              [];
+      final latestFb = fb.isEmpty ? <String, dynamic>{} : fb.first;
+      final latestAv = av.isEmpty ? <String, dynamic>{} : av.first;
+      return [
+        _SummaryMetric(
+            code: 'download',
+            label: 'IM3 Download 4G',
+            value: _summaryNumber(latestFb['dl_speed_im3_4g'], 'Mbps'),
+            delta: null),
+        _SummaryMetric(
+            code: 'latency',
+            label: 'IM3 Latency 4G',
+            value: _summaryNumber(latestFb['latency_im3_4g'], 'ms'),
+            delta: null),
+        _SummaryMetric(
+            code: 'signal',
+            label: 'IM3 Signal 4G',
+            value: _summaryNumber(latestFb['signal_im3_4g'], 'dBm'),
+            delta: null),
+        _SummaryMetric(
+            code: 'availability',
+            label: 'Average Availability 4G',
+            value: _summaryNumber(latestAv['mean_avg_avail_pct_4g'], '%'),
+            delta: null),
+      ];
+    }
+    if (_tab == 'insight') {
+      final panels =
+          (_insight?['panels'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final result = <_SummaryMetric>[];
+      for (final panel in panels.take(4)) {
+        final actors =
+            (panel['actors'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final actor = _insightActor(actors, 'IOH');
+        final history =
+            (actor?['history'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        // `months` and every `history` arrive newest first, so the current
+        // month is the first entry, not the last.
+        final latest = history.isEmpty ? <String, dynamic>{} : history.first;
+        final isPct = panel['kind']?.toString().startsWith('pct') == true;
+        result.add(_SummaryMetric(
+          code: panel['kind']?.toString() ?? 'insight',
+          label:
+              '${panel['title'] ?? 'Insight'} (${actor?['actor'] ?? 'N/A'})',
+          value: _summaryNumber(latest['value'], isPct ? '%' : ''),
+          delta: (latest['growth'] as num?)?.toDouble(),
+          deltaUnit: isPct ? 'pp' : '%',
+        ));
+      }
+      return result;
+    }
+    return const [];
+  }
+
+  List<_SummaryMetric> _catalogSummaryMetrics(
+    Map<String, dynamic>? payload, {
+    List<String> preferred = const [],
+  }) {
+    final catalog = CatalogReportData.fromPayload(payload);
+    final available =
+        catalog.metrics.where((metric) => !metric.isHeader).toList();
+    String? primaryColumn() {
+      for (final column in catalog.columns) {
+        if (column.toUpperCase() == 'MTD') return column;
+      }
+      final periods = catalog.columns
+          .where((column) => RegExp(r'^\d{4}[-/]?\d{2}').hasMatch(column))
+          .toList();
+      if (periods.isNotEmpty) return periods.last;
+      for (final column in catalog.columns.reversed) {
+        final lower = column.toLowerCase();
+        if (!lower.startsWith('rank ') &&
+            !lower.contains('growth') &&
+            !lower.contains('delta') &&
+            !lower.contains('var')) {
+          return column;
+        }
+      }
+      return catalog.columns.isEmpty ? null : catalog.columns.last;
+    }
+
+    final primary = primaryColumn();
+    final chosen = <CatalogReportMetric>[];
+    for (final id in preferred) {
+      for (final metric in available) {
+        if (metric.id == id && !chosen.contains(metric)) chosen.add(metric);
+      }
+    }
+    if (primary != null) {
+      for (final metric in available) {
+        if (chosen.length >= 4) break;
+        if (!chosen.contains(metric) &&
+            metric.valueFor(_brand.toUpperCase(), primary) != null) {
+          chosen.add(metric);
+        }
+      }
+    }
+    for (final metric in available) {
+      if (chosen.length >= 4) break;
+      if (!chosen.contains(metric)) chosen.add(metric);
+    }
+    return chosen.map((metric) {
+      final raw = primary == null
+          ? null
+          : metric.valueFor(_brand.toUpperCase(), primary);
+      final formatted = metric.formatValue(raw, column: primary);
+      final unit = metric.unit.trim();
+      final value = raw == null ||
+              unit.isEmpty ||
+              formatted.endsWith('%') ||
+              formatted.toLowerCase().endsWith(unit.toLowerCase())
+          ? formatted
+          : '$formatted $unit';
+      dynamic deltaRaw;
+      for (final column in catalog.columns) {
+        if (column.toUpperCase() == 'VAR_PCT' ||
+            column.toUpperCase().startsWith('GROWTH VS')) {
+          deltaRaw = metric.valueFor(_brand.toUpperCase(), column);
+          break;
+        }
+      }
+      return _SummaryMetric(
+        code: metric.id,
+        label: metric.label,
+        value: value,
+        delta: (deltaRaw as num?)?.toDouble(),
+      );
+    }).toList();
+  }
+
+  /// Cockpit headline number. Percent stays a percent, everything else picks
+  /// its own magnitude tier so revenue reads Mn or Bn as the value warrants.
+  String _summaryNumber(dynamic value, String unit) {
+    if (unit == '%') return reportPercent(value);
+    return reportMagnitude(value, unit: unit, decimals: 1);
+  }
+
+  String _activeBrandLabel() {
+    if (_tab == 'ftth') return 'FTTH';
+    if (_tab == 'benchmark') {
+      final catalog = CatalogReportData.fromPayload(_bench);
+      if (catalog.hasMetrics) return 'ALL OPERATORS';
+    }
+    if (_tab == 'internal') {
+      final catalog = CatalogReportData.fromPayload(_internal);
+      final selected = _brand.toUpperCase();
+      if (catalog.brands.any((brand) => brand.toUpperCase() == selected)) {
+        return selected;
+      }
+      if (catalog.brands.isNotEmpty) return catalog.brands.join('/');
+    }
+    return _brand.toUpperCase();
+  }
+
+  /// Null means the metric carries no judgement, so the card shows a muted
+  /// delta instead of green or red. Polarity itself lives in report_format so
+  /// every screen agrees on what counts as an improvement.
+  bool? _isFavorable(String code, double delta) {
+    switch (reportPolarityFor(code)) {
+      case ReportPolarity.neutral:
+        return null;
+      case ReportPolarity.lowerIsBetter:
+        return delta <= 0;
+      case ReportPolarity.higherIsBetter:
+        return delta >= 0;
+    }
+  }
+
+  Widget _sectionToolbar() {
+    final titles = _sectionTitles();
+    String? active;
+    for (final title in titles) {
+      if (_expandedSections.contains('$_tab|$title')) {
+        active = title;
+        break;
+      }
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 2, bottom: 8),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text(
+            'DATA LENGKAP',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: IOH.teal600,
+              letterSpacing: 0.7,
+            ),
+          ),
+          Text(
+            '${titles.length} bagian, seluruh konten tetap tersedia',
+            style: TextStyle(fontSize: 10.5, color: context.vMute),
+          ),
+        ]),
+      ),
+      ReportChapterNavigator(
+        chapters: [
+          for (final title in titles)
+            ReportChapterLink(id: title, label: title),
+        ],
+        activeId: _expandAllSections ? null : active,
+        onSelected: (title) => setState(() {
+          final key = '$_tab|$title';
+          if (_expandedSections.contains(key)) {
+            _expandedSections.remove(key);
+          } else {
+            _expandedSections.add(key);
+          }
+        }),
+        onExpandAll: () => setState(() => _expandAllSections = true),
+        onCollapseAll: () => setState(() {
+          _expandAllSections = false;
+          _expandedSections.clear();
+        }),
+      ),
+    ]);
+  }
+
+  List<String> _sectionTitles() {
+    if (_tab == 'comprehensive' || _tab == 'ftth') {
+      final payload = _tab == 'ftth' ? _ftth : _comp;
+      return ((payload?['sections'] as List?) ?? [])
+          .map((item) => (item as Map)['title'].toString())
+          .toList();
+    }
+    if (_tab == 'datarev') {
+      final chunks = (_drev?['chunks'] as List?) ?? [];
+      return [
+        'Ratios',
+        ...chunks.map((item) => (item as Map)['name'].toString()),
+        'Price Slab Breakdown',
+      ];
+    }
+    if (_tab == 'product') {
+      return const [
+        'Slab Breakdown',
+        'Top 3 Products',
+        'Revenue Heatmap',
+        'Growth Heatmap'
+      ];
+    }
+    if (_tab == 'benchmark') {
+      final catalog = CatalogReportData.fromPayload(_bench);
+      if (catalog.hasMetrics) {
+        return catalog.sections.map((section) => section.title).toList();
+      }
+      return const ['Network Benchmark', 'Network Availability'];
+    }
+    if (_tab == 'fwa' || _tab == 'internal') {
+      final catalog = CatalogReportData.fromPayload(
+        _tab == 'fwa' ? _fwa : _internal,
+      );
+      return catalog.sections.map((section) => section.title).toList();
+    }
+    if (_tab == 'insight') {
+      return ((_insight?['panels'] as List?) ?? [])
+          .map((item) => (item as Map)['title'].toString())
+          .toList();
+    }
+    return const [];
+  }
+
+  Widget _catalogReport(
+    Map<String, dynamic> payload, {
+    required bool includeAllBrands,
+  }) {
+    final catalog = CatalogReportData.fromPayload(payload);
+    final storedCategory = _catalogCategories[_tab] ?? '';
+    final activeCategory =
+        catalog.categories.contains(storedCategory) ? storedCategory : '';
+    return CatalogReportView(
+      key: ValueKey('catalog:$_tab'),
+      data: catalog,
+      reportKey: _tab,
+      selectedBrand: _brand.toUpperCase(),
+      includeAllBrands: includeAllBrands,
+      query: _catalogQueries[_tab] ?? '',
+      category: activeCategory,
+      onQueryChanged: (value) => setState(() {
+        _catalogQueries[_tab] = value;
+      }),
+      onCategoryChanged: (value) => setState(() {
+        _catalogCategories[_tab] = value;
+      }),
+      expandedSections: _expandedSections,
+      expandAll: _expandAllSections,
+      onExpansionChanged: (title, expanded) => setState(() {
+        final key = '$_tab|$title';
+        if (expanded) {
+          _expandedSections.add(key);
+        } else {
+          _expandedSections.remove(key);
+          if (_expandAllSections) _expandAllSections = false;
+        }
+      }),
+    );
+  }
+
+  Widget _detailPanel(String title, Widget child,
+      {String? sectionKey, String? meta}) {
+    final key = '$_tab|${sectionKey ?? title}';
+    final expanded = _expandAllSections || _expandedSections.contains(key);
+    return ReportChapter(
+      key: ValueKey(key),
+      title: title,
+      summary: meta ?? 'Buka untuk melihat data lengkap',
+      badge: meta,
+      expanded: expanded,
+      onExpansionChanged: (next) => setState(() {
+        if (next) {
+          _expandedSections.add(key);
+        } else {
+          _expandedSections.remove(key);
+          if (_expandAllSections) _expandAllSections = false;
+        }
+      }),
+      child: child,
     );
   }
 
   Widget _myCoordHeader() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: context.vWhite, borderRadius: BorderRadius.circular(14), border: Border.all(color: context.vRule)),
+      decoration: BoxDecoration(
+          color: context.vWhite,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: context.vRule)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           ElevatedButton.icon(
             onPressed: _loading ? null : _locateMe,
-            style: ElevatedButton.styleFrom(backgroundColor: IOH.teal500, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: IOH.teal500, foregroundColor: Colors.white),
             icon: const Icon(Icons.my_location, size: 16),
-            label: Text(_loading && _mcLevels == null ? 'Mencari…' : 'Gunakan Lokasi Saya'),
+            label: Text(_loading && _mcLevels == null
+                ? 'Mencari…'
+                : 'Gunakan Lokasi Saya'),
           ),
         ]),
-        if (_geoErr.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_geoErr, style: const TextStyle(color: IOH.danger, fontSize: 12))),
-        if (_mcLevels != null) Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: Wrap(spacing: 6, runSpacing: 6, children: _mcLevels!.map((lv) {
-            final active = _mcPick == lv['level'];
-            return GestureDetector(
-              onTap: () { setState(() { _mcPick = lv['level'].toString(); _scopeType = _mcPick; _scopeValue = (lv['value'] ?? lv['name']).toString(); }); _prefetchAll(); },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: active ? IOH.teal500 : context.vWhite, borderRadius: BorderRadius.circular(999), border: Border.all(color: active ? IOH.teal500 : context.vRule)),
-                child: Text('${lv['label']}: ${lv['name']}', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: active ? Colors.white : context.vMute)),
-              ),
-            );
-          }).toList()),
-        ),
+        if (_geoErr.isNotEmpty)
+          Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(_geoErr,
+                  style: const TextStyle(color: IOH.danger, fontSize: 12))),
+        if (_mcLevels != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: _mcLevels!.map((lv) {
+                  final active = _mcPick == lv['level'];
+                  final supported =
+                      _supportsScope(_tab, lv['level']?.toString() ?? '');
+                  return Semantics(
+                    button: true,
+                    selected: active,
+                    enabled: supported,
+                    label: '${lv['label']}: ${lv['name']}',
+                    hint: supported
+                        ? 'Pilih level wilayah'
+                        : 'Level tidak didukung laporan ini',
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: supported
+                          ? () {
+                              setState(() {
+                                _mcPick = lv['level'].toString();
+                                _scopeType = _mcPick;
+                                _scopeValue =
+                                    (lv['value'] ?? lv['name']).toString();
+                              });
+                              _prefetchAll();
+                            }
+                          : null,
+                      child: Container(
+                        constraints: const BoxConstraints(minHeight: 48),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                            color: active ? IOH.teal500 : context.vWhite,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                                color: active ? IOH.teal500 : context.vRule)),
+                        child: Text('${lv['label']}: ${lv['name']}',
+                            style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: active
+                                    ? Colors.white
+                                    : supported
+                                        ? context.vMute
+                                        : context.vRule)),
+                      ),
+                    ),
+                  );
+                }).toList()),
+          ),
       ]),
     );
   }
 
-  Widget _modeTab(String key, IconData ic, String label) {
-    final active = _mode == key;
-    return GestureDetector(
-      onTap: () { if (_mode != key) { setState(() => _mode = key); _load(); } },
-      child: Container(
-        margin: const EdgeInsets.only(right: 6),
-        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 12),
-        decoration: BoxDecoration(color: active ? IOH.teal500 : context.vWhite, borderRadius: BorderRadius.circular(10), border: Border.all(color: active ? IOH.teal500 : context.vRule)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(ic, size: 15, color: active ? Colors.white : context.vMute),
-          const SizedBox(width: 6),
-          Text(label, style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 12, color: active ? Colors.white : context.vMute)),
-        ]),
+  void _selectMode(String key) {
+    if (_mode == key) return;
+    setState(() => _mode = key);
+    _prefetchAll();
+  }
+
+  Widget _tabs() {
+    return ReportSegmentedControl<String>(
+      value: _mode,
+      onChanged: _selectMode,
+      semanticLabel: 'Mode Performance Outlook',
+      items: const [
+        ReportSegmentItem(
+          value: 'mycoord',
+          label: 'My Coordinate',
+          icon: Icons.my_location_outlined,
+        ),
+        ReportSegmentItem(
+          value: 'territory',
+          label: 'Territory Wise',
+          icon: Icons.table_chart_outlined,
+        ),
+        ReportSegmentItem(
+          value: 'snapshot',
+          label: 'Daily Snapshot',
+          icon: Icons.dashboard_outlined,
+        ),
+      ],
+    );
+  }
+
+  void _selectSubTab(String key) {
+    if (_subTab == key) return;
+    final crossing = (key == 'ftth') != (_subTab == 'ftth');
+    setState(() {
+      _subTab = key;
+      if (crossing) {
+        _scopeType = 'all';
+        _scopeValue = '';
+        _scopeOptions = [];
+      } else if (!_supportsScope(key, _scopeType)) {
+        Map<String, dynamic>? replacement;
+        for (final level in _mcLevels ?? const <Map<String, dynamic>>[]) {
+          final levelId = level['level']?.toString() ?? '';
+          if (_supportsScope(key, levelId)) {
+            replacement = level;
+            break;
+          }
+        }
+        if (replacement == null) {
+          _scopeType = 'all';
+          _scopeValue = '';
+          _scopeOptions = [];
+        } else {
+          _scopeType = replacement['level'].toString();
+          _scopeValue =
+              (replacement['value'] ?? replacement['name']).toString();
+          _mcPick = _scopeType;
+        }
+      }
+    });
+    // Cache hits paint instantly; this also re-warms after a scope repair.
+    _prefetchAll();
+  }
+
+  bool _supportsScope(String tab, String scope) {
+    if (scope == 'all') return true;
+    if (tab == 'internal' || tab == 'benchmark') {
+      return const {'region', 'kabkota', 'kecamatan'}.contains(scope);
+    }
+    return true;
+  }
+
+  Widget _subTabs() {
+    return ReportTabRail<String>(
+      value: _subTab,
+      onChanged: _selectSubTab,
+      semanticLabel: 'Jenis Performance Outlook',
+      items: const [
+        ReportSegmentItem(value: 'comprehensive', label: 'Comprehensive'),
+        ReportSegmentItem(value: 'fwa', label: 'FWA Summary'),
+        ReportSegmentItem(value: 'ftth', label: 'Indosat HiFi (FTTH)'),
+        ReportSegmentItem(value: 'datarev', label: 'Data Revenue'),
+        ReportSegmentItem(value: 'product', label: 'Product Demand'),
+        ReportSegmentItem(value: 'benchmark', label: 'Network Benchmark'),
+        ReportSegmentItem(value: 'internal', label: 'Internal Net Performance'),
+        ReportSegmentItem(value: 'insight', label: 'Market Insight'),
+      ],
+    );
+  }
+
+  Widget _brandBar() {
+    return Container(
+      decoration: BoxDecoration(
+          color: context.vWhite,
+          border: Border(top: BorderSide(color: context.vRule)),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, -2))
+          ]),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          child: ReportSegmentedControl<String>(
+            value: _brand,
+            equalWidth: true,
+            style: ReportSegmentStyle.flat,
+            semanticLabel: 'Brand laporan',
+            onChanged: (brand) {
+              setState(() => _brand = brand);
+              // Brand is part of the cache key for several tabs, so re-warm.
+              _prefetchAll();
+            },
+            items: [
+              for (final brand in const [Brands.ioh, Brands.im3, Brands.tri])
+                ReportSegmentItem(
+                  value: brand.key,
+                  label: brand.label,
+                  selectedColor: brand.color,
+                  selectedForeground: brand.onColor,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _tabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(children: [
-        _modeTab('mycoord', Icons.my_location_outlined, 'My Coordinate'),
-        _modeTab('territory', Icons.table_chart_outlined, 'Territory Wise'),
-        _modeTab('snapshot', Icons.dashboard_outlined, 'Daily Snapshot'),
-      ]),
-    );
-  }
-
-  Widget _subTabs() {
-    Widget chip(String key, String label) {
-      final active = _subTab == key;
-      return GestureDetector(
-        onTap: () {
-          if (_subTab != key) {
-            // FTTH and IM3 use different territory level keys; reset scope when
-            // crossing the FTTH boundary so a stale level is never sent.
-            final crossing = (key == 'ftth') != (_subTab == 'ftth');
-            setState(() {
-              _subTab = key;
-              if (crossing) { _scopeType = 'all'; _scopeValue = ''; _scopeOptions = []; }
-            });
-            _load();
-          }
-        },
-        child: Container(
-          margin: const EdgeInsets.only(right: 6),
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-          decoration: BoxDecoration(color: active ? IOH.teal500 : context.vWhite, borderRadius: BorderRadius.circular(999), border: Border.all(color: active ? IOH.teal500 : context.vRule)),
-          child: Text(label, style: TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w600, color: active ? Colors.white : context.vMute)),
-        ),
-      );
-    }
-    return SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
-      chip('comprehensive', 'Comprehensive'), chip('ftth', 'Indosat HiFi (FTTH)'), chip('datarev', 'Data Revenue'), chip('product', 'Product Demand'), chip('benchmark', 'Network Benchmark'), chip('insight', 'Market Insight'),
-    ]));
-  }
-
-  Widget _brandBar() {
-    Widget seg(String key, String label) {
-      final active = _brand == key;
-      final col = _brandColors[key]!;
-      final fg = active ? (key == 'im3' ? const Color(0xFF161616) : Colors.white) : context.vMute;
-      return Expanded(child: GestureDetector(
-        onTap: () { if (_brand != key) { setState(() => _brand = key); _load(); } },
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(color: active ? col : context.vWhite, borderRadius: BorderRadius.circular(999), border: Border.all(color: active ? col : context.vRule)),
-          child: Text(label, style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 13, color: fg)),
-        ),
-      ));
-    }
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      decoration: BoxDecoration(color: context.vWhite, border: Border(top: BorderSide(color: context.vRule)), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, -2))]),
-      child: SafeArea(top: false, child: Row(children: [seg('ioh', 'IOH'), seg('im3', 'IM3'), seg('3id', '3ID')])),
-    );
-  }
-
   Future<void> _locateMe() async {
-    setState(() { _loading = true; _geoErr = ''; _mcLevels = null; });
+    setState(() {
+      _loading = true;
+      _geoErr = '';
+      _mcLevels = null;
+    });
     final coord = await getCurrentCoord(context);
-    if (coord == null) { if (mounted) setState(() => _loading = false); return; }
+    if (coord == null) {
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
     try {
       final d = await ApiClient.reportLocate(lat: coord.$1, lon: coord.$2);
       if (!mounted) return;
-      if (d['error'] != null) { setState(() { _geoErr = d['error'].toString(); _loading = false; }); }
-      else {
-        final lvls = ((d['levels'] as List?) ?? []).cast<Map<String, dynamic>>().where((x) => x['name'] != null).toList();
+      if (d['error'] != null) {
+        setState(() {
+          _geoErr = d['error'].toString();
+          _loading = false;
+        });
+      } else {
+        final lvls = ((d['levels'] as List?) ?? [])
+            .cast<Map<String, dynamic>>()
+            .where((x) => x['name'] != null)
+            .toList();
         setState(() {
           if (d['circle'] != null) _circle = d['circle'].toString();
           _mcLevels = lvls;
-          if (lvls.isNotEmpty) { _mcPick = lvls.first['level'].toString(); _scopeType = _mcPick; _scopeValue = (lvls.first['value'] ?? lvls.first['name']).toString(); }
+          if (lvls.isNotEmpty) {
+            _mcPick = lvls.first['level'].toString();
+            _scopeType = _mcPick;
+            _scopeValue =
+                (lvls.first['value'] ?? lvls.first['name']).toString();
+          }
         });
         if (lvls.isNotEmpty) {
           // Load active tab data, then background-prefetch the rest
@@ -407,219 +1415,314 @@ class _ReportsScreenState extends State<ReportsScreen> {
           if (mounted) setState(() => _loading = false);
         }
       }
-    } catch (e) { if (mounted) setState(() { _geoErr = e.toString(); _loading = false; }); }
-  }
-
-  // Prefetch all 3 sub-reports for the current scope so tab switches are instant.
-  Future<void> _prefetchAll() async {
-    final ft = (_scopeType != 'all' && _scopeValue.isNotEmpty) ? _scopeType : 'all';
-    final fv = (_scopeType != 'all') ? _scopeValue : '';
-    // Fetch the active tab first (if it's not mycoord or snapshot)
-    if (['comprehensive', 'datarev', 'product', 'benchmark', 'insight', 'ftth'].contains(_tab)) {
-      setState(() { _loading = true; _error = null; });
-      try {
-        if (_tab == 'comprehensive') await _fetchAndCache('comp|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportComprehensive(circle: _circle, filterType: ft, filterValue: fv), 'comprehensive');
-        else if (_tab == 'datarev') await _fetchAndCache('drev|$_dataVer|$_circle|$_brand|$ft|$fv', () => ApiClient.reportDataRevenue(circle: _circle, brand: _brand, filterType: ft, filterValue: fv), 'datarev');
-        else if (_tab == 'product') await _fetchAndCache('prod|$_dataVer|$_circle|$_pdScope|$_brand', () => ApiClient.reportProductDemand(circle: _circle, scope: _pdScope, brand: _brand), 'product');
-        else if (_tab == 'benchmark') await _fetchAndCache('bench|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportNetworkBenchmark(circle: _circle, filterType: ft, filterValue: fv), 'benchmark');
-        else if (_tab == 'insight') await _fetchAndCache('ins|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportMarketInsight(circle: _circle, filterType: ft, filterValue: fv), 'insight');
-        else if (_tab == 'ftth') await _fetchAndCache('ftth|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportFtth(circle: _circle, filterType: ft, filterValue: fv), 'ftth');
-      } catch (_) {}
-      if (mounted) setState(() => _loading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _geoErr = e.toString();
+          _loading = false;
+        });
+      }
     }
-    
-    // Background prefetch for others
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (!mounted) return;
-      _fetchAndCache('comp|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportComprehensive(circle: _circle, filterType: ft, filterValue: fv), 'comprehensive');
-      _fetchAndCache('drev|$_dataVer|$_circle|$_brand|$ft|$fv', () => ApiClient.reportDataRevenue(circle: _circle, brand: _brand, filterType: ft, filterValue: fv), 'datarev');
-      _fetchAndCache('prod|$_dataVer|$_circle|$_pdScope|$_brand', () => ApiClient.reportProductDemand(circle: _circle, scope: _pdScope, brand: _brand), 'product');
-      _fetchAndCache('bench|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportNetworkBenchmark(circle: _circle, filterType: ft, filterValue: fv), 'benchmark');
-      _fetchAndCache('ins|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportMarketInsight(circle: _circle, filterType: ft, filterValue: fv), 'insight');
-      _fetchAndCache('ftth|$_dataVer|$_circle|$ft|$fv', () => ApiClient.reportFtth(circle: _circle, filterType: ft, filterValue: fv), 'ftth');
-    });
   }
 
-  Future<void> _fetchAndCache(String key, Future<Map<String, dynamic>> Function() call, String tab) async {
+  // Fetch the active report first, then warm the remaining cache with at most
+  // two concurrent requests. The active query remains authoritative.
+  /// Every tab that a warm cache can serve. Snapshot and My Coordinate depend
+  /// on a picked metric or a located level, so they stay out.
+  static const List<String> _warmableTabs = [
+    'comprehensive',
+    'fwa',
+    'ftth',
+    'datarev',
+    'product',
+    'benchmark',
+    'internal',
+    'insight',
+  ];
+
+  Future<void> _prefetchAll({bool force = false}) async {
+    // My Coordinate has nothing to fetch until a level is picked.
+    if (_mode == 'mycoord' && _scopeValue.isEmpty) {
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
+
+    // The active tab is awaited so its spinner means something. Everything
+    // else warms in the background.
+    await _load(force: force);
+
+    unawaited(Future<void>.delayed(const Duration(milliseconds: 500), () async {
+      if (!mounted) return;
+      final pending = [
+        for (final tab in _warmableTabs)
+          if (tab != _tab && _supportsScope(tab, _scopeType)) tab,
+      ];
+      // Two at a time: enough to fill the cache within a few seconds without
+      // firing eight BigQuery-backed requests at once.
+      for (var i = 0; i < pending.length; i += 2) {
+        if (!mounted) return;
+        await Future.wait(
+          pending.skip(i).take(2).map(_warmTab),
+        );
+      }
+    }));
+  }
+
+  /// Fetches one tab into the cache, and paints it if it is still the one on
+  /// screen. Errors stay silent: this is speculative work.
+  Future<void> _warmTab(String tab) async {
+    final key = _cacheKeyForTab(tab);
     try {
-      if (_cache.containsKey(key)) { _assign(tab, _cache[key]!); return; }
-      final d = await call();
-      if (d['error'] == null) { _cache[key] = d; _assign(tab, d); }
+      final d = await _cache.fetch(key, () => _requestFor(tab));
+      if (d['error'] != null) return;
+      if (mounted && tab == _tab && key == _cacheKeyForTab(tab)) {
+        setState(() {});
+      }
     } catch (_) {}
   }
 
-  Widget _filterBar() {
-    String scopeChip = '';
-    if (_scopeType != 'all' && _scopeValue.isNotEmpty) scopeChip = _scopeValue;
-    return GestureDetector(
-      onTap: () => setState(() => _showFilters = !_showFilters),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        decoration: BoxDecoration(color: context.vWhite, borderRadius: BorderRadius.circular(10), border: Border.all(color: context.vRule)),
-        child: Row(children: [
-          Icon(Icons.tune, size: 16, color: IOH.teal600),
-          const SizedBox(width: 8),
-          Text('Filter', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 12.5, color: context.vInk)),
-          if (scopeChip.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(color: context.vPanel, borderRadius: BorderRadius.circular(999)),
-              child: Text(scopeChip, style: TextStyle(fontSize: 10.5, color: context.vMute), overflow: TextOverflow.ellipsis),
-            ),
-          ],
-          const Spacer(),
-          Text('$_circle · ${_metricName()}', style: TextStyle(fontSize: 10.5, color: context.vMute), overflow: TextOverflow.ellipsis),
-          const SizedBox(width: 6),
-          Icon(_showFilters ? Icons.expand_less : Icons.expand_more, size: 18, color: context.vMute),
-        ]),
+  int _activeFilterCount() {
+    var count = 0;
+    if (_circle != 'ALL') count++;
+    if (_scopeType != 'all') count++;
+    if (_scopeValue.isNotEmpty) count++;
+    if (_tab == 'snapshot' && _metric != 'rev_prepaid') count++;
+    if (_tab == 'product' && _pdScope != 'total') count++;
+    return count;
+  }
+
+  void _openFiltersSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.vWhite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _LiveReportFilterSheet(
+        controlsBuilder: (refresh, openScopeSearch) => _controls(
+          onRefresh: refresh,
+          onScopeTap: openScopeSearch,
+        ),
+        options: () => _scopeOptions,
+        selected: () => _scopeValue,
+        scopeTitle: () => _scopeLabel(_scopeType),
+        onScopePick: (value) {
+          setState(() => _scopeValue = value);
+          _prefetchAll();
+        },
       ),
     );
   }
 
-  String _metricName() {
-    for (final c in _categories) {
-      for (final m in (c['metrics'] as List? ?? [])) {
-        if (m['code'] == _metric) return m['name'].toString();
-      }
-    }
-    return _metric;
-  }
-
   String? _dataAsOf() {
-    final d = _tab == 'snapshot' ? _data
-        : _tab == 'comprehensive' ? _comp
-        : _tab == 'datarev' ? _drev
-        : _tab == 'benchmark' ? _bench
-        : _tab == 'insight' ? _insight
-        : _tab == 'ftth' ? _ftth
-        : _prod;
-    final s = d?['scope'] as Map<String, dynamic>?;
-    final v = s?['data_as_of']?.toString();
+    Map<String, dynamic>? d;
+    if (_tab == 'snapshot') d = _data;
+    if (_tab == 'comprehensive') d = _comp;
+    if (_tab == 'datarev') d = _drev;
+    if (_tab == 'product') d = _prod;
+    if (_tab == 'benchmark') d = _bench;
+    if (_tab == 'fwa') d = _fwa;
+    if (_tab == 'internal') d = _internal;
+    if (_tab == 'insight') d = _insight;
+    if (_tab == 'ftth') d = _ftth;
+    final wrapped = d?['data'];
+    final root = wrapped is Map
+        ? wrapped.map((key, value) => MapEntry(key.toString(), value))
+        : d;
+    final scopeRaw = root?['scope'];
+    final scope = scopeRaw is Map
+        ? scopeRaw.map((key, value) => MapEntry(key.toString(), value))
+        : <String, dynamic>{};
+    final v = (scope['data_as_of'] ?? root?['data_as_of'])?.toString();
     return (v != null && v.isNotEmpty) ? v : null;
   }
 
-  Widget _dataAsOfBar() {
-    final v = _dataAsOf();
-    if (v == null) return const SizedBox.shrink();
-    final month = (((_tab == 'snapshot' ? _data : _tab == 'comprehensive' ? _comp : _tab == 'datarev' ? _drev : _tab == 'ftth' ? _ftth : _prod)?['scope'] as Map<String, dynamic>?)?['month_id'])?.toString();
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Row(children: [
-        Icon(Icons.update, size: 13, color: context.vMute),
-        const SizedBox(width: 6),
-        Text('Data as of $v${month != null ? "  ·  Month $month" : ""}',
-            style: TextStyle(fontSize: 10.5, color: context.vMute, fontWeight: FontWeight.w500)),
-      ]),
-    );
-  }
-
-  static const _brandColors = {'ioh': Color(0xFF15A697), 'im3': Color(0xFFF5A623), '3id': Color(0xFFEB008B)};
-
-  Widget _controls() {
+  Widget _controls({VoidCallback? onRefresh, VoidCallback? onScopeTap}) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        if (_tab == 'snapshot') _dropMetric(),
-        _drop('Circle', _circle, {'ALL': 'All Circles', for (final c in _circles) c: c}, (v) {
+        if (_tab == 'snapshot') _dropMetric(onRefresh: onRefresh),
+        _drop('Circle', _circle,
+            {'ALL': 'All Circles', for (final c in _circles) c: c}, (v) {
           setState(() => _circle = v);
-          _loadScopeOptions();
-          _load();
+          onRefresh?.call();
+          _loadScopeOptions(onUpdated: onRefresh);
+          _prefetchAll();
         }),
-        if (_tab == 'snapshot' || _tab == 'comprehensive' || _tab == 'datarev')
-          _drop('View', _scopeType, const {
-            'all': 'Circle (all)', 'region': 'Region', 'area': 'Area', 'branch': 'Branch',
-            'microcluster': 'Micro Cluster', 'kabkota': 'Kab/Kota', 'kecamatan': 'Kecamatan',
-          }, (v) {
-            setState(() { _scopeType = v; _scopeValue = ''; });
-            _loadScopeOptions();
-            if (v == 'all') _load();
+        if (_tab == 'snapshot' ||
+            _tab == 'comprehensive' ||
+            _tab == 'datarev' ||
+            _tab == 'fwa' ||
+            _tab == 'benchmark' ||
+            _tab == 'internal')
+          _drop('View', _scopeType, _scopeChoices(), (v) {
+            setState(() {
+              _scopeType = v;
+              _scopeValue = '';
+            });
+            onRefresh?.call();
+            _loadScopeOptions(onUpdated: onRefresh);
+            if (v == 'all') _prefetchAll();
           }),
         if (_tab == 'ftth')
           _drop('View', _scopeType, const {
-            'all': 'Circle (all)', 'ftth_region': 'Region', 'ftth_province': 'Province',
-            'ftth_kabkota': 'Kab/Kota', 'ftth_kecamatan': 'Kecamatan',
+            'all': 'Circle (all)',
+            'ftth_region': 'Region',
+            'ftth_province': 'Province',
+            'ftth_kabkota': 'Kab/Kota',
+            'ftth_kecamatan': 'Kecamatan',
           }, (v) {
-            setState(() { _scopeType = v; _scopeValue = ''; });
-            _loadScopeOptions();
-            if (v == 'all') _load();
+            setState(() {
+              _scopeType = v;
+              _scopeValue = '';
+            });
+            onRefresh?.call();
+            _loadScopeOptions(onUpdated: onRefresh);
+            if (v == 'all') _prefetchAll();
           }),
-        if ((_tab == 'snapshot' || _tab == 'comprehensive' || _tab == 'datarev' || _tab == 'ftth') && _scopeType != 'all')
-          _wrapDrop(_scopeLabel(_scopeType), SizedBox(
-            width: 168,
-            height: 30,
-            child: InkWell(
-              onTap: _scopeOptions.isEmpty ? null : _openScopePicker,
-              child: Row(children: [
-                Expanded(child: Text(
-                  _scopeValue.isEmpty ? '— pilih —' : _scopeValue,
-                  style: TextStyle(fontSize: 12, color: _scopeValue.isEmpty ? context.vMute : context.vInk),
-                  overflow: TextOverflow.ellipsis,
-                )),
-                Icon(Icons.search, size: 15, color: context.vMute),
-              ]),
-            ),
-          )),
+        if ((_tab == 'snapshot' ||
+                _tab == 'comprehensive' ||
+                _tab == 'datarev' ||
+                _tab == 'fwa' ||
+                _tab == 'benchmark' ||
+                _tab == 'internal' ||
+                _tab == 'ftth') &&
+            _scopeType != 'all')
+          _wrapDrop(
+              _scopeLabel(_scopeType),
+              SizedBox(
+                width: 168,
+                height: 30,
+                child: InkWell(
+                  onTap: _scopeOptions.isEmpty
+                      ? null
+                      : (onScopeTap ?? _openScopePicker),
+                  child: Row(children: [
+                    Expanded(
+                        child: Text(
+                      _scopeValue.isEmpty ? 'Pilih wilayah' : _scopeValue,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: _scopeValue.isEmpty
+                              ? context.vMute
+                              : context.vInk),
+                      overflow: TextOverflow.ellipsis,
+                    )),
+                    Icon(Icons.search, size: 15, color: context.vMute),
+                  ]),
+                ),
+              )),
         if (_tab == 'product')
-          _drop('Scope', _pdScope, const {'total': 'Total', 'organic': 'Organic', 'digital': 'Digital', 'trade': 'Trade'}, (v) {
+          _drop('Scope', _pdScope, const {
+            'total': 'Total',
+            'organic': 'Organic',
+            'digital': 'Digital',
+            'trade': 'Trade'
+          }, (v) {
             setState(() => _pdScope = v);
+            onRefresh?.call();
             _load();
           }),
       ],
     );
   }
 
-  String _scopeLabel(String k) => const {
-        'region': 'Region', 'area': 'Area', 'branch': 'Branch',
-        'microcluster': 'Micro Cluster', 'kabkota': 'Kab/Kota', 'kecamatan': 'Kecamatan',
-        'ftth_region': 'Region', 'ftth_province': 'Province',
-        'ftth_kabkota': 'Kab/Kota', 'ftth_kecamatan': 'Kecamatan',
-      }[k] ?? k;
+  String _scopeLabel(String k) =>
+      const {
+        'region': 'Region',
+        'area': 'Area',
+        'branch': 'Branch',
+        'microcluster': 'Micro Cluster',
+        'kabkota': 'Kab/Kota',
+        'kecamatan': 'Kecamatan',
+        'ftth_region': 'Region',
+        'ftth_province': 'Province',
+        'ftth_kabkota': 'Kab/Kota',
+        'ftth_kecamatan': 'Kecamatan',
+      }[k] ??
+      k;
 
-  Widget _dropMetric() {
+  Map<String, String> _scopeChoices() {
+    if (_tab == 'internal' || _tab == 'benchmark') {
+      return const {
+        'all': 'Circle (all)',
+        'region': 'Region',
+        'kabkota': 'Kab/Kota',
+        'kecamatan': 'Kecamatan',
+      };
+    }
+    return const {
+      'all': 'Circle (all)',
+      'region': 'Region',
+      'area': 'Area',
+      'branch': 'Branch',
+      'microcluster': 'Micro Cluster',
+      'kabkota': 'Kab/Kota',
+      'kecamatan': 'Kecamatan',
+    };
+  }
+
+  Widget _dropMetric({VoidCallback? onRefresh}) {
     final items = <DropdownMenuItem<String>>[];
     for (final c in _categories) {
       for (final m in (c['metrics'] as List? ?? [])) {
-        items.add(DropdownMenuItem(value: m['code'].toString(), child: Text(m['name'].toString(), overflow: TextOverflow.ellipsis)));
+        items.add(DropdownMenuItem(
+            value: m['code'].toString(),
+            child:
+                Text(m['name'].toString(), overflow: TextOverflow.ellipsis)));
       }
     }
     if (items.isEmpty) {
-      items.add(const DropdownMenuItem(value: 'rev_prepaid', child: Text('Revenue Prepaid')));
+      items.add(const DropdownMenuItem(
+          value: 'rev_prepaid', child: Text('Revenue Prepaid')));
     }
-    return _wrapDrop('Metric', SizedBox(
-      width: 178,
-      height: 30,
-      child: DropdownButton<String>(
-        value: _metric,
-        isExpanded: true,
-        isDense: true,
-        style: TextStyle(fontSize: 12, color: context.vInk),
-        icon: Icon(Icons.arrow_drop_down, size: 18, color: context.vMute),
-        underline: const SizedBox.shrink(),
-        items: items,
-        onChanged: (v) {
-          if (v == null) return;
-          setState(() => _metric = v);
-          _load();
-        },
-      ),
-    ));
+    return _wrapDrop(
+        'Metric',
+        SizedBox(
+          width: 178,
+          height: 30,
+          child: DropdownButton<String>(
+            value: _metric,
+            isExpanded: true,
+            isDense: true,
+            style: TextStyle(fontSize: 12, color: context.vInk),
+            icon: Icon(Icons.arrow_drop_down, size: 18, color: context.vMute),
+            underline: const SizedBox.shrink(),
+            items: items,
+            onChanged: (v) {
+              if (v == null) return;
+              setState(() => _metric = v);
+              onRefresh?.call();
+              _load();
+            },
+          ),
+        ));
   }
 
-  Widget _drop(String label, String value, Map<String, String> opts, ValueChanged<String> onCh) {
-    return _wrapDrop(label, SizedBox(
-      height: 30,
-      child: DropdownButton<String>(
-        value: value,
-        isDense: true,
-        style: TextStyle(fontSize: 12, color: context.vInk),
-        icon: Icon(Icons.arrow_drop_down, size: 18, color: context.vMute),
-        underline: const SizedBox.shrink(),
-        items: opts.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value, style: const TextStyle(fontSize: 12)))).toList(),
-        onChanged: (v) { if (v != null) onCh(v); },
-      ),
-    ));
+  Widget _drop(String label, String value, Map<String, String> opts,
+      ValueChanged<String> onCh) {
+    return _wrapDrop(
+        label,
+        SizedBox(
+          height: 30,
+          child: DropdownButton<String>(
+            value: value,
+            isDense: true,
+            style: TextStyle(fontSize: 12, color: context.vInk),
+            icon: Icon(Icons.arrow_drop_down, size: 18, color: context.vMute),
+            underline: const SizedBox.shrink(),
+            items: opts.entries
+                .map((e) => DropdownMenuItem(
+                    value: e.key,
+                    child: Text(e.value, style: const TextStyle(fontSize: 12))))
+                .toList(),
+            onChanged: (v) {
+              if (v != null) onCh(v);
+            },
+          ),
+        ));
   }
 
   Widget _wrapDrop(String label, Widget child) {
@@ -628,11 +1731,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(label.toUpperCase(),
-            style: const TextStyle(fontFamily: 'Poppins', fontSize: 8.5, fontWeight: FontWeight.w700, color: IOH.teal600, letterSpacing: 0.6)),
+            style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 8.5,
+                fontWeight: FontWeight.w700,
+                color: IOH.teal600,
+                letterSpacing: 0.6)),
         const SizedBox(height: 2),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(color: context.vWhite, borderRadius: BorderRadius.circular(9), border: Border.all(color: context.vRule)),
+          decoration: BoxDecoration(
+              color: context.vWhite,
+              borderRadius: BorderRadius.circular(9),
+              border: Border.all(color: context.vRule)),
           child: child,
         ),
       ],
@@ -646,7 +1757,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: context.vWhite,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => _ScopeSearchSheet(
         title: _scopeLabel(_scopeType),
         options: _scopeOptions,
@@ -654,7 +1766,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         onPick: (v) {
           Navigator.pop(ctx);
           setState(() => _scopeValue = v);
-          _load();
+          _prefetchAll();
         },
       ),
     );
@@ -663,18 +1775,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _kpiTile(Map<String, dynamic> t, bool up) {
     final c = up ? IOH.teal600 : IOH.danger;
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.vWhite,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: const Border(top: BorderSide(color: IOH.teal500, width: 3)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${(_data!['metric']?['name'] ?? '').toString().toUpperCase()} · MTD',
-              style: const TextStyle(fontFamily: 'Poppins', fontSize: 10.5, fontWeight: FontWeight.w700, color: IOH.teal600, letterSpacing: 0.8)),
+          Text(
+              '${(_data!['metric']?['name'] ?? '').toString().toUpperCase()} · MTD',
+              style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  color: IOH.teal600,
+                  letterSpacing: 0.8)),
           const SizedBox(height: 6),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -684,11 +1807,21 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text.rich(TextSpan(children: [
-                      TextSpan(text: _fmt(t['mtd']), style: TextStyle(fontFamily: 'Poppins', fontSize: 30, fontWeight: FontWeight.w800, color: context.vInk)),
-                      TextSpan(text: '  ${_unit()}', style: TextStyle(fontSize: 13, color: context.vMute)),
+                      TextSpan(
+                          text: _fmt(t['mtd']),
+                          style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800,
+                              color: context.vInk)),
+                      TextSpan(
+                          text: '  ${_unit()}',
+                          style: TextStyle(fontSize: 13, color: context.vMute)),
                     ])),
                     const SizedBox(height: 4),
-                    Text('IM3 ${_fmt(t['mtd_im3'])} · 3ID ${_fmt(t['mtd_3id'])}', style: TextStyle(fontSize: 12, color: context.vMute)),
+                    Text(
+                        'IM3 ${_fmt(t['mtd_im3'])} · 3ID ${_fmt(t['mtd_3id'])}',
+                        style: TextStyle(fontSize: 12, color: context.vMute)),
                   ],
                 ),
               ),
@@ -696,9 +1829,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text('${up ? '▲' : '▼'} ${_pct(t['pct_change'])}',
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w800, color: c)),
+                      style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: c)),
                   const SizedBox(height: 2),
-                  Text('${_var(t['abs_change'])} vs LMTD', style: TextStyle(fontSize: 11.5, color: c)),
+                  Text('${_var(t['abs_change'])} vs LMTD',
+                      style: TextStyle(fontSize: 11.5, color: c)),
                 ],
               ),
             ],
@@ -712,7 +1850,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final c = good ? IOH.teal600 : IOH.danger;
     final m = obj as Map<String, dynamic>?;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: context.vWhite,
         borderRadius: BorderRadius.circular(14),
@@ -721,11 +1859,24 @@ class _ReportsScreenState extends State<ReportsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(), style: const TextStyle(fontFamily: 'Poppins', fontSize: 10, fontWeight: FontWeight.w700, color: IOH.teal600, letterSpacing: 0.6)),
+          Text(label.toUpperCase(),
+              style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: IOH.teal600,
+                  letterSpacing: 0.6)),
           const SizedBox(height: 3),
-          Text((m?['name'] ?? '—').toString(), style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 14, color: context.vInk), overflow: TextOverflow.ellipsis),
+          Text((m?['name'] ?? 'N/A').toString(),
+              style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: context.vInk),
+              softWrap: true),
           const SizedBox(height: 2),
-          Text('${_var(m?['var'])} · ${_pct(m?['pct'])}', style: TextStyle(fontSize: 12, color: c)),
+          Text('${_var(m?['var'])} · ${_pct(m?['pct'])}',
+              style: TextStyle(fontSize: 12, color: c)),
         ],
       ),
     );
@@ -734,198 +1885,140 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _panel(String title, Widget child) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.vWhite,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.vRule),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title.toUpperCase(), style: const TextStyle(fontFamily: 'Poppins', fontSize: 10.5, fontWeight: FontWeight.w700, color: IOH.teal600, letterSpacing: 0.6)),
-          const SizedBox(height: 10),
+          Text(title.toUpperCase(),
+              style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                  color: IOH.teal600,
+                  letterSpacing: 0.6)),
+          const SizedBox(height: 8),
           child,
         ],
       ),
     );
   }
 
-  Widget _slabBars(Map<String, dynamic>? s) {
-    if (s == null) return const SizedBox.shrink();
-    final buckets = [
-      ['decline_gt5', '≤ -5%', const Color(0xFFB91C1C)],
-      ['decline_3_5', '-5..-3%', const Color(0xFFDC2626)],
-      ['decline_1_3', '-3..-1%', const Color(0xFFEF4444)],
-      ['decline_0_1', '-1..0%', const Color(0xFFF87171)],
-      ['growth_0_1', '0..1%', const Color(0xFF5EEAD4)],
-      ['growth_1_3', '1..3%', const Color(0xFF2DD4BF)],
-      ['growth_3_5', '3..5%', const Color(0xFF14B8A6)],
-      ['growth_gt5', '≥ 5%', const Color(0xFF0E8579)],
-    ];
-    int maxv = 1;
-    for (final b in buckets) {
-      final v = (s[b[0]] as num?)?.toInt() ?? 0;
-      if (v > maxv) maxv = v;
-    }
-    return Column(
-      children: buckets.map((b) {
-        final v = (s[b[0]] as num?)?.toInt() ?? 0;
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2.5),
-          child: Row(children: [
-            SizedBox(width: 56, child: Text(b[1] as String, textAlign: TextAlign.right, style: TextStyle(fontSize: 11, color: context.vMute))),
-            const SizedBox(width: 8),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  height: 16,
-                  color: context.vPanel,
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: maxv == 0 ? 0 : v / maxv,
-                    child: Container(color: b[2] as Color),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(width: 26, child: Text('$v', style: TextStyle(fontSize: 11.5, color: context.vInk, fontFeatures: const [FontFeature.tabularFigures()]))),
-          ]),
-        );
-      }).toList(),
-    );
-  }
-
   Widget _brandTable(dynamic rowsData) {
     final rows = (rowsData as List?)?.cast<Map<String, dynamic>>() ?? [];
-    if (rows.isEmpty) return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
-    const bands = [
-      ['ioh', 'IOH', Color(0xFF15A697), Colors.white],
-      ['im3', 'IM3', Color(0xFFF5A623), Color(0xFF161616)],
-      ['3id', '3ID', Color(0xFFEB008B), Colors.white],
-    ];
-    const subs = ['LLMTD', 'LMTD', 'MTD', 'Var', '%'];
-    const nameW = 116.0, headH1 = 28.0, headH2 = 24.0, rowH = 42.0;
-    Color signColor(num? v) => (v ?? 0) >= 0 ? IOH.teal600 : IOH.danger;
-
-    Widget cell(String text, {Color? color, bool bold = false, Color? bg, double w = 76}) =>
-        Container(
-          width: w, height: rowH, alignment: Alignment.centerRight, color: bg,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Text(text, style: TextStyle(fontSize: 11.5, color: color ?? context.vInk, fontWeight: bold ? FontWeight.w700 : FontWeight.w400, fontFeatures: const [FontFeature.tabularFigures()])),
-        );
-
-    // Frozen Name column (header + body cells).
-    final nameCol = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(width: nameW, height: headH1, color: context.vWhite),
-      Container(width: nameW, height: headH2, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8), child: Text('Name', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: context.vMute))),
-      for (var i = 0; i < rows.length; i++)
-        Container(
-          width: nameW, height: rowH,
-          color: i.isOdd ? context.vZebra : context.vWhite,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          alignment: Alignment.centerLeft,
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text((rows[i]['name'] ?? '').toString(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: context.vInk), maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (rows[i]['parent'] != null) Text(rows[i]['parent'].toString(), style: TextStyle(fontSize: 9, color: context.vMute), maxLines: 1, overflow: TextOverflow.ellipsis),
-          ]),
-        ),
-    ]);
-
-    // Scrollable data columns.
-    final headRow1 = Row(children: [
-      for (final b in bands)
-        Container(width: 76 * 5, height: headH1, color: b[2] as Color, alignment: Alignment.center,
-            child: Text(b[1] as String, style: TextStyle(color: b[3] as Color, fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 12))),
-    ]);
-    final headRow2 = Row(children: [
-      for (final b in bands)
-        for (final s in subs)
-          Container(width: 76, height: headH2, color: (b[2] as Color).withValues(alpha: 0.85), alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(s, style: TextStyle(color: b[3] as Color, fontSize: 10))),
-    ]);
-    final body = <Widget>[];
-    for (var i = 0; i < rows.length; i++) {
-      final r = rows[i];
-      final bg = i.isOdd ? context.vZebra : context.vWhite;
-      final cells = <Widget>[];
-      for (final b in bands) {
-        final k = b[0] as String;
-        final va = r['abs_growth_$k'] as num?;
-        final pc = (k == 'ioh' ? r['growth_pct'] : r['growth_pct_$k']) as num?;
-        cells.addAll([
-          cell(_fmt(r['llmtd_$k']), bg: bg),
-          cell(_fmt(r['lmtd_$k']), bg: bg),
-          cell(_fmt(r['mtd_$k']), bold: true, bg: bg),
-          cell(_var(va), color: signColor(va), bg: const Color(0xFFDAE5EE)),
-          cell(_pct(pc), color: signColor(pc), bg: const Color(0xFFF2EAD2)),
-        ]);
-      }
-      body.add(Row(children: cells));
+    if (rows.isEmpty) {
+      return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
     }
+    // Three brand bands share one row, so this keeps ReportAllDataTable
+    // directly instead of ReportPeriodTable. Geometry and growth colouring
+    // still come from the shared period constants.
+    const bands = [Brands.ioh, Brands.im3, Brands.tri];
+    final polarity = reportPolarityFor(_metric);
 
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      nameCol,
-      Expanded(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [headRow1, headRow2, ...body]),
+    num? growthOf(Map<String, dynamic> row, BrandIdentity band) =>
+        (band.key == 'ioh' ? row['growth_pct'] : row['growth_pct_${band.key}'])
+            as num?;
+
+    return ReportAllDataTable<Map<String, dynamic>>(
+      semanticLabel: 'Snapshot brand breakdown, ${rows.length} baris',
+      rows: rows,
+      layoutPolicy: ReportTableLayoutPolicy.horizontal,
+      freezeFirstColumn: true,
+      headerBackground: IOH.teal500,
+      storageKey: 'snapshot-brand-$_metric-$_brand',
+      columns: [
+        ReportTableColumn(
+          label: 'Name',
+          width: ReportPeriodTable.dataColumnWidth * 2,
+          emphasized: true,
+          value: (row) => row['name'],
+          secondaryValue: (row) => row['parent'],
         ),
-      ),
-    ]);
+        for (final band in bands) ...[
+          ReportTableColumn(
+              label: '${band.label} LLMTD',
+              width: ReportPeriodTable.dataColumnWidth,
+              numeric: true,
+              value: (row) => _fmt(row['llmtd_${band.key}'])),
+          ReportTableColumn(
+              label: '${band.label} LMTD',
+              width: ReportPeriodTable.dataColumnWidth,
+              numeric: true,
+              value: (row) => _fmt(row['lmtd_${band.key}'])),
+          ReportTableColumn(
+              label: '${band.label} MTD',
+              width: ReportPeriodTable.dataColumnWidth,
+              numeric: true,
+              emphasized: true,
+              value: (row) => _fmt(row['mtd_${band.key}'])),
+          ReportTableColumn(
+            label: '${band.label} Growth',
+            semanticLabel: '${band.label} Growth MTD terhadap LMTD',
+            width: ReportPeriodTable.growthColumnWidth,
+            numeric: true,
+            comparison: true,
+            value: (row) => _pct(growthOf(row, band)),
+            secondaryValue: (row) => _var(row['abs_growth_${band.key}']),
+            signal: (row) => growthOf(row, band),
+            polarity: polarity,
+          ),
+        ],
+      ],
+    );
   }
 
   // ── Snapshot full deck (sub-tabbed to keep the view short) ──
 
   String _fmtBy(String kind, dynamic v) {
-    if (v == null) return '—';
-    final n = (v as num).toDouble();
-    if (kind == 'mn') return _mn(n);
-    if (kind == 'pct') return '${NumberFormat('#,##0.0', 'id').format(n)}%';
-    return _num(n);
+    if (v == null) return kReportNotAvailable;
+    if (kind == 'mn') return _mn(v);
+    if (kind == 'pct') return reportPercent(v);
+    return _num(v);
   }
 
-  Widget _monthlyKVTable(List<Map<String, dynamic>> hist, List<List<String>> rowsDef) {
-    const nameW = 140.0, headH = 28.0, rowH = 34.0, colW = 84.0;
+  Widget _monthlyKVTable(
+      List<Map<String, dynamic>> hist, List<List<String>> rowsDef) {
     final months = hist.map((h) => h['month_id'].toString()).toList();
-    final nameCol = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(width: nameW, height: headH, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('Metric', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute))),
-      for (var i = 0; i < rowsDef.length; i++)
-        Container(width: nameW, height: rowH, color: i.isOdd ? context.vZebra : context.vWhite,
-            padding: const EdgeInsets.symmetric(horizontal: 8), alignment: Alignment.centerLeft,
-            child: Text(rowsDef[i][1], style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: context.vInk), maxLines: 1, overflow: TextOverflow.ellipsis)),
-    ]);
-    Widget cell(String t, {bool head = false}) => Container(width: colW, height: head ? headH : rowH, alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Text(t, style: TextStyle(fontSize: head ? 10 : 11, fontWeight: head ? FontWeight.w700 : FontWeight.w400, color: head ? context.vMute : context.vInk, fontFeatures: const [FontFeature.tabularFigures()])));
-    final dataCols = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [for (final m in months) cell(m, head: true)]),
-      for (var i = 0; i < rowsDef.length; i++)
-        Container(color: i.isOdd ? context.vZebra : context.vWhite, child: Row(children: [
-          for (final h in hist) cell(_fmtBy(rowsDef[i][2], h[rowsDef[i][0]])),
-        ])),
-    ]);
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      nameCol,
-      Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: dataCols)),
-    ]);
+    return ReportAllDataTable<List<String>>(
+      semanticLabel: 'Monthly metric history',
+      rows: rowsDef,
+      layoutPolicy: ReportTableLayoutPolicy.horizontal,
+      storageKey: 'monthly-history-${months.join('|')}',
+      columns: [
+        ReportTableColumn(label: 'Metric', width: 170, value: (row) => row[1]),
+        for (var index = 0; index < months.length; index++)
+          ReportTableColumn(
+            label: months[index],
+            numeric: true,
+            value: (row) => _fmtBy(row[2], hist[index][row[0]]),
+          ),
+      ],
+    );
   }
+
   List<Widget> _snapshotDeck() {
     final deck = _data!['deck'] as Map<String, dynamic>?;
     if (deck == null) return [];
     final counts = (deck['counts'] as Map<String, dynamic>?) ?? {};
     const sections = [
-      ['circle', 'Circle'], ['region', 'Region'], ['branch', 'Branch'],
-      ['microcluster', 'Micro Cluster'], ['kabkota', 'Kab/Kota'], ['kecamatan', 'Kecamatan'],
+      ['circle', 'Circle'],
+      ['region', 'Region'],
+      ['branch', 'Branch'],
+      ['microcluster', 'Micro Cluster'],
+      ['kabkota', 'Kab/Kota'],
+      ['kecamatan', 'Kecamatan'],
     ];
     const fullLevels = ['circle', 'region', 'branch'];
 
     // sub-tab selector
     final tabRow = SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(children: sections.map((s) {
+      child: Row(
+          children: sections.map((s) {
         final active = _deckTab == s[0];
         return GestureDetector(
           onTap: () => setState(() => _deckTab = s[0]),
@@ -937,7 +2030,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
               borderRadius: BorderRadius.circular(999),
               border: Border.all(color: active ? IOH.teal500 : context.vRule),
             ),
-            child: Text(s[1], style: TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w600, color: active ? Colors.white : context.vMute)),
+            child: Text(s[1],
+                style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: active ? Colors.white : context.vMute)),
           ),
         );
       }).toList()),
@@ -947,51 +2045,59 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final cnt = counts[_deckTab] ?? 0;
     if (fullLevels.contains(_deckTab)) {
       content = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Brand Breakdown · $cnt total', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: IOH.teal600)),
+        Text('Brand Breakdown · $cnt total',
+            style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: IOH.teal600)),
         const SizedBox(height: 8),
         _brandTable((deck[_deckTab] as Map<String, dynamic>?)?['rows']),
       ]);
     } else {
       final set = deck[_deckTab] as Map<String, dynamic>?;
       content = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('$cnt total', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: IOH.teal600)),
+        Text('$cnt total',
+            style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: IOH.teal600)),
         const SizedBox(height: 8),
-        Text('▼ Top 10 Decline', style: TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.w700, color: IOH.danger)),
+        Text('▼ Top 10 Decline',
+            style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: IOH.danger)),
         const SizedBox(height: 6),
         _brandTable(set?['decline']),
         const SizedBox(height: 16),
-        Text('▲ Top 10 Growth', style: TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.w700, color: IOH.teal600)),
+        Text('▲ Top 10 Growth',
+            style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: IOH.teal600)),
         const SizedBox(height: 6),
         _brandTable(set?['growth']),
       ]);
     }
 
     return [
-      _panel('Territory Breakdown', Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        tabRow,
-        const SizedBox(height: 12),
-        content,
-      ])),
+      _panel(
+          'Territory Breakdown',
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            tabRow,
+            const SizedBox(height: 12),
+            content,
+          ])),
     ];
   }
 
   // ── Comprehensive ──
-  List<double> _scaleFor(double peak, String unit) {
-    if (unit == 'GB' && peak >= 100000) return [1000, 0]; // [divisor, unitMode]
-    if (peak >= 100000000) return [1000000, 1];
-    if (peak >= 100000) return [1000, 2];
-    return [1, 3];
-  }
-
-  String _fmtScaled(dynamic v, double divisor) {
-    if (v == null) return '—';
-    final n = (v as num).toDouble() / divisor;
-    return NumberFormat('#,##0.0', 'id').format(n);
-  }
-
   List<Widget> _comprehensiveSections([Map<String, dynamic>? payload]) {
     final src = payload ?? _comp;
-    final sections = (src?['sections'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final sections =
+        (src?['sections'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final out = <Widget>[];
     String? lastGroup;
     for (final s in sections) {
@@ -1000,20 +2106,42 @@ class _ReportsScreenState extends State<ReportsScreen> {
         out.add(Padding(
           padding: const EdgeInsets.only(top: 6, bottom: 6),
           child: Text(group.toUpperCase(),
-              style: TextStyle(fontFamily: 'Poppins', fontSize: 11, fontWeight: FontWeight.w800, color: context.vInk, letterSpacing: 0.6)),
+              style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: context.vInk,
+                  letterSpacing: 0.6)),
         ));
       }
       lastGroup = group;
       final layout = s['layout'];
+      final title = s['title'].toString();
+      final rowCount = layout == 'grid'
+          ? ((s['metrics'] as List?)?.length ?? 0)
+          : ((s['rows'] as List?)?.length ?? 0);
+      final meta = layout == 'grid' ? '$rowCount metrik' : '$rowCount baris';
       if (layout == 'flat') {
-        out.add(_panel('${s['title']}${s['month_used'] != null ? ' · ${s['month_used']}' : ''}', _flatTable(s)));
+        out.add(_detailPanel(
+          '$title${s['month_used'] != null ? ' | ${s['month_used']}' : ''}',
+          _flatTable(s),
+          sectionKey: title,
+          meta: meta,
+        ));
       } else if (layout == 'ftth_counts') {
-        out.add(_panel(s['title'].toString(), _ftthCountTable(s)));
+        out.add(_detailPanel(title, _ftthCountTable(s),
+            sectionKey: title, meta: meta));
       } else if (layout == 'hierarchy') {
-        out.add(_panel(s['title'].toString(), _ftthHierarchyTable(s)));
+        out.add(_detailPanel(title, _ftthHierarchyTable(s),
+            sectionKey: title, meta: meta));
       } else {
         final cum = s['cumulative_yoy'] == true;
-        out.add(_panel('${s['title']}${cum ? ' · YTD/YoY' : ''}', _compTable(s, cum)));
+        out.add(_detailPanel(
+          '$title${cum ? ' | YTD/YoY' : ''}',
+          _compTable(s, cum),
+          sectionKey: title,
+          meta: meta,
+        ));
       }
       out.add(const SizedBox(height: 12));
     }
@@ -1023,185 +2151,198 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _flatTable(Map<String, dynamic> s) {
     final rows = (s['rows'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final columns = (s['columns'] as List?)?.cast<String>() ?? ['Share %'];
-    String fmtCell(dynamic v, int ci) {
-      if (v == null) return '—';
-      final n = (v as num).toDouble();
-      return ci == 0 ? '${NumberFormat('#,##0.0', 'id').format(n)}%' : NumberFormat('#,##0', 'id').format(n);
+    String fmtCell(dynamic v, int ci) =>
+        ci == 0 ? reportPercent(v) : reportNumber(v);
+
+    // Industry is the denominator and IOH is the group total of IM3 plus 3ID.
+    // Both are reference rows, so both read bold.
+    bool isReference(Map<String, dynamic> row) {
+      if (row['aggregate'] == true) return true;
+      return row['actor']?.toString().toUpperCase() == 'INDUSTRY';
     }
-    Widget cell(String t, {bool header = false, bool bold = false, double w = 90}) => SizedBox(
-        width: w, child: Text(t, textAlign: TextAlign.right,
-          style: TextStyle(fontSize: 11, fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-            color: header ? context.vMute : context.vInk, fontFeatures: const [FontFeature.tabularFigures()])));
-    return SingleChildScrollView(scrollDirection: Axis.horizontal, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        SizedBox(width: 90, child: Text('Operator', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: context.vMute))),
-        ...columns.map((c) => cell(c, header: true)),
-      ]),
-      ...rows.asMap().entries.map((e) {
-        final r = e.value;
-        final cells = (r['cells'] as List?) ?? [r['value']];
-        final actor = (r['actor'] ?? '').toString();
-        return Container(
-          color: e.key.isOdd ? context.vZebra : context.vWhite,
-          padding: const EdgeInsets.symmetric(vertical: 7),
-          child: Row(children: [
-            SizedBox(width: 90, child: Text(actor, style: TextStyle(fontSize: 12, fontWeight: actor == 'IOH' || actor == 'Industry' ? FontWeight.w700 : FontWeight.w500, color: context.vInk))),
-            ...columns.asMap().entries.map((ce) => cell(fmtCell(ce.key < cells.length ? cells[ce.key] : null, ce.key), bold: ce.key == 0)),
-          ]),
-        );
-      }),
-    ]));
+
+    Color? actorColor(Map<String, dynamic> row) =>
+        Brands.colorOf(row['actor']?.toString());
+
+    return ReportAllDataTable<Map<String, dynamic>>(
+      semanticLabel: '${s['title'] ?? 'Report'} all data',
+      rows: rows,
+      layoutPolicy: ReportTableLayoutPolicy.horizontal,
+      storageKey: 'flat-${s['title']}-${columns.join('|')}',
+      columns: [
+        ReportTableColumn(
+          label: 'Operator',
+          width: 110,
+          value: (row) => row['actor'],
+          textColorOf: actorColor,
+          emphasizedOf: isReference,
+        ),
+        for (var index = 0; index < columns.length; index++)
+          ReportTableColumn(
+            label: columns[index],
+            numeric: true,
+            value: (row) {
+              final cells = (row['cells'] as List?) ?? [row['value']];
+              return index < cells.length ? cells[index] : null;
+            },
+            formatter: (value) => fmtCell(value, index),
+            emphasizedOf: isReference,
+          ),
+      ],
+    );
   }
 
   Widget _compTable(Map<String, dynamic> s, bool cum) {
     final metrics = (s['metrics'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    if (metrics.isEmpty) return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
-    Color sign(num? v) => (v ?? 0) >= 0 ? IOH.teal600 : IOH.danger;
-    // Single selected brand → full MoM + YoY set (compact).
-    final subs = ['LLMTD', 'LMTD', 'MTD', 'Var', '%', 'LYTD', 'YTD', 'Var YoY', 'YoY%'];
-    final bandBg = _brandColors[_brand]!;
-    final bandFg = _brand == 'im3' ? const Color(0xFF161616) : Colors.white;
-    const nameW = 138.0, headH = 30.0, rowH = 40.0;
-
-    Widget c(String text, {Color? color, bool bold = false, Color? bg, double w = 70}) => Container(
-          width: w, height: rowH, alignment: Alignment.centerRight, color: bg,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Text(text, style: TextStyle(fontSize: 11, color: color ?? context.vInk, fontWeight: bold ? FontWeight.w700 : FontWeight.w400, fontFeatures: const [FontFeature.tabularFigures()])),
-        );
-
-    // Precompute per-metric scaling + unit label. Computed (ratio/%) metrics are
-    // not scaled — shown as-is with their own unit.
-    final scales = <List>[]; // [div, unitLbl]
-    for (final m in metrics) {
-      if (m['computed'] == true) {
-        scales.add([1.0, (m['unit'] ?? '').toString()]);
-        continue;
-      }
-      final b = m[_brand] as Map<String, dynamic>;
-      final peak = [b['mtd'], b['lmtd'], b['llmtd']].map((x) => (x as num?)?.abs().toDouble() ?? 0).fold<double>(0, (a, v) => a > v ? a : v);
-      final sc = _scaleFor(peak, (m['unit'] ?? '').toString());
-      final um = sc[1].toInt();
-      final unitLbl = um == 0 ? 'K GB' : um == 1 ? 'Mn ${m['unit']}' : um == 2 ? 'K ${m['unit']}' : '${m['unit']}';
-      scales.add([sc[0], unitLbl]);
+    if (metrics.isEmpty) {
+      return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
     }
+    final activeBrand = _tab == 'ftth' ? 'ioh' : _brand;
 
     String fmtComp(dynamic v, String unit) {
-      if (v == null) return '—';
-      final n = (v as num).toDouble();
-      if (unit == '%') return _pct(n);
-      if (unit == 'ratio') return NumberFormat('#,##0.00', 'id').format(n);
-      if (unit == 'GB') return NumberFormat('#,##0.0', 'id').format(n);
-      return NumberFormat('#,##0', 'id').format(n); // Rp
-    }
-    String varComp(dynamic v, String unit) {
-      if (v == null) return '—';
-      final n = (v as num).toDouble();
-      return '${n >= 0 ? '▲' : '▼'} ${fmtComp(n.abs(), unit)}';
+      if (v == null) return kReportNotAvailable;
+      if (unit == '%') return _pct(v);
+      if (unit == 'ratio') return reportNumber(v, decimals: 2);
+      if (unit == 'GB') return reportNumber(v, decimals: 1);
+      return reportNumber(v); // Rp
     }
 
-    // Frozen Metric column (header + body).
-    final nameCol = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(width: nameW, height: headH, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('Metric', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: context.vMute))),
-      for (var i = 0; i < metrics.length; i++)
-        Container(
-          width: nameW, height: rowH,
-          color: i.isOdd ? context.vZebra : context.vWhite,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          alignment: Alignment.centerLeft,
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text((metrics[i]['name'] ?? '').toString(), style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w500, color: context.vInk), maxLines: 1, overflow: TextOverflow.ellipsis),
-            Text(scales[i][1] as String, style: TextStyle(fontSize: 8.5, color: context.vMute), maxLines: 1, overflow: TextOverflow.ellipsis),
-          ]),
-        ),
-    ]);
+    final rows = <ReportPeriodRow>[];
+    for (final metric in metrics) {
+      final values = (metric[activeBrand] as Map?)?.cast<String, dynamic>() ?? {};
+      final unit = (metric['unit'] ?? '').toString();
+      final isComputed = metric['computed'] == true;
 
-    // Scrollable data columns.
-    Widget subHead(String t) => Container(width: 70, height: headH, color: bandBg, alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(horizontal: 6), child: Text(t, style: TextStyle(color: bandFg, fontSize: 9.5, fontWeight: FontWeight.w600)));
-    final head = Row(children: [for (final h in subs) subHead(h)]);
-    final body = <Widget>[];
-    for (var i = 0; i < metrics.length; i++) {
-      final isComp = metrics[i]['computed'] == true;
-      final b = metrics[i][_brand] as Map<String, dynamic>;
-      final div = scales[i][0] as double;
-      final unit = scales[i][1] as String;
-      final bg = i.isOdd ? context.vZebra : context.vWhite;
-      String fNum(dynamic v) => isComp ? fmtComp(v, unit) : _fmtScaled(v, div);
-      String fVar(dynamic v) => isComp ? varComp(v, unit) : _var2(v, div);
-      body.add(Row(children: [
-        c(fNum(b['llmtd']), bg: bg),
-        c(fNum(b['lmtd']), bg: bg),
-        c(fNum(b['mtd']), bold: true, bg: bg),
-        c(fVar(b['var_mom']), color: sign(b['var_mom'] as num?), bg: const Color(0xFFDAE5EE)),
-        c(_pct(b['growth_mom_pct']), color: sign(b['growth_mom_pct'] as num?), bg: const Color(0xFFF2EAD2)),
-        c(fNum(b['lytd']), bg: bg),
-        c(fNum(b['ytd']), bold: true, bg: bg),
-        c(fVar(b['var_yoy']), color: sign(b['var_yoy'] as num?), bg: const Color(0xFFDAE5EE)),
-        c(_pct(b['growth_yoy_pct']), color: sign(b['growth_yoy_pct'] as num?), bg: const Color(0xFFF2EAD2)),
-      ]));
+      // Ratio and percent metrics carry their own unit and are never scaled.
+      // Everything else shares one tier across all five periods, so a
+      // YTD-heavy metric no longer picks a tier that only fits its MTD.
+      final String unitLabel;
+      final String Function(dynamic) number;
+      final String Function(dynamic) variance;
+      if (isComputed) {
+        unitLabel = unit;
+        number = (value) => fmtComp(value, unit);
+        variance = (value) => value == null
+            ? kReportNotAvailable
+            : '${(value as num) >= 0 ? '\u25B2' : '\u25BC'} ${fmtComp(value.abs(), unit)}';
+      } else {
+        final peak = [
+          values['mtd'],
+          values['lmtd'],
+          values['llmtd'],
+          values['ytd'],
+          values['lytd'],
+        ]
+            .map((x) => (x as num?)?.abs().toDouble() ?? 0)
+            .fold<double>(0, (a, v) => a > v ? a : v);
+        final tier = reportMagnitudeTier(peak, unit: unit);
+        unitLabel = tier.label;
+        number = (value) => reportScaled(value, tier.divisor);
+        variance = (value) => reportVariance(value, divisor: tier.divisor);
+      }
+
+      rows.add(ReportPeriodRow(
+        name: (metric['name'] ?? metric['code']).toString(),
+        subtitle: unitLabel.isEmpty ? null : unitLabel,
+        code: (metric['code'] ?? '').toString(),
+        cells: {
+          'llmtd': ReportPeriodCell(number(values['llmtd'])),
+          'lmtd': ReportPeriodCell(number(values['lmtd'])),
+          'mtd': ReportPeriodCell(number(values['mtd'])),
+          'growthMom': ReportPeriodCell(
+            _pct(values['growth_mom_pct']),
+            secondaryText: variance(values['var_mom']),
+            raw: values['growth_mom_pct'] as num?,
+          ),
+          'lytd': ReportPeriodCell(number(values['lytd'])),
+          'ytd': ReportPeriodCell(number(values['ytd'])),
+          'growthYoy': ReportPeriodCell(
+            _pct(values['growth_yoy_pct']),
+            secondaryText: variance(values['var_yoy']),
+            raw: values['growth_yoy_pct'] as num?,
+          ),
+        },
+      ));
     }
 
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      nameCol,
-      Expanded(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [head, ...body]),
-        ),
-      ),
-    ]);
-  }
-
-  String _var2(dynamic v, double divisor) {
-    if (v == null) return '—';
-    final n = (v as num).toDouble() / divisor;
-    return '${n >= 0 ? '▲' : '▼'} ${NumberFormat('#,##0.0', 'id').format(n.abs())}';
+    return ReportPeriodTable(
+      semanticLabel: '${s['title'] ?? 'Metrics'} complete period table',
+      rows: rows,
+      band: Brands.of(activeBrand),
+      storageKey: 'comprehensive-${s['title']}-$activeBrand',
+      nameLabel: 'Metric',
+    );
   }
 
   // ── Data Revenue ──
-  String _mn(dynamic v) {
-    if (v == null) return '—';
-    final n = (v as num).toDouble();
-    if (n.abs() >= 1e6) return '${NumberFormat('#,##0.0', 'id').format(n / 1e6)} Mn';
-    return NumberFormat('#,##0', 'id').format(n);
-  }
+  /// Adaptive magnitude: plain below a million, then Mn, then Bn. A small
+  /// revenue must never render as `0,0 Bn`.
+  String _mn(dynamic v) => reportMagnitude(v, decimals: 1, useThousand: false);
 
-  String _num(dynamic v) => v == null ? '—' : NumberFormat('#,##0', 'id').format((v as num).toDouble());
+  String _num(dynamic v) => reportNumber(v);
 
   List<Widget> _dataRevSections() {
-    final chunks = (_drev!['chunks'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final slabs = (_drev!['price_slabs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final chunks =
+        (_drev!['chunks'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final slabs =
+        (_drev!['price_slabs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final ratios = _drev!['ratios'] as Map<String, dynamic>?;
     final out = <Widget>[];
 
     // Ratios panel: channel mix + ATL/BTL
     if (ratios != null) {
       Widget chip(String text, Color bg, Color fg) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
-            child: Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)));
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+              color: bg, borderRadius: BorderRadius.circular(999)),
+          child: Text(text,
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w600, color: fg)));
       final cp = (ratios['channel_pct'] as Map<String, dynamic>?) ?? {};
       final avb = ratios['atl_vs_btl'];
-      out.add(_panel('Ratios — Channel Mix & ATL/BTL', Wrap(spacing: 8, runSpacing: 8, children: [
-        for (final e in cp.entries) chip('${e.key}: ${_pct(e.value)}', const Color(0xFFEAF6F4), IOH.teal600),
-        chip('ATL: ${_pct(ratios['atl_pct'])}', context.vPanel, context.vInk),
-        chip('BTL: ${_pct(ratios['btl_pct'])}', context.vPanel, context.vInk),
-        chip('ATL/BTL: ${avb == null ? '—' : '${NumberFormat('#,##0.00', 'id').format((avb as num).toDouble())}×'}', const Color(0xFFFDF3E2), const Color(0xFF9A6B00)),
-      ])));
+      out.add(_detailPanel(
+          'Ratios | Channel Mix & ATL/BTL',
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            for (final e in cp.entries)
+              chip('${e.key}: ${_pct(e.value)}', const Color(0xFFEAF6F4),
+                  IOH.teal600),
+            chip('ATL: ${_pct(ratios['atl_pct'])}', context.vPanel,
+                context.vInk),
+            chip('BTL: ${_pct(ratios['btl_pct'])}', context.vPanel,
+                context.vInk),
+            chip(
+                'ATL/BTL: ${avb == null ? kReportNotAvailable : '${reportNumber(avb, decimals: 2)}x'}',
+                const Color(0xFFFDF3E2),
+                const Color(0xFF9A6B00)),
+          ]),
+          sectionKey: 'Ratios',
+          meta: '${cp.length + 3} indikator'));
       out.add(const SizedBox(height: 12));
     }
 
     for (final c in chunks) {
-      out.add(_panel('${c['name']} (Mn IDR)', _drChunkTable(c)));
+      final channels = (c['channels'] as List?)?.length ?? 0;
+      out.add(_detailPanel(
+        '${c['name']} (Mn IDR)',
+        _drChunkTable(c),
+        sectionKey: c['name'].toString(),
+        meta: '$channels channel',
+      ));
       out.add(const SizedBox(height: 12));
     }
-    // price slabs — with channel scope tabs + channel-detail chips
-    out.add(_panel('Price Slab Breakdown (Mn IDR)', _slabPanel(slabs)));
+    // price slabs with channel scope tabs and channel-detail chips
+    out.add(_detailPanel(
+      'Price Slab Breakdown (Mn IDR)',
+      _slabPanel(slabs),
+      sectionKey: 'Price Slab Breakdown',
+      meta: '${slabs.length} slab',
+    ));
     return out;
   }
 
   Widget _slabPanel(List<Map<String, dynamic>> fallbackSlabs) {
-    final scopes = (_drev!['price_slab_scopes'] as Map?)?.cast<String, dynamic>();
+    final scopes =
+        (_drev!['price_slab_scopes'] as Map?)?.cast<String, dynamic>();
     if (scopes == null) return _slabTable(fallbackSlabs);
     const order = ['total', 'organic', 'digital', 'trade'];
     final avail = order.where((k) => scopes.containsKey(k)).toList();
@@ -1217,12 +2358,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final active = _slabScope == k;
       final label = (scopes[k] as Map?)?['label']?.toString() ?? k;
       return GestureDetector(
-        onTap: () => setState(() { _slabScope = k; _slabDetail = ''; }),
+        onTap: () => setState(() {
+          _slabScope = k;
+          _slabDetail = '';
+        }),
         child: Container(
           margin: const EdgeInsets.only(right: 6),
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-          decoration: BoxDecoration(color: active ? IOH.teal500 : context.vWhite, borderRadius: BorderRadius.circular(999), border: Border.all(color: active ? IOH.teal500 : context.vRule)),
-          child: Text(label, style: TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.w600, color: active ? Colors.white : context.vMute)),
+          decoration: BoxDecoration(
+              color: active ? IOH.teal500 : context.vWhite,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: active ? IOH.teal500 : context.vRule)),
+          child: Text(label,
+              style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: active ? Colors.white : context.vMute)),
         ),
       );
     }
@@ -1233,202 +2385,245 @@ class _ReportsScreenState extends State<ReportsScreen> {
         onTap: () => setState(() => _slabDetail = val),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(color: active ? IOH.teal500 : context.vWhite, borderRadius: BorderRadius.circular(999), border: Border.all(color: active ? IOH.teal500 : context.vRule)),
-          child: Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: active ? Colors.white : context.vMute)),
+          decoration: BoxDecoration(
+              color: active ? IOH.teal500 : context.vWhite,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: active ? IOH.teal500 : context.vRule)),
+          child: Text(label,
+              style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: active ? Colors.white : context.vMute)),
         ),
       );
     }
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: avail.map(scopeTab).toList())),
+      SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: avail.map(scopeTab).toList())),
       if (detailNames.isNotEmpty) ...[
         const SizedBox(height: 8),
-        SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
-          Padding(padding: const EdgeInsets.only(right: 6), child: chip('All ${(cur['label'] ?? '')}', '')),
-          ...detailNames.map((dn) => Padding(padding: const EdgeInsets.only(right: 6), child: chip(dn, dn))),
-        ])),
+        SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: chip('All ${(cur['label'] ?? '')}', '')),
+              ...detailNames.map((dn) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: chip(dn, dn))),
+            ])),
       ],
       const SizedBox(height: 10),
       _slabTable(slabs),
     ]);
   }
 
-  // Price slab table — frozen Slab column + full timeframe data columns.
-  Widget _slabTable(List<Map<String, dynamic>> slabs, {String nameLabel = 'Slab', double nameW = 120.0}) {
-    Color sign(num? v) => (v ?? 0) >= 0 ? IOH.teal600 : IOH.danger;
-    final bandBg = _brandColors[_brand]!;
-    final bandFg = _brand == 'im3' ? const Color(0xFF161616) : Colors.white;
-    const headH = 28.0, rowH = 36.0;
-    final subs = ['LLMTD', 'LMTD', 'MTD', 'Var', '%', 'LYTD', 'YTD', 'Var YoY', 'YoY%', 'Hits'];
-    double bv(Map<String, dynamic> r) => (r[_brand] as num?)?.toDouble() ?? 0;
-    double sh(Map<String, dynamic> r) {
-      final i = (r['ioh'] as num?)?.toDouble() ?? 0;
-      return i == 0 ? 1 : bv(r) / i;
+  // Price slab table: frozen Slab column plus full timeframe data columns.
+  Widget _slabTable(List<Map<String, dynamic>> slabs,
+      {String nameLabel = 'Slab', double nameW = 140.0}) {
+    // Only MTD is stored per brand. The other timeframes are IOH totals, so
+    // scale them by this slab's brand share to stay apple-to-apple.
+    double brandValue(Map<String, dynamic> r) =>
+        (r[_brand] as num?)?.toDouble() ?? 0;
+    double brandShare(Map<String, dynamic> r) {
+      final ioh = (r['ioh'] as num?)?.toDouble() ?? 0;
+      return ioh == 0 ? 1 : brandValue(r) / ioh;
     }
-    Widget cl(String t, {Color? color, bool bold = false, Color? bg, double w = 78}) => Container(
-        width: w, height: rowH, alignment: Alignment.centerRight, color: bg, padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Text(t, style: TextStyle(fontSize: 11, color: color ?? context.vInk, fontWeight: bold ? FontWeight.w700 : FontWeight.w400, fontFeatures: const [FontFeature.tabularFigures()])));
 
-    final nameCol = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(width: nameW, height: headH, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(nameLabel, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: context.vMute))),
-      for (var i = 0; i < slabs.length; i++)
-        Container(width: nameW, height: rowH, color: i.isOdd ? context.vZebra : context.vWhite,
-            padding: const EdgeInsets.symmetric(horizontal: 8), alignment: Alignment.centerLeft,
-            child: Text((slabs[i]['slab'] ?? '').toString(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: context.vInk), maxLines: 1, overflow: TextOverflow.ellipsis)),
-    ]);
-
-    Widget subHead(String t) => Container(width: 78, height: headH, color: bandBg, alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(horizontal: 6), child: Text(t, style: TextStyle(color: bandFg, fontSize: 9.5, fontWeight: FontWeight.w600)));
-    final head = Row(children: [for (final s in subs) subHead(s)]);
-    final body = <Widget>[];
-    for (var i = 0; i < slabs.length; i++) {
-      final s = slabs[i];
-      final bg = i.isOdd ? context.vZebra : context.vWhite;
-      final f = sh(s);
-      final mtd = bv(s);
-      final lmtd = ((s['lmtd'] as num?)?.toDouble() ?? 0) * f;
-      final llmtd = ((s['llmtd'] as num?)?.toDouble() ?? 0) * f;
-      final ytd = ((s['ytd'] as num?)?.toDouble() ?? 0) * f;
-      final lytd = ((s['lytd'] as num?)?.toDouble() ?? 0) * f;
-      final vM = mtd - lmtd, vY = ytd - lytd;
-      body.add(Row(children: [
-        cl(_mn(llmtd), bg: bg),
-        cl(_mn(lmtd), bg: bg),
-        cl(_mn(mtd), bold: true, bg: bg),
-        cl('${vM >= 0 ? '▲' : '▼'} ${_mn(vM.abs())}', color: sign(vM), bg: const Color(0xFFDAE5EE)),
-        cl(_pct(lmtd != 0 ? vM / lmtd * 100 : null), color: sign(vM), bg: const Color(0xFFF2EAD2)),
-        cl(_mn(lytd), bg: bg),
-        cl(_mn(ytd), bold: true, bg: bg),
-        cl('${vY >= 0 ? '▲' : '▼'} ${_mn(vY.abs())}', color: sign(vY), bg: const Color(0xFFDAE5EE)),
-        cl(_pct(lytd != 0 ? vY / lytd * 100 : null), color: sign(vY), bg: const Color(0xFFF2EAD2)),
-        cl('${(s['hit'] as num?)?.toInt() ?? 0}', color: context.vMute, bg: bg),
-      ]));
+    final rows = <ReportPeriodRow>[];
+    for (final slab in slabs) {
+      final factor = brandShare(slab);
+      final mtd = brandValue(slab);
+      final lmtd = ((slab['lmtd'] as num?)?.toDouble() ?? 0) * factor;
+      final llmtd = ((slab['llmtd'] as num?)?.toDouble() ?? 0) * factor;
+      final ytd = ((slab['ytd'] as num?)?.toDouble() ?? 0) * factor;
+      final lytd = ((slab['lytd'] as num?)?.toDouble() ?? 0) * factor;
+      final varMom = mtd - lmtd;
+      final varYoy = ytd - lytd;
+      final growthMom = lmtd != 0 ? varMom / lmtd * 100 : null;
+      final growthYoy = lytd != 0 ? varYoy / lytd * 100 : null;
+      rows.add(ReportPeriodRow(
+        name: (slab['slab'] ?? '').toString(),
+        code: 'rev_slab',
+        cells: {
+          'llmtd': ReportPeriodCell(_mn(llmtd)),
+          'lmtd': ReportPeriodCell(_mn(lmtd)),
+          'mtd': ReportPeriodCell(_mn(mtd)),
+          'growthMom': ReportPeriodCell(
+            _pct(growthMom),
+            secondaryText: reportVarianceMagnitude(varMom, useThousand: false),
+            raw: growthMom,
+          ),
+          'lytd': ReportPeriodCell(_mn(lytd)),
+          'ytd': ReportPeriodCell(_mn(ytd)),
+          'growthYoy': ReportPeriodCell(
+            _pct(growthYoy),
+            secondaryText: reportVarianceMagnitude(varYoy, useThousand: false),
+            raw: growthYoy,
+          ),
+          'extra': ReportPeriodCell(_num(slab['hit'])),
+        },
+      ));
     }
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      nameCol,
-      Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [head, ...body]))),
-    ]);
+
+    return ReportPeriodTable(
+      semanticLabel: '$nameLabel complete period table',
+      rows: rows,
+      band: Brands.of(_brand),
+      storageKey: 'slab-$nameLabel-$_brand',
+      nameLabel: nameLabel,
+      nameWidth: nameW,
+      columns: const [
+        ...ReportPeriodTable.fullPeriods,
+        ReportPeriodColumn.extra,
+      ],
+      extraLabel: 'Hits',
+    );
   }
 
-  // Data Revenue chunk table — same visual as Comprehensive: frozen Channel
-  // column + horizontally-scrollable brand-band data columns, with a TOTAL
-  // headline row and expandable channel_detail rows.
+  // Data Revenue chunk table: one shared period table with a TOTAL headline
+  // row and expandable channel_detail rows.
   Widget _drChunkTable(Map<String, dynamic> c) {
-    Color sign(num? v) => (v ?? 0) >= 0 ? IOH.teal600 : IOH.danger;
-    final channels = (c['channels'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final h = c['headline'] as Map<String, dynamic>;
-    final bandBg = _brandColors[_brand]!;
-    final bandFg = _brand == 'im3' ? const Color(0xFF161616) : Colors.white;
-    const nameW = 150.0, headH = 28.0, rowH = 38.0;
-    final subs = ['LLMTD', 'LMTD', 'MTD', 'Var', '%', 'LYTD', 'YTD', 'Var YoY', 'YoY%', 'Contrib%'];
-    double bval(Map<String, dynamic> r) => (r[_brand] as num?)?.toDouble() ?? 0;
-    // brand share to scale IOH-only timeframes (lmtd/llmtd/ytd/lytd) per brand
-    double bshare(Map<String, dynamic> r) {
-      final i = (r['ioh'] as num?)?.toDouble() ?? 0;
-      return i == 0 ? 1 : bval(r) / i;
+    final channels =
+        (c['channels'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final headline = c['headline'] as Map<String, dynamic>;
+
+    // Only MTD is stored per brand. The remaining timeframes are IOH totals,
+    // so scale them by this channel's brand share to stay apple-to-apple.
+    double brandValue(Map<String, dynamic> r) =>
+        (r[_brand] as num?)?.toDouble() ?? 0;
+    double brandShare(Map<String, dynamic> r) {
+      final ioh = (r['ioh'] as num?)?.toDouble() ?? 0;
+      return ioh == 0 ? 1 : brandValue(r) / ioh;
     }
 
-    Widget c2(String text, {Color? color, bool bold = false, Color? bg, double w = 78}) => Container(
-          width: w, height: rowH, alignment: Alignment.centerRight, color: bg,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Text(text, style: TextStyle(fontSize: 11, color: color ?? context.vInk, fontWeight: bold ? FontWeight.w700 : FontWeight.w400, fontFeatures: const [FontFeature.tabularFigures()])),
-        );
+    ReportPeriodRow buildRow(
+      String label,
+      Map<String, dynamic> values, {
+      dynamic contribution,
+      bool indented = false,
+      bool headlineRow = false,
+      String? expandKey,
+      bool expanded = false,
+    }) {
+      final factor = brandShare(values);
+      final mtd = brandValue(values);
+      final lmtd = ((values['lmtd'] as num?)?.toDouble() ?? 0) * factor;
+      final llmtd = ((values['llmtd'] as num?)?.toDouble() ?? 0) * factor;
+      final ytd = ((values['ytd'] as num?)?.toDouble() ?? 0) * factor;
+      final lytd = ((values['lytd'] as num?)?.toDouble() ?? 0) * factor;
+      final varMom = mtd - lmtd;
+      final varYoy = ytd - lytd;
+      final growthMom = lmtd != 0 ? varMom / lmtd * 100 : null;
+      final growthYoy = lytd != 0 ? varYoy / lytd * 100 : null;
+      return ReportPeriodRow(
+        name: label,
+        code: 'rev_channel',
+        indented: indented,
+        headline: headlineRow,
+        expandKey: expandKey,
+        expanded: expanded,
+        cells: {
+          'llmtd': ReportPeriodCell(_mn(llmtd)),
+          'lmtd': ReportPeriodCell(_mn(lmtd)),
+          'mtd': ReportPeriodCell(_mn(mtd)),
+          'growthMom': ReportPeriodCell(
+            _pct(growthMom),
+            secondaryText: reportVarianceMagnitude(varMom, useThousand: false),
+            raw: growthMom,
+          ),
+          'lytd': ReportPeriodCell(_mn(lytd)),
+          'ytd': ReportPeriodCell(_mn(ytd)),
+          'growthYoy': ReportPeriodCell(
+            _pct(growthYoy),
+            secondaryText: reportVarianceMagnitude(varYoy, useThousand: false),
+            raw: growthYoy,
+          ),
+          'extra': ReportPeriodCell(_pct(contribution)),
+        },
+      );
+    }
 
-    // Build (label, indent, bg, map, isHeadline) rows in display order.
-    final rowsData = <Map<String, dynamic>>[];
-    rowsData.add({'label': 'TOTAL', 'indent': false, 'm': h, 'contrib': 100.0, 'tap': null, 'hl': true});
-    for (var i = 0; i < channels.length; i++) {
-      final ch = channels[i];
-      final details = (ch['details'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-      final key = '${c['name']}|${ch['channel']}';
+    final rows = <ReportPeriodRow>[
+      buildRow('TOTAL', headline, contribution: 100.0, headlineRow: true),
+    ];
+    for (final channel in channels) {
+      final details =
+          (channel['details'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final key = '${c['name']}|${channel['channel']}';
       final isOpen = _drExpanded.contains(key);
-      rowsData.add({'label': '${details.isEmpty ? '' : (isOpen ? '▾ ' : '▸ ')}${ch['channel'] ?? ''}',
-        'indent': false, 'm': ch, 'contrib': ch['contrib_pct'], 'tap': details.isEmpty ? null : key, 'hl': false, 'odd': i.isOdd});
-      if (isOpen) {
-        for (final dt in details) {
-          rowsData.add({'label': (dt['detail'] ?? '').toString(), 'indent': true, 'm': dt, 'contrib': dt['contrib_pct'], 'tap': null, 'hl': false});
-        }
+      rows.add(buildRow(
+        (channel['channel'] ?? '').toString(),
+        channel,
+        contribution: channel['contrib_pct'],
+        expandKey: details.isEmpty ? null : key,
+        expanded: isOpen,
+      ));
+      if (!isOpen) continue;
+      for (final detail in details) {
+        rows.add(buildRow(
+          (detail['detail'] ?? '').toString(),
+          detail,
+          contribution: detail['contrib_pct'],
+          indented: true,
+        ));
       }
     }
 
-    Color rowBg(int i, Map<String, dynamic> rd) {
-      if (rd['hl'] == true) return context.vHeadline;
-      if (rd['indent'] == true) return context.vSubtle;
-      return (rd['odd'] == true) ? context.vZebra : context.vWhite;
-    }
-
-    // Frozen Channel column.
-    final nameCol = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(width: nameW, height: headH, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('Channel', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: context.vMute))),
-      for (var i = 0; i < rowsData.length; i++)
-        GestureDetector(
-          onTap: rowsData[i]['tap'] == null ? null : () {
-            final k = rowsData[i]['tap'] as String;
-            setState(() => _drExpanded.contains(k) ? _drExpanded.remove(k) : _drExpanded.add(k));
-          },
-          child: Container(
-            width: nameW, height: rowH, color: rowBg(i, rowsData[i]),
-            padding: EdgeInsets.only(left: rowsData[i]['indent'] == true ? 22 : 8, right: 8),
-            alignment: Alignment.centerLeft,
-            child: Text(rowsData[i]['label'] as String,
-                style: TextStyle(fontSize: 11, fontWeight: rowsData[i]['hl'] == true ? FontWeight.w700 : (rowsData[i]['indent'] == true ? FontWeight.w400 : FontWeight.w600), color: rowsData[i]['indent'] == true ? context.vMute : context.vInk),
-                maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
-        ),
-    ]);
-
-    // Scrollable data columns.
-    Widget subHead(String t) => Container(width: 78, height: headH, color: bandBg, alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(horizontal: 6), child: Text(t, style: TextStyle(color: bandFg, fontSize: 9.5, fontWeight: FontWeight.w600)));
-    final head = Row(children: [for (final s in subs) subHead(s)]);
-    String varTxt(double v) => '${v >= 0 ? '▲' : '▼'} ${_mn(v.abs())}';
-    final body = <Widget>[];
-    for (var i = 0; i < rowsData.length; i++) {
-      final rd = rowsData[i];
-      final m = rd['m'] as Map<String, dynamic>;
-      final bg = rowBg(i, rd);
-      final sh = bshare(m);
-      final mtd = bval(m);
-      final lmtd = ((m['lmtd'] as num?)?.toDouble() ?? 0) * sh;
-      final llmtd = ((m['llmtd'] as num?)?.toDouble() ?? 0) * sh;
-      final ytd = ((m['ytd'] as num?)?.toDouble() ?? 0) * sh;
-      final lytd = ((m['lytd'] as num?)?.toDouble() ?? 0) * sh;
-      final vMom = mtd - lmtd, vYoy = ytd - lytd;
-      body.add(Row(children: [
-        c2(_mn(llmtd), bg: bg),
-        c2(_mn(lmtd), bg: bg),
-        c2(_mn(mtd), bold: true, bg: bg),
-        c2(varTxt(vMom), color: sign(vMom), bg: const Color(0xFFDAE5EE)),
-        c2(_pct(lmtd != 0 ? vMom / lmtd * 100 : null), color: sign(vMom), bg: const Color(0xFFF2EAD2)),
-        c2(_mn(lytd), bg: bg),
-        c2(_mn(ytd), bold: true, bg: bg),
-        c2(varTxt(vYoy), color: sign(vYoy), bg: const Color(0xFFDAE5EE)),
-        c2(_pct(lytd != 0 ? vYoy / lytd * 100 : null), color: sign(vYoy), bg: const Color(0xFFF2EAD2)),
-        c2(_pct(rd['contrib']), color: context.vMute, bg: bg),
-      ]));
-    }
-
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      nameCol,
-      Expanded(child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [head, ...body]),
-      )),
-    ]);
+    return ReportPeriodTable(
+      semanticLabel: '${c['name']} complete channel detail',
+      rows: rows,
+      band: Brands.of(_brand),
+      storageKey: 'data-revenue-${c['name']}-$_brand',
+      nameLabel: 'Channel',
+      nameWidth: 180,
+      columns: const [
+        ...ReportPeriodTable.fullPeriods,
+        ReportPeriodColumn.extra,
+      ],
+      extraLabel: 'Contrib %',
+      onToggleRow: (key) => setState(() => _drExpanded.contains(key)
+          ? _drExpanded.remove(key)
+          : _drExpanded.add(key)),
+    );
   }
 
   // ── Product Demand ──
-  static const _rankBg = [Color(0xFFED1C24), Color(0xFFEC008C), Color(0xFFFFCB05)];
+  static const _rankBg = [
+    Color(0xFFED1C24),
+    Color(0xFFEC008C),
+    Color(0xFFFFCB05)
+  ];
   static const _rankFg = [Colors.white, Colors.white, Color(0xFF161616)];
 
-  Widget _pill(String label, bool active, VoidCallback onTap, {bool small = false}) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: small ? EdgeInsets.zero : const EdgeInsets.only(right: 6),
-          padding: EdgeInsets.symmetric(vertical: small ? 5 : 6, horizontal: small ? 10 : 12),
-          decoration: BoxDecoration(color: active ? IOH.teal500 : context.vWhite, borderRadius: BorderRadius.circular(999), border: Border.all(color: active ? IOH.teal500 : context.vRule)),
-          child: Text(label, style: TextStyle(fontFamily: 'Poppins', fontSize: small ? 10.5 : 12, fontWeight: FontWeight.w600, color: active ? Colors.white : context.vMute)),
+  Widget _pill(String label, bool active, VoidCallback onTap,
+          {bool small = false}) =>
+      Semantics(
+        button: true,
+        selected: active,
+        label: label,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 48),
+            margin: small ? EdgeInsets.zero : const EdgeInsets.only(right: 6),
+            padding: EdgeInsets.symmetric(
+                vertical: small ? 5 : 6, horizontal: small ? 10 : 12),
+            decoration: BoxDecoration(
+                color: active ? IOH.teal500 : context.vWhite,
+                borderRadius: BorderRadius.circular(999),
+                border:
+                    Border.all(color: active ? IOH.teal500 : context.vRule)),
+            child: Text(label,
+                style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: small ? 10.5 : 12,
+                    fontWeight: FontWeight.w600,
+                    color: active ? Colors.white : context.vMute)),
+          ),
         ),
       );
 
@@ -1439,35 +2634,74 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final cur = (scopes[_pdSlabScope] as Map?)?.cast<String, dynamic>() ?? {};
     final details = (cur['details'] as Map?)?.cast<String, dynamic>() ?? {};
     final detailNames = details.keys.toList()..sort();
-    final dimSrc = (_pdSlabDetail.isNotEmpty && details.containsKey(_pdSlabDetail))
-        ? (details[_pdSlabDetail] as Map).cast<String, dynamic>() : cur;
-    final rows = ((_pdSlabDim == 'quota' ? dimSrc['quota'] : dimSrc['validity']) as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final tops = (dimSrc['top_products'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final dimSrc =
+        (_pdSlabDetail.isNotEmpty && details.containsKey(_pdSlabDetail))
+            ? (details[_pdSlabDetail] as Map).cast<String, dynamic>()
+            : cur;
+    final rows = ((_pdSlabDim == 'quota' ? dimSrc['quota'] : dimSrc['validity'])
+                as List?)
+            ?.cast<Map<String, dynamic>>() ??
+        [];
+    final tops =
+        (dimSrc['top_products'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       // channel scope tabs
-      SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: avail.map((k) =>
-        _pill((scopes[k] as Map?)?['label']?.toString() ?? k, _pdSlabScope == k, () => setState(() { _pdSlabScope = k; _pdSlabDetail = ''; }))).toList())),
+      SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+              children: avail
+                  .map((k) => _pill(
+                      (scopes[k] as Map?)?['label']?.toString() ?? k,
+                      _pdSlabScope == k,
+                      () => setState(() {
+                            _pdSlabScope = k;
+                            _pdSlabDetail = '';
+                          })))
+                  .toList())),
       // channel detail chips
       if (detailNames.isNotEmpty) ...[
         const SizedBox(height: 8),
-        SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
-          Padding(padding: const EdgeInsets.only(right: 6), child: _pill('All ${(cur['label'] ?? '')}', _pdSlabDetail == '', () => setState(() => _pdSlabDetail = ''), small: true)),
-          ...detailNames.map((dn) => Padding(padding: const EdgeInsets.only(right: 6), child: _pill(dn, _pdSlabDetail == dn, () => setState(() => _pdSlabDetail = dn), small: true))),
-        ])),
+        SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: _pill(
+                      'All ${(cur['label'] ?? '')}',
+                      _pdSlabDetail == '',
+                      () => setState(() => _pdSlabDetail = ''),
+                      small: true)),
+              ...detailNames.map((dn) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: _pill(dn, _pdSlabDetail == dn,
+                      () => setState(() => _pdSlabDetail = dn),
+                      small: true))),
+            ])),
       ],
       const SizedBox(height: 8),
       Wrap(spacing: 6, children: [
-        _pill('Slab Kuota', _pdSlabDim == 'quota', () => setState(() => _pdSlabDim = 'quota'), small: true),
-        _pill('Slab Masa Aktif', _pdSlabDim == 'validity', () => setState(() => _pdSlabDim = 'validity'), small: true),
+        _pill('Slab Kuota', _pdSlabDim == 'quota',
+            () => setState(() => _pdSlabDim = 'quota'),
+            small: true),
+        _pill('Slab Masa Aktif', _pdSlabDim == 'validity',
+            () => setState(() => _pdSlabDim = 'validity'),
+            small: true),
       ]),
       const SizedBox(height: 10),
       _slabTable(rows),
       if (tops.isNotEmpty) ...[
         const SizedBox(height: 14),
-        Text('TOP PRODUCTS · ${cur['label']}', style: TextStyle(fontFamily: 'Poppins', fontSize: 10.5, fontWeight: FontWeight.w700, color: IOH.teal600, letterSpacing: 0.4)),
+        Text('TOP PRODUCTS · ${cur['label']}',
+            style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: IOH.teal600,
+                letterSpacing: 0.4)),
         const SizedBox(height: 8),
-        _slabTable(tops.map((p) => {...p, 'slab': p['product']}).toList(), nameLabel: 'Product', nameW: 170),
+        _slabTable(tops.map((p) => {...p, 'slab': p['product']}).toList(),
+            nameLabel: 'Product', nameW: 170),
       ],
     ]);
   }
@@ -1475,33 +2709,71 @@ class _ReportsScreenState extends State<ReportsScreen> {
   List<Widget> _productSections() {
     final qLabels = (_prod!['quota_labels'] as List?)?.cast<String>() ?? [];
     final vLabels = (_prod!['validity_labels'] as List?)?.cast<String>() ?? [];
-    final rev = (_prod!['revenue_matrix'] as List?)?.map((r) => (r as List).map((x) => (x as num?)?.toDouble() ?? 0).toList()).toList() ?? [];
-    final growth = (_prod!['growth_matrix'] as List?)?.map((r) => (r as List).map((x) => (x as num?)?.toDouble()).toList()).toList() ?? [];
+    final rev = (_prod!['revenue_matrix'] as List?)
+            ?.map((r) =>
+                (r as List).map((x) => (x as num?)?.toDouble() ?? 0).toList())
+            .toList() ??
+        [];
+    final growth = (_prod!['growth_matrix'] as List?)
+            ?.map(
+                (r) => (r as List).map((x) => (x as num?)?.toDouble()).toList())
+            .toList() ??
+        [];
     final top3 = (_prod!['top_3'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     double flatMax = 1;
-    for (final r in rev) { for (final x in r) { if (x > flatMax) flatMax = x; } }
+    for (final r in rev) {
+      for (final x in r) {
+        if (x > flatMax) flatMax = x;
+      }
+    }
     double gMax = 1;
-    for (final r in growth) { for (final x in r) { final a = (x ?? 0).abs(); if (a > gMax) gMax = a; } }
+    for (final r in growth) {
+      for (final x in r) {
+        final a = (x ?? 0).abs();
+        if (a > gMax) gMax = a;
+      }
+    }
 
-    int rankOf(String q, String v) => top3.indexWhere((t) => t['quota'] == q && t['validity'] == v);
+    int rankOf(String q, String v) =>
+        top3.indexWhere((t) => t['quota'] == q && t['validity'] == v);
 
     final out = <Widget>[];
-    // Slab tables (Data-Revenue style) — channel scope tabs + quota/validity dim
+    // Slab tables (Data-Revenue style): channel scope tabs and quota/validity dim
     final ss = (_prod!['slab_scopes'] as Map?)?.cast<String, dynamic>();
     if (ss != null) {
-      out.add(_panel('Slab Breakdown (Mn IDR)', _pdSlabPanel(ss)));
+      out.add(_detailPanel(
+        'Slab Breakdown (Mn IDR)',
+        _pdSlabPanel(ss),
+        sectionKey: 'Slab Breakdown',
+        meta: 'quota, validity, dan top products',
+      ));
       out.add(const SizedBox(height: 12));
     }
     // legend
-    out.add(_panel('Rank Legend', Wrap(spacing: 8, runSpacing: 8, children: top3.map((t) {
-      final r = (t['rank'] as num).toInt();
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(color: _rankBg[r - 1], borderRadius: BorderRadius.circular(8)),
-        child: Text('#$r ${t['quota']} × ${t['validity']} · ${_mn(t['value'])} Mn', style: TextStyle(color: _rankFg[r - 1], fontSize: 11.5, fontWeight: FontWeight.w600)),
-      );
-    }).toList())));
+    out.add(_detailPanel(
+        'Top 3 Products',
+        Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: top3.map((t) {
+              final r = (t['rank'] as num).toInt();
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                    color: _rankBg[r - 1],
+                    borderRadius: BorderRadius.circular(8)),
+                child: Text(
+                    '#$r ${t['quota']} x ${t['validity']} | ${_mn(t['value'])} Mn',
+                    style: TextStyle(
+                        color: _rankFg[r - 1],
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600)),
+              );
+            }).toList()),
+        sectionKey: 'Top 3 Products',
+        meta: '${top3.length} ranked products'));
     out.add(const SizedBox(height: 12));
 
     // revenue heatmap
@@ -1509,24 +2781,53 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final val = rev[ri][ci];
       final rank = rankOf(qLabels[ri], vLabels[ci]);
       final alpha = 0.1 + 0.8 * (val / flatMax);
-      final bg = rank >= 0 ? _rankBg[rank] : Color.fromRGBO(21, 166, 151, alpha);
-      final fg = rank >= 0 ? _rankFg[rank] : (alpha > 0.55 ? Colors.white : IOH.ink);
+      final bg =
+          rank >= 0 ? _rankBg[rank] : Color.fromRGBO(21, 166, 151, alpha);
+      final fg =
+          rank >= 0 ? _rankFg[rank] : (alpha > 0.55 ? Colors.white : IOH.ink);
       return Container(
-        width: 60, padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
-        alignment: Alignment.center, color: bg,
-        child: Text(val > 0 ? _mn(val) : '—', style: TextStyle(fontSize: 10, color: fg, fontFeatures: const [FontFeature.tabularFigures()])),
+        width: 60,
+        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
+        alignment: Alignment.center,
+        color: bg,
+        child: Text(val > 0 ? _mn(val) : 'N/A',
+            style: TextStyle(
+                fontSize: 10,
+                color: fg,
+                fontFeatures: const [FontFeature.tabularFigures()])),
       );
     }
-    out.add(_panel('Revenue Heatmap · Quota × Validity (Mn IDR)', SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [SizedBox(width: 72, child: Text('', style: TextStyle(color: context.vMute))), ...vLabels.map((v) => SizedBox(width: 60, child: Text(v, textAlign: TextAlign.center, style: TextStyle(fontSize: 9.5, color: context.vMute))))]),
-        ...qLabels.asMap().entries.map((e) => Row(children: [
-          SizedBox(width: 72, child: Text(e.value, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: context.vInk))),
-          ...vLabels.asMap().entries.map((c) => heatCell(e.key, c.key)),
-        ])),
-      ]),
-    )));
+
+    out.add(_detailPanel(
+        'Revenue Heatmap | Quota x Validity (Mn IDR)',
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              SizedBox(
+                  width: 72,
+                  child: Text('', style: TextStyle(color: context.vMute))),
+              ...vLabels.map((v) => SizedBox(
+                  width: 60,
+                  child: Text(v,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 9.5, color: context.vMute))))
+            ]),
+            ...qLabels.asMap().entries.map((e) => Row(children: [
+                  SizedBox(
+                      width: 72,
+                      child: Text(e.value,
+                          style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: context.vInk))),
+                  ...vLabels.asMap().entries.map((c) => heatCell(e.key, c.key)),
+                ])),
+          ]),
+        ),
+        sectionKey: 'Revenue Heatmap',
+        meta: '${qLabels.length} x ${vLabels.length} cells'));
     out.add(const SizedBox(height: 12));
 
     // growth heatmap
@@ -1535,71 +2836,206 @@ class _ReportsScreenState extends State<ReportsScreen> {
       Color bg = context.vWhite;
       if (g != null) {
         final a = (g.abs() / gMax).clamp(0.0, 1.0);
-        bg = g >= 0 ? Color.fromRGBO(14, 133, 121, a) : Color.fromRGBO(185, 28, 28, a);
+        bg = g >= 0
+            ? Color.fromRGBO(14, 133, 121, a)
+            : Color.fromRGBO(185, 28, 28, a);
       }
-      return Container(width: 56, padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4), alignment: Alignment.center, color: bg,
-          child: Text(g == null ? '—' : _pct(g), style: const TextStyle(fontSize: 9.5)));
+      return Container(
+          width: 56,
+          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
+          alignment: Alignment.center,
+          color: bg,
+          child: Text(g == null ? 'N/A' : _pct(g),
+              style: const TextStyle(fontSize: 9.5)));
     }
-    out.add(_panel('Growth MoM% Heatmap', SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [SizedBox(width: 72, child: Text('', style: TextStyle(color: context.vMute))), ...vLabels.map((v) => SizedBox(width: 56, child: Text(v, textAlign: TextAlign.center, style: TextStyle(fontSize: 9.5, color: context.vMute))))]),
-        ...qLabels.asMap().entries.map((e) => Row(children: [
-          SizedBox(width: 72, child: Text(e.value, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: context.vInk))),
-          ...vLabels.asMap().entries.map((c) => gCell(e.key, c.key)),
-        ])),
-      ]),
-    )));
+
+    out.add(_detailPanel(
+        'Growth MoM% Heatmap',
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              SizedBox(
+                  width: 72,
+                  child: Text('', style: TextStyle(color: context.vMute))),
+              ...vLabels.map((v) => SizedBox(
+                  width: 56,
+                  child: Text(v,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 9.5, color: context.vMute))))
+            ]),
+            ...qLabels.asMap().entries.map((e) => Row(children: [
+                  SizedBox(
+                      width: 72,
+                      child: Text(e.value,
+                          style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: context.vInk))),
+                  ...vLabels.asMap().entries.map((c) => gCell(e.key, c.key)),
+                ])),
+          ]),
+        ),
+        sectionKey: 'Growth Heatmap',
+        meta: '${qLabels.length} x ${vLabels.length} cells'));
     return out;
   }
 
   // ── Network Benchmark ──
   List<Widget> _benchmarkSections() {
-    final fb = (_bench!['fb_benchmark'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final av = (_bench!['availability'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final catalog = CatalogReportData.fromPayload(_bench);
+    if (catalog.hasMetrics) {
+      return [_catalogReport(_bench!, includeAllBrands: true)];
+    }
+    final fb =
+        (_bench!['fb_benchmark'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final av =
+        (_bench!['availability'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final out = <Widget>[];
 
     if (fb.isNotEmpty) {
-      out.add(_panel('Network Benchmark (FB) · 3 Bulan Terakhir', _fbBenchmarkTable(fb)));
+      out.add(_detailPanel(
+        'Network Benchmark (FB) | 3 Bulan Terakhir',
+        _fbBenchmarkTable(fb),
+        sectionKey: 'Network Benchmark',
+        meta: '${fb.length} bulan, 5 operator, 3 unit metrik',
+      ));
       out.add(const SizedBox(height: 12));
     }
     if (av.isNotEmpty) {
-      out.add(_panel('Network Availability · 3 Bulan Terakhir', _availTable(av)));
+      out.add(_detailPanel(
+        'Network Availability | 3 Bulan Terakhir',
+        _availTable(av),
+        sectionKey: 'Network Availability',
+        meta: '${av.length} bulan, 10 metrik',
+      ));
       out.add(const SizedBox(height: 12));
     }
     return out;
   }
 
+  /// XL and SF are one commercial operator. The backend already merges them
+  /// sample-weighted into `*_xlsmart_4g`; this falls back to a sample-weighted
+  /// merge on the client when talking to an older backend.
+  num? _xlsmartValue(Map<String, dynamic> row, String measure) {
+    final merged = row['${measure}_xlsmart_4g'];
+    if (merged is num) return merged;
+    num weighted = 0;
+    num samples = 0;
+    for (final member in const ['xl', 'sf']) {
+      final value = row['${measure}_${member}_4g'];
+      final sample = row['sample_${member}_4g'];
+      if (value is! num) continue;
+      final weight = sample is num ? sample : 1;
+      weighted += value * weight;
+      samples += weight;
+    }
+    return samples == 0 ? null : weighted / samples;
+  }
+
   Widget _fbBenchmarkTable(List<Map<String, dynamic>> fb) {
-    const ops = [
-      ['im3', 'IM3', Color(0xFFF5A623)],
-      ['tri', '3ID', Color(0xFFEB008B)],
-      ['tsel', 'TSEL', Color(0xFF00549F)],
-      ['xl', 'XL', Color(0xFF0058A3)],
-      ['sf', 'SF', Color(0xFF7B2D8B)],
+    final ops = [
+      ['im3', Brands.im3],
+      ['tri', Brands.tri],
+      ['tsel', Brands.tsel],
+      ['xlsmart', Brands.xlsmart],
     ];
     final nameW = 64.0, colW = 52.0;
-    final nameCol = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(width: nameW, height: 28, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8), child: Text('Bulan', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute))),
-      Container(width: nameW, height: 22, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8)),
-      ...fb.asMap().entries.map((e) => Container(width: nameW, height: 36, color: e.key.isOdd ? context.vZebra : context.vWhite, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8), child: Text(e.value['month_prefix'].toString(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.vInk)))),
+    final nameCol =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+          width: nameW,
+          height: 28,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text('Bulan',
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: context.vMute))),
+      Container(
+          width: nameW,
+          height: 22,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 8)),
+      ...fb.asMap().entries.map((e) => Container(
+          width: nameW,
+          height: 36,
+          color: e.key.isOdd ? context.vZebra : context.vWhite,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(e.value['month_prefix'].toString(),
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: context.vInk)))),
     ]);
 
-    Widget head(String t, Color bg, Color fg) => Container(width: colW, height: 28, color: bg, alignment: Alignment.center, child: Text(t, style: TextStyle(color: fg, fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 10)));
-    Widget subH(String t, Color bg, Color fg) => Container(width: colW, height: 22, color: bg.withValues(alpha: 0.85), alignment: Alignment.center, child: Text(t, style: TextStyle(color: fg, fontSize: 9)));
-    Widget cell(dynamic v, {bool bold = false, Color? bg}) => Container(width: colW, height: 36, color: bg, alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(horizontal: 4), child: Text(v == null ? '—' : NumberFormat('#,##0.0', 'id').format((v as num).toDouble()), style: TextStyle(fontSize: 10.5, fontWeight: bold ? FontWeight.w700 : FontWeight.w400, color: context.vInk, fontFeatures: const [FontFeature.tabularFigures()])));
+    Widget head(String t, Color bg, Color fg) => Container(
+        width: colW,
+        height: 28,
+        color: bg,
+        alignment: Alignment.center,
+        child: Text(t,
+            style: TextStyle(
+                color: fg,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w700,
+                fontSize: 10)));
+    Widget subH(String t, Color bg, Color fg) => Container(
+        width: colW,
+        height: 22,
+        color: bg.withValues(alpha: 0.85),
+        alignment: Alignment.center,
+        child: Text(t, style: TextStyle(color: fg, fontSize: 9)));
+    Widget cell(dynamic v, {bool bold = false, Color? bg}) => Container(
+        width: colW,
+        height: 36,
+        color: bg,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Text(
+            v == null
+                ? 'N/A'
+                : reportNumber(v, decimals: 1),
+            style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+                color: context.vInk,
+                fontFeatures: const [FontFeature.tabularFigures()])));
 
-    final dataCols = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [for (final op in ops) head(op[1] as String, op[2] as Color, op[1] == 'IM3' ? const Color(0xFF161616) : Colors.white)]),
-      Row(children: [for (final op in ops) ...[subH('DL', op[2] as Color, op[1] == 'IM3' ? const Color(0xFF161616) : Colors.white), subH('Lat', op[2] as Color, op[1] == 'IM3' ? const Color(0xFF161616) : Colors.white), subH('Sig', op[2] as Color, op[1] == 'IM3' ? const Color(0xFF161616) : Colors.white)]]),
+    num? read(Map<String, dynamic> row, String key, String measure) {
+      if (key == 'xlsmart') return _xlsmartValue(row, measure);
+      final value = row['${measure}_${key}_4g'];
+      return value is num ? value : null;
+    }
+
+    final dataCols =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        for (final op in ops)
+          head((op[1] as BrandIdentity).label, (op[1] as BrandIdentity).color,
+              (op[1] as BrandIdentity).onColor)
+      ]),
+      Row(children: [
+        for (final op in ops) ...[
+          subH('DL', (op[1] as BrandIdentity).color,
+              (op[1] as BrandIdentity).onColor),
+          subH('Lat', (op[1] as BrandIdentity).color,
+              (op[1] as BrandIdentity).onColor),
+          subH('Sig', (op[1] as BrandIdentity).color,
+              (op[1] as BrandIdentity).onColor),
+        ]
+      ]),
       ...fb.asMap().entries.map((e) {
         final r = e.value;
         final bg = e.key.isOdd ? context.vZebra : context.vWhite;
         return Row(children: [
           for (final op in ops) ...[
-            cell(r['dl_speed_${op[0]}_4g'], bg: bg),
-            cell(r['latency_${op[0]}_4g'], bg: bg),
-            cell(r['signal_${op[0]}_4g'], bg: bg),
+            cell(read(r, op[0] as String, 'dl_speed'), bg: bg),
+            cell(read(r, op[0] as String, 'latency'), bg: bg),
+            cell(read(r, op[0] as String, 'signal'), bg: bg),
           ],
         ]);
       }),
@@ -1607,22 +3043,57 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       nameCol,
-      Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: dataCols)),
+      Expanded(
+          child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal, child: dataCols)),
     ]);
   }
 
   Widget _availTable(List<Map<String, dynamic>> av) {
-    final keys = ['mean_avg_avail_pct_2g', 'mean_avg_avail_pct_4g', 'mean_avg_avail_pct_5g', 'min_avail_pct_2g', 'min_avail_pct_4g', 'min_avail_pct_5g', 'sites_below_sla99_4g', 'sites_below_sla95_4g', 'total_down_day_events_4g', 'total_downtime_hrs_4g'];
-    final labels = ['Avg Avail 2G%', 'Avg Avail 4G%', 'Avg Avail 5G%', 'Min 2G%', 'Min 4G%', 'Min 5G%', 'SLA 99%', 'SLA 95%', 'Down Events 4G', 'Downtime 4G (hrs)'];
-    return _monthlyKVTable(av, [for (var i = 0; i < keys.length; i++) [keys[i], labels[i], 'num']]);
+    final keys = [
+      'mean_avg_avail_pct_2g',
+      'mean_avg_avail_pct_4g',
+      'mean_avg_avail_pct_5g',
+      'min_avail_pct_2g',
+      'min_avail_pct_4g',
+      'min_avail_pct_5g',
+      'sites_below_sla99_4g',
+      'sites_below_sla95_4g',
+      'total_down_day_events_4g',
+      'total_downtime_hrs_4g'
+    ];
+    final labels = [
+      'Avg Avail 2G%',
+      'Avg Avail 4G%',
+      'Avg Avail 5G%',
+      'Min 2G%',
+      'Min 4G%',
+      'Min 5G%',
+      'SLA 99%',
+      'SLA 95%',
+      'Down Events 4G',
+      'Downtime 4G (hrs)'
+    ];
+    return _monthlyKVTable(av, [
+      for (var i = 0; i < keys.length; i++) [keys[i], labels[i], 'num']
+    ]);
   }
 
   // ── Market Insight ──
   List<Widget> _insightSections() {
-    final panels = (_insight!['panels'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final panels =
+        (_insight!['panels'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final out = <Widget>[];
     for (final p in panels) {
-      out.add(_panel(p['title']?.toString() ?? '', _insightTable(p)));
+      final title = p['title']?.toString() ?? '';
+      final actors = (p['actors'] as List?)?.length ?? 0;
+      final months = (p['months'] as List?)?.length ?? 0;
+      out.add(_detailPanel(
+        title,
+        _insightTable(p),
+        sectionKey: title,
+        meta: '$actors aktor, $months bulan',
+      ));
       out.add(const SizedBox(height: 12));
     }
     return out;
@@ -1630,100 +3101,309 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   // ── FTTH ──
   List<Widget> _ftthSections() {
-    // FTTH uses the exact same data structure as Comprehensive
-    return _comprehensiveSections(_ftth);
+    final executive =
+        (_ftth?['executive_summary'] as Map?)?.cast<String, dynamic>() ?? {};
+    final sections =
+        (_ftth?['sections'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final metrics = <Map<String, dynamic>>[];
+    for (final section in sections) {
+      metrics.addAll(
+          (section['metrics'] as List?)?.cast<Map<String, dynamic>>() ?? []);
+    }
+    Map<String, dynamic>? byCode(String code) {
+      for (final metric in metrics) {
+        if (metric['code'] == code) return metric;
+      }
+      return null;
+    }
+
+    num? mtd(String code) {
+      final values = (byCode(code)?['ioh'] as Map?)?.cast<String, dynamic>();
+      return values?['mtd'] as num?;
+    }
+
+    final out = <Widget>[
+      if (executive['available'] == true)
+        _catalogReport(executive, includeAllBrands: true),
+      if (executive['available'] == true) const SizedBox(height: 12),
+      if (executive['available'] == false &&
+          executive['unavailable_reason'] != null)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(11),
+          decoration: BoxDecoration(
+            color: context.vSubtle,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: context.vRule),
+          ),
+          child: Text(executive['unavailable_reason'].toString(),
+              style: TextStyle(fontSize: 11, color: context.vMute)),
+        ),
+      if (executive['available'] == false &&
+          executive['unavailable_reason'] != null)
+        const SizedBox(height: 12),
+      PerformanceStageBars(
+        title: 'FTTH Stage Values',
+        subtitle:
+            'SO, SA, dan PA ditampilkan sebagai nilai stage independen, tanpa conversion buatan UI',
+        unitLabel: 'Orders',
+        stages: [
+          PerformanceStageDatum(
+              label: 'Service Order (SO)', value: mtd('ftth_so')),
+          PerformanceStageDatum(
+              label: 'Service Active (SA)', value: mtd('ftth_sa')),
+          PerformanceStageDatum(
+              label: 'Permanent Active (PA)', value: mtd('ftth_pa')),
+        ],
+        valueFormatter: (value) => reportNumber(value),
+      ),
+      const SizedBox(height: 12),
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF6DF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF0D796)),
+        ),
+        child:
+            const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.info_outline, size: 19, color: Color(0xFF805C00)),
+          SizedBox(width: 8),
+          Expanded(
+              child: Text(
+            'Low TUR site cutoff 20% adalah klasifikasi site, bukan target atau SLA.',
+            style: TextStyle(fontSize: 11.5, color: Color(0xFF604500)),
+          )),
+        ]),
+      ),
+      const SizedBox(height: 12),
+    ];
+    out.addAll(_comprehensiveSections(_ftth));
+    return out;
   }
 
-  String _intFmt(dynamic v) {
-    if (v == null) return '—';
-    return NumberFormat('#,##0', 'id').format((v as num).toDouble());
-  }
+  String _intFmt(dynamic v) => reportNumber(v);
 
   Widget _ftthCountTable(Map<String, dynamic> s) {
     final rows = (s['rows'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final columns = (s['columns'] as List?)?.cast<String>() ?? ['Count'];
-    if (rows.isEmpty) return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
-    return Column(children: [
-      Row(children: [
-        Expanded(child: Text('Item', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: context.vMute))),
-        ...columns.map((c) => SizedBox(width: 96, child: Text(c, textAlign: TextAlign.right, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: context.vMute)))),
-      ]),
-      const SizedBox(height: 4),
-      ...rows.asMap().entries.map((e) {
-        final r = e.value;
-        final cells = (r['cells'] as List?) ?? [r['value']];
-        return Container(
-          color: e.key.isOdd ? context.vZebra : context.vWhite,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(children: [
-            Expanded(child: Text((r['label'] ?? r['actor'] ?? '').toString(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.vInk))),
-            ...columns.asMap().entries.map((ce) => SizedBox(
-                width: 96,
-                child: Text(_intFmt(ce.key < cells.length ? cells[ce.key] : null),
-                    textAlign: TextAlign.right,
-                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: context.vInk, fontFeatures: const [FontFeature.tabularFigures()])))),
-          ]),
-        );
-      }),
-    ]);
+    if (rows.isEmpty) {
+      return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
+    }
+    return ReportAllDataTable<Map<String, dynamic>>(
+      semanticLabel: '${s['title'] ?? 'FTTH'} all rows',
+      rows: rows,
+      layoutPolicy: ReportTableLayoutPolicy.horizontal,
+      storageKey: 'ftth-count-${s['title']}-${columns.join('|')}',
+      columns: [
+        ReportTableColumn(
+          label: 'Item',
+          width: 180,
+          value: (row) => row['label'] ?? row['actor'],
+        ),
+        for (var index = 0; index < columns.length; index++)
+          ReportTableColumn(
+            label: columns[index],
+            numeric: true,
+            value: (row) {
+              final cells = (row['cells'] as List?) ?? [row['value']];
+              return index < cells.length ? cells[index] : null;
+            },
+            formatter: _intFmt,
+          ),
+      ],
+    );
   }
 
   Widget _ftthHierarchyTable(Map<String, dynamic> s) {
     final rows = (s['rows'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final columns = (s['columns'] as List?)?.cast<String>() ?? ['SO', 'SA', 'PA'];
-    if (rows.isEmpty) return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
+    final columns =
+        (s['columns'] as List?)?.cast<String>() ?? ['SO', 'SA', 'PA'];
+    if (rows.isEmpty) {
+      return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
+    }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Ketuk baris untuk drilldown · urut MTD', style: TextStyle(fontSize: 10, color: context.vMute)),
+      Text('Ketuk baris untuk drilldown · urut MTD',
+          style: TextStyle(fontSize: 10, color: context.vMute)),
       const SizedBox(height: 6),
       Row(children: [
-        Expanded(child: Text('SM / TL / AE', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: context.vMute))),
-        ...columns.map((c) => SizedBox(width: 56, child: Text(c, textAlign: TextAlign.right, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: IOH.teal600)))),
+        Expanded(
+            child: Text('SM / TL / AE',
+                style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: context.vMute))),
+        ...columns.map((c) => SizedBox(
+            width: 56,
+            child: Text(c,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: IOH.teal600)))),
       ]),
       const SizedBox(height: 4),
       _FtthHierTree(nodes: rows, columns: columns),
     ]);
   }
 
+  /// Industry and the IOH aggregate are the two reference rows in a panel.
+  bool _isEmphasizedActor(Map<String, dynamic> actor) {
+    final name = actor['actor']?.toString().toUpperCase();
+    return name == 'INDUSTRY' || name == 'IOH';
+  }
+
   Widget _insightTable(Map<String, dynamic> p) {
     final actors = (p['actors'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final months = (p['months'] as List?)?.cast<String>() ?? [];
-    if (actors.isEmpty || months.isEmpty) return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
-    
+    if (actors.isEmpty || months.isEmpty) {
+      return Text('Tidak ada data.', style: TextStyle(color: context.vMute));
+    }
+
     final kind = p['kind'].toString();
     final isPct = kind.startsWith('pct');
+    // A churn panel reads the opposite way to a gross add panel, so polarity
+    // comes from the panel title rather than the sign alone.
+    final polarity = reportPolarityFor(p['title']?.toString() ?? '');
     final colW = 84.0;
-    final nameW = 80.0;
-    
-    final nameCol = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Container(width: nameW, height: 34, alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('Operator', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute))),
+    final nameW = 110.0;
+
+    final nameCol =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Container(
+          width: nameW,
+          height: 34,
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text('Operator',
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: context.vMute))),
       for (var i = 0; i < actors.length; i++)
-        Container(width: nameW, height: 42, color: i.isOdd ? context.vZebra : context.vWhite,
-            padding: const EdgeInsets.symmetric(horizontal: 8), alignment: Alignment.centerLeft,
-            child: Text(actors[i]['actor'].toString(), style: TextStyle(fontSize: 11, fontWeight: actors[i]['actor'] == 'Industry' ? FontWeight.w700 : FontWeight.w500, color: context.vInk))),
+        Container(
+            width: nameW,
+            height: 42,
+            color: i.isOdd ? context.vZebra : context.vWhite,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            alignment: Alignment.centerLeft,
+            child: Text(actors[i]['actor'].toString(),
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: _isEmphasizedActor(actors[i])
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    color: Brands.colorOf(actors[i]['actor']?.toString())))),
     ]);
-    
-    Widget head(String t) => Container(width: colW, height: 34, alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(horizontal: 6), child: Text(t, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute)));
-    
-    final dataCols = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+    Widget head(String t) => Container(
+        width: colW,
+        height: 34,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Text(t,
+            style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: context.vMute)));
+
+    final dataCols =
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [for (final m in months) head(m)]),
       for (var i = 0; i < actors.length; i++)
-        Container(color: i.isOdd ? context.vZebra : context.vWhite, height: 42, child: Row(children: [
-          for (final h in (actors[i]['history'] as List).cast<Map<String, dynamic>>()) 
-            Container(
-              width: colW, padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4), alignment: Alignment.centerRight,
-              child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
-                Text(h['value'] == null ? '—' : (isPct ? _pct(h['value']) : NumberFormat('#,##0', 'id').format(h['value'])), style: TextStyle(fontSize: 11, fontWeight: actors[i]['actor'] == 'Industry' ? FontWeight.w700 : FontWeight.w500, color: context.vInk, fontFeatures: const [FontFeature.tabularFigures()])),
-                if (h['growth'] != null) Text('${(h['growth'] as num) >= 0 ? '▲' : '▼'} ${NumberFormat('#,##0.0', 'id').format((h['growth'] as num).abs())}${isPct ? 'pp' : '%'}', style: TextStyle(fontSize: 9, color: (h['growth'] as num) >= 0 ? IOH.teal600 : IOH.danger)),
-              ]),
-            ),
-        ])),
+        Container(
+            color: i.isOdd ? context.vZebra : context.vWhite,
+            height: 42,
+            child: Row(children: [
+              for (final h in (actors[i]['history'] as List)
+                  .cast<Map<String, dynamic>>())
+                Container(
+                  width: colW,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  alignment: Alignment.centerRight,
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                            h['value'] == null
+                                ? kReportNotAvailable
+                                : (isPct
+                                    ? _pct(h['value'])
+                                    : reportNumber(h['value'])),
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: _isEmphasizedActor(actors[i])
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: context.vInk,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures()
+                                ])),
+                        if (h['growth'] != null)
+                          Text(
+                              reportGrowth(h['growth'],
+                                  suffix: isPct ? 'pp' : '%'),
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  color: reportGrowthColor(context, h['growth'],
+                                          polarity: polarity) ??
+                                      context.vMute)),
+                      ]),
+                ),
+            ])),
     ]);
-    
+
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       nameCol,
-      Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: dataCols)),
+      Expanded(
+          child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal, child: dataCols)),
     ]);
+  }
+}
+
+class _SummaryMetric {
+  final String code;
+  final String label;
+  final String value;
+  final double? delta;
+  final String deltaUnit;
+
+  const _SummaryMetric({
+    required this.code,
+    required this.label,
+    required this.value,
+    required this.delta,
+    this.deltaUnit = '%',
+  });
+}
+
+class _PinnedContextDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double extent;
+
+  const _PinnedContextDelegate({required this.child, required this.extent});
+
+  @override
+  double get minExtent => extent;
+
+  @override
+  double get maxExtent => extent;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return ColoredBox(
+      color: context.vPanel.withValues(alpha: 0.96),
+      child: Align(alignment: Alignment.topCenter, child: child),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedContextDelegate oldDelegate) {
+    return oldDelegate.extent != extent || oldDelegate.child != child;
   }
 }
 
@@ -1739,9 +3419,10 @@ class _FtthHierTree extends StatefulWidget {
 class _FtthHierTreeState extends State<_FtthHierTree> {
   final Set<String> _open = {};
 
-  String _intFmt(dynamic v) => v == null ? '—' : NumberFormat('#,##0', 'id').format((v as num).toDouble());
+  String _intFmt(dynamic v) => reportNumber(v);
 
-  List<Widget> _rows(List<Map<String, dynamic>> nodes, int depth, String prefix) {
+  List<Widget> _rows(
+      List<Map<String, dynamic>> nodes, int depth, String prefix) {
     final out = <Widget>[];
     for (var i = 0; i < nodes.length; i++) {
       final n = nodes[i];
@@ -1750,23 +3431,50 @@ class _FtthHierTreeState extends State<_FtthHierTree> {
       final hasKids = kids.isNotEmpty;
       final isOpen = _open.contains(key);
       final cells = (n['cells'] as List?) ?? [];
-      final bg = depth == 0 ? context.vWhite : depth == 1 ? context.vZebra : context.vPanel;
+      final bg = depth == 0
+          ? context.vWhite
+          : depth == 1
+              ? context.vZebra
+              : context.vPanel;
       out.add(GestureDetector(
-        onTap: hasKids ? () => setState(() { isOpen ? _open.remove(key) : _open.add(key); }) : null,
+        onTap: hasKids
+            ? () => setState(() {
+                  isOpen ? _open.remove(key) : _open.add(key);
+                })
+            : null,
         child: Container(
           color: bg,
           padding: EdgeInsets.only(left: 4 + depth * 16, top: 7, bottom: 7),
           child: Row(children: [
-            Expanded(child: Text(
+            Expanded(
+                child: Text(
               '${hasKids ? (isOpen ? '▾ ' : '▸ ') : depth > 0 ? '• ' : ''}${n['label'] ?? ''}',
-              style: TextStyle(fontSize: 11.5, fontWeight: depth == 0 ? FontWeight.w700 : depth == 1 ? FontWeight.w600 : FontWeight.w400, color: context.vInk),
-              maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: depth == 0
+                      ? FontWeight.w700
+                      : depth == 1
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                  color: context.vInk),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             )),
-            ...List.generate(widget.columns.length, (ci) => SizedBox(
-                width: 56,
-                child: Text(_intFmt(ci < cells.length ? cells[ci] : null),
-                    textAlign: TextAlign.right,
-                    style: TextStyle(fontSize: 11.5, fontWeight: ci == widget.columns.length - 1 ? FontWeight.w700 : FontWeight.w500, color: context.vInk, fontFeatures: const [FontFeature.tabularFigures()])))),
+            ...List.generate(
+                widget.columns.length,
+                (ci) => SizedBox(
+                    width: 56,
+                    child: Text(_intFmt(ci < cells.length ? cells[ci] : null),
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: ci == widget.columns.length - 1
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: context.vInk,
+                            fontFeatures: const [
+                              FontFeature.tabularFigures()
+                            ])))),
           ]),
         ),
       ));
@@ -1777,7 +3485,188 @@ class _FtthHierTreeState extends State<_FtthHierTree> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: _rows(widget.nodes, 0, 'r'));
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: _rows(widget.nodes, 0, 'r'));
+  }
+}
+
+typedef _ReportControlsBuilder = Widget Function(
+  VoidCallback refresh,
+  VoidCallback openScopeSearch,
+);
+
+class _LiveReportFilterSheet extends StatefulWidget {
+  final _ReportControlsBuilder controlsBuilder;
+  final List<String> Function() options;
+  final String Function() selected;
+  final String Function() scopeTitle;
+  final ValueChanged<String> onScopePick;
+
+  const _LiveReportFilterSheet({
+    required this.controlsBuilder,
+    required this.options,
+    required this.selected,
+    required this.scopeTitle,
+    required this.onScopePick,
+  });
+
+  @override
+  State<_LiveReportFilterSheet> createState() => _LiveReportFilterSheetState();
+}
+
+class _LiveReportFilterSheetState extends State<_LiveReportFilterSheet> {
+  bool _searchScope = false;
+  String _query = '';
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final options = widget.options();
+    final query = _query.trim().toLowerCase();
+    final filtered = query.isEmpty
+        ? options
+        : options.where((item) => item.toLowerCase().contains(query)).toList();
+    return SafeArea(
+      top: false,
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.78,
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: context.vRule,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 6),
+              child: Row(
+                children: [
+                  if (_searchScope)
+                    IconButton(
+                      constraints:
+                          const BoxConstraints(minWidth: 48, minHeight: 48),
+                      tooltip: 'Kembali ke filter',
+                      onPressed: () => setState(() {
+                        _searchScope = false;
+                        _query = '';
+                      }),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+                  Expanded(
+                    child: Text(
+                      _searchScope
+                          ? 'Pilih ${widget.scopeTitle()}'
+                          : 'Filter Performance Outlook',
+                      softWrap: true,
+                      style: TextStyle(
+                        color: context.vInk,
+                        fontFamily: 'Poppins',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Tutup'),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: context.vRule),
+            if (!_searchScope)
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(12),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: widget.controlsBuilder(
+                      _refresh,
+                      () => setState(() => _searchScope = true),
+                    ),
+                  ),
+                ),
+              )
+            else ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+                child: TextField(
+                  autofocus: true,
+                  style: TextStyle(fontSize: 13, color: context.vInk),
+                  decoration: InputDecoration(
+                    hintText: 'Ketik untuk mencari...',
+                    prefixIcon:
+                        Icon(Icons.search, size: 18, color: context.vMute),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 8,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onChanged: (value) => setState(() => _query = value),
+                ),
+              ),
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Tidak ada hasil',
+                          style: TextStyle(color: context.vMute),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) =>
+                            Divider(height: 1, color: context.vRule),
+                        itemBuilder: (context, index) {
+                          final option = filtered[index];
+                          final active = option == widget.selected();
+                          return ListTile(
+                            minVerticalPadding: 8,
+                            title: Text(
+                              option,
+                              softWrap: true,
+                              style: TextStyle(
+                                color: active ? IOH.teal600 : context.vInk,
+                                fontSize: 13,
+                                fontWeight:
+                                    active ? FontWeight.w700 : FontWeight.w400,
+                              ),
+                            ),
+                            trailing: active
+                                ? const Icon(Icons.check,
+                                    color: IOH.teal600, size: 18)
+                                : null,
+                            onTap: () {
+                              widget.onScopePick(option);
+                              setState(() {
+                                _searchScope = false;
+                                _query = '';
+                              });
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1787,7 +3676,11 @@ class _ScopeSearchSheet extends StatefulWidget {
   final List<String> options;
   final String selected;
   final ValueChanged<String> onPick;
-  const _ScopeSearchSheet({required this.title, required this.options, required this.selected, required this.onPick});
+  const _ScopeSearchSheet(
+      {required this.title,
+      required this.options,
+      required this.selected,
+      required this.onPick});
   @override
   State<_ScopeSearchSheet> createState() => _ScopeSearchSheetState();
 }
@@ -1802,20 +3695,32 @@ class _ScopeSearchSheetState extends State<_ScopeSearchSheet> {
         ? widget.options
         : widget.options.where((o) => o.toLowerCase().contains(q)).toList();
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SafeArea(
         top: false,
         child: SizedBox(
           height: MediaQuery.of(context).size.height * 0.7,
           child: Column(children: [
             const SizedBox(height: 10),
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: context.vRule, borderRadius: BorderRadius.circular(2))),
+            Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: context.vRule,
+                    borderRadius: BorderRadius.circular(2))),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(children: [
-                Text('Pilih ${widget.title}', style: TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.w700, color: context.vInk)),
+                Text('Pilih ${widget.title}',
+                    style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: context.vInk)),
                 const Spacer(),
-                Text('${filtered.length}', style: TextStyle(fontSize: 11, color: context.vMute)),
+                Text('${filtered.length}',
+                    style: TextStyle(fontSize: 11, color: context.vMute)),
               ]),
             ),
             Padding(
@@ -1826,11 +3731,17 @@ class _ScopeSearchSheetState extends State<_ScopeSearchSheet> {
                 decoration: InputDecoration(
                   hintText: 'Ketik untuk mencari...',
                   hintStyle: TextStyle(fontSize: 13, color: context.vMute),
-                  prefixIcon: Icon(Icons.search, size: 18, color: context.vMute),
+                  prefixIcon:
+                      Icon(Icons.search, size: 18, color: context.vMute),
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.vRule)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.vRule)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: context.vRule)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: context.vRule)),
                 ),
                 onChanged: (v) => setState(() => _q = v),
               ),
@@ -1838,17 +3749,28 @@ class _ScopeSearchSheetState extends State<_ScopeSearchSheet> {
             const SizedBox(height: 6),
             Expanded(
               child: filtered.isEmpty
-                  ? Center(child: Text('Tidak ada hasil', style: TextStyle(fontSize: 12, color: context.vMute)))
+                  ? Center(
+                      child: Text('Tidak ada hasil',
+                          style: TextStyle(fontSize: 12, color: context.vMute)))
                   : ListView.separated(
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => Divider(height: 1, color: context.vRule),
+                      separatorBuilder: (_, __) =>
+                          Divider(height: 1, color: context.vRule),
                       itemBuilder: (_, i) {
                         final o = filtered[i];
                         final sel = o == widget.selected;
                         return ListTile(
                           dense: true,
-                          title: Text(o, style: TextStyle(fontSize: 13, fontWeight: sel ? FontWeight.w700 : FontWeight.w400, color: sel ? IOH.teal600 : context.vInk)),
-                          trailing: sel ? const Icon(Icons.check, size: 18, color: IOH.teal600) : null,
+                          title: Text(o,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight:
+                                      sel ? FontWeight.w700 : FontWeight.w400,
+                                  color: sel ? IOH.teal600 : context.vInk)),
+                          trailing: sel
+                              ? const Icon(Icons.check,
+                                  size: 18, color: IOH.teal600)
+                              : null,
                           onTap: () => widget.onPick(o),
                         );
                       },

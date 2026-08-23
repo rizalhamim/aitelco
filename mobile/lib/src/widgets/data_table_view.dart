@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import '../format/report_format.dart';
 import '../theme.dart';
 
 String fmtCell(dynamic v) {
-  if (v == null) return '—';
-  if (v is int) return NumberFormat.decimalPattern('id').format(v);
+  if (v == null) return kReportNotAvailable;
+  if (v is int) return reportNumber(v);
   if (v is double) {
-    if (v == v.roundToDouble()) return NumberFormat.decimalPattern('id').format(v.round());
-    return NumberFormat('#,##0.00', 'id').format(v);
+    if (v == v.roundToDouble()) return reportNumber(v.round());
+    return reportNumber(v, decimals: 2);
   }
   return v.toString();
 }
@@ -53,7 +53,7 @@ class DataTableView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // header row — 2px ink bottom border per design rule
+                // header row, 2px ink bottom border per design rule
                 Container(
                   decoration: BoxDecoration(border: Border(bottom: BorderSide(color: context.vInk, width: 2))),
                   child: Row(children: [
