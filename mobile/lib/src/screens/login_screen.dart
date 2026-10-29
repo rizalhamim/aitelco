@@ -1,8 +1,15 @@
-import 'package:flutter/material.dart';
-import '../api/api_client.dart';
-import '../config.dart';
-import '../theme.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+
+import '../api/api_client.dart';
+import '../ui/ds.dart';
+import '../ui/icons.dart';
+import '../ui/kit.dart';
+
+/// Android · Login: temple still under a teal overlay, "Winning Every
+/// Second", and a white sheet with username and password. After "Masuk" the
+/// sheet asks for the 4-digit code the backend e-mails (same flow as before).
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -10,76 +17,72 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const _p = Pal.light; // the sheet is white in both themes
+
   final _user = TextEditingController();
   final _pass = TextEditingController();
   final _code = TextEditingController();
-  
   bool _loading = false;
-  bool _remember = false;
   bool _obscure = true;
   String? _error;
+  String? _info;
   bool _codeSent = false;
-  bool _canResend = false;
   int _cooldown = 0;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _user.dispose();
+    _pass.dispose();
+    _code.dispose();
+    super.dispose();
+  }
 
   void _startCooldown() {
-    setState(() {
-      _canResend = false;
-      _cooldown = 60;
+    _timer?.cancel();
+    setState(() => _cooldown = 60);
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return t.cancel();
+      setState(() => _cooldown--);
+      if (_cooldown <= 0) t.cancel();
     });
-    _tick();
   }
 
-  void _tick() {
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      if (_cooldown > 0) {
-        setState(() => _cooldown--);
-        _tick();
-      } else {
-        setState(() => _canResend = true);
-      }
-    });
-  }
+  String _msg(Object e) => e.toString().replaceFirst('Exception: ', '');
 
   Future<void> _requestToken() async {
     if (_user.text.trim().isEmpty || _pass.text.isEmpty) {
-      setState(() => _error = 'Isi username & password.');
+      setState(() => _error = 'Isi username dan password.');
       return;
     }
     setState(() { _loading = true; _error = null; });
     try {
-      // Need to add this endpoint to ApiClient
       final res = await ApiClient.requestLoginToken(_user.text.trim(), _pass.text);
-      if (mounted) {
-        setState(() {
-          _codeSent = true;
-          _error = null;
-        });
-        _startCooldown();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(res['message'] ?? 'Kode terkirim.'),
-          backgroundColor: IOH.teal,
-        ));
-      }
+      if (!mounted) return;
+      setState(() {
+        _codeSent = true;
+        _info = (res['message'] ?? 'Kode terkirim ke email Anda.').toString();
+      });
+      _startCooldown();
     } catch (e) {
-      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _error = _msg(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
   Future<void> _verifyToken() async {
-    if (_code.text.trim().isEmpty) {
-      setState(() => _error = 'Masukkan kode 4 digit.');
+    if (_code.text.trim().length < 4) {
+      setState(() => _error = 'Masukkan kode 4 digit dari email.');
       return;
     }
     setState(() { _loading = true; _error = null; });
     try {
-      await ApiClient.verifyLoginToken(_user.text.trim(), _code.text.trim(), rememberMe: _remember);
-      if (mounted) Navigator.of(context).pushReplacementNamed('/chat');
+      await ApiClient.verifyLoginToken(_user.text.trim(), _code.text.trim(), rememberMe: true);
+      if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
-      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      setState(() => _error = _msg(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -87,185 +90,231 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _forgot() async {
     final ctrl = TextEditingController(text: _user.text.contains('@') ? _user.text : '');
-    await showDialog(
+    final email = await showModalBottomSheet<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: IOH.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Lupa Password', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18, color: IOH.ink)),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Text('Masukkan email akun Anda. Link reset password akan dikirim ke email tersebut.',
-              style: TextStyle(fontSize: 13, color: IOH.grey)),
-          const SizedBox(height: 14),
-          TextField(controller: ctrl, keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail_outline), border: OutlineInputBorder())),
+      isScrollControlled: true,
+      backgroundColor: _p.surface,
+      showDragHandle: false,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + MediaQuery.of(ctx).viewInsets.bottom),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const SheetHandle(),
+          const SizedBox(height: 20),
+          Text('Lupa password', style: ts(18, w700, _p.ink, lh: 1.35)),
+          const SizedBox(height: 6),
+          Text('Masukkan email akun Anda. Tautan reset password akan dikirim ke email tersebut.',
+              style: ts(13, w400, _p.text2, lh: 1.5)),
+          const SizedBox(height: 16),
+          _Field(controller: ctrl, hint: 'nama@ioh.co.id', icon: Icx.mail, keyboard: TextInputType.emailAddress, autofocus: true),
+          const SizedBox(height: 16),
+          PrimaryButton('Kirim tautan', onTap: () => Navigator.pop(ctx, ctrl.text.trim())),
         ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal', style: TextStyle(color: IOH.mute))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: IOH.red, foregroundColor: Colors.white),
-            onPressed: () async {
-              final email = ctrl.text.trim();
-              if (email.isEmpty || !email.contains('@')) return;
-              Navigator.pop(ctx);
-              try {
-                final msg = await ApiClient.forgotPassword(email);
-                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: IOH.teal, behavior: SnackBarBehavior.floating));
-              } catch (e) {
-                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceFirst('Exception: ', '')), backgroundColor: IOH.danger, behavior: SnackBarBehavior.floating));
-              }
-            },
-            child: const Text('Kirim Link'),
-          ),
-        ],
       ),
     );
+    if (email == null || !email.contains('@')) return;
+    try {
+      final msg = await ApiClient.forgotPassword(email);
+      if (mounted) showToast(context, msg);
+    } catch (e) {
+      if (mounted) showToast(context, _msg(e), ok: false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top;
+    final bottom = MediaQuery.of(context).padding.bottom;
     return Scaffold(
-      backgroundColor: IOH.ink,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(26),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 18),
-                    Center(child: Image.asset('assets/logo_color.png', width: 150)),
-                    const SizedBox(height: 26),
-                    const Text('Bizplan Java Agent',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 27, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-                    const SizedBox(height: 6),
-                    const Text(AppConfig.appSub,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontFamily: 'Poppins', color: IOH.teal, fontSize: 11, letterSpacing: 2.2, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 30),
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: IOH.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, 10))],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Text('Selamat datang kembali',
-                              style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w800, color: IOH.ink)),
-                          const SizedBox(height: 4),
-                          const Text('Masuk untuk lanjut ke AI analyst',
-                              style: TextStyle(fontSize: 13, color: IOH.mute)),
-                          const SizedBox(height: 22),
-                          
-                          if (!_codeSent) ...[
-                            _field(_user, 'Username', Icons.person_outline),
-                            const SizedBox(height: 14),
-                            _field(_pass, 'Password', Icons.lock_outline, obscure: _obscure, suffix: IconButton(
-                              icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: IOH.mute, size: 20),
-                              onPressed: () => setState(() => _obscure = !_obscure),
-                            ), onSubmit: _requestToken),
-                          ] else ...[
-                            _field(_code, 'Kode 4-Digit (Cek Email)', Icons.pin_outlined, onSubmit: _verifyToken, keyboardType: TextInputType.number),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                if (!_canResend) 
-                                  Text('Kirim ulang dalam $_cooldown s', style: const TextStyle(fontSize: 12, color: IOH.mute))
-                                else
-                                  TextButton(
-                                    onPressed: _requestToken,
-                                    child: const Text('Kirim ulang kode', style: TextStyle(fontSize: 12, color: IOH.teal, fontWeight: FontWeight.bold)),
-                                  ),
-                              ]
-                            )
-                          ],
-
-                          const SizedBox(height: 6),
-                          if (!_codeSent) Row(children: [
-                            Checkbox(value: _remember, activeColor: IOH.red,
-                                onChanged: (v) => setState(() => _remember = v ?? false),
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                            const Text('Ingat saya (24 jam)', style: TextStyle(fontSize: 13, color: IOH.grey)),
-                            const Spacer(),
-                            TextButton(onPressed: _forgot,
-                                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 0), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                                child: const Text('Lupa password?', style: TextStyle(fontSize: 13, color: IOH.red, fontWeight: FontWeight.w600))),
-                          ]),
-                          
-                          if (_error != null) ...[
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(11),
-                              decoration: BoxDecoration(color: const Color(0xFFFDECEC), borderRadius: BorderRadius.circular(8),
-                                  border: Border(left: BorderSide(color: IOH.danger, width: 4))),
-                              child: Row(children: [
-                                const Icon(Icons.error_outline, color: IOH.danger, size: 16), const SizedBox(width: 8),
-                                Expanded(child: Text(_error!, style: const TextStyle(color: IOH.danger, fontSize: 13))),
-                              ]),
-                            ),
-                          ],
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: _loading ? null : (_codeSent ? _verifyToken : _requestToken),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: IOH.red, foregroundColor: Colors.white, elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: _loading
-                                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.4))
-                                  : Text(_codeSent ? 'Verifikasi & Masuk' : 'Minta Kode Login', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 16)),
-                            ),
-                          ),
-                          if (_codeSent && !_loading) ...[
-                            const SizedBox(height: 8),
-                            TextButton(
-                              onPressed: () => setState(() {
-                                _codeSent = false;
-                                _error = null;
-                              }),
-                              child: const Text('Ganti Akun / Kembali', style: TextStyle(color: IOH.mute)),
-                            )
-                          ]
-                        ],
+      backgroundColor: const Color(0xFF04332E),
+      resizeToAvoidBottomInset: true,
+      body: LayoutBuilder(builder: (context, c) {
+        return SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: c.maxHeight),
+            child: IntrinsicHeight(
+              child: Stack(children: [
+                Positioned.fill(child: Image.asset('assets/img/still_temple.jpg', fit: BoxFit.cover)),
+                const Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment(0, .5), // the overlay ends at 75 % of the frame
+                        colors: [Color(0x6604332E), Color(0xCC04332E), Color(0xFF04332E)],
+                        stops: [0, .5, 1],
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    const Text('Confidential · Internal Use Only',
-                        textAlign: TextAlign.center, style: TextStyle(color: IOH.mute, fontSize: 10, letterSpacing: 0.5)),
-                  ],
+                  ),
                 ),
-              ),
+                Column(children: [
+                  SizedBox(height: top),
+                  _brand(),
+                  const Spacer(),
+                  _sheet(bottom),
+                ]),
+              ]),
             ),
           ),
-        ],
+        );
+      }),
+    );
+  }
+
+  Widget _brand() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 56, 28, 40),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const AppLogo(size: 64, radius: 17.92, border: Colors.white, borderWidth: 2, shadow: true),
+        const SizedBox(height: 16),
+        Text('Bizplan Java Agent', style: ts(16, w600, const Color(0xFFC0EDE8))),
+        const SizedBox(height: 15.6),
+        Text('Winning\nEvery Second', style: ts(48, w800, Colors.white, lh: 1.02, ls: -.01)),
+        const SizedBox(height: 16),
+        Container(width: 64, height: 4, decoration: BoxDecoration(color: const Color(0xFFF5A623), borderRadius: BorderRadius.circular(2))),
+      ]),
+    );
+  }
+
+  Widget _sheet(double bottomInset) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(color: _p.surface, borderRadius: const BorderRadius.vertical(top: Radius.circular(28))),
+      padding: EdgeInsets.fromLTRB(24, 26, 24, 22 + bottomInset),
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        alignment: Alignment.topCenter,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: _codeSent ? _codeStep() : _passwordStep()),
       ),
     );
   }
 
-  Widget _field(TextEditingController c, String label, IconData icon, {bool obscure = false, Widget? suffix, VoidCallback? onSubmit, TextInputType? keyboardType}) {
-    return TextField(
-      controller: c,
-      obscureText: obscure,
-      keyboardType: keyboardType,
-      onSubmitted: onSubmit == null ? null : (_) => onSubmit(),
-      style: const TextStyle(fontSize: 15),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, size: 20),
-        suffixIcon: suffix,
-        filled: true, fillColor: IOH.panel,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: IOH.red, width: 1.5)),
+  List<Widget> _passwordStep() => [
+        _label('Username'),
+        const SizedBox(height: 6),
+        _Field(controller: _user, hint: 'nama.pengguna', icon: Icx.users, action: TextInputAction.next),
+        const SizedBox(height: 14),
+        _label('Password'),
+        const SizedBox(height: 6),
+        _Field(
+          controller: _pass,
+          hint: '••••••••••',
+          icon: Icx.lock,
+          obscure: _obscure,
+          trailing: IconButton(
+            onPressed: () => setState(() => _obscure = !_obscure),
+            icon: Ic(_obscure ? Icx.eye : Icx.eyeOff, size: 18, color: _p.text2),
+            tooltip: _obscure ? 'Tampilkan password' : 'Sembunyikan password',
+          ),
+          onSubmit: _requestToken,
+        ),
+        const SizedBox(height: 14),
+        Align(
+          alignment: Alignment.centerRight,
+          child: GestureDetector(
+            onTap: _forgot,
+            child: Text('Lupa password?', style: ts(13, w600, _p.teal700)),
+          ),
+        ),
+        if (_error != null) _errorBox(),
+        const SizedBox(height: 14),
+        PrimaryButton('Masuk', onTap: _requestToken, loading: _loading),
+      ];
+
+  List<Widget> _codeStep() => [
+        Text('Cek email Anda', style: ts(18, w700, _p.ink, lh: 1.35)),
+        const SizedBox(height: 4),
+        Text(_info ?? 'Kode 4 digit sudah dikirim.', style: ts(13, w400, _p.text2, lh: 1.5)),
+        const SizedBox(height: 16),
+        _label('Kode masuk'),
+        const SizedBox(height: 6),
+        _Field(controller: _code, hint: '0000', icon: Icx.shield, keyboard: TextInputType.number, autofocus: true, onSubmit: _verifyToken),
+        const SizedBox(height: 14),
+        Row(children: [
+          GestureDetector(
+            onTap: _loading ? null : () => setState(() { _codeSent = false; _error = null; _code.clear(); }),
+            child: Text('Ganti akun', style: ts(13, w600, _p.text2)),
+          ),
+          const Spacer(),
+          _cooldown > 0
+              ? Text('Kirim ulang dalam $_cooldown dtk', style: ts(13, w400, _p.mute))
+              : GestureDetector(onTap: _requestToken, child: Text('Kirim ulang kode', style: ts(13, w600, _p.teal700))),
+        ]),
+        if (_error != null) _errorBox(),
+        const SizedBox(height: 14),
+        PrimaryButton('Verifikasi & masuk', onTap: _verifyToken, loading: _loading),
+      ];
+
+  Widget _label(String t) => Text(t, style: ts(13, w600, _p.text2));
+
+  Widget _errorBox() => Container(
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: _p.dangerTint, borderRadius: BorderRadius.circular(12)),
+        child: Row(children: [
+          Ic(Icx.alertCircle, size: 18, color: _p.danger),
+          const SizedBox(width: 10),
+          Expanded(child: Text(_error!, style: ts(13, w500, _p.danger, lh: 1.4))),
+        ]),
+      );
+}
+
+/// 52 px input with a leading icon, as in the Login sheet.
+class _Field extends StatelessWidget {
+  const _Field({
+    required this.controller,
+    required this.hint,
+    required this.icon,
+    this.obscure = false,
+    this.trailing,
+    this.onSubmit,
+    this.keyboard,
+    this.action,
+    this.autofocus = false,
+  });
+  final TextEditingController controller;
+  final String hint;
+  final I3 icon;
+  final bool obscure, autofocus;
+  final Widget? trailing;
+  final VoidCallback? onSubmit;
+  final TextInputType? keyboard;
+  final TextInputAction? action;
+
+  @override
+  Widget build(BuildContext context) {
+    const p = Pal.light;
+    final border = OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: p.rule));
+    return SizedBox(
+      height: 52,
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        autofocus: autofocus,
+        keyboardType: keyboard,
+        textInputAction: action ?? (onSubmit != null ? TextInputAction.done : null),
+        onSubmitted: onSubmit == null ? null : (_) => onSubmit!(),
+        style: ts(14, w400, p.ink, lh: 1.5),
+        cursorColor: p.teal600,
+        decoration: InputDecoration(
+          isDense: true,
+          filled: true,
+          fillColor: p.surface,
+          hintText: hint,
+          hintStyle: ts(14, w400, p.mute, lh: 1.5),
+          contentPadding: const EdgeInsets.symmetric(vertical: 15),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 15, right: 10),
+            child: Ic(icon, size: 18, color: p.text2),
+          ),
+          prefixIconConstraints: const BoxConstraints(minWidth: 43, minHeight: 18),
+          suffixIcon: trailing,
+          border: border,
+          enabledBorder: border,
+          focusedBorder: border.copyWith(borderSide: BorderSide(color: p.teal600, width: 1.5)),
+        ),
       ),
     );
   }

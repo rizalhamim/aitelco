@@ -21,7 +21,7 @@ class IOH {
 
   // Legacy primary token `red` now points to TEAL (used app-wide as primary).
   // Use `danger` for real destructive/error states.
-  static const red = DSColor.teal500;       // legacy primary -> teal
+  static const red = DSColor.teal600;       // legacy primary -> teal (button teal per Redesign v1)
   static const danger = DSColor.red500;     // tertiary red — errors/destructive only
   static const pink = DSColor.teal600;      // secondary accent -> deep teal
   static const yellow = DSColor.amber500;   // warnings (amber)
@@ -35,12 +35,12 @@ class IOH {
   static const panel = DSLight.bg;
   static const white = DSLight.surface;
 
-  static const darkInk = Color(0xFFF5F9F8);
-  static const darkGrey = Color(0xFFC9CFCD);
-  static const darkMute = Color(0xFF8A9996);
+  static const darkInk = DSDark.ink;
+  static const darkGrey = DSDark.textSecondary;
+  static const darkMute = DSDark.textMute;
   static const darkRule = DSDark.rule;
-  static const darkPanel = Color(0xFF13201E);
-  static const darkWhite = Color(0xFF0B1413);
+  static const darkPanel = DSDark.surface;
+  static const darkWhite = DSDark.bg;
 
   static Color domainColor(String? d) {
     switch (d) {
@@ -57,8 +57,8 @@ class IOH {
 class AppTheme {
   static ThemeData light() => _build(
         brightness: Brightness.light,
-        primary: IOH.teal500,
-        secondary: IOH.teal700,
+        primary: DSLight.teal600,
+        secondary: DSLight.teal700,
         ink: IOH.ink,
         mute: IOH.mute,
         rule: IOH.rule,
@@ -68,8 +68,8 @@ class AppTheme {
 
   static ThemeData dark() => _build(
         brightness: Brightness.dark,
-        primary: IOH.teal400,
-        secondary: IOH.teal200,
+        primary: DSDark.teal600,
+        secondary: DSDark.teal700,
         ink: IOH.darkInk,
         mute: IOH.darkMute,
         rule: IOH.darkRule,

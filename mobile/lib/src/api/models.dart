@@ -2,7 +2,10 @@ class ResultTable {
   final List<String> columns;
   final List<Map<String, dynamic>> rows;
   final int rowCount;
-  ResultTable(this.columns, this.rows, this.rowCount);
+
+  /// Render-ready chart spec from the backend (backend/app/chart_spec.py).
+  final Map<String, dynamic>? chart;
+  ResultTable(this.columns, this.rows, this.rowCount, {this.chart});
 }
 
 class ProfileSection {
@@ -13,7 +16,9 @@ class ProfileSection {
   final List<String> columns;
   final List<Map<String, dynamic>> rows;
   final String? error;
+  final Map<String, dynamic>? chart;
   ProfileSection({
+    this.chart,
     required this.title,
     required this.domain,
     required this.status,
@@ -43,6 +48,14 @@ class ChatMessage {
   ResultTable? result;
   List<ProfileSection> profileResults;
   Map<String, dynamic>? locationResult;
+
+  /// Pipeline steps the agent ran and how long the answer took.
+  int steps = 0;
+  DateTime? startedAt;
+  Duration? elapsed;
+
+  /// The quality check passed (reflect verdict "ok") or the answer finished cleanly.
+  bool validated = false;
 
   ChatMessage({
     required this.isUser,

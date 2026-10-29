@@ -1,87 +1,105 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+
 import '../api/api_client.dart';
 import '../api/models.dart';
 import '../app_state.dart';
-import '../theme.dart';
-import '../widgets/pipeline_view.dart';
-import '../widgets/data_table_view.dart';
-import '../widgets/chart_panel.dart';
-import '../widgets/collapsible.dart';
-import '../services/update_service.dart';
 import '../services/keep_alive_service.dart';
-import '../widgets/update_dialog.dart';
+import '../ui/chart.dart';
+import '../ui/ds.dart';
+import '../ui/icons.dart';
+import '../ui/kit.dart';
+import '../widgets/collapsible.dart';
+import '../widgets/data_table_view.dart';
 import 'location_sheet.dart';
 
+/// Android · Tanya Agent: header, conversation with answer cards (pipeline
+/// meta, validated chip, KPI tiles, chart, Export / Pantau), follow-up chips
+/// and the composer. Lives in the home shell's first tab.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, this.preview, this.previewTouch, this.onWatch});
+
+  /// Messages to show instead of a live session (golden tests and demos).
+  final List<ChatMessage>? preview;
+  final int? previewTouch;
+
+  /// Opens the Alert tab to create a watch rule for a question.
+  final void Function(String question)? onWatch;
+
   @override
   State<ChatScreen> createState() => ChatScreenState();
 }
 
 class ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = [];
-  final List<FlowStep> _flow = [];
   final TextEditingController _input = TextEditingController();
   final ScrollController _scroll = ScrollController();
   bool _busy = false;
-  int? _tokens;
   String _sessionId = '';
   List<dynamic> _history = [];
   StreamSubscription? _sub;
+  final SpeechToText _speech = SpeechToText();
+  bool _listening = false;
 
   String get _lang => AppState.I.lang;
 
   @override
   void initState() {
     super.initState();
-    _init();
+    if (widget.preview != null) {
+      _messages.addAll(widget.preview!);
+    } else {
+      _init();
+    }
   }
 
   Future<void> _init() async {
-    // Always open the app on a fresh chat. Previous conversations remain
-    // available from the history drawer.
     final p = await SharedPreferences.getInstance();
     final uname = AuthState.user?['username'] ?? 'anon';
     _sessionId = _newId();
     await p.setString('session::$uname', _sessionId);
     if (mounted) setState(() {});
     _loadHistory();
-    _checkForUpdate();
-  }
-
-  Future<void> _checkForUpdate() async {
-    try {
-      final info = await UpdateService.check();
-      if (info != null && mounted) {
-        await showUpdateDialog(context, info);
-      }
-    } catch (_) {}
   }
 
   String _newId() => 'm_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond}';
 
   Future<void> _loadHistory() async {
-    final h = await ApiClient.historySessions();
-    if (mounted) setState(() => _history = h);
+    try {
+      final h = await ApiClient.historySessions();
+      if (mounted) setState(() => _history = h);
+    } catch (_) {}
   }
 
   void _scrollDown() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scroll.hasClients) _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+      if (_scroll.hasClients) {
+        _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+      }
     });
   }
 
-  void _newChat() {
+  void newChat() {
     if (_busy) return;
-    setState(() { _messages.clear(); _flow.clear(); _sessionId = _newId(); _tokens = null; });
+    setState(() {
+      _messages.clear();
+      _sessionId = _newId();
+    });
     SharedPreferences.getInstance().then((p) {
       final uname = AuthState.user?['username'] ?? 'anon';
       p.setString('session::$uname', _sessionId);
     });
   }
+
+  /// Ask a question from elsewhere (Dashboard "Tanya detail", quick actions).
+  void ask(String q) => _send(q);
 
   ChatMessage get _assistant => _messages.lastWhere((m) => !m.isUser);
 
@@ -89,387 +107,740 @@ class ChatScreenState extends State<ChatScreen> {
     final text = (preset ?? _input.text).trim();
     if (text.isEmpty || _busy) return;
     _input.clear();
+    FocusScope.of(context).unfocus();
     setState(() {
       _messages.add(ChatMessage(isUser: true, content: text));
-      _messages.add(ChatMessage(isUser: false, status: 'Menganalisis…'));
-      _flow.clear();
-      _flow.add(FlowStep('user', 'User query', feedback: text.length > 48 ? '${text.substring(0, 48)}…' : text, done: true));
-      _tokens = null; _busy = true;
+      _messages.add(ChatMessage(isUser: false, status: 'Menganalisis…')..startedAt = DateTime.now());
+      _busy = true;
     });
     _scrollDown();
-    // Keep the process alive while loading so backgrounding (opening another
-    // app) doesn't pause/kill the in-flight stream.
     KeepAliveService.start(text: 'Menganalisis pertanyaan Anda…');
 
-    final history = _messages.where((m) => m.content.trim().isNotEmpty)
-        .map((m) => {'role': m.isUser ? 'user' : 'assistant', 'content': m.content.length > 1500 ? m.content.substring(0, 1500) : m.content}).toList();
+    final history = _messages
+        .where((m) => m.content.trim().isNotEmpty)
+        .map((m) => {'role': m.isUser ? 'user' : 'assistant', 'content': m.content.length > 1500 ? m.content.substring(0, 1500) : m.content})
+        .toList();
 
     var gotDone = false, gotContent = false;
     try {
       _sub = ApiClient.chatStream(text, _sessionId, _lang, history: history).listen((ev) {
-        final event = ev.key; final data = ev.value; final a = _assistant;
+        final event = ev.key;
+        final data = ev.value;
+        final a = _assistant;
         switch (event) {
           case 'step_start':
-            final kind = (data['step'] ?? '').toString();
-            a.status = '${data['label'] ?? kind} — ${data['desc'] ?? ''}';
-            setState(() { for (final f in _flow) { f.done = true; } _flow.add(FlowStep(kind, (data['label'] ?? kind).toString(), feedback: data['desc']?.toString())); });
-            break;
+            setState(() {
+              a.steps++;
+              a.status = (data['label'] ?? data['step'] ?? 'Memproses').toString();
+            });
           case 'route':
-            _trackTokens(data); a.domain = data['domain']?.toString(); _updateFlow('router', feedback: data['reason']?.toString());
-            final dom = a.domain;
-            if (dom == 'PROFILE') { setState(() => _flow.add(FlowStep('agent', 'Profile Mode'))); }
-            else if (dom != null && dom != 'none') { setState(() => _flow.add(FlowStep('agent', dom))); }
-            break;
-          case 'analyst': _trackTokens(data); _updateFlow('analyst', feedback: data['validated_query']?.toString()); break;
-          case 'sql': _trackTokens(data); a.sql = data['sql']?.toString(); _updateFlow('sql_write', feedback: data['explanation']?.toString()); break;
+            a.domain = data['domain']?.toString();
+            a.domainLabel = data['label']?.toString();
+          case 'sql':
+            a.sql = data['sql']?.toString();
           case 'result':
             final cols = (data['columns'] as List?)?.map((e) => e.toString()).toList() ?? [];
             final rows = (data['rows'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
-            setState(() => a.result = ResultTable(cols, rows, (data['row_count'] as int?) ?? rows.length));
-            break;
+            setState(() => a.result = ResultTable(cols, rows, (data['row_count'] as int?) ?? rows.length,
+                chart: data['chart'] is Map ? Map<String, dynamic>.from(data['chart'] as Map) : null));
           case 'profile_domain_result':
             a.profileResults.add(ProfileSection(
-              title: (data['section_title'] ?? '').toString(), domain: (data['domain'] ?? '').toString(),
-              status: (data['status'] ?? 'ok').toString(), rowCount: (data['row_count'] as int?) ?? 0,
+              title: (data['section_title'] ?? '').toString(),
+              domain: (data['domain'] ?? '').toString(),
+              status: (data['status'] ?? 'ok').toString(),
+              rowCount: (data['row_count'] as int?) ?? 0,
               columns: (data['columns'] as List?)?.map((e) => e.toString()).toList() ?? [],
               rows: (data['rows'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [],
-              error: data['error']?.toString()));
+              error: data['error']?.toString(),
+              chart: data['chart'] is Map ? Map<String, dynamic>.from(data['chart'] as Map) : null,
+            ));
             setState(() {});
-            break;
-          case 'advisor_support': setState(() => _flow.add(FlowStep('bq_exec', 'Data: ${data['domain']}', feedback: data['question']?.toString()))); break;
-          case 'scope': {
+          case 'reflect':
             final verdict = (data['verdict'] ?? '').toString();
-            final reason = (data['reason'] ?? '').toString();
-            final msg = verdict == 'answerable'
-                ? 'Domain sesuai ✓'
-                : verdict == 'reroute'
-                    ? 'Domain tidak punya datanya — mengalihkan…'
-                    : 'Perlu konfirmasi pertanyaan…';
-            a.status = msg;
-            setState(() { for (final f in _flow) { f.done = true; } _flow.add(FlowStep('scope', 'Domain Check', feedback: reason.isNotEmpty ? reason : msg)); });
-            break;
-          }
-          case 'reroute': {
-            final to = (data['to'] ?? '').toString();
-            a.status = to.isNotEmpty ? 'Mengalihkan ke domain $to…' : 'Mencari domain lain…';
-            setState(() { for (final f in _flow) { f.done = true; } _flow.add(FlowStep('reroute', 'Re-route', feedback: '${data['from'] ?? ''} → ${to.isEmpty ? '—' : to}')); });
-            break;
-          }
-          case 'reflect': {
-            final verdict = (data['verdict'] ?? '').toString();
-            final reason = (data['reason'] ?? '').toString();
-            final msg = verdict == 'ok'
-                ? 'Jawaban relevan ✓'
-                : verdict == 'refine'
-                    ? 'Belum optimal — mencari jawaban lebih baik…'
-                    : 'Data tidak tersedia — menyiapkan alternatif…';
-            a.status = msg;
-            setState(() { for (final f in _flow) { f.done = true; } _flow.add(FlowStep('reflect', 'Quality Check', feedback: reason.isNotEmpty ? reason : msg)); });
-            break;
-          }
-          case 'clarify': a.status = 'Menunggu konfirmasi…'; break;
-          case 'retry': setState(() { for (final f in _flow) { f.done = true; } _flow.add(FlowStep('retry', 'Retry', feedback: (data['error'] ?? '').toString())); }); break;
-          case 'token': gotContent = true; a.status = null; setState(() => a.content += (data['t'] ?? '').toString()); _scrollDown(); break;
-          case 'done': gotDone = true; _trackTokens(data); setState(() { a.status = null; for (final f in _flow) { f.done = true; } }); break;
-          case 'error': setState(() { a.error = (data['error'] ?? 'error').toString(); a.status = null; }); break;
+            setState(() {
+              a.validated = verdict == 'ok';
+              a.status = verdict == 'ok' ? 'Jawaban relevan' : 'Mencari jawaban lebih baik…';
+            });
+          case 'reroute':
+            setState(() => a.status = 'Mengalihkan ke domain lain…');
+          case 'clarify':
+            a.status = 'Menunggu konfirmasi…';
+          case 'token':
+            gotContent = true;
+            setState(() {
+              a.status = null;
+              a.content += (data['t'] ?? '').toString();
+            });
+            _scrollDown();
+          case 'done':
+            gotDone = true;
+            setState(() {
+              a.status = null;
+              a.elapsed = a.startedAt == null ? null : DateTime.now().difference(a.startedAt!);
+              if (a.error == null) a.validated = true;
+            });
+          case 'error':
+            setState(() {
+              a.error = (data['error'] ?? 'error').toString();
+              a.status = null;
+            });
         }
       }, onError: (e) {
-        if (!gotDone && !gotContent) setState(() => _assistant.error = 'Network error: $e');
+        if (!gotDone && !gotContent) setState(() => _assistant.error = 'Koneksi terputus: $e');
         _finish();
       }, onDone: _finish);
-    } catch (e) { setState(() => _assistant.error = 'Network error: $e'); _finish(); }
+    } catch (e) {
+      setState(() => _assistant.error = 'Koneksi terputus: $e');
+      _finish();
+    }
   }
 
-  void _updateFlow(String kind, {String? feedback}) {
-    setState(() { for (final f in _flow) { if (f.kind == kind && feedback != null && feedback.isNotEmpty) f.feedback = feedback; } });
-  }
-
-  void _trackTokens(Map<String, dynamic> data) {
-    final u = data['_usage'];
-    if (u is Map && (u['total_tokens'] ?? 0) != 0) setState(() => _tokens = u['total_tokens'] as int?);
-  }
-
-  void _finish() { KeepAliveService.stop(); setState(() => _busy = false); _loadHistory(); _scrollDown(); }
-
-  Future<void> _summarize() async {
-    final turns = _messages.where((m) => m.content.trim().isNotEmpty || m.result != null || m.profileResults.isNotEmpty).map((m) => {
-      'role': m.isUser ? 'user' : 'assistant', 'content': m.content, 'domain': m.domain, 'row_count': m.result?.rowCount,
-      'result': m.result == null ? null : {'columns': m.result!.columns, 'rows': m.result!.rows.take(50).toList(), 'row_count': m.result!.rowCount},
-      'profile_sections': m.profileResults.isEmpty ? null : m.profileResults.where((p) => p.status == 'ok').map((p) => {'section_title': p.title, 'columns': p.columns, 'rows': p.rows.take(30).toList(), 'row_count': p.rowCount}).toList(),
-    }).toList();
-    if (turns.isEmpty) { _toast('Belum ada chat untuk diringkas.'); return; }
-    _toast('Membuat ringkasan & mengirim email…');
-    try { final res = await ApiClient.summarizeChat(turns, _lang); _toast(res['message']?.toString() ?? 'Email terkirim.', ok: true); }
-    catch (e) { _toast(e.toString().replaceFirst('Exception: ', ''), ok: false); }
-  }
-
-  void _toast(String msg, {bool ok = true}) {
+  void _finish() {
+    KeepAliveService.stop();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: ok ? IOH.teal : IOH.danger, behavior: SnackBarBehavior.floating));
+    setState(() {
+      _busy = false;
+      final a = _messages.isEmpty ? null : _assistant;
+      if (a != null) {
+        a.status = null;
+        a.elapsed ??= a.startedAt == null ? null : DateTime.now().difference(a.startedAt!);
+      }
+    });
+    _loadHistory();
+    _scrollDown();
   }
 
-  void _logout() async { await AuthState.clear(); if (mounted) Navigator.of(context).pushReplacementNamed('/login'); }
+  void _stop() {
+    _sub?.cancel();
+    _finish();
+  }
+
+  Future<void> _exportCsv(int i) async {
+    final r = _messages[i].result;
+    if (r == null) return;
+    final q = i > 0 ? _messages[i - 1].content : 'hasil';
+    final slug = q.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-|-$'), '');
+    String cell(dynamic v) {
+      final s = (v ?? '').toString();
+      return s.contains(RegExp(r'[",\n]')) ? '"${s.replaceAll('"', '""')}"' : s;
+    }
+
+    final csv = StringBuffer()..writeln(r.columns.map(cell).join(','));
+    for (final row in r.rows) {
+      csv.writeln(r.columns.map((c) => cell(row[c])).join(','));
+    }
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final name = 'bizplan-${slug.isEmpty ? 'hasil' : (slug.length > 40 ? slug.substring(0, 40) : slug)}.csv';
+      final f = File('${dir.path}/$name');
+      await f.writeAsString('﻿$csv');
+      ApiClient.logExport('csv', q);
+      await OpenFilex.open(f.path);
+    } catch (e) {
+      if (mounted) showToast(context, 'Export gagal: $e', ok: false);
+    }
+  }
+
+  void _watch(int i) {
+    final q = i > 0 ? _messages[i - 1].content : '';
+    if (widget.onWatch != null) {
+      widget.onWatch!(q);
+    } else {
+      showToast(context, 'Buka tab Alert untuk membuat watchlist.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: _historyDrawer(),
-      appBar: AppBar(
-        titleSpacing: 4,
-        title: Row(children: [
-          Image.asset('assets/icon_circle.png', width: 24, height: 24),
-          const SizedBox(width: 8),
-          const Expanded(child: Text('Bizplan Java Agent', style: TextStyle(fontFamily: 'Poppins', fontSize: 15, fontWeight: FontWeight.w800))),
-        ]),
-        actions: [
-          IconButton(icon: const Icon(Icons.add_comment_outlined), tooltip: 'Chat baru', onPressed: _busy ? null : _newChat),
-        ],
-      ),
-      body: Column(children: [
-        Expanded(child: _messages.isEmpty ? _welcome() : ListView.builder(
-          controller: _scroll, padding: const EdgeInsets.all(12),
-          itemCount: _messages.length, itemBuilder: (_, i) => _bubble(_messages[i], i == _messages.length - 1)),
+    final p = Pal.of(context);
+    final top = MediaQuery.of(context).padding.top;
+    return ColoredBox(
+      color: p.bg,
+      child: Column(children: [
+        SizedBox(height: top),
+        _header(p),
+        Expanded(
+          child: Stack(children: [
+            Positioned(left: 160, top: -120, width: 360, height: 300, child: Glow(color: p.teal400, alpha: .13)),
+            _messages.isEmpty ? _welcome(p) : _conversation(p),
+          ]),
         ),
-        _composer(),
+        if (!_busy && _messages.isNotEmpty && !_messages.last.isUser && _messages.last.error == null) _followUps(p),
+        _composer(p),
       ]),
     );
   }
 
-  Widget _welcome() {
-    final examples = [
-      'Tampilkan profile lengkap kota Surabaya',
-      'Trend revenue daily 30 hari terakhir kota Surabaya',
-      'Market share IM3 vs Telkomsel per kabkota',
-      'Top 10 site revenue tertinggi di Surabaya',
+  Widget _header(Pal p) {
+    return Container(
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: p.surface, border: Border(bottom: BorderSide(color: p.rule))),
+      child: Row(children: [
+        AppLogo(size: 44, radius: 14, border: p.teal200),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Tanya Agent', style: ts(16, w600, p.ink)),
+            Row(children: [
+              Container(width: 8, height: 8, decoration: BoxDecoration(color: _busy ? p.warning : p.successSolid, shape: BoxShape.circle)),
+              const SizedBox(width: 6),
+              Text(_busy ? 'Menganalisis · Region Jawa' : 'Online · Region Jawa', style: ts(12, w400, p.mute)),
+            ]),
+          ]),
+        ),
+        SquareIconButton(Icx.history, tooltip: 'Riwayat & menu', onTap: _openMenu),
+      ]),
+    );
+  }
+
+  Widget _conversation(Pal p) {
+    return ListView.builder(
+      controller: _scroll,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      itemCount: _messages.length,
+      itemBuilder: (_, i) => _messages[i].isUser ? _userBubble(p, _messages[i]) : _answer(p, i),
+    );
+  }
+
+  Widget _userBubble(Pal p, ChatMessage m) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14, left: 68),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: p.teal600,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(18), topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18), bottomRight: Radius.circular(6),
+          ),
+        ),
+        child: Text(m.content, style: ts(14, w400, Colors.white, lh: 1.5)),
+      ),
+    );
+  }
+
+  Widget _answer(Pal p, int i) {
+    final m = _messages[i];
+    final live = m.status != null;
+    final spec = m.result?.chart == null ? null : ChartSpec(m.result!.chart!);
+    final rows = m.result?.rows ?? const <Map<String, dynamic>>[];
+    final tiles = spec != null && spec.type != 'kpi' ? periodTotals(spec, m.result!.columns, rows) : const <KpiItem>[];
+    final secs = m.elapsed == null ? null : m.elapsed!.inMilliseconds / 1000;
+    final meta = live
+        ? m.status!
+        : [
+            if (m.steps > 0) '${m.steps} langkah',
+            if (secs != null) '${idNum(secs < .1 ? .1 : secs, 1)} dtk',
+          ].join(' · ');
+    final okSections = m.profileResults.where((s) => s.status == 'ok' && s.rows.isNotEmpty).toList();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: p.rule),
+        boxShadow: p.shadow,
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SizedBox(
+          height: 28,
+          child: Row(children: [
+            const _AiDot(),
+            const SizedBox(width: 6),
+            if (live) ...[
+              SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: p.teal600)),
+              const SizedBox(width: 6),
+            ],
+            Expanded(child: Text(meta, maxLines: 1, overflow: TextOverflow.ellipsis, style: ts(12, w600, p.mute))),
+            if (!live && m.validated && m.error == null) _validatedChip(p),
+          ]),
+        ),
+        if (m.content.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          MarkdownBody(
+            data: m.content,
+            styleSheet: MarkdownStyleSheet(
+              p: ts(14, w400, p.text2, lh: 1.5),
+              strong: ts(14, w600, p.ink, lh: 1.5),
+              h1: ts(18, w700, p.ink, lh: 1.35),
+              h2: ts(16, w600, p.ink),
+              h3: ts(14, w600, p.ink),
+              listBullet: ts(14, w400, p.text2, lh: 1.5),
+              tableColumnWidth: const IntrinsicColumnWidth(),
+              tableHead: ts(12, w600, p.ink),
+              tableBody: ts(12, w400, p.text2),
+              tableCellsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              tableBorder: TableBorder.all(color: p.rule, width: 1),
+              tableScrollbarThumbVisibility: true,
+            ),
+          ),
+        ] else if (live && m.result == null) ...[
+          const SizedBox(height: 12),
+          const Skeleton(width: 280),
+          const SizedBox(height: 8),
+          const Skeleton(width: 220),
+          const SizedBox(height: 8),
+          const Skeleton(width: 160),
+        ],
+        if (tiles.isNotEmpty) ...[const SizedBox(height: 12), KpiGrid(items: tiles)],
+        if (spec != null && spec.type != 'none' && rows.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          SmartChart(
+            spec: spec,
+            rows: rows,
+            height: spec.type == 'line' || spec.type == 'area' ? 130 : 180,
+            touchIndex: widget.previewTouch,
+          ),
+        ],
+        if (m.result != null && rows.isNotEmpty && widget.preview == null)
+          Collapsible(
+            title: 'Data (${m.result!.rowCount} baris)',
+            icon: Icons.table_chart_outlined,
+            accent: p.teal700,
+            child: DataTableView(columns: m.result!.columns, rows: rows),
+          ),
+        for (final s in okSections) ...[
+          const SizedBox(height: 12),
+          Text(s.title, style: ts(13, w600, p.ink)),
+          const SizedBox(height: 8),
+          if (s.chart != null && ChartSpec(s.chart!).type != 'none')
+            SmartChart(spec: ChartSpec(s.chart!), rows: s.rows, height: 150)
+          else
+            DataTableView(columns: s.columns, rows: s.rows, maxRows: 10),
+        ],
+        if (m.locationResult != null) LocationResultView(data: m.locationResult!, lang: _lang),
+        if (m.sql != null && AuthState.canViewSql && widget.preview == null)
+          Collapsible(
+            title: 'SQL',
+            icon: Icons.code,
+            accent: p.mute,
+            child: SelectableText(m.sql!, style: TextStyle(fontFamily: 'monospace', fontSize: 11.5, color: p.ink)),
+          ),
+        if (m.error != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: p.dangerTint, borderRadius: BorderRadius.circular(12)),
+            child: Row(children: [
+              Ic(Icx.alertCircle, size: 18, color: p.danger),
+              const SizedBox(width: 10),
+              Expanded(child: Text(m.error!, style: ts(13, w500, p.danger, lh: 1.4))),
+            ]),
+          ),
+        ],
+        if (!live && m.error == null && (m.result != null || m.content.isNotEmpty)) ...[
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(
+              child: _ActionButton(
+                icon: Icx.download,
+                label: 'Export',
+                onTap: m.result != null && AuthState.canExport ? () => _exportCsv(i) : null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(child: _ActionButton(icon: Icx.bellRing, label: 'Pantau', tint: true, onTap: () => _watch(i))),
+          ]),
+        ],
+      ]),
+    );
+  }
+
+  Widget _validatedChip(Pal p) => Container(
+        height: 28,
+        padding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
+        decoration: BoxDecoration(color: p.teal50, borderRadius: BorderRadius.circular(999)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Ic(Icx.check, size: 14, color: p.teal600),
+          const SizedBox(width: 6),
+          Text('Tervalidasi', style: ts(12, w600, p.teal800)),
+        ]),
+      );
+
+  /// Follow-up questions built from the answer: why the named place moved,
+  /// next month's projection, and the neighbouring region for comparison.
+  List<String> _suggestions(ChatMessage m) {
+    final spec = m.result?.chart == null ? null : ChartSpec(m.result!.chart!);
+    final rows = m.result?.rows ?? const [];
+    final text = m.content;
+    final out = <String>[];
+    final named = RegExp(r'\*\*([A-Za-z][A-Za-z .\-]{2,30})\*\*').allMatches(text).map((x) => x[1]!.trim())
+        .where((w) => !RegExp(r'\d').hasMatch(w) && !RegExp(r'^(naik|turun|revenue)', caseSensitive: false).hasMatch(w)).toList();
+    if (named.isNotEmpty) {
+      out.add('Kenapa ${named.first} ${RegExp(r'turun|−|-\d').hasMatch(text) ? 'turun' : 'naik'}?');
+    } else {
+      final key = spec?.mapKey ?? spec?.x;
+      if (spec != null && key != null && rows.isNotEmpty && spec.type != 'line' && spec.type != 'area') {
+        final top = (rows.first[key] ?? '').toString();
+        if (top.isNotEmpty) out.add('Kenapa ${_title(top)} seperti ini?');
+      }
+    }
+    final d = spec?.x == null || rows.isEmpty ? null : parseDate(rows.last[spec!.x]);
+    out.add(d == null ? 'Proyeksi bulan depan' : 'Proyeksi ${_monthLong[d.$2 % 12]}');
+    const regions = [('Jawa Barat', 'Jabar'), ('Jawa Tengah', 'Jateng'), ('Jawa Timur', 'Jatim'), ('Jabodetabek', 'Jabodetabek')];
+    final i = regions.indexWhere((r) => text.contains(r.$1) || text.contains(r.$2));
+    out.add(i < 0 ? 'Bandingkan dengan bulan lalu' : 'Bandingkan ${regions[(i + 1) % regions.length].$2}');
+    return out;
+  }
+
+  static const _monthLong = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+  String _title(String s) => s.split(' ').map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}').join(' ');
+
+  Widget _followUps(Pal p) {
+    final items = _suggestions(_messages.last);
+    return SizedBox(
+      height: 48,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, i) => PillChip(items[i], icon: Icx.sparkles, accent: true, onTap: () => _send(items[i])),
+      ),
+    );
+  }
+
+  Widget _welcome(Pal p) {
+    const starters = [
+      ('Revenue', 'Performa revenue Jawa Barat bulan ini vs bulan lalu?'),
+      ('Site', 'Site dengan availability terendah minggu ini di Jawa Tengah'),
+      ('Market share', 'Market share IM3 vs kompetitor per kabupaten di Jawa Timur'),
+      ('Profil', 'Tampilkan profil lengkap kota Surabaya'),
     ];
-    return ListView(padding: const EdgeInsets.all(20), children: [
-      const SizedBox(height: 16),
-      Center(child: Image.asset('assets/logo_color.png', width: 120)),
-      const SizedBox(height: 16),
-      Text('Ask data, get answers.', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Poppins', fontSize: 22, fontWeight: FontWeight.w800, color: context.vInk)),
+    final name = (AuthState.user?['full_name'] ?? AuthState.user?['username'] ?? '').toString().split(' ').first;
+    return ListView(padding: const EdgeInsets.fromLTRB(16, 24, 16, 16), children: [
+      const Center(child: SizedBox(width: 132, height: 132, child: Image(image: AssetImage('assets/img/ai_orb.webp')))),
+      const SizedBox(height: 8),
+      Text(name.isEmpty ? 'Mau tahu apa hari ini?' : 'Halo, $name. Mau tahu apa hari ini?',
+          textAlign: TextAlign.center, style: ts(18, w700, p.ink, lh: 1.35)),
       const SizedBox(height: 6),
-      Text('Tanya revenue, market share, 5G, forecast, KPI — AI agent akan menjawab.', textAlign: TextAlign.center, style: TextStyle(color: context.vMute, fontSize: 14)),
-      const SizedBox(height: 24),
-      for (final e in examples)
-        Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          decoration: BoxDecoration(color: context.vWhite, borderRadius: BorderRadius.circular(12), border: Border.all(color: context.vRule)),
-          child: ListTile(
-            leading: const Icon(Icons.auto_awesome, color: IOH.red, size: 20),
-            title: Text(e, style: TextStyle(fontSize: 13.5, color: context.vInk)),
-            trailing: Icon(Icons.arrow_forward_ios, size: 13, color: context.vMute),
-            onTap: () => _send(e),
+      Text('Tanyakan revenue, site, network, market share atau sales di Jawa. Agent menulis query, mengambil data, lalu menyajikan angka dan grafiknya.',
+          textAlign: TextAlign.center, style: ts(13, w400, p.text2, lh: 1.5)),
+      const SizedBox(height: 20),
+      for (final (t, q) in starters)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Material(
+            color: p.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: p.rule)),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => _send(q),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(children: [
+                  IconTile(Icx.sparkles, bg: p.teal50, fg: p.teal700, size: 36, radius: 10),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(t, style: ts(13, w600, p.ink)),
+                      Text(q, style: ts(12, w400, p.text2)),
+                    ]),
+                  ),
+                  Ic(Icx.chevronRight, size: 16, color: p.mute),
+                ]),
+              ),
+            ),
           ),
         ),
     ]);
   }
 
-  Widget _bubble(ChatMessage m, bool isLast) {
-    if (m.isUser) {
-      return Align(alignment: Alignment.centerRight, child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
-        decoration: const BoxDecoration(color: IOH.red, borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16), topRight: Radius.circular(16), bottomLeft: Radius.circular(16), bottomRight: Radius.circular(4))),
-        child: Text(m.content, style: const TextStyle(color: Colors.white, fontSize: 14)),
-      ));
-    }
-    final okSections = m.profileResults.where((p) => p.status == 'ok' && p.rows.isNotEmpty).toList();
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // 1. Agent Pipeline
-        if (isLast && _flow.isNotEmpty) PipelineView(steps: _flow, live: _busy, tokens: _tokens),
-        // domain pill
-        if (m.domain != null && m.domain != 'none')
-          Container(
-            margin: const EdgeInsets.only(bottom: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: IOH.domainColor(m.domain), borderRadius: BorderRadius.circular(999)),
-            child: Text(m.domain == 'PROFILE' ? 'Profile' : (m.domainLabel ?? m.domain!),
-                style: const TextStyle(fontFamily: 'Poppins', color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+  Widget _composer(Pal p) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 59),
+        padding: const EdgeInsets.fromLTRB(18, 0, 7, 0),
+        decoration: BoxDecoration(
+          color: p.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: p.teal200, width: 1.5),
+          boxShadow: [
+            BoxShadow(color: const Color(0xFF15A697).withValues(alpha: .2), blurRadius: 24),
+            const BoxShadow(color: Color(0x0F0F1F1D), offset: Offset(0, 4), blurRadius: 14),
+          ],
+        ),
+        child: Row(children: [
+          Expanded(
+            child: TextField(
+              controller: _input,
+              minLines: 1,
+              maxLines: 4,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _send(),
+              style: ts(14, w400, p.ink, lh: 1.5),
+              cursorColor: p.teal600,
+              decoration: InputDecoration(
+                isCollapsed: true,
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                hintText: 'Tanya tentang bisnis Jawa…',
+                hintStyle: ts(14, w400, p.mute, lh: 1.5),
+                contentPadding: const EdgeInsets.symmetric(vertical: 18),
+              ),
+            ),
           ),
-        // status (running)
-        if (m.status != null)
-          Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Row(children: [
-            const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: IOH.red)),
-            const SizedBox(width: 8),
-            Flexible(child: Text(m.status!, style: const TextStyle(color: IOH.red, fontSize: 12, fontWeight: FontWeight.w600))),
-          ])),
-        // 2. SQL (collapsed, only analyst/admin)
-        if (m.sql != null && AuthState.canViewSql)
-          Collapsible(title: 'SQL Query', icon: Icons.code, accent: IOH.mute,
-              child: SelectableText(m.sql!, style: TextStyle(fontFamily: 'monospace', fontSize: 11.5, color: context.vInk))),
-        // 3. Row Data (collapsed by default)
-        if (m.result != null && m.result!.rows.isNotEmpty)
-          Collapsible(title: 'Row Data', icon: Icons.table_chart_outlined, accent: IOH.pink, badge: '${m.result!.rowCount}',
-              child: DataTableView(columns: m.result!.columns, rows: m.result!.rows)),
-        for (final p in okSections)
-          Collapsible(title: p.title, icon: Icons.table_rows_outlined, accent: IOH.pink, badge: '${p.rowCount}',
-              child: DataTableView(columns: p.columns, rows: p.rows, maxRows: 30)),
-        // 4. Chart
-        if (m.result != null && m.result!.rows.isNotEmpty)
-          ChartPanel(columns: m.result!.columns, rows: m.result!.rows),
-        // 5. AI summary (the streamed answer)
-        if (m.content.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(color: context.vWhite, border: Border.all(color: context.vRule),
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16), bottomLeft: Radius.circular(4), bottomRight: Radius.circular(16))),
-            child: MarkdownBody(data: m.content, styleSheet: MarkdownStyleSheet(
-              p: TextStyle(fontFamily: 'Prompt', fontSize: 14, height: 1.55, color: context.vInk),
-              h1: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.w800, color: context.vInk),
-              h2: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w800, color: context.vInk),
-              h3: TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w700, color: context.vInk),
-              strong: const TextStyle(fontWeight: FontWeight.w700),
-              listBullet: TextStyle(fontFamily: 'Prompt', fontSize: 14, color: context.vInk),
-              // Tables: size each column to its content (no text wrapping) and
-              // let the whole table scroll horizontally instead of cramming +
-              // wrapping cells. Smaller cell font keeps rows compact & legible.
-              tableColumnWidth: const IntrinsicColumnWidth(),
-              tableHead: TextStyle(fontFamily: 'Prompt', fontSize: 12.5, fontWeight: FontWeight.w700, color: context.vInk),
-              tableBody: TextStyle(fontFamily: 'Prompt', fontSize: 12.5, height: 1.3, color: context.vInk),
-              tableCellsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              tableBorder: TableBorder.all(color: context.vRule, width: 1),
-              tableScrollbarThumbVisibility: true,
-            )),
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: IconButton(
+              tooltip: _listening ? 'Berhenti mendengarkan' : 'Input suara',
+              onPressed: _busy ? null : _voice,
+              style: IconButton.styleFrom(
+                backgroundColor: _listening ? p.teal50 : Colors.transparent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: Ic(Icx.mic, size: 18, color: _listening ? p.teal700 : p.mute),
+            ),
           ),
-        if (m.locationResult != null) LocationResultView(data: m.locationResult!, lang: _lang),
-        if (m.error != null)
-          Container(margin: const EdgeInsets.only(top: 6), padding: const EdgeInsets.all(11),
-            decoration: BoxDecoration(color: const Color(0xFFFDECEC), borderRadius: BorderRadius.circular(8), border: const Border(left: BorderSide(color: IOH.danger, width: 4))),
-            child: Row(children: [const Icon(Icons.error_outline, color: IOH.danger, size: 16), const SizedBox(width: 8),
-              Expanded(child: Text(m.error!, style: const TextStyle(color: IOH.danger, fontSize: 13)))])),
-      ]),
+          const SizedBox(width: 8),
+          Material(
+            color: p.teal600,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: _busy ? _stop : () => _send(),
+              child: SizedBox(
+                width: 44,
+                height: 44,
+                child: Center(child: Ic(_busy ? Icx.square : Icx.send, size: 18, color: Colors.white)),
+              ),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 
-  Widget _composer() {
-    return SafeArea(top: false, child: Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-      decoration: BoxDecoration(color: context.vWhite, border: Border(top: BorderSide(color: context.vRule))),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        IconButton(icon: const Icon(Icons.add_circle_outline, color: IOH.red), onPressed: _busy ? null : _showAttach),
-        Expanded(child: TextField(
-          controller: _input, minLines: 1, maxLines: 4, textInputAction: TextInputAction.send,
-          onSubmitted: (_) => _send(), style: TextStyle(fontSize: 15, color: context.vInk),
-          decoration: InputDecoration(
-            hintText: 'Tanya revenue, network, market share…', filled: true, fillColor: context.vPanel,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none)),
-        )),
-        const SizedBox(width: 6),
-        CircleAvatar(radius: 22, backgroundColor: IOH.red, child: IconButton(
-          icon: Icon(_busy ? Icons.stop : Icons.send, color: Colors.white, size: 20),
-          onPressed: _busy ? () { _sub?.cancel(); _finish(); } : () => _send())),
-      ]),
-    ));
-  }
-
-  void _showAttach() {
-    showModalBottomSheet(context: context, backgroundColor: context.vWhite,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
-      builder: (_) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const SizedBox(height: 8),
-        Container(width: 40, height: 4, decoration: BoxDecoration(color: context.vRule, borderRadius: BorderRadius.circular(2))),
-        ListTile(leading: const Icon(Icons.my_location, color: IOH.red),
-          title: Text('Share Location', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, color: context.vInk)),
-          subtitle: Text('Profil kecamatan + site & outlet terdekat', style: TextStyle(color: context.vMute)),
-          onTap: () { Navigator.pop(context); _shareLocation(); }),
-        const SizedBox(height: 8),
-      ])));
+  Future<void> _voice() async {
+    if (_listening) {
+      await _speech.stop();
+      setState(() => _listening = false);
+      return;
+    }
+    final ok = await _speech.initialize(onStatus: (s) {
+      if ((s == 'done' || s == 'notListening') && mounted) setState(() => _listening = false);
+    });
+    if (!ok) {
+      if (mounted) showToast(context, 'Input suara tidak tersedia di perangkat ini.', ok: false);
+      return;
+    }
+    setState(() => _listening = true);
+    await _speech.listen(
+      listenOptions: SpeechListenOptions(localeId: _lang == 'en' ? 'en_US' : 'id_ID'),
+      onResult: (r) {
+        _input.text = r.recognizedWords;
+        _input.selection = TextSelection.collapsed(offset: _input.text.length);
+        if (r.finalResult && mounted) setState(() => _listening = false);
+      },
+    );
   }
 
   Future<void> _shareLocation() async {
     final coord = await getCurrentCoord(context);
     if (coord == null) return;
     setState(() {
-      _messages.add(ChatMessage(isUser: true, content: '📍 Share lokasi (${coord.$1.toStringAsFixed(5)}, ${coord.$2.toStringAsFixed(5)})'));
-      _messages.add(ChatMessage(isUser: false, status: 'Mencari kecamatan & lokasi terdekat…'));
+      _messages.add(ChatMessage(isUser: true, content: 'Lokasi saya (${coord.$1.toStringAsFixed(5)}, ${coord.$2.toStringAsFixed(5)})'));
+      _messages.add(ChatMessage(isUser: false, status: 'Mencari kecamatan & lokasi terdekat…')..startedAt = DateTime.now());
     });
     _scrollDown();
     try {
       final data = await ApiClient.geoLocate(coord.$1, coord.$2);
-      final a = _assistant; final kec = data['kecamatan'];
+      final a = _assistant;
+      final kec = data['kecamatan'];
       setState(() {
         a.status = null;
+        a.elapsed = DateTime.now().difference(a.startedAt!);
         a.content = kec != null
-            ? '### Lokasi Terdeteksi\n**Kecamatan:** ${kec['kecamatan'] ?? '-'} · **Kab/Kota:** ${kec['kabkota'] ?? '-'}'
-            : '### Lokasi Terdeteksi\nTidak terpetakan ke kecamatan.';
+            ? '**Kecamatan ${kec['kecamatan'] ?? '-'}**, ${kec['kabkota'] ?? '-'}'
+            : 'Lokasi tidak terpetakan ke kecamatan.';
         a.locationResult = data;
       });
-    } catch (e) { setState(() { _assistant.status = null; _assistant.error = 'Gagal: $e'; }); }
+    } catch (e) {
+      setState(() {
+        _assistant.status = null;
+        _assistant.error = 'Gagal: $e';
+      });
+    }
     _scrollDown();
   }
 
-  Widget _navItem(IconData ic, String label, Color color, VoidCallback onTap) {
-    return ListTile(
-      dense: true,
-      visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
-      leading: Icon(ic, size: 18, color: color),
-      title: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: context.vInk)),
-      onTap: onTap,
+  Future<void> _summarize() async {
+    final turns = _messages
+        .where((m) => m.content.trim().isNotEmpty || m.result != null)
+        .map((m) => {
+              'role': m.isUser ? 'user' : 'assistant',
+              'content': m.content,
+              'domain': m.domain,
+              'row_count': m.result?.rowCount,
+              'result': m.result == null
+                  ? null
+                  : {'columns': m.result!.columns, 'rows': m.result!.rows.take(50).toList(), 'row_count': m.result!.rowCount},
+            })
+        .toList();
+    if (turns.isEmpty) {
+      showToast(context, 'Belum ada percakapan untuk diringkas.');
+      return;
+    }
+    showToast(context, 'Membuat ringkasan dan mengirim email…');
+    try {
+      final res = await ApiClient.summarizeChat(turns, _lang);
+      if (mounted) showToast(context, res['message']?.toString() ?? 'Email terkirim.');
+    } catch (e) {
+      if (mounted) showToast(context, e.toString().replaceFirst('Exception: ', ''), ok: false);
+    }
+  }
+
+  void _openMenu() {
+    final p = Pal.of(context);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: p.surface,
+      showDragHandle: false,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (ctx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: .7,
+        maxChildSize: .92,
+        builder: (ctx, sc) => ListView(controller: sc, padding: const EdgeInsets.fromLTRB(16, 12, 16, 24), children: [
+          const SheetHandle(),
+          const SizedBox(height: 16),
+          Text('Percakapan', style: ts(18, w700, p.ink, lh: 1.35)),
+          const SizedBox(height: 12),
+          _menuItem(p, Icx.plus, 'Chat baru', () { Navigator.pop(ctx); newChat(); }),
+          _menuItem(p, Icx.mail, 'Ringkas & kirim email', () { Navigator.pop(ctx); _summarize(); }),
+          _menuItem(p, Icx.mapPin, 'Bagikan lokasi saya', () { Navigator.pop(ctx); _shareLocation(); }),
+          _menuItem(p, Icx.radio, 'Performa site', () { Navigator.pop(ctx); Navigator.pushNamed(context, '/site'); }),
+          const SizedBox(height: 12),
+          const Overline('Riwayat'),
+          const SizedBox(height: 8),
+          if (_history.isEmpty) Text('Belum ada riwayat.', style: ts(13, w400, p.mute)),
+          for (final h in _history)
+            _menuItem(
+              p,
+              Icx.history,
+              (h['title'] ?? 'Chat').toString(),
+              () { Navigator.pop(ctx); _openSession(h['session_id'].toString()); },
+              sub: '${h['message_count'] ?? 0} pesan',
+              selected: h['session_id'] == _sessionId,
+            ),
+        ]),
+      ),
     );
   }
 
-  Widget _historyDrawer() {
-    final uname = (AuthState.user?['full_name'] ?? AuthState.user?['username'] ?? 'User').toString();
-    void go(String route) { Navigator.pop(context); Navigator.pushNamed(context, route); }
-    return Drawer(backgroundColor: context.vWhite, child: SafeArea(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      // Header: brand
-      Padding(padding: const EdgeInsets.fromLTRB(16, 14, 16, 10), child: Row(children: [
-        Image.asset('assets/icon_circle.png', width: 26), const SizedBox(width: 10),
-        Expanded(child: Text('Bizplan Java', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 15, color: context.vInk))),
-      ])),
-      // Top: navigation buttons
-      _navItem(Icons.add_comment_outlined, 'Chat Baru', IOH.red, () { Navigator.pop(context); if (!_busy) _newChat(); }),
-      _navItem(Icons.map_outlined, 'Map Query', IOH.magenta, () => go('/map')),
-      _navItem(Icons.bar_chart_outlined, 'Performance Outlook', IOH.teal600, () => go('/reports')),
-      _navItem(Icons.cell_tower, 'Site Performance', IOH.teal600, () => go('/site')),
-      _navItem(Icons.mail_outline, 'Summary & Send Mail', IOH.red, () { Navigator.pop(context); _summarize(); }),
-      Divider(height: 12, color: context.vRule),
-      // Section label
-      Padding(padding: const EdgeInsets.fromLTRB(16, 2, 16, 6), child: Text('RIWAYAT CHAT',
-          style: TextStyle(fontFamily: 'Poppins', fontSize: 10, fontWeight: FontWeight.w700, color: context.vMute, letterSpacing: 0.8))),
-      // History list (fills remaining space)
-      Expanded(child: _history.isEmpty
-        ? Align(alignment: Alignment.topLeft, child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), child: Text('Belum ada riwayat', style: TextStyle(color: context.vMute, fontSize: 12))))
-        : ListView(padding: EdgeInsets.zero, children: [for (final h in _history) ListTile(
-            dense: true,
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
-            leading: Icon(Icons.chat_bubble_outline, size: 16, color: context.vMute),
-            title: Text((h['title'] ?? 'Chat').toString(), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: context.vInk, fontSize: 12.5)),
-            subtitle: Text('${h['message_count'] ?? 0} pesan', style: TextStyle(fontSize: 10, color: context.vMute)),
-            selected: h['session_id'] == _sessionId,
-            onTap: () => _openSession(h['session_id'].toString()))])),
-      // Bottom: account row → profile + logout
-      Divider(height: 1, color: context.vRule),
-      ListTile(
-        dense: true,
-        leading: CircleAvatar(radius: 14, backgroundColor: IOH.red, child: Text(uname.substring(0, 1).toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12))),
-        title: Text(uname, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.vInk), maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: IconButton(icon: const Icon(Icons.logout, size: 18, color: IOH.red), tooltip: 'Logout', onPressed: () { Navigator.pop(context); _logout(); }),
-        onTap: () => go('/profile'),
+  Widget _menuItem(Pal p, I3 icon, String label, VoidCallback onTap, {String? sub, bool selected = false}) {
+    return Material(
+      color: selected ? p.teal50 : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          child: Row(children: [
+            Ic(icon, size: 18, color: p.text2),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: ts(14, w500, p.ink)),
+                if (sub != null) Text(sub, style: ts(12, w400, p.mute)),
+              ]),
+            ),
+          ]),
+        ),
       ),
-    ])));
+    );
   }
 
   Future<void> _openSession(String sid) async {
-    Navigator.pop(context);
     if (_busy) return;
     final msgs = await ApiClient.sessionMessages(sid);
     setState(() {
-      _sessionId = sid; _messages.clear(); _flow.clear();
-      for (final m in msgs) { _messages.add(ChatMessage(isUser: m['role'] == 'user', content: (m['content'] ?? '').toString(), domain: m['domain'], sql: m['sql_query'])); }
+      _sessionId = sid;
+      _messages.clear();
+      for (final m in msgs) {
+        _messages.add(ChatMessage(
+          isUser: m['role'] == 'user',
+          content: (m['content'] ?? '').toString(),
+          domain: m['domain'],
+          sql: m['sql_query'],
+        ));
+      }
     });
-    final p = await SharedPreferences.getInstance();
+    final pr = await SharedPreferences.getInstance();
     final uname = AuthState.user?['username'] ?? 'anon';
-    await p.setString('session::$uname', sid);
+    await pr.setString('session::$uname', sid);
     _scrollDown();
   }
 
   @override
-  void dispose() { _sub?.cancel(); _input.dispose(); _scroll.dispose(); super.dispose(); }
+  void dispose() {
+    _sub?.cancel();
+    _input.dispose();
+    _scroll.dispose();
+    super.dispose();
+  }
+}
+
+/// The gradient AI dot with a sparkle that leads each answer card.
+class _AiDot extends StatelessWidget {
+  const _AiDot();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 22,
+        height: 22,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(begin: Alignment(-.75, -.875), end: Alignment(.75, 1), colors: [Color(0xFF15A697), Color(0xFF0A6A5F)]),
+        ),
+        alignment: Alignment.center,
+        child: const Ic(Icx.sparkles, size: 12, color: Colors.white),
+      );
+}
+
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({required this.icon, required this.label, this.onTap, this.tint = false});
+  final I3 icon;
+  final String label;
+  final VoidCallback? onTap;
+  final bool tint;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Pal.of(context);
+    final fg = tint ? p.teal700 : p.ink;
+    return Opacity(
+      opacity: onTap == null ? .5 : 1,
+      child: Material(
+        color: tint ? p.teal50 : p.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: tint ? BorderSide.none : BorderSide(color: p.rule),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: SizedBox(
+            height: 36,
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Ic(icon, size: 24, color: fg),
+              const SizedBox(width: 8),
+              Text(label, style: ts(13, w600, fg)),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 }
