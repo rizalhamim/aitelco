@@ -118,7 +118,7 @@ export default function ProfilePage() {
     loadNotifications();
   }
 
-  if (!user) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: IOH.panel, color: IOH.mute }}>Loading...</div>;
+  if (!user) return <AppShell><div className="ui-page"><div className="ui-skel" style={{ height: 168, borderRadius: 24 }} /></div></AppShell>;
 
   const needsEmail = !user.email || !user.email.includes("@") || user.email === `${user.username}@ioh.co.id`;
 
