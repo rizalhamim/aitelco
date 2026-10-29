@@ -1089,7 +1089,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
           {messages.length === 0 && (
             <section className="chat-welcome">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="chat-welcome-orb" src="/illustrations/hero_ai_orb.svg" alt="" width={168} height={168} />
+              <img className="chat-welcome-orb" src="/illustrations/ai_orb_particles.svg" alt="" width={168} height={168} />
               <h1>Halo{firstName ? `, ${firstName}` : ""}. Mau tahu apa hari ini?</h1>
               <p>Tanyakan revenue, site, network, market share atau sales di Jawa. Agent menulis query, mengambil data dari BigQuery, lalu menyajikan angka, grafik dan tabelnya.</p>
               <div className="chat-starters">

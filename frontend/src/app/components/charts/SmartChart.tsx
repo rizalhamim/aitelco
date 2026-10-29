@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ECharts, EChartsOption } from "echarts";
 import {
   BarChart3, Check, ChevronDown, Database, Maximize2, Minimize2, RadioTower, TrendingDown, TrendingUp,
@@ -38,6 +38,9 @@ type Props = {
   subtitle?: string;
   /** Render without the outer card border (when the caller already draws one). */
   bare?: boolean;
+  className?: string;
+  /** Extra row between the header and the plot (breadcrumbs, badges). */
+  toolbar?: React.ReactNode;
 };
 
 const TYPE_LABEL: Record<ChartType, string> = {
@@ -469,7 +472,7 @@ export function useThemeKey(): string {
   return key;
 }
 
-export default function SmartChart({ spec, rows, onDrill, height = 240, subtitle, bare }: Props) {
+export default function SmartChart({ spec, rows, onDrill, height = 240, subtitle, bare, className, toolbar }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const chart = useRef<ECharts | null>(null);
   const [type, setType] = useState<ChartType>(spec.type);
@@ -592,8 +595,9 @@ export default function SmartChart({ spec, rows, onDrill, height = 240, subtitle
   return (
     <>
       {expanded && <div className="sc-scrim" onClick={() => setExpanded(false)} />}
-      <figure className={`sc-card ${bare ? "bare" : ""} ${expanded ? "expanded" : ""}`}>
+      <figure className={`sc-card ${bare ? "bare" : ""} ${expanded ? "expanded" : ""} ${className ?? ""}`}>
         {head}
+        {toolbar}
         <div ref={el} className="sc-canvas" style={{ height: expanded ? "min(70vh, 640px)" : height }} role="img" aria-label={spec.title} />
         {(hidden > 0 || (showAll && spec.top_n)) && (
           <button type="button" className="sc-more" onClick={() => setShowAll((v) => !v)}>
