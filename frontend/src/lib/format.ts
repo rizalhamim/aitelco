@@ -20,7 +20,8 @@ export function count(v: number | null | undefined): string {
   if (v == null || !Number.isFinite(v)) return "–";
   const a = Math.abs(v);
   if (a >= 1e6) return `${id1.format(v / 1e6)} jt`;
-  if (a >= 1e3) return `${Math.round(v / 1e3).toLocaleString("id-ID")} rb`;
+  if (a >= 1e5) return `${Math.round(v / 1e3).toLocaleString("id-ID")} rb`;
+  if (a >= 1e3) return `${id1.format(v / 1e3)} rb`;
   return Math.round(v).toLocaleString("id-ID");
 }
 

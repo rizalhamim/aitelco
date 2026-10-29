@@ -161,6 +161,14 @@ export default function SitePerformancePage() {
     } catch (e) { setDetail({ error: String(e) } as Detail); setLoadingDetail(false); }
   }, []);
 
+  // Deep link from Peta & Site: /site?id=<site_id>.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (!id) return;
+    const t = setTimeout(() => openSite(id, "ioh"), 0);
+    return () => clearTimeout(t);
+  }, [openSite]);
+
   const changeBrand = useCallback((b: "ioh" | "im3" | "3id") => {
     setBrand(b);
     const hit = selected ? cacheRef.current.get(`${selected}|${b}`) : null;

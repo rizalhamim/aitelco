@@ -31,6 +31,7 @@ from .routes_stats import router as stats_router
 from .dashboard import router as dashboard_router
 from .watchlist import router as watchlist_router, evaluate_all as evaluate_watchlist
 from .report_schedule import router as report_schedule_router, run_due as run_due_reports
+from .map_overview import router as map_router
 from sqlalchemy.orm import Session
 
 app = FastAPI(title="Telco AI Orchestrator", version="1.0")
@@ -66,6 +67,7 @@ app.include_router(stats_router)
 app.include_router(dashboard_router)
 app.include_router(watchlist_router)
 app.include_router(report_schedule_router)
+app.include_router(map_router)
 
 # Init database on startup
 @app.on_event("startup")
@@ -320,8 +322,29 @@ import os as _os
 _GEO_DIR = _os.path.join(_os.path.dirname(_os.path.dirname(__file__)), "data", "geo")
 
 
+_JAVA_PROV = ("JAWA", "BANTEN", "JAKARTA", "YOGYA")
+_scoped_geo: dict[str, bytes] = {}
+
+
+def _java_shapes(level: str, gz: str, plain: str) -> bytes:
+    """Kabupaten/kecamatan polygons for the provinces on Java only (cached)."""
+    import gzip as _gzip
+    import json as _json
+    if level not in _scoped_geo:
+        if _os.path.exists(plain):
+            with open(plain, "rb") as f:
+                fc = _json.loads(f.read())
+        else:
+            with open(gz, "rb") as f:
+                fc = _json.loads(_gzip.decompress(f.read()))
+        fc["features"] = [ft for ft in fc.get("features", [])
+                          if any(p in str((ft.get("properties") or {}).get("provinsi", "")).upper() for p in _JAVA_PROV)]
+        _scoped_geo[level] = _json.dumps(fc, separators=(",", ":")).encode("utf-8")
+    return _scoped_geo[level]
+
+
 @app.get("/api/geo/shapes/{level}")
-def geo_shapes(level: str, request: Request):
+def geo_shapes(level: str, request: Request, scope: str = ""):
     """Serve the pre-built simplified GeoJSON polygons for choropleth.
     level = 'kecamatan' (key: kec_id) or 'kabupaten' (key: kabkot_id).
 
@@ -340,6 +363,13 @@ def geo_shapes(level: str, request: Request):
 
     accepts_gzip = "gzip" in (request.headers.get("accept-encoding") or "").lower()
     base_headers = {"Cache-Control": "public, max-age=604800", "X-Geo-Level": level}
+
+    if scope == "java":
+        data = _java_shapes(level, gz, plain)
+        if accepts_gzip:
+            return Response(content=_gzip.compress(data, 6), media_type="application/json",
+                            headers={**base_headers, "Content-Encoding": "gzip"})
+        return Response(content=data, media_type="application/json", headers=base_headers)
 
     if accepts_gzip and _os.path.exists(gz):
         with open(gz, "rb") as f:
