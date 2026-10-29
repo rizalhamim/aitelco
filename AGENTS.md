@@ -23,16 +23,19 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 `python`/`pip` are only available inside the venv — activate it before running anything.
 
-### requirements.txt is INCOMPLETE
+### Dependencies
 
-`requirements.txt` lists only fastapi/uvicorn/bigquery/pydantic. The app also imports, at runtime, packages that are NOT declared: `python-jose` (`jose`), `passlib`, `sqlalchemy`, `openpyxl`, `reportlab`, `pyshp` (`shapefile`), `shapely`, `requests`. Many are imported lazily inside functions, so the server starts fine and only fails when you hit the relevant endpoint (auth, export, geo). If you add a feature, install the dep and add it here.
+`requirements.txt` declares everything the app imports (FastAPI, BigQuery, SQLAlchemy, jose, passlib, openpyxl, reportlab, pyshp, shapely, requests). Many are imported lazily inside functions, so a missing package only fails when you hit the relevant endpoint (auth, export, geo). If you add a feature, add its dep here.
+
+`backend/data/` (knowledge_base.json, geo files, SQLite DB) is gitignored, so a fresh clone cannot answer questions until that folder is copied from the server.
 
 ### Environment
 
-`config.py` parses `backend/.env` itself (no python-dotenv) and provides defaults for everything, so missing vars fail silently with possibly-wrong defaults rather than erroring. Keys:
+`config.py` parses `backend/.env` itself (no python-dotenv) and provides defaults for everything, so missing vars fail silently with possibly-wrong defaults rather than erroring. `backend/.env.example` lists every key. Never put real secrets as code defaults. Keys:
 - LLM: `LLM_BASE`, `LLM_KEY`, plus per-role models `LLM_MODEL`, `LLM_MODEL_FAST`, `LLM_MODEL_SQL`, `LLM_MODEL_CODER`, `LLM_MODEL_ANALYST`. `LLM_OMIT_TEMPERATURE` defaults true.
 - BigQuery: `BQ_PROJECT`, `BQ_DATASET`, `BQ_LOCATION`, and `BQ_ADC` (path to ADC json; default is a hardcoded `~/.config/gcloud/...` path — override it).
 - DB: `TELCO_AI_DB` (SQLite file, default `backend/data/telco_ai.db`).
+- Security: `JWT_SECRET_KEY` (server refuses to start without it when `APP_ENV=production`), `CORS_ORIGINS` (comma-separated, default `*`), `SMTP_PASS` (no default; email fails without it).
 - Geo: `KEC_SHP_PATH` (default `/home/ubuntu/telco-ai/shp/Data Kecamatan Indonesia`).
 
 ### Architecture (not obvious from filenames)
@@ -56,6 +59,10 @@ Map polygons are pre-built, not generated on the fly. `python build_geojson.py` 
 `backend/data/knowledge_base.json` defines domains (site performance, network, market share, forecast, HVC, marketing, sales, fixed broadband, geography, KPI, reports), BigQuery table schemas, and SQL-generation prompts. Edit this to add domains/tables rather than hardcoding in agents.
 
 No Python linter, formatter, or unit test suite. Root-level `test_batch.py` / `rerun_failures.py` / `test_pipeline.py` are integration scripts that POST real questions to a running `localhost:8000`; they need the server + BigQuery live.
+
+## Design system
+
+`design/tokens.json` is the single source for colors, spacing, radius, type and motion on web and Android. Run `python3 design/build_tokens.py` after editing it; it regenerates `frontend/src/app/design-tokens.css` and `mobile/lib/src/design_tokens.dart`. See `design/README.md`.
 
 ## Frontend
 

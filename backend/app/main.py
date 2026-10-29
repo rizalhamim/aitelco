@@ -28,9 +28,13 @@ from sqlalchemy.orm import Session
 
 app = FastAPI(title="Telco AI Orchestrator", version="1.0")
 
+# Comma-separated list, e.g. "https://agent.bizplan-java.com". Defaults to "*"
+# so existing deployments keep working; set it in production.
+_cors_origins = [o.strip() for o in config.CORS_ORIGINS.split(",") if o.strip()] or ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,

@@ -2,6 +2,7 @@
 
 JWT token management, password hashing, and FastAPI dependencies.
 """
+import logging
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -15,7 +16,15 @@ from sqlalchemy.orm import Session
 from .database import get_db, User, LoginAudit, UsageLog, utcnow
 
 # ── Config ──
-SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "telco-ai-secret-key-change-in-production-2024")
+_DEFAULT_SECRET = "telco-ai-secret-key-change-in-production-2024"
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", _DEFAULT_SECRET)
+if SECRET_KEY == _DEFAULT_SECRET:
+    # The default key is public (it lives in git), so anyone could forge tokens.
+    # Refuse to start in production; only warn in dev so local setups keep working.
+    if os.environ.get("APP_ENV", "").lower() == "production":
+        raise RuntimeError("JWT_SECRET_KEY must be set when APP_ENV=production")
+    logging.getLogger(__name__).warning(
+        "JWT_SECRET_KEY not set; using the public default key (dev only)")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("JWT_EXPIRE_MINUTES", "480"))  # 8 hours
 

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins, Prompt } from "next/font/google";
+import "./design-tokens.css";
 import "./ioh-tokens.css";
 import "./globals.css";
 
@@ -20,8 +21,6 @@ const prompt = Prompt({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
 };
 
