@@ -1,9 +1,17 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import DataTable from "./components/DataTable";
-import ChartPanel from "./components/ChartPanel";
+import {
+  Activity, ArrowRight, BellRing, Calendar, Check, CircleHelp, Clock, Copy, FileSpreadsheet, FileText,
+  Globe, Languages, Mail, Map as MapIcon, MapPin, Mic, MoreHorizontal, Paperclip, Pin, RefreshCw, Send, Share2,
+  Square, ThumbsUp, TrendingUp, Upload, Code2, Workflow,
+} from "lucide-react";
+import AppShell from "./components/shell/AppShell";
+import SmartChart, { type ChartSpec } from "./components/charts/SmartChart";
+import ResultTable from "./components/ResultTable";
 import SiteMap from "./components/SiteMap";
+import { downloadXlsx } from "@/lib/xlsx";
+import "./chat.css";
 
 function detectLatLon(columns: string[]): { latKey: string; lonKey: string } | null {
   const lat = columns.find((c) => /^lat(itude)?$/i.test(c) || /_lat(itude)?$/i.test(c) || /(addr_)?latitude/i.test(c));
@@ -13,7 +21,7 @@ function detectLatLon(columns: string[]): { latKey: string; lonKey: string } | n
 }
 import Markdown from "./components/Markdown";
 import AgentFlow, { type FlowEvent } from "./components/AgentFlow";
-import { isLoggedIn, getUser, getAccessToken, logout, isAdmin, canViewSQL, canExport, authFetch } from "@/lib/auth";
+import { isLoggedIn, getUser, getAccessToken, canViewSQL, canExport, authFetch } from "@/lib/auth";
 
 function gmaps(lat: unknown, lon: unknown): string | null {
   const la = typeof lat === "number" ? lat : parseFloat(String(lat));
@@ -119,19 +127,25 @@ function KecProfileCard({ profile, isEN }: { profile: Record<string, unknown>; i
   );
 }
 
-type Domain = { key: string; label: string; description: string; table_count: number; tables: string[] };
-
 type Result = {
   columns: string[];
   rows: Record<string, unknown>[];
   row_count: number;
   sql?: string;
   bytes_processed?: number;
+  chart?: ChartSpec;
 };
+
+type Stage = "router" | "analyst" | "sql" | "validasi" | "ringkasan";
 
 type Msg = {
   role: "user" | "assistant";
   content: string;
+  /** "HH.MM" when the message was sent. */
+  time?: string;
+  startedAt?: number;
+  elapsedMs?: number;
+  stages?: Stage[];
   domain?: string;
   domainLabel?: string;
   sql?: string;
@@ -155,6 +169,7 @@ type Msg = {
     rows: Record<string, unknown>[];
     sql?: string | null;
     explanation?: string;
+    chart?: ChartSpec;
   }[];
   locationResult?: {
     lat: number;
@@ -183,38 +198,78 @@ const DOMAIN_COLOR: Record<string, string> = {
   PROFILE: "var(--ioh-yellow)",
 };
 
-const EXAMPLES = [
-  { label: "🏙️ Profile Kota", text: "Tampilkan profile lengkap kota Surabaya" },
-  { label: "Site Performance", text: "Top 5 kecamatan dengan revenue data tertinggi 30 hari terakhir" },
-  { label: "Network 5G", text: "Berapa total traffic 5G per region di bulan terakhir?" },
-  { label: "Competitive", text: "Bandingkan market share IM3 vs Telkomsel per kabkota di bulan terakhir" },
-  { label: "Forecast", text: "Tampilkan forecast revenue untuk top 5 micro-cluster bulan depan" },
+const DOMAIN_CHIPS = [
+  { key: "revenue", label: "Revenue", icon: "duo_revenue", q: "Bagaimana performa revenue Jawa bulan ini dibanding bulan lalu per region?" },
+  { key: "site", label: "Site", icon: "duo_site", q: "Site dengan availability di bawah target minggu ini per kabupaten" },
+  { key: "network", label: "Network", icon: "duo_network", q: "Berapa total payload data per region di bulan terakhir?" },
+  { key: "fwa", label: "FWA", icon: "duo_fwa", q: "Gross add FWA per kota bulan ini dibanding target" },
+  { key: "ftth", label: "FTTH", icon: "duo_ftth", q: "Performa FTTH per kabupaten bulan terakhir" },
+  { key: "competitive", label: "Market share", icon: "duo_marketshare", q: "Bandingkan market share IM3 vs Telkomsel per kabkota di bulan terakhir" },
+  { key: "sales", label: "Sales", icon: "duo_sales", q: "Top 10 outlet dengan penjualan tertinggi bulan ini" },
 ];
+
+const STARTERS = [
+  { icon: "duo_revenue", title: "Revenue Jawa Barat", text: "Bagaimana performa revenue Jawa Barat bulan ini dibanding bulan lalu? Kabupaten mana yang paling turun?" },
+  { icon: "duo_site", title: "Site availability", text: "Site availability Jawa Timur minggu ini, mana yang di bawah target?" },
+  { icon: "duo_marketshare", title: "Market share", text: "Market share FWA Semarang dibanding kompetitor 3 bulan terakhir" },
+  { icon: "duo_report", title: "Profil kota", text: "Tampilkan profile lengkap kota Surabaya" },
+];
+
+const STAGES: { key: Stage; label: string }[] = [
+  { key: "router", label: "Router" },
+  { key: "analyst", label: "Analyst" },
+  { key: "sql", label: "SQL · BigQuery" },
+  { key: "validasi", label: "Validasi" },
+  { key: "ringkasan", label: "Ringkasan" },
+];
+
+const MONTHS_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+function hhmm(d = new Date()): string {
+  return `${String(d.getHours()).padStart(2, "0")}.${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function followUps(m: Msg): { icon: typeof Activity; text: string }[] {
+  const out: { icon: typeof Activity; text: string }[] = [];
+  const spec = m.result?.chart;
+  const rows = m.result?.rows ?? [];
+  const label = spec?.map_key ?? spec?.x;
+  if (label && rows.length && spec?.type !== "line" && spec?.type !== "area") {
+    const top = String(rows[rows.length > 1 && spec?.sort !== "desc" ? 0 : 0][label] ?? "");
+    if (top) out.push({ icon: CircleHelp, text: `Kenapa ${top} seperti ini?` });
+  }
+  out.push({ icon: Activity, text: "Bandingkan dengan bulan lalu" });
+  out.push({ icon: TrendingUp, text: "Proyeksi bulan depan" });
+  if (spec?.map_key) out.push({ icon: MapIcon, text: "Tampilkan di peta" });
+  return out;
+}
+
 
 export default function Home() {
   const router = useRouter();
-  const [domains, setDomains] = useState<Domain[]>([]);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [pipelineFlow, setPipelineFlow] = useState<FlowEvent[]>([]);
   const [tokenUsage, setTokenUsage] = useState<{prompt: number; completion: number; total: number}>({prompt: 0, completion: 0, total: 0});
   const [sqlVisible, setSqlVisible] = useState<Record<number, boolean>>({});
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [historyList, setHistoryList] = useState<{ session_id: string; title: string; message_count: number; updated_at: string | null }[]>([]);
   const [activeSession, setActiveSession] = useState<string>("");
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
   const [locating, setLocating] = useState(false);
   const [lang, setLang] = useState<"id" | "en">("id");
+  const [historyVersion, setHistoryVersion] = useState(0);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [showFlow, setShowFlow] = useState(false);
+  const [copied, setCopied] = useState<number | null>(null);
+  const [liked, setLiked] = useState<Record<number, boolean>>({});
+  const [pinned, setPinned] = useState<Record<number, boolean>>({});
+  const [listening, setListening] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sessionIdRef = useRef<string>("");
-  const accountMenuRef = useRef<HTMLDivElement>(null);
-  const accountMenuRefDesktop = useRef<HTMLDivElement>(null);
   const attachRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -227,36 +282,6 @@ export default function Home() {
     }
   }, [router]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isDark = localStorage.getItem("theme") === "dark" || 
-                    (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
-      setDarkMode(isDark);
-      if (isDark) {
-        document.documentElement.classList.add("dark");
-        document.documentElement.setAttribute("data-theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        document.documentElement.setAttribute("data-theme", "light");
-      }
-    }
-  }, []);
-
-  const toggleDarkMode = useCallback(() => {
-    setDarkMode((prev) => {
-      const next = !prev;
-      localStorage.setItem("theme", next ? "dark" : "light");
-      if (next) {
-        document.documentElement.classList.add("dark");
-        document.documentElement.setAttribute("data-theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        document.documentElement.setAttribute("data-theme", "light");
-      }
-      return next;
-    });
-  }, []);
-
   function chooseLang(l: "id" | "en") {
     setLang(l);
     try { localStorage.setItem("telco_ai_lang", l); } catch { /* ignore */ }
@@ -264,10 +289,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!authChecked) return;
-    authFetch(`/api/domains`)
-      .then((r) => r.json())
-      .then((d) => setDomains(d.domains || []))
-      .catch(() => setDomains([]));
     // Per-user session id (scoped so different users on the same browser don't share)
     const uname = getUser()?.username || "anon";
     const key = `telco_ai_session_id::${uname}`;
@@ -288,36 +309,30 @@ export default function Home() {
     } catch {
       sessionIdRef.current = `s_${Date.now()}`;
     }
-    loadHistoryList();
-    // Restore the last conversation from the DB so a page reload doesn't lose it.
-    if (restoredSid) {
+    // Links from other pages: /?new=1, /?s=<session>, /?q=<question>.
+    const params = new URLSearchParams(window.location.search);
+    const wantSession = params.get("s");
+    const ask = params.get("q");
+    if (params.toString()) window.history.replaceState(null, "", "/");
+    if (params.get("new") || ask) {
+      newChat();
+      if (ask) setTimeout(() => send(ask), 0);
+    } else if (wantSession) {
+      loadSession(wantSession);
+    } else if (restoredSid) {
+      // Restore the last conversation from the DB so a page reload doesn't lose it.
       loadSession(restoredSid, { silent: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authChecked]);
 
-  async function loadHistoryList() {
-    try {
-      const res = await authFetch("/api/history/sessions", {
-        headers: { ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}) },
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      // endpoint returns a bare array; tolerate {sessions:[...]} too
-      const list = Array.isArray(data) ? data : (data.sessions || []);
-      setHistoryList(list);
-    } catch {
-      /* ignore */
-    }
+  function loadHistoryList() {
+    setHistoryVersion((v) => v + 1);
   }
 
   async function loadSession(sid: string, opts?: { silent?: boolean }) {
     if (busy) return;
     const silent = opts?.silent === true;
-    if (!silent) {
-      setLoadingHistory(true);
-      setSidebarOpen(false);
-    }
     try {
       const res = await authFetch(`/api/history/sessions/${sid}`, {
         headers: { ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}) },
@@ -343,8 +358,6 @@ export default function Home() {
       localStorage.setItem(`telco_ai_session_id::${uname}`, sid);
     } catch {
       /* ignore */
-    } finally {
-      if (!silent) setLoadingHistory(false);
     }
   }
 
@@ -360,31 +373,32 @@ export default function Home() {
     try { localStorage.setItem(`telco_ai_session_id::${uname}`, sid); } catch { /* ignore */ }
     setMessages([]);
     setPipelineFlow([]);
-    setSidebarOpen(false);
+    setInput("");
+    taRef.current?.focus();
   }
 
-  // smooth-scroll to bottom on any chat change
+  // When a new question is asked (or a session loads), bring the latest
+  // question to the top of the view so its answer streams in below it.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const id = requestAnimationFrame(() => {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      const bubbles = el.querySelectorAll<HTMLElement>(".chat-user");
+      const last = bubbles[bubbles.length - 1];
+      el.scrollTo({ top: last ? Math.max(0, last.offsetTop - 12) : 0, behavior: "smooth" });
     });
     return () => cancelAnimationFrame(id);
-  }, [messages, pipelineFlow, busy]);
+  }, [messages.length]);
 
-  // close the account menu when clicking outside it
+  // close the "more" menu when clicking outside it
   useEffect(() => {
-    if (!accountMenuOpen) return;
+    if (!moreOpen) return;
     function onDocClick(e: MouseEvent) {
-      const t = e.target as Node;
-      const inMobile = accountMenuRef.current?.contains(t);
-      const inDesktop = accountMenuRefDesktop.current?.contains(t);
-      if (!inMobile && !inDesktop) setAccountMenuOpen(false);
+      if (!moreRef.current?.contains(e.target as Node)) setMoreOpen(false);
     }
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-  }, [accountMenuOpen]);
+  }, [moreOpen]);
 
   const [summarySending, setSummarySending] = useState(false);
   const [summaryMsg, setSummaryMsg] = useState("");
@@ -587,8 +601,8 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
     setPipelineFlow([{ kind: "user", t: Date.now(), label: "User query", feedback: msg.length > 50 ? msg.slice(0, 48) + "…" : msg }]);
     setTokenUsage({prompt: 0, completion: 0, total: 0});
 
-    const userMsg: Msg = { role: "user", content: msg };
-    const assistantMsg: Msg = { role: "assistant", content: "", status: "Analyzing…" };
+    const userMsg: Msg = { role: "user", content: msg, time: hhmm() };
+    const assistantMsg: Msg = { role: "assistant", content: "", status: "Menganalisis pertanyaan…", startedAt: Date.now(), stages: [] };
     setMessages((m) => [...m, userMsg, assistantMsg]);
 
     const idx = (prev: Msg[]) => prev.length - 1;
@@ -604,6 +618,15 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
         const next = [...prev];
         const i = idx(next);
         next[i] = { ...next[i], content: (next[i].content || "") + chunk, status: undefined };
+        return next;
+      });
+    const markStage = (...st: Stage[]) =>
+      setMessages((prev) => {
+        const next = [...prev];
+        const i = idx(next);
+        const have = new Set(next[i].stages || []);
+        st.forEach((x) => have.add(x));
+        next[i] = { ...next[i], stages: STAGES.map((x) => x.key).filter((k) => have.has(k)) };
         return next;
       });
     const pushFlow = (ev: FlowEvent) => {
@@ -682,6 +705,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             }
           } else if (event === "analyst") {
             trackUsage(data);
+            markStage("analyst");
             const vq = (data.validated_query as string) || "";
             const hints = (data.hints as string) || "";
             const isData = data.is_data_query as boolean;
@@ -705,6 +729,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             });
           } else if (event === "route") {
             trackUsage(data);
+            markStage("router");
             const dom = data.domain as string;
             const reason = (data.reason as string) || "";
             const rephrased = (data.rephrased as string) || "";
@@ -766,6 +791,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
               rows: (data.rows as Record<string, unknown>[]) || [],
               sql: data.sql as string | null,
               explanation: (data.explanation as string) || "",
+              chart: data.chart as ChartSpec | undefined,
             };
             setMessages((prev) => {
               const next = [...prev];
@@ -778,6 +804,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             pushFlow({ kind: "bq_done", t: Date.now(), label: `${icon} ${dr.section_title}`, detail: dr.status === "ok" ? `${dr.row_count} rows` : (dr.error || "error").slice(0, 60) });
           } else if (event === "sql") {
             trackUsage(data);
+            markStage("router", "analyst");
             const explanation = (data.explanation as string) || "";
             update({ sql: data.sql as string, sqlExplanation: explanation });
             setPipelineFlow(prev => {
@@ -800,8 +827,10 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
                 row_count: rowCount,
                 sql: data.sql as string,
                 bytes_processed: bytes,
+                chart: data.chart as ChartSpec | undefined,
               },
             });
+            markStage("router", "analyst", "sql");
             pushFlow({
               kind: "bq_done", t: Date.now(),
               label: `${rowCount.toLocaleString("id-ID")} data rows`,
@@ -816,6 +845,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
               },
             });
           } else if (event === "token") {
+            if (!gotContent) markStage("router", "analyst", "validasi");
             gotContent = true;
             appendContent(String(data.t || ""));
           } else if (event === "retry") {
@@ -830,6 +860,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
                 ? "Belum optimal — mencari jawaban lebih baik…"
                 : "Data tidak tersedia — menyiapkan alternatif…";
             update({ status: msg });
+            if (verdict === "ok") markStage("validasi");
             pushFlow({
               kind: "reflect", t: Date.now(), label: "Quality Check",
               detail: reason.slice(0, 90),
@@ -866,7 +897,18 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
           } else if (event === "done") {
             gotDone = true;
             trackUsage(data);
-            update({ status: undefined });
+            setMessages((prev) => {
+              const next = [...prev];
+              const i = idx(next);
+              const done = new Set(next[i].stages || []);
+              const isData = !!next[i].result || !!next[i].profileResults?.length;
+              STAGES.forEach((x) => { if (isData || (x.key !== "sql")) done.add(x.key); });
+              next[i] = {
+                ...next[i], status: undefined, stages: STAGES.map((x) => x.key).filter((k) => done.has(k)),
+                elapsedMs: next[i].startedAt ? Date.now() - next[i].startedAt! : undefined,
+              };
+              return next;
+            });
             const dom = (data.domain as string) || "";
             pushFlow({ kind: "done", t: Date.now(), label: "Answer ready", feedback: dom && dom !== "none" ? `Domain: ${dom}` : "Jawaban telah dikirim" });
           }
@@ -901,553 +943,388 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
     abortRef.current?.abort();
     setBusy(false);
   }
+  const questions = messages.filter((m) => m.role === "user");
+  const title = questions[0]?.content.replace(/^📍\s*/, "") || "Percakapan baru";
+  const now = new Date();
+  const period = `${MONTHS_ID[now.getMonth()]} ${now.getFullYear()}`;
+  const firstName = (getUser()?.full_name || getUser()?.username || "").split(" ")[0];
+  const lastAssistant = messages.map((m) => m.role).lastIndexOf("assistant");
 
-  const subtitle = useMemo(
-    () => `${domains.length || 13} AI agents · Multi-domain analytics`,
-    [domains.length],
-  );
-
-  if (!authChecked) {
-    return (
-      <div style={{
-        minHeight: "100vh",
-        background: "#0a0a0f",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#888",
-      }}>
-        Loading...
-      </div>
-    );
+  function copyAnswer(i: number) {
+    const m = messages[i];
+    navigator.clipboard?.writeText(m.content || "").then(() => {
+      setCopied(i);
+      setTimeout(() => setCopied(null), 1600);
+    }).catch(() => {});
   }
 
+  function exportXlsx(i: number) {
+    const r = messages[i].result;
+    if (!r) return;
+    const q = messages[i - 1]?.content || "hasil";
+    const slug = q.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "hasil";
+    downloadXlsx(`bizplan-${slug}`, r.columns, r.rows, "Hasil");
+  }
+
+  function pinToDashboard(i: number) {
+    const m = messages[i];
+    if (!m.result) return;
+    try {
+      const key = `dash_pins::${getUser()?.username || "anon"}`;
+      const pins = JSON.parse(localStorage.getItem(key) || "[]");
+      pins.unshift({
+        id: `${Date.now()}`,
+        question: messages[i - 1]?.content || "",
+        title: m.result.chart?.title || messages[i - 1]?.content || "Hasil",
+        chart: m.result.chart,
+        columns: m.result.columns,
+        rows: m.result.rows.slice(0, 200),
+        pinned_at: new Date().toISOString(),
+      });
+      localStorage.setItem(key, JSON.stringify(pins.slice(0, 12)));
+      setPinned((p) => ({ ...p, [i]: true }));
+    } catch { /* storage full or unavailable */ }
+  }
+
+  function watchThis(i: number) {
+    const q = messages[i - 1]?.content || "";
+    router.push(`/watchlist?new=1&q=${encodeURIComponent(q)}`);
+  }
+
+  function voiceInput() {
+    type SR = { lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; start: () => void; stop: () => void };
+    const w = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR };
+    const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!Ctor) {
+      alert("Browser ini belum mendukung input suara.");
+      return;
+    }
+    const rec = new Ctor();
+    rec.lang = lang === "en" ? "en-US" : "id-ID";
+    rec.interimResults = true;
+    rec.onresult = (e) => {
+      const text = Array.from(e.results).map((r) => r[0].transcript).join("");
+      setInput(text);
+    };
+    rec.onend = () => setListening(false);
+    setListening(true);
+    rec.start();
+  }
+
+  // grow the composer with its content
+  useEffect(() => {
+    const ta = taRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
+  }, [input]);
+
+  const drill = busy ? undefined : (col: string, value: string) =>
+    send(`Detailkan ${value} (${col.replace(/_/g, " ")}) dari hasil sebelumnya`);
+  const showOnMap = (col: string, value: string) =>
+    router.push(`/map?focus=${encodeURIComponent(value)}&level=${encodeURIComponent(col)}`);
+
   return (
-    <div className="app-shell">
-      {/* Summary email toast notification */}
+    <AppShell
+      activeSession={activeSession}
+      onNewChat={newChat}
+      onOpenSession={(sid) => loadSession(sid)}
+      historyVersion={historyVersion}
+      busy={busy}
+      mainClassName="chat-main"
+    >
       {summaryMsg && (
-        <div className={`summary-toast ${summaryStatus}`} role="status">
-          <span className="summary-toast-ico">{summaryStatus === "success" ? "✓" : summaryStatus === "error" ? "!" : "…"}</span>
-          <span>{summaryMsg}</span>
+        <div className={`chat-toast ${summaryStatus}`} role="status">
+          {summaryStatus === "success" ? <Check size={16} /> : <Mail size={16} />} {summaryMsg}
         </div>
       )}
-      {/* Mobile top bar — only visible on <=920px */}
-      <div className="mobile-topbar">
-        <button className="hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
-          <span /><span /><span />
-        </button>
-        <div className="mobile-brand">
-          <div className="logo-dot" />
-          <span className="brand-name">Bizplan Java Agent</span>
+
+      <header className="ui-topbar">
+        <div className="ui-topbar-title">
+          <b title={title}>{title}</b>
+          <span>{questions.length ? `Percakapan · ${questions.length} pertanyaan` : "Tanya Agent · siap menjawab"}</span>
         </div>
-        <button className="mobile-newchat" onClick={newChat} aria-label="New chat" disabled={busy}>
-          + Baru
+        <span className="ui-chip teal chat-hide-sm"><MapPin size={16} /> Region: Jawa</span>
+        <span className="ui-chip chat-hide-sm"><Calendar size={20} strokeWidth={1.6} /> {period}</span>
+        <button className="ui-iconbtn" onClick={summarizeAndSendMail} disabled={summarySending || busy || messages.length === 0}
+          title="Kirim ringkasan percakapan ke email" aria-label="Bagikan ringkasan">
+          <Share2 size={18} />
         </button>
-        {authChecked && getUser() && (
-          <button className="map-fab-btn account-fab-mobile" onClick={() => router.push("/map")} title="Map Query" aria-label="Map Query">
-            <span className="map-fab-ico">◎</span>
+        <div className="chat-more" ref={moreRef}>
+          <button className="ui-iconbtn" onClick={() => setMoreOpen((v) => !v)} aria-label="Lainnya" aria-expanded={moreOpen}>
+            <MoreHorizontal size={18} />
           </button>
-        )}
-                    {authChecked && getUser() && (
-                      <div className="account-fab account-fab-mobile" ref={accountMenuRef}>
-                        <button
-                          className="account-fab-btn"
-                          onClick={() => setAccountMenuOpen((v) => !v)}
-                          aria-haspopup="menu"
-                          aria-expanded={accountMenuOpen}
-                          title="Menu"
-                        >
-                          <span className="account-avatar">
-                            {(getUser()?.full_name || getUser()?.username || "?").charAt(0).toUpperCase()}
-                          </span>
-                          <span className="account-name-inline">{getUser()?.full_name || getUser()?.username}</span>
-                          <span className="account-caret">▾</span>
-                        </button>
-                        {accountMenuOpen && (
-                          <div className="account-menu" role="menu">
-                            <div className="account-menu-header">
-                              <span className="account-avatar lg">
-                                {(getUser()?.full_name || getUser()?.username || "?").charAt(0).toUpperCase()}
-                              </span>
-                              <div>
-                                <div className="account-menu-name">{getUser()?.full_name || getUser()?.username}</div>
-                                <div className="account-menu-role">{isAdmin() ? "Administrator" : (getUser()?.role || "User")}</div>
-                              </div>
-                            </div>
-
-                            {/* Response language toggle */}
-                            <div className="account-menu-label">Response Language</div>
-                            <div className="lang-toggle">
-                              <button
-                                className={`lang-opt ${lang === "id" ? "active" : ""}`}
-                                onClick={() => chooseLang("id")}
-                                aria-pressed={lang === "id"}
-                              >🇮🇩 ID</button>
-                              <button
-                                className={`lang-opt ${lang === "en" ? "active" : ""}`}
-                                onClick={() => chooseLang("en")}
-                                aria-pressed={lang === "en"}
-                              >🇬🇧 EN</button>
-                            </div>
-                            <div className="account-menu-divider" />
-
-                            {/* Chat actions */}
-                            <div className="account-menu-label">Chat</div>
-                            <button className="account-menu-item" role="menuitem"
-                              disabled={busy}
-                              onClick={() => { setAccountMenuOpen(false); refreshChat(); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-ink)" }}>↻</span> Refresh (chat baru)
-                            </button>
-                            <button className="account-menu-item" role="menuitem"
-                              disabled={summarySending || busy || messages.length === 0}
-                              onClick={() => { setAccountMenuOpen(false); summarizeAndSendMail(); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-red)" }}>✉</span>
-                              {summarySending ? " Meringkas…" : " Summary & Send Mail"}
-                            </button>
-
-                            <div className="account-menu-divider" />
-                            {/* Account */}
-                            <div className="account-menu-label">Account</div>
-                            <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/map"); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-magenta)" }}>◎</span> Map Query
-                            </button>
-                            <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/reports"); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-teal)" }}>▦</span> Performance Outlook
-                            </button>
-                            <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/site"); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-teal)" }}>📡</span> Site Performance
-                            </button>
-                            <button className="account-menu-item" role="menuitem" onClick={() => { toggleDarkMode(); setAccountMenuOpen(false); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-yellow)" }}>{darkMode ? "☼" : "☾"}</span> {darkMode ? "Light Mode" : "Dark Mode"}
-                            </button>
-                            <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/profile"); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-teal)" }}>◐</span> Profile
-                            </button>
-                            {isAdmin() && (
-                              <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/admin"); }}>
-                                <span className="ami-ico" style={{ color: "var(--ioh-yellow)" }}>★</span> Admin
-                              </button>
-                            )}
-                            <button className="account-menu-item logout" role="menuitem" onClick={() => { setAccountMenuOpen(false); logout(); }}>
-                              <span className="ami-ico" style={{ color: "var(--ioh-red)" }}>⎋</span> Logout
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-      </div>
-
-      {/* Sidebar overlay backdrop */}
-      {sidebarOpen && <div className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
-
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
-        <div className="sidebar-top-row">
-          <div className="sidebar-brand">
-            <div className="logo-dot" />
-            <div>
-              <div className="brand-name">Bizplan Java Agent</div>
-              <div className="brand-sub">AI Agent · Java</div>
+          {moreOpen && (
+            <div className="ui-popover chat-more-menu" role="menu">
+              <button role="menuitem" disabled={busy} onClick={() => { setMoreOpen(false); refreshChat(); }}>
+                <RefreshCw size={16} /> Mulai percakapan baru
+              </button>
+              <button role="menuitem" disabled={summarySending || busy || messages.length === 0}
+                onClick={() => { setMoreOpen(false); summarizeAndSendMail(); }}>
+                <Mail size={16} /> {summarySending ? "Meringkas…" : "Ringkas & kirim ke email"}
+              </button>
+              <div className="chat-menu-label"><Languages size={14} /> Bahasa jawaban</div>
+              <div className="ui-seg chat-lang">
+                <button aria-pressed={lang === "id"} onClick={() => chooseLang("id")}>Indonesia</button>
+                <button aria-pressed={lang === "en"} onClick={() => chooseLang("en")}>English</button>
+              </div>
             </div>
-          </div>
-          <button className="sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close menu">✕</button>
+          )}
         </div>
+      </header>
 
-        {/* Pipeline takes over sidebar when active */}
-        {(busy || pipelineFlow.length > 0) ? (
-          <div className="sidebar-pipeline-wrap">
-            <AgentFlow events={pipelineFlow} live={busy} tokenUsage={tokenUsage} />
+      <div className="chat-scroll" ref={scrollRef}>
+        <div className="ui-glow" aria-hidden="true" />
+        <div className="chat-col">
+          <div className="chat-domains" role="list" aria-label="Topik">
+            {DOMAIN_CHIPS.map((d) => (
+              <button key={d.key} role="listitem" className="chat-domain" disabled={busy} onClick={() => send(d.q)} title={d.q}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/illustrations/${d.icon}.svg`} alt="" width={36} height={36} />
+                <span>{d.label}</span>
+              </button>
+            ))}
           </div>
-        ) : (
-          <>
-            <button className="new-chat-btn" onClick={newChat}>
-              <span className="new-chat-plus">+</span> Chat Baru
-            </button>
 
-            <div className="history-section">
-              <h4 style={{ marginBottom: 8, fontFamily: "var(--font-display)" }}>Riwayat Chat</h4>
-              <div className="history-list">
-                {loadingHistory && <div className="history-empty">Memuat…</div>}
-                {!loadingHistory && historyList.length === 0 && (
-                  <div className="history-empty">Belum ada riwayat</div>
-                )}
-                {!loadingHistory && historyList.map((h) => (
-                  <button
-                    key={h.session_id}
-                    className={`history-item ${h.session_id === activeSession ? "active" : ""}`}
-                    onClick={() => loadSession(h.session_id)}
-                    title={h.title}
-                  >
-                    <span className="history-title">{h.title || "Untitled chat"}</span>
-                    <span className="history-meta">{h.message_count} pesan</span>
+          {messages.length === 0 && (
+            <section className="chat-welcome">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="chat-welcome-orb" src="/illustrations/hero_ai_orb.svg" alt="" width={168} height={168} />
+              <h1>Halo{firstName ? `, ${firstName}` : ""}. Mau tahu apa hari ini?</h1>
+              <p>Tanyakan revenue, site, network, market share atau sales di Jawa. Agent menulis query, mengambil data dari BigQuery, lalu menyajikan angka, grafik dan tabelnya.</p>
+              <div className="chat-starters">
+                {STARTERS.map((s) => (
+                  <button key={s.text} className="chat-starter" onClick={() => send(s.text)}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/illustrations/${s.icon}.svg`} alt="" width={40} height={40} />
+                    <span><b>{s.title}</b>{s.text}</span>
+                    <ArrowRight size={16} />
                   </button>
                 ))}
               </div>
+            </section>
+          )}
+
+          {messages.map((m, i) => m.role === "user" ? (
+            <div key={i} className="chat-user">
+              <div className="chat-bubble">
+                <p>{m.content}</p>
+                {m.time && <span>{m.time}</span>}
+              </div>
             </div>
-          </>
-        )}
-
-        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid var(--ioh-rule)" }}>
-          <div className="confidential">Confidential · Internal Use Only</div>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main className="main">
-        <header className="app-header">
-          <div>
-            <div className="title">Bizplan Java Agent</div>
-            <div className="subtitle">{subtitle}</div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {authChecked && getUser() && (
-              <button
-                className="map-fab-btn account-fab-desktop"
-                onClick={() => router.push("/map")}
-                title="Map Query"
-              >
-                <span className="map-fab-ico">◎</span>
-                <span className="map-fab-label">Map</span>
-              </button>
-            )}
-            {authChecked && getUser() && (
-              <div className="account-fab account-fab-desktop" ref={accountMenuRefDesktop}>
-                <button
-                  className="account-fab-btn"
-                  onClick={() => setAccountMenuOpen((v) => !v)}
-                  aria-haspopup="menu"
-                  aria-expanded={accountMenuOpen}
-                  title="Menu"
-                >
-                  <span className="account-avatar">
-                    {(getUser()?.full_name || getUser()?.username || "?").charAt(0).toUpperCase()}
-                  </span>
-                  <span className="account-name-inline">{getUser()?.full_name || getUser()?.username}</span>
-                  <span className="account-caret">▾</span>
-                </button>
-                {accountMenuOpen && (
-                  <div className="account-menu" role="menu">
-                    <div className="account-menu-header">
-                      <span className="account-avatar lg">
-                        {(getUser()?.full_name || getUser()?.username || "?").charAt(0).toUpperCase()}
+          ) : (
+            <div key={i} className="chat-answer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="chat-avatar" src="/illustrations/ai_orb_particles.svg" alt="Agent" width={40} height={40} />
+              <article className="chat-card">
+                <div className="chat-pipeline">
+                  {STAGES.map((st, si) => {
+                    const done = m.stages?.includes(st.key);
+                    const live = busy && i === lastAssistant && !done && STAGES.slice(0, si).every((p) => m.stages?.includes(p.key) || p.key === "sql");
+                    if (!done && !(busy && i === lastAssistant) && !m.stages?.length) return null;
+                    return (
+                      <span key={st.key} className="chat-stage-wrap">
+                        {si > 0 && <span className="chat-stage-line" />}
+                        <span className={`chat-stage ${done ? "done" : live ? "live" : "todo"}`}>
+                          {done ? <Check size={14} strokeWidth={2.4} /> : <span className="chat-stage-dot" />}
+                          {st.label}
+                        </span>
                       </span>
-                      <div>
-                        <div className="account-menu-name">{getUser()?.full_name || getUser()?.username}</div>
-                        <div className="account-menu-role">{isAdmin() ? "Administrator" : (getUser()?.role || "User")}</div>
-                      </div>
-                    </div>
-                    <div className="account-menu-label">Response Language</div>
-                    <div className="lang-toggle">
-                      <button className={`lang-opt ${lang === "id" ? "active" : ""}`} onClick={() => chooseLang("id")} aria-pressed={lang === "id"}>🇮🇩 ID</button>
-                      <button className={`lang-opt ${lang === "en" ? "active" : ""}`} onClick={() => chooseLang("en")} aria-pressed={lang === "en"}>🇬🇧 EN</button>
-                    </div>
-                    <div className="account-menu-divider" />
-                    <div className="account-menu-label">Chat</div>
-                    <button className="account-menu-item" role="menuitem" disabled={busy} onClick={() => { setAccountMenuOpen(false); refreshChat(); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-ink)" }}>↻</span> Refresh (chat baru)
-                    </button>
-                    <button className="account-menu-item" role="menuitem" disabled={summarySending || busy || messages.length === 0} onClick={() => { setAccountMenuOpen(false); summarizeAndSendMail(); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-red)" }}>✉</span>{summarySending ? " Meringkas…" : " Summary & Send Mail"}
-                    </button>
-                    <div className="account-menu-divider" />
-                    <div className="account-menu-label">Account</div>
-                    <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/map"); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-magenta)" }}>◎</span> Map Query
-                    </button>
-                    <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/reports"); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-teal)" }}>▦</span> Performance Outlook
-                    </button>
-                    <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/site"); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-teal)" }}>📡</span> Site Performance
-                    </button>
-                    <button className="account-menu-item" role="menuitem" onClick={() => { toggleDarkMode(); setAccountMenuOpen(false); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-yellow)" }}>{darkMode ? "☼" : "☾"}</span> {darkMode ? "Light Mode" : "Dark Mode"}
-                    </button>
-                    <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/profile"); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-teal)" }}>◐</span> Profile
-                    </button>
-                    {isAdmin() && (
-                      <button className="account-menu-item" role="menuitem" onClick={() => { setAccountMenuOpen(false); router.push("/admin"); }}>
-                        <span className="ami-ico" style={{ color: "var(--ioh-yellow)" }}>★</span> Admin
-                      </button>
-                    )}
-                    <button className="account-menu-item logout" role="menuitem" onClick={() => { setAccountMenuOpen(false); logout(); }}>
-                      <span className="ami-ico" style={{ color: "var(--ioh-red)" }}>⎋</span> Logout
-                    </button>
+                    );
+                  })}
+                  <span className="chat-pipeline-meta">
+                    {m.status ? (
+                      <><span className="chat-spinner" /> {m.status}</>
+                    ) : m.elapsedMs ? (
+                      <><Clock size={14} /> Selesai dalam {Math.max(0.1, m.elapsedMs / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} dtk</>
+                    ) : null}
+                  </span>
+                </div>
+
+                {m.content && <div className="chat-text"><Markdown text={m.content} /></div>}
+                {!m.content && m.status && !m.result && (
+                  <div className="chat-skeleton" aria-hidden="true">
+                    <span className="ui-skel" style={{ width: "92%" }} />
+                    <span className="ui-skel" style={{ width: "76%" }} />
+                    <span className="ui-skel" style={{ width: "58%" }} />
                   </div>
                 )}
-              </div>
-            )}
-          </div>
-        </header>
 
-        <div className="messages" ref={scrollRef}>
-          <div className="messages-inner">
-            {messages.length === 0 && (
-              <div className="welcome">
-                <div className="welcome-hero">
-                  <div className="eyebrow">Built for analysts.</div>
-                  <h1>
-                    Ask data, <span className="red">get answers.</span>
-                  </h1>
-                  <p className="lede">
-                    Tanyakan apa pun tentang revenue site, market share kompetitor,
-                    performa 5G, forecast, atau KPI eksekutif. AI Orchestrator akan
-                    menganalisis pertanyaan Anda dan mengarahkan ke agent yang tepat
-                    untuk memberikan jawaban akurat dalam hitungan detik.
-                  </p>
-                  <div className="welcome-stats">
-                    <div>
-                      <div className="stat-num">13</div>
-                      <div className="stat-lbl">AI Agents</div>
-                    </div>
-                    <div>
-                      <div className="stat-num">11</div>
-                      <div className="stat-lbl">Domains</div>
-                    </div>
-                    <div>
-                      <div className="stat-num">~15s</div>
-                      <div className="stat-lbl">Avg Response</div>
-                    </div>
-                    <div>
-                      <div className="stat-num">24/7</div>
-                      <div className="stat-lbl">Available</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="welcome-aside">
-                  <div className="examples-eyebrow eyebrow">Try a question</div>
-                  <div className="examples">
-                    {EXAMPLES.map((ex) => (
-                      <button key={ex.text} className="example" onClick={() => send(ex.text)}>
-                        <span className="ex-label">{ex.label}</span>
-                        <span className="ex-text">{ex.text}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+                {m.result && m.result.rows.length > 0 && (() => {
+                  const geo = detectLatLon(m.result.columns);
+                  const spec = m.result.chart;
+                  return (
+                    <>
+                      {spec && spec.type !== "none" && (
+                        <SmartChart spec={spec} rows={m.result.rows} onDrill={drill} height={spec.type === "hbar" ? Math.min(420, 60 + Math.min(m.result.rows.length, spec.top_n ?? 15) * 30) : 220} />
+                      )}
+                      {geo && (
+                        <div className="chat-map"><SiteMap columns={m.result.columns} rows={m.result.rows} latKey={geo.latKey} lonKey={geo.lonKey} /></div>
+                      )}
+                      <ResultTable columns={m.result.columns} rows={m.result.rows} spec={spec}
+                        onShowMap={spec?.map_key ? showOnMap : undefined} />
+                    </>
+                  );
+                })()}
 
-            {messages.map((m, i) => (
-              <div key={i} className={`msg ${m.role === "user" ? "msg-user" : "msg-assistant"}`}>
-                {m.role === "user" ? (
-                  <div className="bubble">{m.content}</div>
-                ) : (
-                  <>
-                    <div className="trace-strip">
-                      <div className="trace-pills">
-                        {m.domain && m.domain !== "none" && (
-                          <span
-                            className="pill"
-                            style={{
-                              background: DOMAIN_COLOR[m.domain] || "var(--ioh-grey)",
-                              color: "var(--ioh-white)",
-                            }}
-                          >
-                            {m.domain === "PROFILE"
-                              ? `🏙️ Profile: ${m.profilePlan?.territory_name || ""}`
-                              : (m.domainLabel || m.domain)}
-                          </span>
-                        )}
-                        {m.domain === "none" && <span className="pill grey">General</span>}
-                        {m.status && (
-                          <span className="status-row">
-                            <span className="status-dot" />
-                            {m.status}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* SQL toggle — admin/analyst only */}
-                      {m.sql && canViewSQL() && (
-                        <div className="sql-panel-wrap">
-                          <button
-                            className="sql-toggle"
-                            onClick={() => setSqlVisible(prev => ({...prev, [i]: !prev[i]}))}
-                          >
-                            {sqlVisible[i] ? "▾ Hide SQL" : "▸ Show SQL"}
-                          </button>
-                          {sqlVisible[i] && (
-                            <div className="sql-panel tnum">
-                              <span className="sql-label">SQL Query</span>
-                              {m.sql}
-                            </div>
+                {m.profileResults && m.profileResults.length > 0 && (
+                  <div className="chat-profile">
+                    <div className="chat-profile-head">
+                      <b>{m.profilePlan?.territory_name ? `Profil ${m.profilePlan.territory_name}` : "Profil wilayah"}</b>
+                      <span>{m.profileResults.filter((r) => r.status === "ok").length} dari {m.profileResults.length} sumber data berhasil</span>
+                    </div>
+                    <div className="chat-profile-grid">
+                      {m.profileResults.map((pr, pi) => (
+                        <div key={pi} className={`chat-profile-card ${pr.status === "ok" ? "" : "err"}`}>
+                          <div className="chat-profile-card-head">
+                            <span className="dot" style={{ background: DOMAIN_COLOR[pr.domain] || "var(--ds-chart-grey)" }} />
+                            <b>{pr.section_title}</b>
+                            <span>{pr.status === "ok" ? `${pr.row_count} baris` : "gagal"}</span>
+                          </div>
+                          {pr.status === "ok" && pr.chart && pr.chart.type !== "none" && (
+                            <SmartChart spec={pr.chart} rows={pr.rows} height={180} bare />
                           )}
+                          {pr.status === "ok" && pr.rows.length > 0 && (!pr.chart || pr.chart.type === "none" || pr.chart.type === "kpi") && (
+                            <ResultTable columns={pr.columns} rows={pr.rows} spec={pr.chart} initialRows={5} />
+                          )}
+                          {pr.status !== "ok" && pr.error && <p className="chat-profile-err">{pr.error.slice(0, 140)}</p>}
                         </div>
-                      )}
-
-                      {m.result && m.result.rows.length > 0 && (() => {
-                        const geo = detectLatLon(m.result.columns);
-                        return (
-                          <>
-                            {geo && (
-                              <SiteMap
-                                columns={m.result.columns}
-                                rows={m.result.rows}
-                                latKey={geo.latKey}
-                                lonKey={geo.lonKey}
-                              />
-                            )}
-                            <ChartPanel columns={m.result.columns} rows={m.result.rows} />
-                            <DataTable
-                              columns={m.result.columns}
-                              rows={m.result.rows}
-                            />
-                          </>
-                        );
-                      })()}
-
-                      {/* Export download — admin/analyst/data_user only */}
-                      {m.exportReady && canExport() && (
-                        <div className="export-bar">
-                          <button
-                            className="export-btn"
-                            onClick={() => downloadFromUrl(
-                              m.exportReady!.url,
-                              `ioh_report.${m.exportReady!.format}`
-                            )}
-                          >
-                            {m.exportReady.format === "pdf" ? "📄" : "📊"}{" "}
-                            Download {m.exportReady.format.toUpperCase()}
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Profile domain results grid */}
-                      {m.profileResults && m.profileResults.length > 0 && (
-                        <div className="profile-grid">
-                          <div className="profile-grid-header">
-                            <span className="profile-grid-title">📊 Data Sources ({m.profileResults.filter(r => r.status === "ok").length}/{m.profileResults.length} success)</span>
-                          </div>
-                          <div className="profile-cards">
-                            {m.profileResults.map((pr, pi) => (
-                              <div key={pi} className={`profile-card ${pr.status === "ok" ? "ok" : "err"}`}>
-                                <div className="profile-card-head">
-                                  <span className="profile-card-dot" style={{ background: DOMAIN_COLOR[pr.domain] || "var(--ioh-grey)" }} />
-                                  <span className="profile-card-title">{pr.section_title}</span>
-                                  <span className={`profile-card-badge ${pr.status}`}>
-                                    {pr.status === "ok" ? `${pr.row_count} rows` : "error"}
-                                  </span>
-                                </div>
-                                {pr.status === "ok" && pr.rows.length > 0 && (
-                                  <DataTable
-                                    columns={pr.columns}
-                                    rows={pr.rows.slice(0, 10)}
-                                    bytes={0}
-                                  />
-                                )}
-                                {pr.status !== "ok" && pr.error && (
-                                  <div className="profile-card-error">{pr.error.slice(0, 120)}</div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {m.error && (
-                        <div className="callout danger">
-                          <span className="label">Error</span>
-                          {m.error}
-                        </div>
-                      )}
+                      ))}
                     </div>
-                    {m.content && <Markdown text={m.content} />}
-                    {m.locationResult && (
-                      <div className="loc-result">
-                        {m.locationResult.kecProfile && (
-                          <div className="loc-block">
-                            <div className="loc-block-title">🏙️ {lang === "en" ? "Kecamatan Profile" : "Profil Kecamatan"}{m.locationResult.kecamatan?.kecamatan ? ` · ${m.locationResult.kecamatan.kecamatan}` : ""}</div>
-                            <KecProfileCard profile={m.locationResult.kecProfile} isEN={lang === "en"} />
-                          </div>
-                        )}
-                        {m.locationResult.sites && m.locationResult.sites.rows.length > 0 && (
-                          <div className="loc-block">
-                            <div className="loc-block-title">📡 {lang === "en" ? "10 Nearest Sites" : "10 Site Terdekat"}</div>
-                            {(() => {
-                              const geo = detectLatLon(m.locationResult!.sites!.columns);
-                              return geo ? (
-                                <SiteMap columns={m.locationResult!.sites!.columns} rows={m.locationResult!.sites!.rows} latKey={geo.latKey} lonKey={geo.lonKey} />
-                              ) : null;
-                            })()}
-                            <NearestTable columns={m.locationResult.sites.columns} rows={m.locationResult.sites.rows} />
-                          </div>
-                        )}
-                        {m.locationResult.outlets && m.locationResult.outlets.rows.length > 0 && (
-                          <div className="loc-block">
-                            <div className="loc-block-title">🏪 {lang === "en" ? "10 Nearest Outlets" : "10 Outlet Terdekat"}</div>
-                            {(() => {
-                              const geo = detectLatLon(m.locationResult!.outlets!.columns);
-                              return geo ? (
-                                <SiteMap columns={m.locationResult!.outlets!.columns} rows={m.locationResult!.outlets!.rows} latKey={geo.latKey} lonKey={geo.lonKey} />
-                              ) : null;
-                            })()}
-                            <NearestTable columns={m.locationResult.outlets.columns} rows={m.locationResult.outlets.rows} />
-                          </div>
-                        )}
+                  </div>
+                )}
+
+                {m.locationResult && (
+                  <div className="chat-loc">
+                    {m.locationResult.kecProfile && (
+                      <div className="chat-loc-block">
+                        <b>{lang === "en" ? "Kecamatan profile" : "Profil kecamatan"}{m.locationResult.kecamatan?.kecamatan ? ` · ${m.locationResult.kecamatan.kecamatan}` : ""}</b>
+                        <KecProfileCard profile={m.locationResult.kecProfile} isEN={lang === "en"} />
                       </div>
                     )}
-                  </>
+                    {(["sites", "outlets"] as const).map((k) => {
+                      const block = m.locationResult![k];
+                      if (!block || block.rows.length === 0) return null;
+                      const geo = detectLatLon(block.columns);
+                      return (
+                        <div key={k} className="chat-loc-block">
+                          <b>{k === "sites" ? (lang === "en" ? "10 nearest sites" : "10 site terdekat") : (lang === "en" ? "10 nearest outlets" : "10 outlet terdekat")}</b>
+                          {geo && <div className="chat-map"><SiteMap columns={block.columns} rows={block.rows} latKey={geo.latKey} lonKey={geo.lonKey} /></div>}
+                          <NearestTable columns={block.columns} rows={block.rows} />
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
 
-        <div className="composer">
-          <div className="composer-inner">
-            <textarea
-              placeholder="Tanya tentang revenue, network, market share, forecast, KPI…  (Enter untuk kirim, Shift+Enter untuk baris baru)"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKey}
-              disabled={busy}
-              rows={1}
-              autoFocus
-            />
-            <input ref={fileInputRef} type="file" accept=".xlsx,.xls" style={{ display: "none" }} onChange={onFileChosen} />
-            <div className="attach-wrap" ref={attachRef}>
-              <button
-                className="attach-btn"
-                onClick={() => setAttachOpen((v) => !v)}
-                disabled={busy || locating}
-                title="Lampiran"
-                aria-haspopup="menu"
-                aria-expanded={attachOpen}
-              >
-                {locating ? "…" : "+"}
+                {m.error && (
+                  <div className="chat-error" role="alert">
+                    <b>Agent gagal menjawab.</b> {m.error}
+                  </div>
+                )}
+
+                {m.sql && canViewSQL() && sqlVisible[i] && (
+                  <pre className="chat-sql"><code>{m.sql}</code></pre>
+                )}
+                {showFlow && i === lastAssistant && pipelineFlow.length > 0 && (
+                  <div className="chat-flow"><AgentFlow events={pipelineFlow} live={busy} tokenUsage={tokenUsage} /></div>
+                )}
+
+                {!m.status && (m.content || m.result) && (
+                  <div className="chat-actions">
+                    {m.result && m.result.rows.length > 0 && canExport() && (
+                      <button className="ui-btn" onClick={() => exportXlsx(i)}><FileSpreadsheet size={20} strokeWidth={1.6} /> Export XLSX</button>
+                    )}
+                    {m.exportReady && canExport() ? (
+                      <button className="ui-btn" onClick={() => downloadFromUrl(m.exportReady!.url, `bizplan-report.${m.exportReady!.format}`)}>
+                        <FileText size={20} strokeWidth={1.6} /> Unduh {m.exportReady.format.toUpperCase()}
+                      </button>
+                    ) : m.result && canExport() ? (
+                      <button className="ui-btn" disabled={busy} onClick={() => send("Buatkan laporan PDF dari hasil sebelumnya")}>
+                        <FileText size={20} strokeWidth={1.6} /> Laporan PDF
+                      </button>
+                    ) : null}
+                    {m.result && m.result.chart && m.result.chart.type !== "none" && (
+                      <button className="ui-btn" onClick={() => pinToDashboard(i)} disabled={pinned[i]}>
+                        <Pin size={20} strokeWidth={1.6} /> {pinned[i] ? "Tersemat di dashboard" : "Pin ke dashboard"}
+                      </button>
+                    )}
+                    {m.result && (
+                      <button className="ui-btn tint" onClick={() => watchThis(i)}><BellRing size={20} strokeWidth={1.6} /> Pantau &amp; beri alert</button>
+                    )}
+                    <span className="chat-actions-spacer" />
+                    {m.sql && canViewSQL() && (
+                      <button className="ui-iconbtn ghost" onClick={() => setSqlVisible((v) => ({ ...v, [i]: !v[i] }))}
+                        aria-pressed={!!sqlVisible[i]} title="Lihat SQL"><Code2 size={16} /></button>
+                    )}
+                    {i === lastAssistant && pipelineFlow.length > 0 && canViewSQL() && (
+                      <button className="ui-iconbtn ghost" onClick={() => setShowFlow((v) => !v)} aria-pressed={showFlow} title="Lihat alur agent"><Workflow size={16} /></button>
+                    )}
+                    <button className={`ui-iconbtn ghost ${liked[i] ? "on" : ""}`} onClick={() => setLiked((v) => ({ ...v, [i]: !v[i] }))}
+                      aria-pressed={!!liked[i]} title="Jawaban membantu"><ThumbsUp size={16} /></button>
+                    <button className="ui-iconbtn ghost" onClick={() => copyAnswer(i)} title="Salin jawaban">
+                      {copied === i ? <Check size={16} /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                )}
+              </article>
+            </div>
+          ))}
+
+          {!busy && lastAssistant >= 0 && lastAssistant === messages.length - 1 && !messages[lastAssistant].error && (
+            <div className="chat-followups">
+              {followUps(messages[lastAssistant]).map((f) => (
+                <button key={f.text} className="ui-chip outline-teal" onClick={() => f.text === "Tampilkan di peta" && messages[lastAssistant].result?.chart?.map_key
+                  ? router.push("/map") : send(f.text)}>
+                  <f.icon size={18} strokeWidth={1.7} /> {f.text}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="chat-composer">
+        <div className="chat-input">
+          <textarea
+            ref={taRef}
+            placeholder="Tanya apa saja tentang bisnis Jawa: revenue, site, market share…"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKey}
+            disabled={busy}
+            rows={1}
+            aria-label="Pertanyaan"
+          />
+          <div className="chat-tools">
+            <input ref={fileInputRef} type="file" accept=".xlsx,.xls" hidden onChange={onFileChosen} />
+            <div className="chat-attach" ref={attachRef}>
+              <button className="ui-iconbtn ghost chat-tool" onClick={() => setAttachOpen((v) => !v)} disabled={busy || locating}
+                aria-label="Lampiran" aria-haspopup="menu" aria-expanded={attachOpen}>
+                {locating ? <span className="chat-spinner" /> : <Paperclip size={18} />}
               </button>
               {attachOpen && (
-                <div className="attach-menu" role="menu">
-                  <button className="attach-item" role="menuitem" onClick={shareLocation}>
-                    <span className="attach-ico" style={{ color: "var(--ioh-red)" }}>📍</span>
-                    <span><b>Share Location</b><br /><span className="attach-sub">Profil kecamatan + site & outlet terdekat</span></span>
-                  </button>
-                  <button className="attach-item" role="menuitem" onClick={onPickFile}>
-                    <span className="attach-ico" style={{ color: "var(--ioh-teal)" }}>📊</span>
-                    <span><b>Upload Excel</b><br /><span className="attach-sub">File .xlsx untuk dianalisa</span></span>
-                  </button>
+                <div className="ui-popover chat-attach-menu" role="menu">
+                  <button role="menuitem" onClick={shareLocation}><MapPin size={16} /> Bagikan lokasi saya<small>Profil kecamatan, site & outlet terdekat</small></button>
+                  <button role="menuitem" onClick={onPickFile}><Upload size={16} /> Unggah Excel<small>File .xlsx untuk dianalisis</small></button>
                 </div>
               )}
             </div>
+            <span className="ui-chip teal"><MapPin size={16} /> Lokasi: Region Jawa</span>
+            {lang === "en" && <span className="ui-chip chat-hide-sm"><Globe size={16} /> English</span>}
+            <span className="chat-actions-spacer" />
+            <button className={`ui-iconbtn ghost chat-tool ${listening ? "on" : ""}`} onClick={voiceInput} disabled={busy} aria-label="Bicara">
+              <Mic size={18} />
+            </button>
             {busy ? (
-              <button className="send stop" onClick={stop} title="Batalkan request">
-                Stop
-              </button>
+              <button className="chat-send stop" onClick={stop} aria-label="Hentikan"><Square size={16} fill="currentColor" /></button>
             ) : (
-              <button
-                className="send"
-                onClick={() => send()}
-                title={!input.trim() ? "Ketik pertanyaan dulu" : "Kirim (Enter)"}
-              >
-                Send
-              </button>
+              <button className="chat-send" onClick={() => send()} disabled={!input.trim()} aria-label="Kirim"><Send size={18} /></button>
             )}
           </div>
-          <div className="hint">Enter to send · Shift+Enter untuk baris baru</div>
         </div>
-      </main>
-    </div>
+        <p className="chat-disclaimer">Agent bisa keliru. Verifikasi angka penting sebelum dibagikan.</p>
+      </div>
+    </AppShell>
   );
 }

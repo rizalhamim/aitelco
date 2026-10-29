@@ -43,40 +43,102 @@ class DSColor {
 /// Semantic colors, light theme.
 class DSLight {
   DSLight._();
-  static const primary = Color(0xFF15A697);
-  static const primaryHover = Color(0xFF33BCAD);
-  static const primaryPressed = Color(0xFF0E8579);
-  static const onPrimary = Color(0xFFFFFFFF);
-  static const danger = Color(0xFFE13838);
-  static const warning = Color(0xFFF5A623);
-  static const success = Color(0xFF2FA84F);
-  static const info = Color(0xFF2A74D4);
+  static const teal50 = Color(0xFFE6F7F5);
+  static const teal100 = Color(0xFFC0EDE8);
+  static const teal200 = Color(0xFF8FDFD7);
+  static const teal300 = Color(0xFF5BCEC3);
+  static const teal400 = Color(0xFF33BCAD);
+  static const teal500 = Color(0xFF15A697);
+  static const teal600 = Color(0xFF0E8579);
+  static const teal700 = Color(0xFF0A6A5F);
+  static const teal800 = Color(0xFF074D45);
+  static const teal900 = Color(0xFF04332E);
   static const ink = Color(0xFF0F1F1D);
-  static const mute = Color(0xFF5A6B68);
+  static const textSecondary = Color(0xFF3D4C49);
+  static const textMute = Color(0xFF5A6B68);
   static const rule = Color(0xFFE1E9E7);
   static const bg = Color(0xFFF5F9F8);
   static const surface = Color(0xFFFFFFFF);
   static const surfaceMuted = Color(0xFFECF3F1);
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const danger = Color(0xFFC42B2B);
+  static const dangerTint = Color(0xFFFDECEC);
+  static const dangerSolid = Color(0xFFE04848);
+  static const warning = Color(0xFFF5A623);
+  static const warningTint = Color(0xFFFDF3E2);
+  static const warningText = Color(0xFFB7791F);
+  static const success = Color(0xFF1F7A3A);
+  static const successTint = Color(0xFFE6F4EA);
+  static const successSolid = Color(0xFF2E9E57);
+  static const chartGrey = Color(0xFFB9C6C3);
+  static const chartAmber = Color(0xFFF5A623);
+  static const overlay = Color(0xFF04332E);
+  static const blue50 = Color(0xFFE1ECFA);
+  static const blue600 = Color(0xFF2C6CB0);
+  static const violet50 = Color(0xFFECE5FA);
+  static const violet600 = Color(0xFF6A4CB5);
+  static const amber50 = Color(0xFFFCEDD3);
+  static const amber700 = Color(0xFFB7791F);
+  static const rose50 = Color(0xFFFBE2E8);
+  static const rose600 = Color(0xFFC23A5B);
+  static const green50 = Color(0xFFDDF1E4);
+  static const green600 = Color(0xFF1F7A3A);
+  static const primary = Color(0xFF0E8579);
+  static const primaryHover = Color(0xFF15A697);
+  static const primaryPressed = Color(0xFF0A6A5F);
+  static const mute = Color(0xFF5A6B68);
+  static const info = Color(0xFF2C6CB0);
   static const zebra = Color(0xFFFBFBF9);
 }
 
 /// Semantic colors, dark theme.
 class DSDark {
   DSDark._();
-  static const primary = Color(0xFF33BCAD);
-  static const primaryHover = Color(0xFF5BCEC3);
-  static const primaryPressed = Color(0xFF15A697);
-  static const onPrimary = Color(0xFF04332E);
-  static const danger = Color(0xFFEF5350);
+  static const teal50 = Color(0xFF0F2E2A);
+  static const teal100 = Color(0xFF134039);
+  static const teal200 = Color(0xFF1C5A51);
+  static const teal300 = Color(0xFF2A7C71);
+  static const teal400 = Color(0xFF33BCAD);
+  static const teal500 = Color(0xFF2BB5A6);
+  static const teal600 = Color(0xFF14A090);
+  static const teal700 = Color(0xFF5BCEC3);
+  static const teal800 = Color(0xFF8FDFD7);
+  static const teal900 = Color(0xFF0A2622);
+  static const ink = Color(0xFFE8F1EF);
+  static const textSecondary = Color(0xFFB4C4C1);
+  static const textMute = Color(0xFF8A9C99);
+  static const rule = Color(0xFF23403B);
+  static const bg = Color(0xFF0B1513);
+  static const surface = Color(0xFF12201E);
+  static const surfaceMuted = Color(0xFF182927);
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const danger = Color(0xFFF27A7A);
+  static const dangerTint = Color(0xFF3A1717);
+  static const dangerSolid = Color(0xFFE04848);
   static const warning = Color(0xFFF5A623);
-  static const success = Color(0xFF2FA84F);
-  static const info = Color(0xFF2A74D4);
-  static const ink = Color(0xFFE8EEEC);
-  static const mute = Color(0xFF9AB0AC);
-  static const rule = Color(0xFF2A3A37);
-  static const bg = Color(0xFF0E1413);
-  static const surface = Color(0xFF1B2524);
-  static const surfaceMuted = Color(0xFF121A19);
+  static const warningTint = Color(0xFF3A2C12);
+  static const warningText = Color(0xFFF5C26B);
+  static const success = Color(0xFF5FD08A);
+  static const successTint = Color(0xFF15301F);
+  static const successSolid = Color(0xFF2E9E57);
+  static const chartGrey = Color(0xFF4A5C59);
+  static const chartAmber = Color(0xFFF5A623);
+  static const overlay = Color(0xFF000000);
+  static const blue50 = Color(0xFF14263A);
+  static const blue600 = Color(0xFF7FB3EA);
+  static const violet50 = Color(0xFF241C38);
+  static const violet600 = Color(0xFFB7A2EC);
+  static const amber50 = Color(0xFF33270F);
+  static const amber700 = Color(0xFFF5C26B);
+  static const rose50 = Color(0xFF381820);
+  static const rose600 = Color(0xFFF08BA3);
+  static const green50 = Color(0xFF15301F);
+  static const green600 = Color(0xFF5FD08A);
+  static const primary = Color(0xFF14A090);
+  static const primaryHover = Color(0xFF2BB5A6);
+  static const primaryPressed = Color(0xFF5BCEC3);
+  static const mute = Color(0xFF8A9C99);
+  static const info = Color(0xFF7FB3EA);
   static const zebra = Color(0xFF18211F);
 }
 
@@ -99,6 +161,7 @@ class DSRadius {
   static const double sm = 8;
   static const double md = 12;
   static const double lg = 16;
+  static const double card = 20;
   static const double xl = 24;
   static const double pill = 999;
 }
@@ -106,13 +169,16 @@ class DSRadius {
 class DSFont {
   DSFont._();
   static const display = 'Poppins';
-  static const body = 'Prompt';
+  static const body = 'Poppins';
 }
 
 /// Type scale: font size and weight (100-900).
 class DSType {
   DSType._();
-  static const double displaySize = 32;
+  static const double heroSize = 44;
+  static const int heroWeight = 800;
+  static const heroFont = DSFont.display;
+  static const double displaySize = 30;
   static const int displayWeight = 800;
   static const displayFont = DSFont.display;
   static const double h1Size = 24;
@@ -124,7 +190,10 @@ class DSType {
   static const double titleSize = 16;
   static const int titleWeight = 600;
   static const titleFont = DSFont.display;
-  static const double bodySize = 15;
+  static const double bodyLargeSize = 16;
+  static const int bodyLargeWeight = 400;
+  static const bodyLargeFont = DSFont.body;
+  static const double bodySize = 14;
   static const int bodyWeight = 400;
   static const bodyFont = DSFont.body;
   static const double labelSize = 13;
@@ -133,9 +202,18 @@ class DSType {
   static const double captionSize = 12;
   static const int captionWeight = 400;
   static const captionFont = DSFont.body;
+  static const double microSize = 10;
+  static const int microWeight = 500;
+  static const microFont = DSFont.body;
+  static const double overlineSize = 11;
+  static const int overlineWeight = 600;
+  static const overlineFont = DSFont.display;
   static const double kpiSize = 28;
   static const int kpiWeight = 700;
   static const kpiFont = DSFont.display;
+  static const double kpiSmallSize = 22;
+  static const int kpiSmallWeight = 700;
+  static const kpiSmallFont = DSFont.display;
 }
 
 class DSMotion {

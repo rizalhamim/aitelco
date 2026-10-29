@@ -101,8 +101,15 @@ def _magnitude(rows: list, col: str) -> float:
     return max(vals) if vals else 0.0
 
 
+_ACRONYMS = {"mom": "MoM", "yoy": "YoY", "wow": "WoW", "qoq": "QoQ", "pct": "%", "arpu": "ARPU",
+             "fwa": "FWA", "ftth": "FTTH", "ga": "GA", "rgb": "RGB", "kpi": "KPI", "id": "ID", "pb": "PB",
+             "gb": "GB", "tb": "TB", "bts": "BTS", "im3": "IM3", "5g": "5G", "4g": "4G"}
+
+
 def _humanize(col: str) -> str:
-    return col.replace("_", " ").strip().title()
+    words = [w for w in col.replace("_", " ").split() if w]
+    out = [_ACRONYMS.get(w.lower(), w.capitalize() if w.islower() else w) for w in words]
+    return " ".join(out).replace(" %", " (%)") if out else col
 
 
 def suggest(columns: list[str], rows: list[dict], question: str = "") -> dict:
@@ -154,7 +161,9 @@ def suggest(columns: list[str], rows: list[dict], question: str = "") -> dict:
                 return spec
         spec.update(type="area" if len(measures) == 1 else "line", y=measures,
                     alternatives=["line", "bar"] if len(measures) == 1 else ["area", "bar"],
-                    title=_humanize(measures[0]) if len(measures) == 1 else "Tren")
+                    title=_humanize(measures[0]) if len(measures) == 1
+                    else f"{_humanize(measures[0])} vs {_humanize(measures[1])}" if len(measures) == 2
+                    else f"Tren {_humanize(measures[0])}")
         return spec
 
     # Category vs measures.
