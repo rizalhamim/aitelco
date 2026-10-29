@@ -232,6 +232,39 @@ class WatchAlert(Base):
     acknowledged_at = Column(DateTime, nullable=True)
 
 
+class ReportSchedule(Base):
+    """An automatic report the agent builds and emails on a fixed day and hour (WIB)."""
+    __tablename__ = "report_schedules"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(160), nullable=False)
+    region = Column(String(120), nullable=False, default="")     # "" = all of Java
+    frequency = Column(String(20), nullable=False, default="mingguan")  # mingguan, bulanan
+    weekday = Column(Integer, nullable=False, default=0)        # 0 = Monday (mingguan)
+    monthday = Column(Integer, nullable=False, default=1)       # 1..28 (bulanan)
+    hour = Column(Integer, nullable=False, default=8)           # WIB
+    recipients = Column(Text, nullable=False, default="")      # comma separated
+    active = Column(Boolean, nullable=False, default=True)
+    last_sent_on = Column(String(10), nullable=True)            # YYYY-MM-DD (WIB)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class ReportRun(Base):
+    """One generated report, shown in the Laporan library."""
+    __tablename__ = "report_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    schedule_id = Column(Integer, ForeignKey("report_schedules.id", ondelete="SET NULL"), nullable=True)
+    title = Column(String(200), nullable=False)
+    kind = Column(String(20), nullable=False, default="mingguan")  # mingguan, bulanan, adhoc
+    region = Column(String(120), nullable=False, default="")
+    recipients = Column(Integer, nullable=False, default=0)
+    status = Column(String(20), nullable=False, default="terkirim")  # terkirim, gagal
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+
+
 # ── Database Init ──
 
 def init_db():
