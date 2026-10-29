@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
 type Props = {
-  /** Duotone illustration shown in the glass icon tile (from /illustrations). */
-  icon: string;
+  /** Duotone illustration path (from /illustrations) or an icon element for the glass tile. */
+  icon: string | ReactNode;
   eyebrow: string;
   title: string;
   sub?: ReactNode;
@@ -23,7 +23,7 @@ export default function PageHero({ icon, eyebrow, title, sub, actions, art, patt
       {art && <img className="ph-art" src={art} alt="" />}
       <span className="ph-icon">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={icon} alt="" />
+        {typeof icon === "string" ? <img src={icon} alt="" /> : icon}
       </span>
       <div className="ph-text">
         <span className="ph-eyebrow">{eyebrow}</span>

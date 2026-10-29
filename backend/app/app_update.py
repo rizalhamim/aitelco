@@ -3,6 +3,7 @@
 Exposes:
   GET /api/app/version        -> latest version metadata (JSON)
   GET /api/app/download       -> the latest APK binary (FileResponse)
+  GET /api/app/releases       -> release history for the web "Unduh APK" page
 
 The latest-release metadata lives in data/app_release.json so it can be
 updated without touching code. The APK is served from a fixed path on the
@@ -10,6 +11,7 @@ backend host. The Android client compares its own build number against
 `version_code` and, if the server is higher, prompts the user to download
 and install.
 """
+import hashlib
 import json
 import os
 
@@ -53,6 +55,32 @@ def _apk_path(rel: dict) -> str:
     return os.path.join(repo_root, fname)
 
 
+_sha_cache: dict[tuple, str] = {}
+
+
+def _sha256(path: str) -> str | None:
+    """SHA-256 of the APK, cached per (path, mtime, size) so it is hashed once per release."""
+    try:
+        st = os.stat(path)
+    except OSError:
+        return None
+    key = (path, st.st_mtime_ns, st.st_size)
+    if key not in _sha_cache:
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        _sha_cache.clear()
+        _sha_cache[key] = h.hexdigest()
+    return _sha_cache[key]
+
+
+def _notes_list(notes) -> list[str]:
+    if isinstance(notes, list):
+        return [str(n).strip() for n in notes if str(n).strip()]
+    return [ln.strip(" -•\t") for ln in str(notes or "").splitlines() if ln.strip(" -•\t")]
+
+
 @router.get("/version")
 def app_version():
     """Latest release metadata for the in-app updater."""
@@ -73,7 +101,35 @@ def app_version():
         "size_bytes": size,
         "available": size > 0,
         "released_at": released_at,
+        "apk_filename": rel.get("apk_filename") or _DEFAULT_RELEASE["apk_filename"],
+        "sha256": _sha256(apk) if size else None,
+        "min_android": rel.get("min_android", "8.0"),
     })
+
+
+@router.get("/releases")
+def app_releases():
+    """Newest first: the current release, then `history` from data/app_release.json
+    ([{version_name, released_at, notes, mandatory}])."""
+    rel = _load_release()
+    out = [{
+        "version_name": rel.get("version_name"),
+        "released_at": rel.get("released_at"),
+        "notes": _notes_list(rel.get("notes")),
+        "mandatory": bool(rel.get("mandatory", False)),
+        "latest": True,
+    }]
+    for h in rel.get("history") or []:
+        if not h.get("version_name") or h.get("version_name") == rel.get("version_name"):
+            continue
+        out.append({
+            "version_name": h["version_name"],
+            "released_at": h.get("released_at"),
+            "notes": _notes_list(h.get("notes")),
+            "mandatory": bool(h.get("mandatory", False)),
+            "latest": False,
+        })
+    return {"releases": out}
 
 
 @router.get("/download")
