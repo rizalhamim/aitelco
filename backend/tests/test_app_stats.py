@@ -64,6 +64,10 @@ def test_stats_end_to_end(monkeypatch):
     assert k["pct_on_latest"] == 50.0
     assert k["logins_android"] == 1 and k["logins_web"] == 1 and k["failed_logins"] == 1
     assert k["mau"] >= 2
+    # nothing happened in the period before, so there is no baseline to compare with
+    assert set(j["trend"]) == {"downloads_period", "devices_installed", "dau", "failed_logins"}
+    assert j["trend"]["downloads_period"] is None
+    assert all(r["last_seen"] for r in j["users"] if r["username"] in ("ani", "budi"))
     assert [o["full_name"] for o in j["outdated_users"]] == ["Budi"]
     assert sum(d["updates"] for d in j["downloads_timeline"]) == 1
     assert sum(map(sum, j["login_heatmap"])) == 2
@@ -104,3 +108,18 @@ def test_stats_end_to_end(monkeypatch):
 
 def test_record_client_ignores_anonymous():
     telemetry.record_client({"x-client-platform": "android"})  # no token: no crash, no row
+
+
+def test_trend_compares_with_previous_period(monkeypatch):
+    monkeypatch.setattr("app.routes_stats._load_release", lambda: {"version_name": "1.44.0", "version_code": 50})
+    db = SessionLocal()
+    now = datetime.now(timezone.utc)
+    before = db.query(AppDownload).count()
+    for days_ago in (40, 45, 3, 4, 5):  # 2 in the previous 30 days, 3 in this one
+        db.add(AppDownload(created_at=now - timedelta(days=days_ago), source="web", version_name="1.44.0"))
+    db.commit()
+    db.close()
+    j = client.get("/api/admin/app-stats?days=30").json()
+    cur = j["kpis"]["downloads_period"]
+    assert before + 5 >= cur >= 3
+    assert j["trend"]["downloads_period"] == round(100 * (cur - 2) / 2, 1)

@@ -139,3 +139,56 @@ List<AdhocReport> laporanAdhoc() => [
       AdhocReport(id: 'b', title: 'Market share FWA Jateng', columns: const ['kecamatan', 'share'], rows: const [],
           savedAt: DateTime(2026, 10, 24, 15), format: 'PDF'),
     ];
+
+/// /api/map/kabupaten?metric=revenue for Jawa Barat, coloured as in the mockup.
+List<Map<String, dynamic>> petaItems() => [
+      for (final (k, v) in const [
+        ('BOGOR', 1.8), ('KOTA BOGOR', 3.4), ('KOTA DEPOK', 1.5), ('BEKASI', 1.6), ('KOTA BEKASI', 1.2), ('KARAWANG', 1.9),
+        ('PURWAKARTA', 1.4), ('SUBANG', 2.1), ('INDRAMAYU', 1.7), ('MAJALENGKA', 3.6), ('CIREBON', -1.2), ('KOTA CIREBON', -0.8),
+        ('KUNINGAN', -1.1), ('SUMEDANG', 0.6), ('BANDUNG', 0.4), ('BANDUNG BARAT', 0.5), ('KOTA BANDUNG', 1.3), ('KOTA CIMAHI', 0.9),
+        ('SUKABUMI', -1.4), ('KOTA SUKABUMI', 3.1), ('CIANJUR', -6.2), ('GARUT', -7.9), ('TASIKMALAYA', -3.4),
+        ('KOTA TASIKMALAYA', 0.3), ('CIAMIS', -1.0), ('KOTA BANJAR', 0.2), ('PANGANDARAN', -0.9),
+      ])
+        {'kabkot_id': '$k|JAWA BARAT', 'kabupaten': k, 'provinsi': 'JAWA BARAT', 'region': 'JAWA BARAT', 'value': v},
+    ];
+
+Map<String, dynamic> petaGarut() => {
+      'kabupaten': 'GARUT', 'provinsi': 'JAWA BARAT', 'region': 'JAWA BARAT', 'status': 'kritis', 'prev_label': 'Sep 2026',
+      'kpis': [
+        {'key': 'revenue', 'label': 'Revenue', 'format': 'currency', 'value': 18.4e9, 'pct_change': -7.9},
+        {'key': 'payload', 'label': 'Payload', 'format': 'gb', 'value': 2.1e6, 'pct_change': -9.1},
+        {'key': 'availability', 'label': 'Availability', 'format': 'percent', 'value': 98.71, 'pct_change': -0.62, 'change_unit': 'pp'},
+        {'key': 'gross_add', 'label': 'Gross add', 'format': 'number', 'value': 41200, 'pct_change': -4.2},
+      ],
+      'explanation': {
+        'text': '14 site di selatan Garut turun availability sejak 24 Okt (pemadaman listrik PLN). Penurunan payload '
+            'terkonsentrasi di Cikelet, Pameungpeuk dan Cisompet.',
+        'actions': ['Pulihkan 9 site dengan availability di bawah 99%'],
+      },
+      'sites': [
+        for (final (la, lo, bad) in const [
+          (-7.205, 107.995, true), (-7.17, 108.04, false), (-7.155, 108.045, false), (-7.255, 107.92, true), (-7.245, 107.94, false),
+          (-7.275, 108.0, false), (-7.275, 107.73, true), (-7.335, 107.825, false), (-7.365, 107.815, true), (-7.40, 107.80, false),
+          (-7.425, 107.795, false), (-7.455, 107.865, true), (-7.475, 107.88, false), (-7.46, 107.92, true), (-7.48, 107.915, true),
+          (-7.35, 107.95, false), (-7.31, 107.935, false),
+        ])
+          {'site_id': 'S$la', 'lat': la, 'lon': lo, 'status': bad ? 'bad' : 'ok'},
+      ],
+    };
+
+/// GET /api/admin/app-stats?days=30 as drawn.
+Map<String, dynamic> statsFixture() => {
+      'latest_release': {'version_name': '1.43.1', 'mandatory': true, 'released_at': '2026-10-06'},
+      'kpis': {'downloads_period': 1284, 'devices_installed': 962, 'dau': 214, 'failed_logins': 37, 'pct_on_latest': 78.0},
+      'trend': {'downloads_period': 12.8, 'devices_installed': 4.1, 'dau': 6.0, 'failed_logins': -9.0},
+      'versions': [
+        {'version': '1.43.1', 'users': 750}, {'version': '1.42.2', 'users': 80}, {'version': '1.42.0', 'users': 35},
+        {'version': '1.41.3', 'users': 58}, {'version': '1.40.1', 'users': 25}, {'version': '1.39.0', 'users': 14},
+      ],
+      'outdated_users': [for (var i = 0; i < 212; i++) {'id': i}],
+      'users': [
+        {'full_name': 'Hendra Wijaya', 'department': 'Sales Jateng', 'status': 'tidak_aktif', 'last_seen': '2026-10-09T08:00:00'},
+        {'full_name': 'Sri Wahyuni', 'department': 'Finance', 'status': 'tidak_aktif', 'last_seen': '2026-10-14T08:00:00'},
+        for (var i = 0; i < 16; i++) {'full_name': 'Pengguna $i', 'department': 'Ops', 'status': 'tidak_aktif', 'last_seen': '2026-10-15T09:00:00'},
+      ],
+    };

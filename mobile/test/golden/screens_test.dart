@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:bizplan_java_agent/src/screens/chat_screen.dart';
 import 'package:bizplan_java_agent/src/screens/dashboard_screen.dart';
 import 'package:bizplan_java_agent/src/screens/login_screen.dart';
+import 'package:bizplan_java_agent/src/screens/map_screen.dart';
 import 'package:bizplan_java_agent/src/screens/report_list_screen.dart';
+import 'package:bizplan_java_agent/src/geo/geo_assets.dart';
 import 'package:bizplan_java_agent/src/screens/splash_screen.dart';
+import 'package:bizplan_java_agent/src/screens/stats_screen.dart';
 import 'package:bizplan_java_agent/src/screens/watchlist_screen.dart';
 
 import 'package:bizplan_java_agent/src/ui/nav.dart';
@@ -48,4 +51,10 @@ void main() {
       ),
     ]));
   });
+  testWidgets('Peta', (t) async {
+    await t.runAsync(() => GeoAssets.load('kabupaten'));
+    await shoot(t, 'Android - Peta',
+        tab(4, MapScreen(previewItems: petaItems(), previewDetail: petaGarut(), previewFocus: 'JAWA BARAT')));
+  });
+  testWidgets('Statistik', (t) => shoot(t, 'Android - Statistik (admin)', StatsScreen(preview: statsFixture(), previewNow: _now)));
 }

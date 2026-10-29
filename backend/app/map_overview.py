@@ -147,7 +147,7 @@ GROUP BY m
         "kabupaten": kabupaten, "provinsi": provinsi, "region": k["region"], "month_id": cur,
         "month_label": month_label(cur, True), "prev_label": month_label(prev),
         "kecamatan": int(k["kecamatan"] or 0), "site_count": sites["total"], "status": status,
-        "kpis": kpis, "sites": sites["items"][:8],
+        "kpis": kpis, "sites": sites["items"][:60],
         "explanation": _explain(kabupaten, kpis, worst, a_cur, month_label(prev)),
     }
 

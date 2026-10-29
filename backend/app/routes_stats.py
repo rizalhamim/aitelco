@@ -134,11 +134,12 @@ def app_stats(
     users = db.query(User).all()
     clients = db.query(AppClient).all()
     downloads = db.query(AppDownload).all()
+    # Two periods back, so each KPI can be compared with the period before it.
     logins = (db.query(LoginAudit)
-              .filter(LoginAudit.created_at >= now - timedelta(days=max(days, 30)))
+              .filter(LoginAudit.created_at >= now - timedelta(days=max(2 * days, 30)))
               .all())
     usage = (db.query(UsageLog)
-             .filter(UsageLog.created_at >= now - timedelta(days=30))
+             .filter(UsageLog.created_at >= now - timedelta(days=max(2 * days, 30)))
              .all())
 
     # ── Installs & versions (latest android client per user) ──
@@ -160,6 +161,16 @@ def app_stats(
         ids |= {l.user_id for l in logins if l.action == "login" and _naive(l.created_at) >= cut}
         ids |= {c.user_id for c in clients if _naive(c.last_seen) >= cut}
         return len(ids)
+
+    def active_between(start: datetime, end: datetime) -> int:
+        ids = {u.user_id for u in usage if start <= _naive(u.created_at) < end}
+        ids |= {l.user_id for l in logins if l.action == "login" and start <= _naive(l.created_at) < end}
+        return len(ids)
+
+    prev_since = since - timedelta(days=days)
+
+    def change(cur: float, prev: float) -> float | None:
+        return round(100 * (cur - prev) / prev, 1) if prev else None
 
     period_logins = [l for l in logins if l.action == "login" and _naive(l.created_at) >= since]
     login_platform = Counter(platform_from_user_agent(l.user_agent) for l in period_logins)
@@ -239,6 +250,7 @@ def app_stats(
                                "label": _activity_label(act[1], act[2], act[3])} if act else None),
             "status": ("aktif" if last_seen and now - last_seen <= timedelta(days=INACTIVE_AFTER_DAYS)
                        else "tidak_aktif"),
+            "last_seen": _iso(last_seen),
         })
     rows.sort(key=lambda r: r["last_login"] or "", reverse=True)
 
@@ -266,6 +278,16 @@ def app_stats(
             "logins_android": login_platform.get("android", 0),
             "logins_web": login_platform.get("web", 0),
             "failed_logins": len(failed),
+        },
+        # Percent change of each KPI against the period before it (None without a baseline).
+        "trend": {
+            "downloads_period": change(sum(1 for d in downloads if _naive(d.created_at) >= since),
+                                       sum(1 for d in downloads if prev_since <= _naive(d.created_at) < since)),
+            "devices_installed": change(installed, len({(c.user_id, c.device_model) for c in clients
+                                                        if c.platform == "android" and _naive(c.first_seen) < since})),
+            "dau": change(active_between(now - timedelta(days=1), now), active_between(since - timedelta(days=1), since)),
+            "failed_logins": change(len(failed), sum(1 for l in logins if _is_failed(l.action)
+                                                     and prev_since <= _naive(l.created_at) < since)),
         },
         "versions": [{"version": v, "users": n}
                      for v, n in sorted(version_counts.items(), key=lambda kv: _version_key(kv[0]), reverse=True)],
