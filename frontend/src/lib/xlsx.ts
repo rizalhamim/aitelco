@@ -1,4 +1,5 @@
 import { strToU8, zipSync } from "fflate";
+import { authFetch } from "./auth";
 
 // Minimal single-sheet .xlsx writer: header row + values, numbers kept numeric.
 
@@ -39,7 +40,12 @@ export function buildXlsx(columns: string[], rows: Record<string, unknown>[], sh
   return zipSync(files);
 }
 
-export function downloadXlsx(filename: string, columns: string[], rows: Record<string, unknown>[], sheet?: string) {
+/** Exports happen in the browser; report them so the admin Statistik page can count them. */
+export function logExport(format: "XLSX" | "PDF" | "CSV", title: string) {
+  authFetch("/api/usage/export", { method: "POST", body: JSON.stringify({ format, title: title.slice(0, 180) }) }).catch(() => {});
+}
+
+export function downloadXlsx(filename: string, columns: string[], rows: Record<string, unknown>[], sheet?: string, title?: string) {
   const data = buildXlsx(columns, rows, sheet);
   const blob = new Blob([data as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   const url = URL.createObjectURL(blob);
@@ -50,4 +56,5 @@ export function downloadXlsx(filename: string, columns: string[], rows: Record<s
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  logExport("XLSX", title ?? filename.replace(/\.xlsx$/, "").replace(/-/g, " "));
 }

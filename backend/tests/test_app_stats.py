@@ -70,6 +70,36 @@ def test_stats_end_to_end(monkeypatch):
     by = {u["username"]: u for u in j["users"]}
     assert by["ani"]["is_latest"] and by["ani"]["device_model"] == "Samsung A54"
     assert by["budi"]["status"] == "aktif"
+    fs = j["failed_summary"]
+    assert fs["total"] == 1 and fs["attempts"] == 3
+    assert {r["key"]: r["count"] for r in fs["reasons"]}["failed_login"] == 1
+    rec = j["failed_logins_recent"][0]
+    assert rec["email"] == "budi@x.id" and rec["reason"] == "Kata sandi salah"
+
+    # drawer + reminder
+    db = SessionLocal()
+    from app.database import Notification, UsageLog
+    db.add(UsageLog(user_id=b.id, action="query", domain="revenue"))
+    db.add(UsageLog(user_id=b.id, action="query", domain="revenue"))
+    db.add(UsageLog(user_id=b.id, action="query", domain="site"))
+    db.add(UsageLog(user_id=b.id, action="export", domain="revenue", detail="XLSX · Revenue Jawa Barat"))
+    db.commit()
+    d = client.get(f"/api/admin/app-stats/users/{b.id}").json()
+    assert d["stats"] == {"logins_30d": 1, "login_total": 3, "queries": 3, "exports": 1}
+    assert d["app_version"] == "1.43.1" and not d["is_latest"]
+    assert [(x["device_model"], x["app_version"]) for x in d["devices"]] == [("Oppo A78", "1.43.1")]
+    assert j["version_adoption"][-1]["versions"] == {"1.44.0": 1, "1.43.1": 1}
+    assert d["topics"][0] == {"topic": "Revenue", "count": 2, "pct": 67}
+    kinds = {t["kind"]: t for t in d["timeline"]}
+    assert {"login", "failed", "export"} <= set(kinds)
+    assert kinds["export"]["title"] == "Export XLSX · Revenue Jawa Barat"
+    assert kinds["failed"]["title"] == "Login gagal · kata sandi salah"
+    assert kinds["login"]["title"].startswith("Web · Chrome")
+    assert client.get("/api/admin/app-stats/users/9999").status_code == 404
+    r = client.post("/api/admin/app-stats/remind", json={"user_ids": [b.id, 9999]})
+    assert r.json() == {"sent": 1}
+    assert db.query(Notification).filter(Notification.user_id == b.id).count() == 1
+    db.close()
 
 
 def test_record_client_ignores_anonymous():

@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from jose import jwt
 
 from .auth import ALGORITHM, SECRET_KEY
-from .database import AppClient, AppDownload, SessionLocal, User
+from .database import AppClient, AppDownload, AppVersionSeen, SessionLocal, User
 
 log = logging.getLogger("telemetry")
 
@@ -98,6 +98,18 @@ def record_client(headers) -> None:
             row.app_build = int(build)
         row.os_version = _clip(headers.get("x-os-version"), 60) or row.os_version
         row.last_seen = _now()
+        if version:
+            seen = (db.query(AppVersionSeen)
+                    .filter(AppVersionSeen.user_id == user.id,
+                            AppVersionSeen.platform == platform.lower(),
+                            AppVersionSeen.device_model == model,
+                            AppVersionSeen.app_version == version)
+                    .first())
+            if seen is None:
+                db.add(AppVersionSeen(user_id=user.id, platform=platform.lower(), device_model=model,
+                                      app_version=version, first_seen=_now(), last_seen=_now()))
+            else:
+                seen.last_seen = _now()
         db.commit()
     except Exception as e:  # telemetry must never break a request
         db.rollback()

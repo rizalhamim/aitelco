@@ -180,6 +180,22 @@ class AppClient(Base):
     __table_args__ = (Index("ix_app_clients_user_device", "user_id", "platform", "device_model", unique=True),)
 
 
+class AppVersionSeen(Base):
+    """Each app version a device has run, with when it was first/last seen.
+    Unlike app_clients (latest state only) this keeps history for version adoption."""
+    __tablename__ = "app_version_seen"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    platform = Column(String(20), nullable=False)
+    device_model = Column(String(120), nullable=False, default="")
+    app_version = Column(String(32), nullable=False)
+    first_seen = Column(DateTime, default=utcnow, nullable=False)
+    last_seen = Column(DateTime, default=utcnow, nullable=False)
+
+    __table_args__ = (Index("ix_app_version_seen_key", "user_id", "platform", "device_model", "app_version", unique=True),)
+
+
 class WatchRule(Base):
     """A KPI the user watches: metric at a territory, with a threshold condition."""
     __tablename__ = "watch_rules"

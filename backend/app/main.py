@@ -27,7 +27,7 @@ from .auth import get_current_user_optional
 from .routes_auth import router as auth_router, admin_router, history_router
 from .app_update import router as app_update_router
 from .routes_reports import router as reports_router
-from .routes_stats import router as stats_router
+from .routes_stats import router as stats_router, usage_router
 from .dashboard import router as dashboard_router
 from .watchlist import router as watchlist_router, evaluate_all as evaluate_watchlist
 from .report_schedule import router as report_schedule_router, run_due as run_due_reports
@@ -64,6 +64,7 @@ app.include_router(history_router)
 app.include_router(app_update_router)
 app.include_router(reports_router)
 app.include_router(stats_router)
+app.include_router(usage_router)
 app.include_router(dashboard_router)
 app.include_router(watchlist_router)
 app.include_router(report_schedule_router)

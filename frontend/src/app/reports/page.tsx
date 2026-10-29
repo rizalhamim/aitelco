@@ -13,7 +13,7 @@ import ResultTable from "../components/ResultTable";
 import ScheduleDialog, { type Schedule } from "./ScheduleDialog";
 import { authFetch, getUser } from "@/lib/auth";
 import { byFormat, count, gb, idr, MONTHS_FULL, pct } from "@/lib/format";
-import { downloadXlsx } from "@/lib/xlsx";
+import { downloadXlsx, logExport } from "@/lib/xlsx";
 import "../watchlist/watchlist.css";
 import "./reports.css";
 
@@ -244,14 +244,14 @@ export default function ReportsPage() {
   }
   function exportXlsx() {
     if (current?.pin) {
-      downloadXlsx(`bizplan-${current.pin.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`, current.pin.columns, current.pin.rows, "Hasil");
+      downloadXlsx(`bizplan-${current.pin.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`, current.pin.columns, current.pin.rows, "Hasil", current.pin.title);
     } else if (overview) {
       downloadXlsx(`laporan-performa-${overview.scope.region ? overview.scope.region.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "jawa"}-${overview.month_id}`,
         ["region", "revenue", "mom_pct", "pelanggan_rgu90", "payload_gb", "availability_4g", overview.has_targets ? "pencapaian_target_pct" : "kontribusi_pct"],
         overview.regions.map((r) => ({
           region: title(r.region), revenue: r.revenue, mom_pct: r.mom_pct, pelanggan_rgu90: r.subs, payload_gb: r.payload_gb,
           availability_4g: r.availability, [overview.has_targets ? "pencapaian_target_pct" : "kontribusi_pct"]: overview.has_targets ? r.achievement_pct : r.share_pct,
-        })), "Performa region");
+        })), "Performa region", `Laporan performa ${overview.scope.region ? title(overview.scope.region) : "Jawa"}`);
     }
   }
   async function sendNow(s: Schedule) {
@@ -419,7 +419,7 @@ export default function ReportsPage() {
                 {zoom ? <ZoomOut size={20} /> : <ZoomIn size={20} />}
               </button>
               <button className="ui-btn lg" onClick={exportXlsx} disabled={!pages.length}><FileSpreadsheet size={20} strokeWidth={1.6} /> XLSX</button>
-              <button className="ui-btn lg primary" onClick={() => window.print()} disabled={!pages.length}><Download size={20} /> Export PDF</button>
+              <button className="ui-btn lg primary" onClick={() => { logExport("PDF", current?.title ?? "Laporan"); window.print(); }} disabled={!pages.length}><Download size={20} /> Export PDF</button>
             </div>
             <div className={`rp-canvas ${zoom ? "zoomed" : ""}`} ref={docRef}
               onScroll={(e) => {
