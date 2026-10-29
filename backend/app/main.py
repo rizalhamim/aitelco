@@ -28,6 +28,8 @@ from .routes_auth import router as auth_router, admin_router, history_router
 from .app_update import router as app_update_router
 from .routes_reports import router as reports_router
 from .routes_stats import router as stats_router
+from .dashboard import router as dashboard_router
+from .watchlist import router as watchlist_router, evaluate_all as evaluate_watchlist
 from sqlalchemy.orm import Session
 
 app = FastAPI(title="Telco AI Orchestrator", version="1.0")
@@ -60,11 +62,32 @@ app.include_router(history_router)
 app.include_router(app_update_router)
 app.include_router(reports_router)
 app.include_router(stats_router)
+app.include_router(dashboard_router)
+app.include_router(watchlist_router)
 
 # Init database on startup
 @app.on_event("startup")
 def startup():
     init_db()
+
+
+@app.on_event("startup")
+async def start_watchlist_loop():
+    """Check every active watchlist rule once an hour (each rule at most once per day)."""
+    import asyncio
+    import logging
+
+    async def loop():
+        await asyncio.sleep(60)
+        while True:
+            try:
+                await run_in_threadpool(evaluate_watchlist)
+            except Exception as e:  # keep the loop alive
+                logging.getLogger("watchlist").warning(f"watchlist loop: {e}")
+            await asyncio.sleep(3600)
+
+    if _os.environ.get("WATCHLIST_LOOP", "1") != "0":
+        app.state.watchlist_task = asyncio.create_task(loop())
 
 
 def _backfill_coords(result: dict) -> dict:

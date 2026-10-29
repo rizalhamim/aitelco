@@ -180,6 +180,58 @@ class AppClient(Base):
     __table_args__ = (Index("ix_app_clients_user_device", "user_id", "platform", "device_model", unique=True),)
 
 
+class WatchRule(Base):
+    """A KPI the user watches: metric at a territory, with a threshold condition."""
+    __tablename__ = "watch_rules"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(160), nullable=False)
+    metric = Column(String(40), nullable=False)            # see watchlist.METRICS
+    scope_level = Column(String(20), nullable=False, default="circle")  # circle, region, kabkota, branch
+    scope_value = Column(String(120), nullable=False, default="JAVA")
+    condition = Column(String(20), nullable=False, default="turun")     # turun, naik, berubah, di_bawah, di_atas
+    threshold = Column(Float, nullable=False, default=5.0)
+    days = Column(Integer, nullable=False, default=1)      # consecutive daily checks in breach before alerting
+    notify_inapp = Column(Boolean, nullable=False, default=True)
+    notify_email = Column(Boolean, nullable=False, default=False)
+    active = Column(Boolean, nullable=False, default=True)
+    source_question = Column(Text, nullable=True)          # chat question it was created from
+    last_value = Column(Float, nullable=True)              # value compared against the threshold
+    last_level = Column(Float, nullable=True)              # underlying metric level
+    breach_streak = Column(Integer, nullable=False, default=0)
+    last_checked_on = Column(String(10), nullable=True)    # YYYY-MM-DD (WIB)
+    status = Column(String(20), nullable=False, default="normal")  # normal, peringatan, kritis, error
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class WatchSample(Base):
+    """Daily value of a rule, for the 7-day trend sparkline."""
+    __tablename__ = "watch_samples"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    rule_id = Column(Integer, ForeignKey("watch_rules.id", ondelete="CASCADE"), nullable=False, index=True)
+    day = Column(String(10), nullable=False)
+    value = Column(Float, nullable=True)
+
+    __table_args__ = (Index("ix_watch_samples_rule_day", "rule_id", "day", unique=True),)
+
+
+class WatchAlert(Base):
+    __tablename__ = "watch_alerts"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    rule_id = Column(Integer, ForeignKey("watch_rules.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    severity = Column(String(20), nullable=False, default="peringatan")  # kritis, peringatan, pulih
+    title = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+    value = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+    resolved_at = Column(DateTime, nullable=True)
+    acknowledged_at = Column(DateTime, nullable=True)
+
+
 # ── Database Init ──
 
 def init_db():
