@@ -1,11 +1,15 @@
 """Release history + checksum for the Unduh APK page."""
 import hashlib
 import json
+import os
+import tempfile
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
+os.environ.setdefault("TELCO_AI_DB", os.path.join(tempfile.mkdtemp(), "t.db"))
 
-from app import app_update
+from fastapi import FastAPI  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+
+from app import app_update  # noqa: E402
 
 
 def test_releases_and_checksum(tmp_path, monkeypatch):
