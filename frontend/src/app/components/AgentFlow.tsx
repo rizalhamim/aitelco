@@ -163,7 +163,7 @@ function buildNodes(events: FlowEvent[]): VNode[] {
 }
 
 function LiveTimer({ startedAt }: { startedAt: number }) {
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(startedAt);
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 100);
     return () => window.clearInterval(id);

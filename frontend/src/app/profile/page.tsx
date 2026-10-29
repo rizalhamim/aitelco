@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { authFetch, getUser, isLoggedIn, logout, UserInfo } from "@/lib/auth";
+import { UserRound } from "lucide-react";
+import AppShell from "../components/shell/AppShell";
+import PageHero from "../components/ui/PageHero";
+import { authFetch, getUser, isLoggedIn, UserInfo } from "@/lib/auth";
 
 const IOH = {
   red: "#15A697", pink: "#0E8579", yellow: "#F5A623", teal: "#15A697",
@@ -121,24 +123,11 @@ export default function ProfilePage() {
   const needsEmail = !user.email || !user.email.includes("@") || user.email === `${user.username}@ioh.co.id`;
 
   return (
-    <div style={{ minHeight: "100vh", background: IOH.panel }}>
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "16px 32px", borderBottom: `1px solid ${IOH.rule}`,
-        background: IOH.white, position: "sticky", top: 0, zIndex: 100,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Image src="/icon_circle_java.png" alt="IOH" width={32} height={32} style={{ borderRadius: "50%" }} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 800, color: IOH.ink }}>My Profile</span>
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={() => router.push("/")} style={navBtn}>Back to Chat</button>
-          <button onClick={logout} style={{ ...navBtn, borderColor: "rgba(21, 166, 151,0.3)", color: IOH.red }}>Logout</button>
-        </div>
-      </div>
+    <AppShell>
+    <div className="ui-page">
+      <PageHero icon={<UserRound size={30} strokeWidth={1.6} />} eyebrow="Akun" title="Profil saya" sub="Informasi akun, password dan notifikasi." pattern />
 
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ width: "100%", maxWidth: 800 }}>
         {needsEmail && (
           <div style={{
             padding: "16px 20px", borderRadius: 12, marginBottom: 24,
@@ -232,10 +221,10 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+    </AppShell>
   );
 }
 
-const navBtn: React.CSSProperties = { padding: "8px 18px", borderRadius: 8, border: "1px solid #E1E9E7", background: "transparent", color: "#5A6B68", cursor: "pointer", fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 600 };
 const cardStyle: React.CSSProperties = { background: "#FFFFFF", border: "1px solid #E1E9E7", borderRadius: 16, padding: 28, boxShadow: "0 2px 6px rgba(45,41,38,.04)" };
 const cardTitle: React.CSSProperties = { fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: "#0F1F1D", marginTop: 0, marginBottom: 18 };
 const fieldStyle: React.CSSProperties = { marginBottom: 18 };
