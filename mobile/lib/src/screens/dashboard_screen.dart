@@ -171,7 +171,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _greeting(Pal p) {
     final h = _now.hour;
     final hello = h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam';
-    final name = (AuthState.user?['full_name'] ?? AuthState.user?['username'] ?? 'Rizal').toString().split(' ').first;
+    final name = (AuthState.user?['full_name'] ?? AuthState.user?['username'] ?? (widget.preview != null ? 'Rizal' : 'Tim'))
+        .toString()
+        .split(' ')
+        .first;
     final date = '${_days[_now.weekday - 1]}, ${_now.day} ${monthsId[_now.month - 1]} ${_now.year}';
     final data = widget.preview != null ? 'data ilustrasi' : 'data ${_data?['month_label'] ?? '…'}';
     return Padding(
@@ -336,8 +339,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             border: Border.all(color: Colors.white.withValues(alpha: .35)),
                           ),
                           alignment: Alignment.center,
-                          child: Text('${(c ?? 0) >= 0 ? '▲' : '▼'} ${_delta(k)}',
-                              style: ts(12, w600, (c ?? 0) >= 0 ? const Color(0xFF8FDFD7) : const Color(0xFFF8B4B4))),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            _Triangle(up: (c ?? 0) >= 0, color: (c ?? 0) >= 0 ? const Color(0xFF8FDFD7) : const Color(0xFFF8B4B4)),
+                            const SizedBox(width: 4),
+                            Text(_delta(k), style: ts(12, w600, (c ?? 0) >= 0 ? const Color(0xFF8FDFD7) : const Color(0xFFF8B4B4))),
+                          ]),
                         ),
                         const SizedBox(width: 8),
                         Flexible(child: Text(note, maxLines: 1, overflow: TextOverflow.ellipsis, style: ts(12, w400, const Color(0xFFC0EDE8)))),
@@ -521,17 +527,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (c != null) DeltaPill(_delta(k), up: up),
           ]),
         ),
-        const SizedBox(height: 6),
-        Text(label, style: ts(13, w500, p.text2)),
-        const SizedBox(height: 3),
+        const SizedBox(height: 8),
+        Text(label, style: ts(13, w500, p.text2, lh: 15 / 13)),
+        const SizedBox(height: 8),
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
           child: Text(fmtKpi(k, k['value']), style: ts(28, w700, p.ink, lh: 1.2, ls: -.005, tabular: true)),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         Text(caption, style: ts(12, w400, p.mute)),
-        const SizedBox(height: 7),
+        const SizedBox(height: 8),
         Sparkline(spark, color: up ? p.teal600 : p.dangerSolid, height: 44),
       ]),
     );
@@ -656,7 +662,9 @@ class _GroupedBars extends StatelessWidget {
     // Round the axis to a "nice" top in billions (M) or trillions (T).
     final div = hi >= 1e12 ? 1e12 : hi >= 1e9 ? 1e9 : hi >= 1e6 ? 1e6 : 1.0;
     final unitTop = hi / div;
-    final step = [1, 1.5, 2, 2.5, 3, 4, 5, 10].map((s) => s * math.pow(10, (math.log(unitTop / 2) / math.ln10).floor())).firstWhere((s) => s * 2 >= unitTop);
+    // Leave ~10 % headroom above the tallest bar, on a step a reader can add up.
+    final mag = math.pow(10, (math.log(unitTop / 2) / math.ln10).floor());
+    final step = [1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 8, 10].map((s) => s * mag).firstWhere((s) => s * 2 >= unitTop * 1.1);
     final top = step * 2 * div;
     return SizedBox(
       height: 170,
@@ -680,7 +688,7 @@ class _GroupedBars extends StatelessWidget {
               left: 0,
               width: 26,
               top: y(v) - 9,
-              child: Text(i == 0 ? '0' : idNum(v / (div == 1e12 ? 1e9 : div == 1e9 ? 1e9 : div), 0), style: ts(12, w400, p.mute)),
+              child: Text(i == 0 ? '0' : idNum(v / div, v / div < 10 ? 1 : 0), style: ts(12, w400, p.mute)),
             ),
           ],
           if (touch != null && touch! < labels.length)
@@ -725,8 +733,9 @@ class _GroupedBars extends StatelessWidget {
               title: tipTitles[touch!],
               width: 176,
               rows: [
-                for (var s = 0; s < series.length && s < 3; s++)
-                  (s == 0 ? p.teal400 : s == 1 ? p.chartGrey : p.chartAmber, names[s], formatValue(series[s][touch!], 'currency')),
+                // The two largest regions, as in the mockup; the legend carries the rest.
+                for (var s = 0; s < series.length && s < 2; s++)
+                  (s == 0 ? p.teal400 : p.chartGrey, names[s], formatValue(series[s][touch!], 'currency')),
               ],
             ),
           ));
@@ -764,4 +773,31 @@ class _Orb extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// Small filled triangle for the hero KPI delta (Poppins has no ▲ glyph).
+class _Triangle extends StatelessWidget {
+  const _Triangle({required this.up, required this.color});
+  final bool up;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => CustomPaint(size: const Size(10, 9), painter: _TrianglePainter(up, color));
+}
+
+class _TrianglePainter extends CustomPainter {
+  const _TrianglePainter(this.up, this.color);
+  final bool up;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final path = up
+        ? (Path()..moveTo(s.width / 2, 0)..lineTo(s.width, s.height)..lineTo(0, s.height)..close())
+        : (Path()..moveTo(0, 0)..lineTo(s.width, 0)..lineTo(s.width / 2, s.height)..close());
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrianglePainter old) => old.up != up || old.color != color;
 }

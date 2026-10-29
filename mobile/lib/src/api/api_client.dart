@@ -404,6 +404,11 @@ class ApiClient {
 
   static Future<Map<String, dynamic>> createWatchRule(Map<String, dynamic> body) => _sendJson('POST', '/api/watchlist/rules', body);
 
+  static Future<Map<String, dynamic>> updateWatchRule(int id, Map<String, dynamic> patch) =>
+      _sendJson('PATCH', '/api/watchlist/rules/$id', patch);
+
+  static Future<void> deleteWatchRule(int id) => _sendJson('DELETE', '/api/watchlist/rules/$id');
+
   static Future<Map<String, dynamic>> mapKabupaten({String metric = 'revenue', String region = ''}) =>
       _getJson('/api/map/kabupaten', {'metric': metric, if (region.isNotEmpty) 'region': region});
 
@@ -429,6 +434,29 @@ class ApiClient {
   }
 
   /// Logged so admin Statistik can show exports in a user's timeline.
+  static Future<List<dynamic>> reportRuns() async => (await _getJson('/api/report-schedules/runs'))['runs'] as List? ?? [];
+
+  static Future<Map<String, dynamic>> createSchedule(Map<String, dynamic> body) => _sendJson('POST', '/api/report-schedules', body);
+
+  static Future<Map<String, dynamic>> updateSchedule(int id, Map<String, dynamic> patch) =>
+      _sendJson('PATCH', '/api/report-schedules/$id', patch);
+
+  static Future<void> deleteSchedule(int id) => _sendJson('DELETE', '/api/report-schedules/$id');
+
+  static Future<Map<String, dynamic>> sendScheduleNow(int id) => _sendJson('POST', '/api/report-schedules/$id/send-now');
+
+  /// A read-only link to the live report that anyone can open for 7 days.
+  /// With [columns] and [rows] the link shows that table as it is now (an ad-hoc answer).
+  static Future<String> createReportLink(String title, {String region = '', List<String>? columns, List<Map<String, dynamic>>? rows}) async {
+    final r = await _sendJson('POST', '/api/report-links', {
+      'title': title,
+      'region': region,
+      if (columns != null) 'columns': columns,
+      if (columns != null) 'rows': (rows ?? const []).take(2000).toList(),
+    });
+    return '$base${r['path']}';
+  }
+
   static Future<void> logExport(String format, String title, {String? domain}) async {
     try {
       await _sendJson('POST', '/api/usage/export', {'format': format, 'title': title, if (domain != null) 'domain': domain});

@@ -18,13 +18,14 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from . import email_service, reports_cache
 from .auth import get_current_user
 from .dashboard import build_overview
-from .database import ReportRun, ReportSchedule, SessionLocal, User, get_db
+from .database import ReportLink, ReportRun, ReportSchedule, SessionLocal, User, get_db, utcnow
 
 log = logging.getLogger("report_schedule")
 router = APIRouter(prefix="/api/report-schedules", tags=["report-schedules"])
@@ -78,8 +79,8 @@ def _delta(v, unit="%") -> str:
     return f'<span style="color:{color};font-weight:bold;font-size:12px;">{arrow} {num}{" pp" if unit == "pp" else "%"}</span>'
 
 
-def report_html(ov: dict, name: str) -> str:
-    """Email body for one report, table-based for Outlook."""
+def report_html(ov: dict, name: str, shared_until: Optional[datetime] = None) -> str:
+    """Email body for one report, table-based for Outlook. Also served as the shared-link page."""
     scope = (ov["scope"].get("region") or "Jawa").title()
     summary = html.escape(ov["summary"]["text"]).replace("**", "")
     tiles = "".join(
@@ -95,6 +96,12 @@ def report_html(ov: dict, name: str) -> str:
         f'<td align="right" style="padding:8px 6px;border-top:1px solid #E1E9E7;font-size:13px;">{_fmt("number", r["subs"])}</td>'
         f'<td align="right" style="padding:8px 6px;border-top:1px solid #E1E9E7;font-size:13px;">{_fmt("gb", r["payload_gb"])}</td></tr>'
         for r in ov["regions"])
+    if shared_until is not None:
+        until = (shared_until + timedelta(hours=7)).strftime("%d/%m/%Y %H.%M")
+        footer = f"Angka MTD dibandingkan bulan lalu, dari BigQuery. Tautan ini berlaku sampai {until} WIB."
+    else:
+        footer = (f"Angka MTD dibandingkan bulan lalu, dari BigQuery. Anda menerima email ini karena terdaftar "
+                  f'di jadwal "{html.escape(name)}".')
     content = f"""
 <div class="eyebrow" style="color:#0E8579;margin-top:0;">Laporan performa · {html.escape(name)}</div>
 <h2>{html.escape(scope)} · {html.escape(ov["month_label"])}</h2>
@@ -107,7 +114,7 @@ def report_html(ov: dict, name: str) -> str:
 {rows}
 </table>
 <p style="text-align:center;margin-top:22px;"><a class="btn" href="{email_service.APP_URL}/reports">Buka laporan lengkap</a></p>
-<p class="muted">Angka MTD dibandingkan bulan lalu, dari BigQuery. Anda menerima email ini karena terdaftar di jadwal "{html.escape(name)}".</p>
+<p class="muted">{footer}</p>
 """
     return email_service._base_html(content)
 
@@ -247,3 +254,81 @@ def list_runs(user: User = Depends(get_current_user), db: Session = Depends(get_
         "recipients": r.recipients, "status": r.status,
         "created_at": r.created_at.isoformat() + "Z" if r.created_at else None,
     } for r in rows]}
+
+
+# ── Share links ("Bagikan tautan · berlaku 7 hari") ──
+
+links_router = APIRouter(prefix="/api/report-links", tags=["report-links"])
+LINK_DAYS = 7
+
+
+class LinkIn(BaseModel):
+    title: str = Field("Performa Bulanan Region Jawa", max_length=200)
+    region: str = Field("", max_length=120)
+    # An ad-hoc agent answer is shared as a snapshot of its table instead of the live report.
+    columns: Optional[list[str]] = Field(None, max_length=60)
+    rows: Optional[list[dict]] = Field(None, max_length=2000)
+
+
+def table_html(title: str, columns: list[str], rows: list[dict], until: str) -> str:
+    """Shared page for an ad-hoc answer: its table as it was when shared."""
+    def cell(v) -> str:
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            txt = f"{v:,.0f}" if float(v).is_integer() else f"{v:,.2f}"
+            return txt.replace(",", "·").replace(".", ",").replace("·", ".")
+        return html.escape("" if v is None else str(v))
+    head = "".join(f'<td style="font-size:11px;color:#5A6B68;font-weight:bold;padding:6px;">'
+                   f'{html.escape(c.replace("_", " ").upper())}</td>' for c in columns)
+    body = "".join("<tr>" + "".join(
+        f'<td style="padding:7px 6px;border-top:1px solid #E1E9E7;font-size:13px;">{cell(r.get(c))}</td>' for c in columns) + "</tr>"
+        for r in rows)
+    content = f"""
+<div class="eyebrow" style="color:#0E8579;margin-top:0;">Laporan ad-hoc dari agent</div>
+<h2>{html.escape(title)}</h2>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>{head}</tr>{body}</table>
+<p class="muted">{len(rows)} baris, disalin saat dibagikan. Sumber: BigQuery · Bizplan Java Agent. Tautan ini berlaku sampai {until} WIB.</p>
+"""
+    return email_service._base_html(content)
+
+
+@links_router.post("")
+def create_link(body: LinkIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """A link anyone can open for 7 days. The page is rebuilt from current data on each view."""
+    import secrets
+    if db.query(ReportLink).filter(ReportLink.user_id == user.id,
+                                   ReportLink.created_at >= utcnow() - timedelta(days=1)).count() >= 50:
+        raise HTTPException(429, "Terlalu banyak tautan hari ini")
+    expires = utcnow() + timedelta(days=LINK_DAYS)
+    payload = None
+    if body.columns is not None:
+        import json
+        payload = json.dumps({"columns": body.columns, "rows": body.rows or []}, default=str)
+        if len(payload) > 2_000_000:
+            raise HTTPException(413, "Tabel terlalu besar untuk dibagikan; ekspor sebagai XLSX.")
+    link = ReportLink(token=secrets.token_urlsafe(24), user_id=user.id, title=body.title.strip() or "Laporan",
+                      region=body.region.strip(), payload=payload, expires_at=expires)
+    db.add(link)
+    db.commit()
+    return {"path": f"/api/report-links/{link.token}", "expires_at": expires.isoformat().replace("+00:00", "Z"),
+            "days": LINK_DAYS}
+
+
+@links_router.get("/{token}", response_class=HTMLResponse)
+def open_link(token: str, db: Session = Depends(get_db)):
+    link = db.query(ReportLink).filter(ReportLink.token == token).first()
+    expires = link.expires_at.replace(tzinfo=timezone.utc) if link and link.expires_at.tzinfo is None else (link.expires_at if link else None)
+    if not link or expires < utcnow():
+        return HTMLResponse(email_service._base_html(
+            "<h2>Tautan tidak berlaku</h2><p>Tautan laporan ini sudah kedaluwarsa atau tidak ditemukan. "
+            "Minta tautan baru ke pengirimnya.</p>"), status_code=404)
+    link.views = (link.views or 0) + 1
+    db.commit()
+    if link.payload:
+        import json
+        data = json.loads(link.payload)
+        until = (expires + timedelta(hours=7)).strftime("%d/%m/%Y %H.%M")
+        return HTMLResponse(table_html(link.title, data["columns"], data["rows"], until))
+    ov = reports_cache.get_or_build("dashboard", f"{link.region}|6", lambda: build_overview(link.region, 6))
+    if not isinstance(ov, dict) or "error" in ov:
+        raise HTTPException(503, "Data laporan belum tersedia, coba lagi nanti.")
+    return HTMLResponse(report_html(ov, link.title, shared_until=expires))

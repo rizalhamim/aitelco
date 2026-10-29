@@ -78,3 +78,36 @@ class Icx {
   static const wallet = I3(LucideIcons400.wallet, LucideIcons500.wallet, LucideIcons600.wallet);
   static const x = I3(LucideIcons400.x, LucideIcons500.x, LucideIcons600.x);
 }
+
+/// The mockup's spreadsheet glyph: a frame, two rules and one column line
+/// (Lucide's "sheet" draws two columns).
+class SheetIcon extends StatelessWidget {
+  const SheetIcon({super.key, this.size = 20, required this.color});
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => CustomPaint(size: Size.square(size), painter: _SheetPainter(color));
+}
+
+class _SheetPainter extends CustomPainter {
+  const _SheetPainter(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final k = s.width / 24;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(3 * k, 3 * k, 18 * k, 18 * k), Radius.circular(2 * k)), paint);
+    canvas.drawLine(Offset(3 * k, 9 * k), Offset(21 * k, 9 * k), paint);
+    canvas.drawLine(Offset(3 * k, 15 * k), Offset(21 * k, 15 * k), paint);
+    canvas.drawLine(Offset(9 * k, 3 * k), Offset(9 * k, 21 * k), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SheetPainter old) => old.color != color;
+}

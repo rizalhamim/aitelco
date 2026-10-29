@@ -281,6 +281,21 @@ class ReportRun(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
 
 
+class ReportLink(Base):
+    """A read-only link to a live performance report, shared from the Laporan page."""
+    __tablename__ = "report_links"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    token = Column(String(64), nullable=False, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    region = Column(String(120), nullable=False, default="")
+    payload = Column(Text, nullable=True)                       # JSON {columns, rows} of an ad-hoc answer
+    expires_at = Column(DateTime, nullable=False)
+    views = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
 # ── Database Init ──
 
 def init_db():

@@ -2,6 +2,7 @@
 import 'dart:math' as math;
 
 import 'package:bizplan_java_agent/src/api/models.dart';
+import 'package:bizplan_java_agent/src/services/report_export.dart';
 
 List<Map<String, dynamic>> dailyRevenue() {
   // Okt total Rp 412,6 M (−2,4% vs Sep), gross add 286 rb (+3,8%).
@@ -69,3 +70,72 @@ List<ChatMessage> tanyaAgentConversation() {
     a,
   ];
 }
+
+/// Wavy sparkline: [n] points around [base] with a drift of [trend] per point.
+List<double> _spark(double base, double amp, double trend, {int n = 14, double phase = 0}) => [
+      for (var i = 0; i < n; i++) base + trend * i + amp * math.sin(i * 1.15 + phase) + amp * .45 * math.sin(i * 2.7 + phase),
+    ];
+
+/// GET /api/dashboard/overview as the mockup shows it (Okt 2026, all of Java).
+Map<String, dynamic> dashboardOverview() => {
+      'month_label': 'Okt 2026',
+      'prev_label': 'Sep 2026',
+      'scope': {'regions': ['JAWA TIMUR', 'JAWA BARAT', 'JATENG DIY', 'JABODETABEK']},
+      'kpis': [
+        {'key': 'revenue', 'label': 'Revenue', 'format': 'currency', 'value': 1.84e12, 'prev': 1.82e12, 'pct_change': 1.2,
+            'note_prev_label': 'Sep', 'spark': _spark(10, 1.2, .35)},
+        {'key': 'subs', 'label': 'Pelanggan', 'format': 'number', 'value': 41.3e6, 'prev': 41.054e6, 'pct_change': .6,
+            'note_prev_label': 'Sep', 'spark': _spark(10, 1.2, .3, phase: .4)},
+        {'key': 'payload', 'label': 'Payload', 'format': 'gb', 'value': 84.2e6, 'prev': 84.54e6, 'pct_change': -.4,
+            'note_prev_label': 'Sep', 'spark': _spark(10, 1.2, -.4, phase: 1.1)},
+        {'key': 'availability', 'label': 'Availability', 'format': 'percent', 'value': 99.62, 'prev': 99.52, 'pct_change': .1,
+            'change_unit': 'pp', 'target': 99.5, 'note_prev_label': 'Sep', 'spark': _spark(10, 1.2, .3, phase: .2)},
+      ],
+      'revenue_by_region': {
+        'labels': ['Mei', 'Jul', 'Sep', 'Okt'],
+        'months': ['202605', '202607', '202609', '202610'],
+        'series': [
+          {'name': 'JAWA TIMUR', 'values': [733e9, 752e9, 772e9, 788e9]},
+          {'name': 'JAWA BARAT', 'values': [431e9, 405e9, 398e9, 413e9]},
+          {'name': 'JATENG DIY', 'values': [512e9, 498e9, 534e9, 639e9]},
+        ],
+      },
+      'summary': {
+        'text': 'Revenue **naik 1,2%** MoM ditopang Jawa Timur. Perhatian: **payload Garut −9,1%** dan gross add FWA Semarang di bawah target.',
+        'attention': 2,
+      },
+    };
+
+/// GET /api/watchlist/alerts?status=all as drawn in the mockup (now = 30 Okt 08.30).
+List<Map<String, dynamic>> watchAlerts() => [
+      {'id': 1, 'severity': 'kritis', 'title': 'Payload Garut turun 9,1%', 'message': 'Di bawah ambang 5% selama 3 hari. 14 site terdampak.',
+          'created_at': '2026-10-30T08:18:00', 'resolved': false, 'acknowledged': false, 'scope_label': 'Jawa Barat', 'metric_label': 'Payload'},
+      {'id': 2, 'severity': 'peringatan', 'title': 'Gross add FWA Semarang di bawah target', 'message': 'Realisasi 78% dari target harian.',
+          'created_at': '2026-10-30T07:30:00', 'resolved': false, 'acknowledged': false, 'scope_label': 'Jawa Tengah'},
+      {'id': 3, 'severity': 'peringatan', 'title': 'Market share Cianjur −0,8 pp', 'message': 'Kompetitor agresif di 6 kecamatan selatan.',
+          'created_at': '2026-10-29T21:10:00', 'resolved': false, 'acknowledged': true, 'scope_label': 'Jawa Barat'},
+      {'id': 4, 'severity': 'pulih', 'title': 'Pulih: Availability Bekasi pulih', 'message': 'Kembali 99,7% setelah 6 jam.',
+          'created_at': '2026-10-29T16:02:00', 'resolved': true, 'acknowledged': true, 'scope_label': 'Jawa Barat'},
+    ];
+
+List<Map<String, dynamic>> watchRules() => [
+      for (var i = 0; i < 8; i++) {'id': i + 1, 'metric': 'revenue', 'metric_label': 'Revenue', 'scope_label': 'Jawa', 'status': 'normal'},
+    ];
+
+/// Laporan as drawn: one weekly schedule, two emailed runs and two ad-hoc answers.
+final laporanSchedules = [
+  {'id': 1, 'name': 'Performa Bulanan Region Jawa', 'frequency': 'mingguan', 'weekday': 0, 'hour': 8, 'active': true,
+      'last_sent_on': '2026-10-28', 'region': '', 'recipients': ['rizal@ioh.co.id'], 'description': 'tiap Senin 08.00 WIB'},
+];
+final laporanRuns = [
+  {'id': 7, 'title': 'Site availability mingguan', 'kind': 'mingguan', 'region': '', 'recipients': 3, 'status': 'terkirim',
+      'created_at': '2026-10-27T01:00:00Z'},
+  {'id': 5, 'title': 'Top 20 kabupaten payload', 'kind': 'mingguan', 'region': '', 'recipients': 3, 'status': 'terkirim',
+      'created_at': '2026-10-21T01:00:00Z'},
+];
+List<AdhocReport> laporanAdhoc() => [
+      AdhocReport(id: 'a', title: 'Revenue Jawa Barat vs Sep', columns: const ['kabupaten', 'revenue'],
+          rows: [for (var i = 0; i < 100; i++) {'kabupaten': 'K$i', 'revenue': i * 1e9}], savedAt: DateTime(2026, 10, 30, 7, 50)),
+      AdhocReport(id: 'b', title: 'Market share FWA Jateng', columns: const ['kecamatan', 'share'], rows: const [],
+          savedAt: DateTime(2026, 10, 24, 15), format: 'PDF'),
+    ];

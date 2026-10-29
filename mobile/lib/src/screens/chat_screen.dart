@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:open_filex/open_filex.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -12,6 +9,7 @@ import '../api/api_client.dart';
 import '../api/models.dart';
 import '../app_state.dart';
 import '../services/keep_alive_service.dart';
+import '../services/report_export.dart';
 import '../ui/chart.dart';
 import '../ui/ds.dart';
 import '../ui/icons.dart';
@@ -19,6 +17,7 @@ import '../ui/kit.dart';
 import '../widgets/collapsible.dart';
 import '../widgets/data_table_view.dart';
 import 'location_sheet.dart';
+import 'report_list_screen.dart';
 
 /// Android · Tanya Agent: header, conversation with answer cards (pipeline
 /// meta, validated chip, KPI tiles, chart, Export / Pantau), follow-up chips
@@ -215,27 +214,25 @@ class ChatScreenState extends State<ChatScreen> {
     _finish();
   }
 
-  Future<void> _exportCsv(int i) async {
+  /// Saves the answer to Laporan (Ad-hoc) and opens the export sheet.
+  Future<void> _export(int i) async {
     final r = _messages[i].result;
     if (r == null) return;
-    final q = i > 0 ? _messages[i - 1].content : 'hasil';
-    final slug = q.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-|-$'), '');
-    String cell(dynamic v) {
-      final s = (v ?? '').toString();
-      return s.contains(RegExp(r'[",\n]')) ? '"${s.replaceAll('"', '""')}"' : s;
-    }
-
-    final csv = StringBuffer()..writeln(r.columns.map(cell).join(','));
-    for (final row in r.rows) {
-      csv.writeln(r.columns.map((c) => cell(row[c])).join(','));
-    }
+    final q = i > 0 ? _messages[i - 1].content : 'Hasil agent';
+    final rows = [for (final row in r.rows) Map<String, dynamic>.from(row)];
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      final name = 'bizplan-${slug.isEmpty ? 'hasil' : (slug.length > 40 ? slug.substring(0, 40) : slug)}.csv';
-      final f = File('${dir.path}/$name');
-      await f.writeAsString('﻿$csv');
-      ApiClient.logExport('csv', q);
-      await OpenFilex.open(f.path);
+      final saved = await AdhocStore.add(q.length > 120 ? '${q.substring(0, 117)}…' : q, r.columns, rows);
+      if (!mounted) return;
+      final p = Pal.of(context);
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: p.surface,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+        builder: (_) => ReportExportSheet(
+          item: ReportItem(id: 'adhoc:${saved.id}', kind: 'adhoc', title: saved.title, format: 'XLSX', date: saved.savedAt, adhoc: saved),
+        ),
+      );
     } catch (e) {
       if (mounted) showToast(context, 'Export gagal: $e', ok: false);
     }
@@ -439,7 +436,7 @@ class ChatScreenState extends State<ChatScreen> {
               child: _ActionButton(
                 icon: Icx.download,
                 label: 'Export',
-                onTap: m.result != null && AuthState.canExport ? () => _exportCsv(i) : null,
+                onTap: m.result != null && AuthState.canExport ? () => _export(i) : null,
               ),
             ),
             const SizedBox(width: 8),
