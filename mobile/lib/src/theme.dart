@@ -1,39 +1,44 @@
 import 'package:flutter/material.dart';
 
+import 'design_tokens.dart';
+
+export 'design_tokens.dart';
+
 /// TEAL-PRIMARY design system.
 /// Teal is primary (buttons, links, active, focus). Red is tertiary —
 /// destructive / alerts only, used sparingly.
 class IOH {
+  // Values come from design_tokens.dart (generated from design/tokens.json).
   // Teal scale (primary)
-  static const teal50  = Color(0xFFE6F7F5);
-  static const teal100 = Color(0xFFC0EDE8);
-  static const teal200 = Color(0xFF8FDFD7);
-  static const teal400 = Color(0xFF33BCAD); // hover
-  static const teal500 = Color(0xFF15A697); // PRIMARY
-  static const teal600 = Color(0xFF0E8579); // pressed
-  static const teal700 = Color(0xFF0A6A5F); // deep accents
-  static const teal800 = Color(0xFF074D45);
+  static const teal50  = DSColor.teal50;
+  static const teal100 = DSColor.teal100;
+  static const teal200 = DSColor.teal200;
+  static const teal400 = DSColor.teal400; // hover
+  static const teal500 = DSColor.teal500; // PRIMARY
+  static const teal600 = DSColor.teal600; // pressed
+  static const teal700 = DSColor.teal700; // deep accents
+  static const teal800 = DSColor.teal800;
 
   // Legacy primary token `red` now points to TEAL (used app-wide as primary).
   // Use `danger` for real destructive/error states.
-  static const red = Color(0xFF15A697);     // legacy primary -> teal
-  static const danger = Color(0xFFE13838);  // tertiary red — errors/destructive only
-  static const pink = Color(0xFF0E8579);    // secondary accent -> deep teal
-  static const yellow = Color(0xFFF5A623);  // warnings (amber)
-  static const teal = Color(0xFF15A697);
-  static const magenta = Color(0xFF0A6A5F); // deep teal accent
-  static const green = Color(0xFF2FA84F);   // success
-  static const ink = Color(0xFF0F1F1D);
-  static const grey = Color(0xFF5A6B68);
-  static const mute = Color(0xFF5A6B68);
-  static const rule = Color(0xFFE1E9E7);
-  static const panel = Color(0xFFF5F9F8);
-  static const white = Color(0xFFFFFFFF);
+  static const red = DSColor.teal500;       // legacy primary -> teal
+  static const danger = DSColor.red500;     // tertiary red — errors/destructive only
+  static const pink = DSColor.teal600;      // secondary accent -> deep teal
+  static const yellow = DSColor.amber500;   // warnings (amber)
+  static const teal = DSColor.teal500;
+  static const magenta = DSColor.teal700;   // deep teal accent
+  static const green = DSColor.green500;    // success
+  static const ink = DSLight.ink;
+  static const grey = DSLight.mute;
+  static const mute = DSLight.mute;
+  static const rule = DSLight.rule;
+  static const panel = DSLight.bg;
+  static const white = DSLight.surface;
 
   static const darkInk = Color(0xFFF5F9F8);
   static const darkGrey = Color(0xFFC9CFCD);
   static const darkMute = Color(0xFF8A9996);
-  static const darkRule = Color(0xFF2A3A37);
+  static const darkRule = DSDark.rule;
   static const darkPanel = Color(0xFF13201E);
   static const darkWhite = Color(0xFF0B1413);
 
@@ -50,29 +55,125 @@ class IOH {
 }
 
 class AppTheme {
-  static ThemeData light() {
-    final base = ThemeData(useMaterial3: true, brightness: Brightness.light, fontFamily: 'Prompt');
-    return base.copyWith(
-      scaffoldBackgroundColor: IOH.panel,
-      colorScheme: base.colorScheme.copyWith(primary: IOH.teal500, secondary: IOH.teal700, surface: IOH.white, error: IOH.danger),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: IOH.white, foregroundColor: IOH.ink, elevation: 0,
-        scrolledUnderElevation: 1, titleTextStyle: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18, color: IOH.ink),
-      ),
-      textTheme: base.textTheme.apply(bodyColor: IOH.ink, displayColor: IOH.ink, fontFamily: 'Prompt'),
-    );
-  }
+  static ThemeData light() => _build(
+        brightness: Brightness.light,
+        primary: IOH.teal500,
+        secondary: IOH.teal700,
+        ink: IOH.ink,
+        mute: IOH.mute,
+        rule: IOH.rule,
+        background: IOH.panel,
+        surface: IOH.white,
+      );
 
-  static ThemeData dark() {
-    final base = ThemeData(useMaterial3: true, brightness: Brightness.dark, fontFamily: 'Prompt');
+  static ThemeData dark() => _build(
+        brightness: Brightness.dark,
+        primary: IOH.teal400,
+        secondary: IOH.teal200,
+        ink: IOH.darkInk,
+        mute: IOH.darkMute,
+        rule: IOH.darkRule,
+        background: IOH.darkWhite,
+        surface: IOH.darkPanel,
+      );
+
+  /// One builder for both modes so every component gets the same shape,
+  /// spacing and motion; only the colors differ.
+  static ThemeData _build({
+    required Brightness brightness,
+    required Color primary,
+    required Color secondary,
+    required Color ink,
+    required Color mute,
+    required Color rule,
+    required Color background,
+    required Color surface,
+  }) {
+    final base = ThemeData(useMaterial3: true, brightness: brightness, fontFamily: DSFont.body);
+    final onPrimary = brightness == Brightness.dark ? DSDark.onPrimary : DSLight.onPrimary;
+    final shapeMd = RoundedRectangleBorder(borderRadius: BorderRadius.circular(DSRadius.md));
+    const buttonPadding = EdgeInsets.symmetric(horizontal: DSSpace.s5, vertical: DSSpace.s3);
+    const buttonText = TextStyle(fontFamily: DSFont.display, fontWeight: FontWeight.w600, fontSize: 14);
+
     return base.copyWith(
-      scaffoldBackgroundColor: IOH.darkWhite,
-      colorScheme: base.colorScheme.copyWith(primary: IOH.teal400, secondary: IOH.teal200, surface: IOH.darkPanel, error: IOH.danger),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: IOH.darkPanel, foregroundColor: IOH.darkInk, elevation: 0,
-        scrolledUnderElevation: 1, titleTextStyle: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18, color: IOH.darkInk),
+      scaffoldBackgroundColor: background,
+      colorScheme: base.colorScheme.copyWith(
+        primary: primary, onPrimary: onPrimary, secondary: secondary,
+        surface: surface, error: IOH.danger, outlineVariant: rule,
       ),
-      textTheme: base.textTheme.apply(bodyColor: IOH.darkInk, displayColor: IOH.darkInk, fontFamily: 'Prompt'),
+      dividerColor: rule,
+      appBarTheme: AppBarTheme(
+        backgroundColor: surface, foregroundColor: ink, elevation: 0,
+        scrolledUnderElevation: 1, surfaceTintColor: Colors.transparent,
+        titleTextStyle: TextStyle(fontFamily: DSFont.display, fontWeight: FontWeight.w800, fontSize: 18, color: ink),
+      ),
+      textTheme: base.textTheme.apply(bodyColor: ink, displayColor: ink, fontFamily: DSFont.body),
+      // Fluid, consistent screen transitions on Android (shared-axis-like zoom).
+      pageTransitionsTheme: const PageTransitionsTheme(builders: {
+        TargetPlatform.android: ZoomPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      }),
+      splashFactory: InkSparkle.splashFactory,
+      cardTheme: CardThemeData(
+        color: surface, elevation: 0, margin: EdgeInsets.zero, surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(DSRadius.lg),
+          side: BorderSide(color: rule),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary, foregroundColor: onPrimary, elevation: 0,
+          padding: buttonPadding, shape: shapeMd, textStyle: buttonText,
+          animationDuration: DSMotion.base,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: primary, foregroundColor: onPrimary,
+          padding: buttonPadding, shape: shapeMd, textStyle: buttonText,
+          animationDuration: DSMotion.base,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primary, side: BorderSide(color: rule),
+          padding: buttonPadding, shape: shapeMd, textStyle: buttonText,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: primary, shape: shapeMd, textStyle: buttonText),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: DSSpace.s4, vertical: DSSpace.s3),
+        hintStyle: TextStyle(color: mute),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(DSRadius.md), borderSide: BorderSide(color: rule)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(DSRadius.md), borderSide: BorderSide(color: rule)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(DSRadius.md), borderSide: BorderSide(color: primary, width: 1.5)),
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        shape: const StadiumBorder(), side: BorderSide(color: rule),
+        labelStyle: TextStyle(fontFamily: DSFont.body, fontSize: DSType.labelSize, color: ink),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: shapeMd,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface, surfaceTintColor: Colors.transparent, showDragHandle: true,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(DSRadius.xl))),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surface, surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DSRadius.lg)),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: surface, surfaceTintColor: Colors.transparent,
+        indicatorColor: primary.withValues(alpha: 0.14),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: primary),
     );
   }
 }

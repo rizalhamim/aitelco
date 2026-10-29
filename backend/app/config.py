@@ -31,6 +31,9 @@ BQ_ADC = os.environ.get(
     "/home/ubuntu/.config/gcloud/legacy_credentials/90086171@ioh.co.id/adc.json",
 )
 
+# ---- HTTP ----
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*")
+
 # ---- Query safety ----
 MAX_BYTES_BILLED = int(os.environ.get("MAX_BYTES_BILLED", str(50 * 1024**3)))  # 50 GB cap
 DEFAULT_ROW_LIMIT = int(os.environ.get("DEFAULT_ROW_LIMIT", "1000"))

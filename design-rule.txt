@@ -1,3 +1,5 @@
+> Scope: this file covers exported analyst decks / PDF reports only. The app UI (web + Android) follows design/README.md (teal primary).
+
 # IOH Analyst Deck — Visual Design System Reference
 
 ## Brand identity

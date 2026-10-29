@@ -1,5 +1,6 @@
-/* IOH Design Tokens
- * Source of truth — never hardcode brand colors elsewhere. */
+/* IOH legacy tokens + base element styles.
+ * Source of truth for values is design/tokens.json → design-tokens.css.
+ * Never hardcode brand colors elsewhere. */
 
 :root {
   /* ============================================================
@@ -8,45 +9,25 @@
    * Red is tertiary — destructive / alerts only, used sparingly.
    * ============================================================ */
 
-  /* ---------- Primary — Teal scale ---------- */
-  --teal-50:  #E6F7F5;
-  --teal-100: #C0EDE8;
-  --teal-200: #8FDFD7;
-  --teal-300: #5BCEC3;
-  --teal-400: #33BCAD;   /* hover */
-  --teal-500: #15A697;   /* PRIMARY */
-  --teal-600: #0E8579;   /* pressed */
-  --teal-700: #0A6A5F;   /* deep accents / brand-tinted headings */
-  --teal-800: #074D45;
-  --teal-900: #04332E;
-
-  /* ---------- Tertiary accent — Red (sparingly) ---------- */
-  --red-50:  #FDECEC;
-  --red-100: #FAD0D0;
-  --red-400: #EF5350;
-  --red-500: #E13838;
-  --red-600: #C42B2B;
-
-  /* ---------- Supporting ---------- */
-  --amber-500: #F5A623;
-  --green-500: #2FA84F;
-  --blue-500:  #2A74D4;
+  /* Color scales, semantic colors, spacing, radius, type and motion come from
+   * design-tokens.css (generated from design/tokens.json). The --ioh-* names
+   * below are legacy aliases kept so existing components keep working. */
 
   /* ---------- Brand palette (re-mapped to teal-primary) ----------
    * NOTE: --ioh-red is the legacy PRIMARY token used across the app
    * for buttons/links/active states, so it now points to TEAL.
    * True destructive/error states use --ioh-danger / --red-500. */
   --ioh-primary: var(--teal-500);
-  --ioh-red:     #15A697;   /* legacy primary token → teal (do not use for errors) */
-  --ioh-danger:  #E13838;   /* real red — destructive / error only */
-  --ioh-grey:    #5A6B68;
-  --ioh-pink:    #0E8579;   /* secondary brand accent → deep teal */
-  --ioh-yellow:  #F5A623;
-  --ioh-teal:    #15A697;
-  --ioh-magenta: #0A6A5F;   /* → deep teal accent */
-  --ioh-ink:     #0F1F1D;
-  --ioh-mute:    #5A6B68;
-  --ioh-rule:    #E1E9E7;
+  --ioh-red:     var(--teal-500);   /* legacy primary token → teal (do not use for errors) */
+  --ioh-danger:  var(--red-500);   /* real red — destructive / error only */
+  --ioh-grey:    var(--ds-mute);
+  --ioh-pink:    var(--teal-600);   /* secondary brand accent → deep teal */
+  --ioh-yellow:  var(--amber-500);
+  --ioh-teal:    var(--teal-500);
+  --ioh-magenta: var(--teal-700);   /* → deep teal accent */
+  --ioh-ink:     var(--ds-ink);
+  --ioh-mute:    var(--ds-mute);
+  --ioh-rule:    var(--ds-rule);
   --ioh-panel:   #F5F9F8;
   --ioh-white:   #FFFFFF;
   --ioh-bg-soft: #F5F9F8;
@@ -256,6 +237,22 @@ h4 { font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: 
 .callout.danger  { background: var(--tint-danger);  border-color: var(--ioh-danger);  color: var(--ioh-ink); }
 
 a { color: var(--ioh-red); text-decoration: none; }
+
+/* Visible keyboard focus everywhere (mouse clicks don't trigger it). */
+:focus-visible {
+  outline: 2px solid var(--ds-primary);
+  outline-offset: 2px;
+}
+
+/* Respect the OS "reduce motion" setting for all hand-written animations too. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 a:hover { text-decoration: underline; }
 
 /* Scrollbars */
