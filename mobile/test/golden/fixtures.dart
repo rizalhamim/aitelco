@@ -192,3 +192,26 @@ Map<String, dynamic> statsFixture() => {
         for (var i = 0; i < 16; i++) {'full_name': 'Pengguna $i', 'department': 'Ops', 'status': 'tidak_aktif', 'last_seen': '2026-10-15T09:00:00'},
       ],
     };
+
+Map<String, dynamic> apkVersion() => {
+      'version_name': '1.43.1',
+      'version_code': 14301,
+      'available': true,
+      'mandatory': false,
+      'download_url': '/api/app/download',
+      'size_bytes': 50541363,
+      'released_at': '2026-10-21',
+      'min_android': '8.0',
+    };
+
+List<Map<String, dynamic>> apkReleases() => [
+      {
+        'version_name': '1.43.1',
+        'released_at': '2026-10-21',
+        'latest': true,
+        'mandatory': false,
+        'notes': ['Grafik bisa di-drill-down dari region ke site', 'Peta kabupaten lebih cepat 2×', 'Perbaikan sinkron alert di Android 14'],
+      },
+      {'version_name': '1.43.0', 'released_at': '2026-10-06', 'mandatory': true, 'notes': []},
+      {'version_name': '1.42.3', 'released_at': '2026-09-18', 'mandatory': false, 'notes': []},
+    ];

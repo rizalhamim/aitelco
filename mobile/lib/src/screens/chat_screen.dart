@@ -717,6 +717,7 @@ class ChatScreenState extends State<ChatScreen> {
           _menuItem(p, Icx.mail, 'Ringkas & kirim email', () { Navigator.pop(ctx); _summarize(); }),
           _menuItem(p, Icx.mapPin, 'Bagikan lokasi saya', () { Navigator.pop(ctx); _shareLocation(); }),
           _menuItem(p, Icx.radio, 'Performa site', () { Navigator.pop(ctx); Navigator.pushNamed(context, '/site'); }),
+          _menuItem(p, Icx.download, 'Unduh APK', () { Navigator.pop(ctx); Navigator.pushNamed(context, '/download'); }),
           const SizedBox(height: 12),
           const Overline('Riwayat'),
           const SizedBox(height: 8),

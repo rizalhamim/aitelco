@@ -6,14 +6,19 @@ import 'src/app_state.dart';
 import 'src/services/keep_alive_service.dart';
 import 'src/screens/login_screen.dart';
 import 'src/screens/chat_screen.dart';
+import 'src/screens/download_screen.dart';
+import 'src/screens/home_shell.dart';
 import 'src/screens/profile_screen.dart';
 import 'src/screens/map_query_screen.dart';
 import 'src/screens/reports_screen.dart';
 import 'src/screens/site_performance_screen.dart';
+import 'src/screens/splash_screen.dart';
+import 'src/screens/stats_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   KeepAliveService.init();
+  await ClientInfo.init();
   await AuthState.load();
   await AppState.I.load();
   runApp(const BizplanApp());
@@ -51,8 +56,12 @@ class _BizplanAppState extends State<BizplanApp> {
           child: WithForegroundTask(child: child ?? const SizedBox.shrink()),
         );
       },
-      initialRoute: AuthState.isLoggedIn ? '/chat' : '/login',
+      initialRoute: '/splash',
       routes: {
+        '/splash': (_) => const SplashScreen(),
+        '/home': (_) => const HomeShell(),
+        '/stats': (_) => const StatsScreen(),
+        '/download': (_) => const DownloadScreen(),
         '/login': (_) => const LoginScreen(),
         '/chat': (_) => const ChatScreen(),
         '/profile': (_) => const ProfileScreen(),

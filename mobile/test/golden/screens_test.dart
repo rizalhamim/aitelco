@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:bizplan_java_agent/src/screens/chat_screen.dart';
 import 'package:bizplan_java_agent/src/screens/dashboard_screen.dart';
+import 'package:bizplan_java_agent/src/screens/download_screen.dart';
 import 'package:bizplan_java_agent/src/screens/login_screen.dart';
 import 'package:bizplan_java_agent/src/screens/map_screen.dart';
 import 'package:bizplan_java_agent/src/screens/report_list_screen.dart';
@@ -57,4 +58,6 @@ void main() {
         tab(4, MapScreen(previewItems: petaItems(), previewDetail: petaGarut(), previewFocus: 'JAWA BARAT')));
   });
   testWidgets('Statistik', (t) => shoot(t, 'Android - Statistik (admin)', StatsScreen(preview: statsFixture(), previewNow: _now)));
+  testWidgets('Unduh APK', (t) => shoot(t, 'Android - Unduh APK',
+      DownloadScreen(previewVersion: apkVersion(), previewReleases: apkReleases()), height: 2080));
 }
