@@ -19,11 +19,15 @@ from . import geo_locate
 from . import site_perf
 from . import map_synth_agent
 from . import correlate_agent
+from . import chart_spec
+from . import telemetry
+from starlette.concurrency import run_in_threadpool
 from .database import init_db, get_db, ChatSession, ChatMessage, UsageLog, utcnow
 from .auth import get_current_user_optional
 from .routes_auth import router as auth_router, admin_router, history_router
 from .app_update import router as app_update_router
 from .routes_reports import router as reports_router
+from .routes_stats import router as stats_router
 from sqlalchemy.orm import Session
 
 app = FastAPI(title="Telco AI Orchestrator", version="1.0")
@@ -40,12 +44,22 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+@app.middleware("http")
+async def _client_telemetry(request: Request, call_next):
+    # Records app version / device for clients that send X-Client-Platform.
+    response = await call_next(request)
+    if request.headers.get("x-client-platform"):
+        await run_in_threadpool(telemetry.record_client, request.headers)
+    return response
+
+
 # Register auth/admin/history routes
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(history_router)
 app.include_router(app_update_router)
 app.include_router(reports_router)
+app.include_router(stats_router)
 
 # Init database on startup
 @app.on_event("startup")
@@ -654,6 +668,7 @@ def chat_stream(req: ChatReq, request: Request):
             yield sse("result", {
                 "columns": merged["columns"], "rows": merged["rows"],
                 "row_count": merged["row_count"], "sql": None, "bytes_processed": 0,
+                "chart": chart_spec.suggest(merged["columns"], merged["rows"], "korelasi " + req.message),
             })
 
             yield sse("step_start", {"step": "synth", "label": "Correlation Analyst", "desc": "Menganalisis hubungan 2 metrik"})
@@ -750,6 +765,8 @@ def chat_stream(req: ChatReq, request: Request):
                     "rows": dr.get("rows", []),
                     "sql": dr.get("sql"),
                     "explanation": dr.get("explanation", ""),
+                    "chart": chart_spec.suggest(dr.get("columns", []), dr.get("rows", []),
+                                                dr.get("section_title", "")),
                 })
 
             # re-order results to the planned section order for a coherent deck
@@ -969,6 +986,7 @@ def chat_stream(req: ChatReq, request: Request):
                         "row_count": result["row_count"], "sql": result["sql"],
                         "bytes_processed": result["bytes_processed"],
                         "refine_round": refine_round,
+                        "chart": chart_spec.suggest(result["columns"], result["rows"], req.message),
                     })
                     break
                 except Exception as e:

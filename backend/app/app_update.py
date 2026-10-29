@@ -13,8 +13,10 @@ and install.
 import json
 import os
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, JSONResponse
+
+from . import telemetry
 
 router = APIRouter(prefix="/api/app", tags=["app-update"])
 
@@ -75,12 +77,20 @@ def app_version():
 
 
 @router.get("/download")
-def app_download():
-    """Serve the latest APK binary."""
+def app_download(request: Request, src: str | None = None):
+    """Serve the latest APK binary and log the download.
+
+    Stays reachable without a token: installed apps older than the telemetry
+    release call it with no Authorization header, and must still be able to
+    update. The web app only links to it from pages behind login.
+    """
     rel = _load_release()
     apk = _apk_path(rel)
     if not os.path.exists(apk):
         return JSONResponse({"error": "apk not available"}, status_code=404)
+    telemetry.record_download(
+        request.headers, request.client.host if request.client else None,
+        rel.get("version_name"), int(rel.get("version_code", 0) or 0), src)
     return FileResponse(
         apk,
         media_type="application/vnd.android.package-archive",

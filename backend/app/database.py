@@ -1,7 +1,7 @@
 """Database models and session management.
 
 SQLite-backed user management with SQLAlchemy ORM.
-Tables: users, chat_sessions, chat_messages, login_audit
+Tables: users, chat_sessions, chat_messages, login_audit, usage_log, app_downloads, app_clients
 """
 import os
 from datetime import datetime, timezone
@@ -149,6 +149,37 @@ class Notification(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
 
+class AppDownload(Base):
+    """One APK download (web Download page or the in-app updater)."""
+    __tablename__ = "app_downloads"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    version_name = Column(String(32), nullable=True)
+    version_code = Column(Integer, nullable=True)
+    source = Column(String(20), nullable=False, default="unknown")  # web, in_app, unknown
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+
+
+class AppClient(Base):
+    """Last known app install per user + device, from the X-App-* request headers."""
+    __tablename__ = "app_clients"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    platform = Column(String(20), nullable=False)          # android, web
+    device_model = Column(String(120), nullable=False, default="")
+    os_version = Column(String(60), nullable=True)
+    app_version = Column(String(32), nullable=True)
+    app_build = Column(Integer, nullable=True)
+    first_seen = Column(DateTime, default=utcnow, nullable=False)
+    last_seen = Column(DateTime, default=utcnow, nullable=False, index=True)
+
+    __table_args__ = (Index("ix_app_clients_user_device", "user_id", "platform", "device_model", unique=True),)
+
+
 # ── Database Init ──
 
 def init_db():
@@ -161,29 +192,26 @@ def init_db():
     try:
         user_count = db.query(User).count()
         if user_count == 0:
+            # First boot only. Never hardcode or reset the admin password here:
+            # it used to be committed in this file and re-applied on every start.
+            import secrets
             from passlib.context import CryptContext
             pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            initial = os.environ.get("ADMIN_INITIAL_PASSWORD") or secrets.token_urlsafe(12)
             admin = User(
                 username="admin",
                 email="admin@ioh.co.id",
-                hashed_password=pwd_ctx.hash("Apotoxin4869"),
+                hashed_password=pwd_ctx.hash(initial),
                 full_name="Administrator",
                 role="admin",
                 is_active=True,
             )
             db.add(admin)
             db.commit()
-            print("[init_db] Default admin user created (username: admin)")
-        else:
-            # Ensure existing admin has the correct password
-            admin = db.query(User).filter(User.username == "admin").first()
-            if admin:
-                from passlib.context import CryptContext
-                pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-                if not pwd_ctx.verify("Apotoxin4869", admin.hashed_password):
-                    admin.hashed_password = pwd_ctx.hash("Apotoxin4869")
-                    db.commit()
-                    print("[init_db] Admin password updated")
+            if os.environ.get("ADMIN_INITIAL_PASSWORD"):
+                print("[init_db] Default admin user created (username: admin, password from ADMIN_INITIAL_PASSWORD)")
+            else:
+                print(f"[init_db] Default admin user created (username: admin, password: {initial}). Change it after first login.")
     finally:
         db.close()
 
