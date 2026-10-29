@@ -9,10 +9,12 @@ type Props = {
   format?: (v: number) => string;
   /** Draws a dashed horizontal reference line (e.g. a target). */
   reference?: number | null;
+  /** Text drawn left of the reference line, e.g. "-5%". */
+  referenceLabel?: string;
 };
 
 /** Smooth area sparkline with a hover readout. Pure SVG, scales to its container width. */
-export default function Sparkline({ values, labels, color = "var(--ds-teal600)", height = 44, format, reference }: Props) {
+export default function Sparkline({ values, labels, color = "var(--ds-teal600)", height = 44, format, reference, referenceLabel }: Props) {
   const id = useId().replace(/:/g, "");
   const [hover, setHover] = useState<number | null>(null);
   const W = 228;
@@ -68,6 +70,7 @@ export default function Sparkline({ values, labels, color = "var(--ds-teal600)",
         {refY != null && <line x1="0" x2={W} y1={refY} y2={refY} stroke="var(--ds-warning)" strokeWidth="1.2" strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />}
         <path d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
       </svg>
+      {refY != null && referenceLabel && <span className="spark-ref" style={{ top: refY }}>{referenceLabel}</span>}
       {h && (
         <>
           <span className="spark-dot" style={{ left: `${(h.x / W) * 100}%`, top: h.y, borderColor: color }} />
