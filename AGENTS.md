@@ -116,7 +116,7 @@ The prior-year month snapshot is symmetric (e.g. `_mtd[202506].dt_id_snapshot = 
 ### Build / deploy / services
 - Services (systemd, need `sudo`): `telco-backend` (127.0.0.1:8000), `telco-frontend` (127.0.0.1:3000). After backend edits run `sudo systemctl restart telco-backend` (the KB loader `knowledge.py:load_kb()` is `@lru_cache`d, so a restart is required to reload `knowledge_base.json`).
 - Web: `cd frontend && npm run build` then `sudo systemctl restart telco-frontend`.
-- Mobile: flutter is at `/home/ubuntu/flutter/bin`. `flutter build apk --release`, then copy `build/app/outputs/flutter-apk/app-release.apk` to `/home/ubuntu/telco-ai/Bizplan-Java-Agent.apk`. Bump `mobile/pubspec.yaml` version AND `backend/data/app_release.json` (`version_name`/`version_code`/`notes`). Current release: 1.43.1+49.
+- Mobile: flutter is at `/home/ubuntu/flutter/bin`. `flutter build apk --release`, then copy `build/app/outputs/flutter-apk/app-release.apk` to `/home/ubuntu/telco-ai/Bizplan-Java-Agent.apk`. Bump `mobile/pubspec.yaml` version AND `backend/data/app_release.json` (`version_name`/`version_code`/`notes`). Current release: 1.44.0+50.
 - Prod host: `agent-02.bizplan-java.com` (nginx `/etc/nginx/sites-available/sysmonitor`: `/api/`→8000 with `proxy_buffering off`, `/`→3000). A separate `system-monitor.service` serves `server-02.bizplan-java.com` on port 8080.
 - HARD STYLE RULE: never use em-dashes anywhere (code, comments, labels, copy).
 
