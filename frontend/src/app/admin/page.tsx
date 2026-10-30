@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { authFetch, getUser, isAdmin, isLoggedIn, logout, UserInfo } from "@/lib/auth";
+import { Users } from "lucide-react";
+import AppShell from "../components/shell/AppShell";
+import PageHero from "../components/ui/PageHero";
+import { authFetch, getUser, isAdmin, isLoggedIn, UserInfo } from "@/lib/auth";
 
 interface Stats {
   total_users: number;
@@ -78,14 +81,6 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [qaExpanded, setQaExpanded] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (!isLoggedIn()) { router.push("/login"); return; }
-      if (!isAdmin()) { router.push("/"); return; }
-    }
-    loadData();
-  }, [tab]);
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -102,6 +97,13 @@ export default function AdminPage() {
     } catch (e) { console.error(e); }
     setLoading(false);
   }, [tab]);
+
+  useEffect(() => {
+    if (!isLoggedIn()) { router.push("/login"); return; }
+    if (!isAdmin()) { router.push("/"); return; }
+    const t = setTimeout(loadData, 0);
+    return () => clearTimeout(t);
+  }, [loadData, router]);
 
   async function loadUserDetail(userId: number) {
     const [detailRes, activityRes] = await Promise.all([
@@ -148,62 +150,15 @@ export default function AdminPage() {
   const me = getUser();
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: IOH.panel,
-      color: IOH.ink,
-    }}>
-      {/* Top Bar */}
-      <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "16px 32px",
-        borderBottom: `1px solid ${IOH.rule}`,
-        background: IOH.white,
-        position: "sticky", top: 0, zIndex: 100,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: IOH.red, position: "relative",
-            }}>
-              <div style={{
-                position: "absolute", width: 12, height: 12,
-                borderRadius: "50%", background: IOH.yellow,
-                right: -4, bottom: -4,
-              }} />
-            </div>
-            <span style={{
-              fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 800,
-              color: IOH.ink, letterSpacing: "-0.01em",
-            }}>Admin</span>
-          </div>
-          <div style={{
-            width: 1, height: 20, background: IOH.rule,
-          }} />
-          <span style={{
-            color: IOH.mute, fontSize: 13, fontWeight: 500,
-          }}>{me?.full_name || me?.username}</span>
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={() => router.push("/")} style={navBtn}>Back to Chat</button>
-          <button onClick={logout} style={{
-            ...navBtn,
-            borderColor: "rgba(21, 166, 151,0.3)",
-            color: IOH.red,
-            background: "rgba(21, 166, 151,0.04)",
-          }}>
-            Logout
-          </button>
-        </div>
-      </div>
+    <AppShell>
+    <div className="ui-page wide">
+      <PageHero icon={<Users size={30} strokeWidth={1.6} />} eyebrow="Admin" title="Kelola pengguna" sub={`Masuk sebagai ${me?.full_name || me?.username || "admin"}`} />
 
       {/* Tabs */}
       <div style={{
         display: "flex", gap: 0,
         borderBottom: `1px solid ${IOH.rule}`,
-        padding: "0 32px",
+        padding: "0 12px", borderRadius: 16, border: `1px solid ${IOH.rule}`,
         background: IOH.white,
       }}>
         {(["overview", "users", "history"] as Tab[]).map((t) => (
@@ -623,6 +578,7 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+    </AppShell>
   );
 }
 
@@ -654,8 +610,8 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
       setUsername(""); setFullName(""); setEmail(""); setPassword(""); setRole("end_user");
       setOpen(false);
       onCreated();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed");
     } finally {
       setSaving(false);
     }
@@ -866,13 +822,12 @@ function DomainDonut({ data }: { data: { domain: string; count: number }[] }) {
 
   const size = 160, cx = size / 2, cy = size / 2, r = 55, cutout = 0.68;
   const innerR = r * cutout;
-  let cumAngle = -Math.PI / 2;
+  const starts = data.reduce<number[]>((acc, d, i) => [...acc, (acc[i] ?? -Math.PI / 2) + (d.count / total) * Math.PI * 2], [-Math.PI / 2]);
 
   const segments = data.map((d, i) => {
     const angle = (d.count / total) * Math.PI * 2;
-    const startAngle = cumAngle;
-    cumAngle += angle;
-    const endAngle = cumAngle;
+    const startAngle = starts[i];
+    const endAngle = starts[i + 1];
 
     const x1 = cx + r * Math.cos(startAngle);
     const y1 = cy + r * Math.sin(startAngle);

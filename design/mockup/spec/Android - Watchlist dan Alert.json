@@ -1,0 +1,7125 @@
+{
+ "absoluteBounds": {
+  "height": 844.0,
+  "width": 390.0,
+  "x": 2350.0,
+  "y": 5100.0
+ },
+ "boundVariables": {
+  "fill": "VariableID:15"
+ },
+ "children": [
+  {
+   "absoluteBounds": {
+    "height": 36.0,
+    "width": 390.0,
+    "x": 2350.0,
+    "y": 5100.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 18.0,
+      "width": 24.0,
+      "x": 2374.0,
+      "y": 5109.0
+     },
+     "boundVariables": {
+      "fill": "VariableID:11"
+     },
+     "characters": "9:41",
+     "fills": [
+      {
+       "color": "#0F1F1D",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Poppins",
+     "fontSize": 13.0,
+     "fontStyle": "SemiBold",
+     "height": 18.0,
+     "id": 21772,
+     "letterSpacing": "0%",
+     "lineHeight": "140%",
+     "name": "9:41",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "styles": {
+      "effect": null,
+      "fill": null,
+      "grid": null,
+      "stroke": null,
+      "text": "S:11"
+     },
+     "textAlign": "left",
+     "textAutoResize": "widthAndHeight",
+     "textStyleRanges": [
+      [
+       0,
+       4,
+       "S:11"
+      ]
+     ],
+     "type": "TEXT",
+     "width": 24.0,
+     "x": 24.0,
+     "y": 9.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 16.0,
+      "width": 70.0,
+      "x": 2646.0,
+      "y": 5110.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 16.0,
+        "width": 16.0,
+        "x": 2646.0,
+        "y": 5110.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 0.0,
+          "width": 0.01,
+          "x": 2654.0,
+          "y": 5123.33
+         },
+         "boundVariables": {
+          "stroke": "VariableID:11"
+         },
+         "constraints": {
+          "horizontal": "scale",
+          "vertical": "scale"
+         },
+         "height": 0.0,
+         "id": 21775,
+         "name": "Line",
+         "strokeAlign": "center",
+         "strokeJoin": "round",
+         "strokeWeight": 2.0,
+         "strokes": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "type": "LINE",
+         "width": 0.01,
+         "x": 8.0,
+         "y": 13.33
+        },
+        {
+         "absoluteBounds": {
+          "height": 2.55,
+          "width": 13.33,
+          "x": 2647.33,
+          "y": 5113.33
+         },
+         "boundVariables": {
+          "stroke": "VariableID:11"
+         },
+         "constraints": {
+          "horizontal": "scale",
+          "vertical": "scale"
+         },
+         "height": 2.55,
+         "id": 21776,
+         "name": "Vector",
+         "segments": 1,
+         "strokeAlign": "center",
+         "strokeJoin": "round",
+         "strokeWeight": 2.0,
+         "strokes": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "type": "VECTOR",
+         "vertices": 2,
+         "width": 13.33,
+         "x": 1.33,
+         "y": 3.33
+        },
+        {
+         "absoluteBounds": {
+          "height": 1.91,
+          "width": 9.33,
+          "x": 2649.33,
+          "y": 5116.67
+         },
+         "boundVariables": {
+          "stroke": "VariableID:11"
+         },
+         "constraints": {
+          "horizontal": "scale",
+          "vertical": "scale"
+         },
+         "height": 1.91,
+         "id": 21777,
+         "name": "Vector",
+         "segments": 1,
+         "strokeAlign": "center",
+         "strokeJoin": "round",
+         "strokeWeight": 2.0,
+         "strokes": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "type": "VECTOR",
+         "vertices": 2,
+         "width": 9.33,
+         "x": 3.33,
+         "y": 6.67
+        },
+        {
+         "absoluteBounds": {
+          "height": 0.95,
+          "width": 4.67,
+          "x": 2651.67,
+          "y": 5120.0
+         },
+         "boundVariables": {
+          "stroke": "VariableID:11"
+         },
+         "constraints": {
+          "horizontal": "scale",
+          "vertical": "scale"
+         },
+         "height": 0.95,
+         "id": 21778,
+         "name": "Vector",
+         "segments": 1,
+         "strokeAlign": "center",
+         "strokeJoin": "round",
+         "strokeWeight": 2.0,
+         "strokes": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "type": "VECTOR",
+         "vertices": 2,
+         "width": 4.67,
+         "x": 5.67,
+         "y": 10.0
+        }
+       ],
+       "clip": false,
+       "height": 16.0,
+       "id": 21774,
+       "mainComponent": 499,
+       "mainComponentName": "Icon/wifi",
+       "name": "Icon/wifi",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "type": "INSTANCE",
+       "width": 16.0,
+       "x": 0.0,
+       "y": 0.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 14.0,
+        "width": 18.0,
+        "x": 2668.0,
+        "y": 5111.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 5.0,
+          "width": 3.0,
+          "x": 2668.0,
+          "y": 5120.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:11"
+         },
+         "cornerRadius": 1.0,
+         "fills": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "height": 5.0,
+         "id": 21780,
+         "name": "Rect",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 3.0,
+         "x": 0.0,
+         "y": 9.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 8.0,
+          "width": 3.0,
+          "x": 2673.0,
+          "y": 5117.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:11"
+         },
+         "cornerRadius": 1.0,
+         "fills": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "height": 8.0,
+         "id": 21781,
+         "name": "Rect",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 3.0,
+         "x": 5.0,
+         "y": 6.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 11.0,
+          "width": 3.0,
+          "x": 2678.0,
+          "y": 5114.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:11"
+         },
+         "cornerRadius": 1.0,
+         "fills": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "height": 11.0,
+         "id": 21782,
+         "name": "Rect",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 3.0,
+         "x": 10.0,
+         "y": 3.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 14.0,
+          "width": 3.0,
+          "x": 2683.0,
+          "y": 5111.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:11"
+         },
+         "cornerRadius": 1.0,
+         "fills": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "height": 14.0,
+         "id": 21783,
+         "name": "Rect",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 3.0,
+         "x": 15.0,
+         "y": 0.0
+        }
+       ],
+       "clip": false,
+       "height": 14.0,
+       "id": 21779,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "max",
+        "crossGap": 10.0,
+        "gap": 2.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "sinyal",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 18.0,
+       "x": 22.0,
+       "y": 1.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 12.0,
+        "width": 24.0,
+        "x": 2692.0,
+        "y": 5112.0
+       },
+       "boundVariables": {
+        "stroke": "VariableID:11"
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 8.0,
+          "width": 15.0,
+          "x": 2695.5,
+          "y": 5115.5
+         },
+         "boundVariables": {
+          "fill": "VariableID:11"
+         },
+         "cornerRadius": 1.5,
+         "fills": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "height": 8.0,
+         "id": 21785,
+         "name": "Rect",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 15.0,
+         "x": 3.5,
+         "y": 3.5
+        }
+       ],
+       "clip": false,
+       "cornerRadius": 3.0,
+       "height": 12.0,
+       "id": 21784,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "min",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "horizontal",
+        "padding": [
+         2.0,
+         2.0,
+         2.0,
+         2.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "baterai",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "strokeAlign": "inside",
+       "strokeWeight": 1.5,
+       "strokes": [
+        {
+         "color": "#0F1F1D",
+         "type": "solid"
+        }
+       ],
+       "type": "FRAME",
+       "width": 24.0,
+       "x": 46.0,
+       "y": 2.0
+      }
+     ],
+     "clip": false,
+     "height": 16.0,
+     "id": 21773,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 6.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "horizontal",
+      "padding": [
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "ikon",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "type": "FRAME",
+     "width": 70.0,
+     "x": 296.0,
+     "y": 10.0
+    }
+   ],
+   "clip": false,
+   "height": 36.0,
+   "id": 21771,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "center",
+    "crossGap": 10.0,
+    "gap": 0.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "spaceBetween",
+    "mode": "horizontal",
+    "padding": [
+     0.0,
+     24.0,
+     0.0,
+     24.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "mainComponent": 1191,
+   "mainComponentName": "Tone=Gelap",
+   "name": "Status bar",
+   "overrides": [
+    "name"
+   ],
+   "sizing": {
+    "horizontal": "fill",
+    "vertical": "fixed"
+   },
+   "type": "INSTANCE",
+   "width": 390.0,
+   "x": 0.0,
+   "y": 0.0
+  },
+  {
+   "absoluteBounds": {
+    "height": 706.0,
+    "width": 390.0,
+    "x": 2350.0,
+    "y": 5136.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 64.0,
+      "width": 390.0,
+      "x": 2350.0,
+      "y": 5136.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 24.0,
+        "width": 308.0,
+        "x": 2366.0,
+        "y": 5156.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 24.0,
+          "width": 157.0,
+          "x": 2366.0,
+          "y": 5156.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:11"
+         },
+         "characters": "Watchlist & Alert",
+         "fills": [
+          {
+           "color": "#0F1F1D",
+           "type": "solid"
+          }
+         ],
+         "fontFamily": "Poppins",
+         "fontSize": 18.0,
+         "fontStyle": "Bold",
+         "height": 24.0,
+         "id": 21833,
+         "letterSpacing": "0%",
+         "lineHeight": "135%",
+         "name": "Watchlist & Alert",
+         "sizing": {
+          "horizontal": "hug",
+          "vertical": "hug"
+         },
+         "styles": {
+          "effect": null,
+          "fill": null,
+          "grid": null,
+          "stroke": null,
+          "text": "S:4"
+         },
+         "textAlign": "left",
+         "textAutoResize": "widthAndHeight",
+         "textStyleRanges": [
+          [
+           0,
+           17,
+           "S:4"
+          ]
+         ],
+         "type": "TEXT",
+         "width": 157.0,
+         "x": 0.0,
+         "y": 0.0
+        }
+       ],
+       "clip": false,
+       "height": 24.0,
+       "id": 21832,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "min",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "vertical",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Judul",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "hug"
+       },
+       "type": "FRAME",
+       "width": 308.0,
+       "x": 16.0,
+       "y": 20.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 44.0,
+        "width": 44.0,
+        "x": 2684.0,
+        "y": 5146.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 20.0,
+          "width": 20.0,
+          "x": 2696.0,
+          "y": 5158.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 5.83,
+            "x": 2707.67,
+            "y": 5161.33
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21836,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 5.83,
+           "x": 17.5,
+           "y": 3.33
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 5.83,
+            "x": 2698.5,
+            "y": 5161.33
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21837,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 5.83,
+           "x": 8.33,
+           "y": 3.33
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 7.5,
+            "x": 2706.0,
+            "y": 5168.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21838,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 7.5,
+           "x": 17.5,
+           "y": 10.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 4.17,
+            "x": 2698.5,
+            "y": 5168.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21839,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 4.17,
+           "x": 6.67,
+           "y": 10.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 4.17,
+            "x": 2709.33,
+            "y": 5174.67
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21840,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 4.17,
+           "x": 17.5,
+           "y": 16.67
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 7.5,
+            "x": 2698.5,
+            "y": 5174.67
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21841,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 7.5,
+           "x": 10.0,
+           "y": 16.67
+          },
+          {
+           "absoluteBounds": {
+            "height": 3.33,
+            "width": 0.0,
+            "x": 2707.67,
+            "y": 5159.67
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21842,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": -90.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 3.33,
+           "x": 11.67,
+           "y": 1.67
+          },
+          {
+           "absoluteBounds": {
+            "height": 3.33,
+            "width": 0.0,
+            "x": 2702.67,
+            "y": 5166.33
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21843,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": -90.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 3.33,
+           "x": 6.67,
+           "y": 8.33
+          },
+          {
+           "absoluteBounds": {
+            "height": 3.33,
+            "width": 0.0,
+            "x": 2709.33,
+            "y": 5173.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:12"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21844,
+           "name": "Line",
+           "overrides": [
+            "strokes"
+           ],
+           "rotation": -90.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 3.33,
+           "x": 13.33,
+           "y": 15.0
+          }
+         ],
+         "clip": false,
+         "height": 20.0,
+         "id": 21835,
+         "mainComponent": 377,
+         "mainComponentName": "Icon/sliders",
+         "name": "Icon/sliders",
+         "overrides": [
+          "size"
+         ],
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "INSTANCE",
+         "width": 20.0,
+         "x": 12.0,
+         "y": 12.0
+        }
+       ],
+       "clip": false,
+       "cornerRadius": 12.0,
+       "height": 44.0,
+       "id": 21834,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Tombol sliders",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 44.0,
+       "x": 334.0,
+       "y": 10.0
+      }
+     ],
+     "clip": false,
+     "height": 64.0,
+     "id": 21831,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 10.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "horizontal",
+      "padding": [
+       8.0,
+       12.0,
+       8.0,
+       16.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "App bar",
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "fixed"
+     },
+     "type": "FRAME",
+     "width": 390.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 49.0,
+      "width": 390.0,
+      "x": 2350.0,
+      "y": 5200.0
+     },
+     "boundVariables": {
+      "stroke": "VariableID:14"
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 48.0,
+        "width": 179.0,
+        "x": 2366.0,
+        "y": 5200.0
+       },
+       "boundVariables": {
+        "stroke": "VariableID:7"
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 20.0,
+          "width": 50.0,
+          "x": 2430.5,
+          "y": 5212.5
+         },
+         "boundVariables": {
+          "fill": "VariableID:9"
+         },
+         "characters": "Aktif · 3",
+         "fills": [
+          {
+           "color": "#074D45",
+           "type": "solid"
+          }
+         ],
+         "fontFamily": "Poppins",
+         "fontSize": 14.0,
+         "fontStyle": "SemiBold",
+         "height": 20.0,
+         "id": 21847,
+         "letterSpacing": "0%",
+         "lineHeight": "140%",
+         "name": "Aktif · 3",
+         "sizing": {
+          "horizontal": "hug",
+          "vertical": "hug"
+         },
+         "styles": {
+          "effect": null,
+          "fill": null,
+          "grid": null,
+          "stroke": null,
+          "text": "S:9"
+         },
+         "textAlign": "left",
+         "textAutoResize": "widthAndHeight",
+         "textStyleRanges": [
+          [
+           0,
+           9,
+           "S:9"
+          ]
+         ],
+         "type": "TEXT",
+         "width": 50.0,
+         "x": 64.5,
+         "y": 12.5
+        }
+       ],
+       "clip": false,
+       "height": 48.0,
+       "id": 21846,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Aktif · 3",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "fixed"
+       },
+       "strokeAlign": "inside",
+       "strokeSides": [
+        0.0,
+        0.0,
+        3.0,
+        0.0
+       ],
+       "strokeWeight": 1.0,
+       "strokes": [
+        {
+         "color": "#0E8579",
+         "type": "solid"
+        }
+       ],
+       "type": "FRAME",
+       "width": 179.0,
+       "x": 16.0,
+       "y": 0.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 48.0,
+        "width": 179.0,
+        "x": 2545.0,
+        "y": 5200.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 21.0,
+          "width": 85.0,
+          "x": 2592.0,
+          "y": 5213.5
+         },
+         "boundVariables": {
+          "fill": "VariableID:13"
+         },
+         "characters": "Watchlist · 8",
+         "fills": [
+          {
+           "color": "#5A6B68",
+           "type": "solid"
+          }
+         ],
+         "fontFamily": "Poppins",
+         "fontSize": 14.0,
+         "fontStyle": "Medium",
+         "height": 21.0,
+         "id": 21849,
+         "letterSpacing": "0%",
+         "lineHeight": "150%",
+         "name": "Watchlist · 8",
+         "sizing": {
+          "horizontal": "hug",
+          "vertical": "hug"
+         },
+         "styles": {
+          "effect": null,
+          "fill": null,
+          "grid": null,
+          "stroke": null,
+          "text": "S:8"
+         },
+         "textAlign": "left",
+         "textAutoResize": "widthAndHeight",
+         "textStyleRanges": [
+          [
+           0,
+           13,
+           "S:8"
+          ]
+         ],
+         "type": "TEXT",
+         "width": 85.0,
+         "x": 47.0,
+         "y": 13.5
+        }
+       ],
+       "clip": false,
+       "height": 48.0,
+       "id": 21848,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Watchlist · 8",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 179.0,
+       "x": 195.0,
+       "y": 0.0
+      }
+     ],
+     "clip": false,
+     "height": 49.0,
+     "id": 21845,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "min",
+      "crossGap": 10.0,
+      "gap": 0.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "horizontal",
+      "padding": [
+       0.0,
+       16.0,
+       0.0,
+       16.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "Tab",
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "hug"
+     },
+     "strokeAlign": "inside",
+     "strokeSides": [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+     ],
+     "strokeWeight": 1.0,
+     "strokes": [
+      {
+       "color": "#E1E9E7",
+       "type": "solid"
+      }
+     ],
+     "type": "FRAME",
+     "width": 390.0,
+     "x": 0.0,
+     "y": 64.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 593.0,
+      "width": 390.0,
+      "x": 2350.0,
+      "y": 5249.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 14.0,
+        "width": 48.0,
+        "x": 2366.0,
+        "y": 5265.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:13"
+       },
+       "characters": "Hari ini",
+       "fills": [
+        {
+         "color": "#5A6B68",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 11.0,
+       "fontStyle": "SemiBold",
+       "height": 14.0,
+       "id": 21851,
+       "letterSpacing": "8%",
+       "lineHeight": "130%",
+       "name": "Hari ini",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:15"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         8,
+         "S:15"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 48.0,
+       "x": 16.0,
+       "y": 16.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 116.0,
+        "width": 358.0,
+        "x": 2366.0,
+        "y": 5291.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:16",
+        "stroke": "VariableID:14"
+       },
+       "children": [
+        {
+         "absolute": true,
+         "absoluteBounds": {
+          "height": 400.0,
+          "width": 4.0,
+          "x": 2366.0,
+          "y": 5291.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:21"
+         },
+         "constraints": {
+          "horizontal": "left",
+          "vertical": "top"
+         },
+         "fills": [
+          {
+           "color": "#E04848",
+           "type": "solid"
+          }
+         ],
+         "height": 400.0,
+         "id": 21853,
+         "name": "Accent",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 4.0,
+         "x": 0.0,
+         "y": 0.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 36.0,
+          "width": 36.0,
+          "x": 2385.0,
+          "y": 5306.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:20"
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.0,
+            "width": 18.0,
+            "x": 2394.0,
+            "y": 5315.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 13.51,
+              "width": 15.01,
+              "x": 2395.49,
+              "y": 5317.24
+             },
+             "boundVariables": {
+              "stroke": "VariableID:19"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 13.51,
+             "id": 21856,
+             "name": "Vector",
+             "segments": 9,
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#C42B2B",
+               "type": "solid"
+              }
+             ],
+             "type": "VECTOR",
+             "vertices": 9,
+             "width": 15.01,
+             "x": 1.49,
+             "y": 2.24
+            },
+            {
+             "absoluteBounds": {
+              "height": 3.0,
+              "width": 0.0,
+              "x": 2403.0,
+              "y": 5321.75
+             },
+             "boundVariables": {
+              "stroke": "VariableID:19"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 0.0,
+             "id": 21857,
+             "name": "Line",
+             "rotation": -90.0,
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#C42B2B",
+               "type": "solid"
+              }
+             ],
+             "type": "LINE",
+             "width": 3.0,
+             "x": 9.0,
+             "y": 6.75
+            },
+            {
+             "absoluteBounds": {
+              "height": 0.0,
+              "width": 0.01,
+              "x": 2403.0,
+              "y": 5327.75
+             },
+             "boundVariables": {
+              "stroke": "VariableID:19"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 0.0,
+             "id": 21858,
+             "name": "Line",
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#C42B2B",
+               "type": "solid"
+              }
+             ],
+             "type": "LINE",
+             "width": 0.01,
+             "x": 9.0,
+             "y": 12.75
+            }
+           ],
+           "clip": false,
+           "height": 18.0,
+           "id": 21855,
+           "mainComponent": 361,
+           "mainComponentName": "Icon/alert-triangle",
+           "name": "Icon/alert-triangle",
+           "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+           },
+           "type": "INSTANCE",
+           "width": 18.0,
+           "x": 9.0,
+           "y": 9.0
+          }
+         ],
+         "clip": false,
+         "cornerRadius": 10.0,
+         "fills": [
+          {
+           "color": "#FDECEC",
+           "type": "solid"
+          }
+         ],
+         "height": 36.0,
+         "id": 21854,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "center",
+          "crossGap": 10.0,
+          "gap": 0.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "center",
+          "mode": "horizontal",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Ikon",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "FRAME",
+         "width": 36.0,
+         "x": 19.0,
+         "y": 15.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 86.0,
+          "width": 274.0,
+          "x": 2433.0,
+          "y": 5306.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5306.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 18.0,
+              "width": 227.0,
+              "x": 2433.0,
+              "y": 5306.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:11"
+             },
+             "characters": "Payload Garut turun 9,1%",
+             "fills": [
+              {
+               "color": "#0F1F1D",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 13.0,
+             "fontStyle": "SemiBold",
+             "height": 18.0,
+             "id": 21861,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Judul",
+             "sizing": {
+              "horizontal": "fill",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:11"
+             },
+             "textAlign": "left",
+             "textAutoResize": "height",
+             "textStyleRanges": [
+              [
+               0,
+               24,
+               "S:11"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 227.0,
+             "x": 0.0,
+             "y": 0.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 39.0,
+              "x": 2668.0,
+              "y": 5306.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "12 mnt",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21862,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Waktu",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               6,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 39.0,
+             "x": 235.0,
+             "y": 0.5
+            }
+           ],
+           "clip": false,
+           "height": 18.0,
+           "id": 21860,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             0.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Judul",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 0.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 34.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5328.0
+           },
+           "boundVariables": {
+            "fill": "VariableID:12"
+           },
+           "characters": "Di bawah ambang 5% selama 3 hari. 14 site terdampak.",
+           "fills": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "fontFamily": "Poppins",
+           "fontSize": 12.0,
+           "fontStyle": "Regular",
+           "height": 34.0,
+           "id": 21863,
+           "letterSpacing": "0%",
+           "lineHeight": "140%",
+           "name": "Deskripsi",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "styles": {
+            "effect": null,
+            "fill": null,
+            "grid": null,
+            "stroke": null,
+            "text": "S:12"
+           },
+           "textAlign": "left",
+           "textAutoResize": "height",
+           "textStyleRanges": [
+            [
+             0,
+             52,
+             "S:12"
+            ]
+           ],
+           "type": "TEXT",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 22.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 26.0,
+            "width": 181.0,
+            "x": 2433.0,
+            "y": 5366.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 22.0,
+              "width": 47.0,
+              "x": 2433.0,
+              "y": 5370.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:20"
+             },
+             "children": [
+              {
+               "absoluteBounds": {
+                "height": 17.0,
+                "width": 31.0,
+                "x": 2441.0,
+                "y": 5372.5
+               },
+               "boundVariables": {
+                "fill": "VariableID:19"
+               },
+               "characters": "Kritis",
+               "fills": [
+                {
+                 "color": "#C42B2B",
+                 "type": "solid"
+                }
+               ],
+               "fontFamily": "Poppins",
+               "fontSize": 12.0,
+               "fontStyle": "SemiBold",
+               "height": 17.0,
+               "id": 21866,
+               "letterSpacing": "0%",
+               "lineHeight": "140%",
+               "name": "Label",
+               "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+               },
+               "styles": {
+                "effect": null,
+                "fill": null,
+                "grid": null,
+                "stroke": null,
+                "text": "S:13"
+               },
+               "textAlign": "left",
+               "textAutoResize": "widthAndHeight",
+               "textStyleRanges": [
+                [
+                 0,
+                 6,
+                 "S:13"
+                ]
+               ],
+               "type": "TEXT",
+               "width": 31.0,
+               "x": 8.0,
+               "y": 2.5
+              }
+             ],
+             "clip": false,
+             "componentProperties": {
+              "Label": "Kritis"
+             },
+             "cornerRadius": 999.0,
+             "fills": [
+              {
+               "color": "#FDECEC",
+               "type": "solid"
+              }
+             ],
+             "height": 22.0,
+             "id": 21865,
+             "layout": {
+              "columnTracks": [],
+              "contentAlign": "auto",
+              "crossAlign": "center",
+              "crossGap": 10.0,
+              "gap": 0.0,
+              "gridColumns": 2,
+              "gridRows": 2,
+              "mainAlign": "center",
+              "mode": "horizontal",
+              "padding": [
+               0.0,
+               8.0,
+               0.0,
+               8.0
+              ],
+              "reverseZ": false,
+              "rowTracks": [],
+              "strokesIncluded": true,
+              "wrap": false
+             },
+             "mainComponent": 699,
+             "mainComponentName": "Tone=Danger soft",
+             "name": "Badge",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "fixed"
+             },
+             "type": "INSTANCE",
+             "width": 47.0,
+             "x": 0.0,
+             "y": 4.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 126.0,
+              "x": 2488.0,
+              "y": 5372.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "Jawa Barat · Payload",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21867,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Meta",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               20,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 126.0,
+             "x": 55.0,
+             "y": 6.5
+            }
+           ],
+           "clip": false,
+           "height": 26.0,
+           "id": 21864,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             4.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Meta",
+           "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 181.0,
+           "x": 0.0,
+           "y": 60.0
+          }
+         ],
+         "clip": false,
+         "height": 86.0,
+         "id": 21859,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "min",
+          "crossGap": 10.0,
+          "gap": 4.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "min",
+          "mode": "vertical",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Isi",
+         "sizing": {
+          "horizontal": "fill",
+          "vertical": "hug"
+         },
+         "type": "FRAME",
+         "width": 274.0,
+         "x": 67.0,
+         "y": 15.0
+        }
+       ],
+       "clip": true,
+       "componentProperties": {
+        "Deskripsi": "Di bawah ambang 5% selama 3 hari. 14 site terdampak.",
+        "Judul": "Payload Garut turun 9,1%",
+        "Meta": "Jawa Barat · Payload",
+        "Waktu": "12 mnt"
+       },
+       "cornerRadius": 16.0,
+       "fills": [
+        {
+         "color": "#FFFFFF",
+         "type": "solid"
+        }
+       ],
+       "height": 116.0,
+       "id": 21852,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "min",
+        "crossGap": 10.0,
+        "gap": 12.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "horizontal",
+        "padding": [
+         14.0,
+         16.0,
+         14.0,
+         18.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "mainComponent": 1132,
+       "mainComponentName": "Severity=Kritis",
+       "name": "Alert card",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "hug"
+       },
+       "strokeAlign": "inside",
+       "strokeWeight": 1.0,
+       "strokes": [
+        {
+         "color": "#E1E9E7",
+         "type": "solid"
+        }
+       ],
+       "type": "INSTANCE",
+       "width": 358.0,
+       "x": 16.0,
+       "y": 42.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 117.0,
+        "width": 358.0,
+        "x": 2366.0,
+        "y": 5419.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:16",
+        "stroke": "VariableID:14"
+       },
+       "children": [
+        {
+         "absolute": true,
+         "absoluteBounds": {
+          "height": 400.0,
+          "width": 4.0,
+          "x": 2366.0,
+          "y": 5419.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:22"
+         },
+         "constraints": {
+          "horizontal": "left",
+          "vertical": "top"
+         },
+         "fills": [
+          {
+           "color": "#F5A623",
+           "type": "solid"
+          }
+         ],
+         "height": 400.0,
+         "id": 21869,
+         "name": "Accent",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 4.0,
+         "x": 0.0,
+         "y": 0.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 36.0,
+          "width": 36.0,
+          "x": 2385.0,
+          "y": 5434.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:23"
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.0,
+            "width": 18.0,
+            "x": 2394.0,
+            "y": 5443.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 15.0,
+              "width": 15.0,
+              "x": 2395.5,
+              "y": 5444.5
+             },
+             "boundVariables": {
+              "stroke": "VariableID:24"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 15.0,
+             "id": 21885,
+             "name": "Ellipse",
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#B7791F",
+               "type": "solid"
+              }
+             ],
+             "type": "ELLIPSE",
+             "width": 15.0,
+             "x": 1.5,
+             "y": 1.5
+            },
+            {
+             "absoluteBounds": {
+              "height": 3.0,
+              "width": 0.0,
+              "x": 2403.0,
+              "y": 5449.0
+             },
+             "boundVariables": {
+              "stroke": "VariableID:24"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 0.0,
+             "id": 21886,
+             "name": "Line",
+             "rotation": -90.0,
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#B7791F",
+               "type": "solid"
+              }
+             ],
+             "type": "LINE",
+             "width": 3.0,
+             "x": 9.0,
+             "y": 6.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 0.0,
+              "width": 0.01,
+              "x": 2403.0,
+              "y": 5455.0
+             },
+             "boundVariables": {
+              "stroke": "VariableID:24"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 0.0,
+             "id": 21887,
+             "name": "Line",
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#B7791F",
+               "type": "solid"
+              }
+             ],
+             "type": "LINE",
+             "width": 0.01,
+             "x": 9.0,
+             "y": 12.0
+            }
+           ],
+           "clip": false,
+           "height": 18.0,
+           "id": 21884,
+           "mainComponent": 365,
+           "mainComponentName": "Icon/alert-circle",
+           "name": "Icon/alert-circle",
+           "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+           },
+           "type": "INSTANCE",
+           "width": 18.0,
+           "x": 9.0,
+           "y": 9.0
+          }
+         ],
+         "clip": false,
+         "cornerRadius": 10.0,
+         "fills": [
+          {
+           "color": "#FDF3E2",
+           "type": "solid"
+          }
+         ],
+         "height": 36.0,
+         "id": 21870,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "center",
+          "crossGap": 10.0,
+          "gap": 0.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "center",
+          "mode": "horizontal",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Ikon",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "FRAME",
+         "width": 36.0,
+         "x": 19.0,
+         "y": 15.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 87.0,
+          "width": 274.0,
+          "x": 2433.0,
+          "y": 5434.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 36.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5434.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 36.0,
+              "width": 235.0,
+              "x": 2433.0,
+              "y": 5434.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:11"
+             },
+             "characters": "Gross add FWA Semarang di bawah target",
+             "fills": [
+              {
+               "color": "#0F1F1D",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 13.0,
+             "fontStyle": "SemiBold",
+             "height": 36.0,
+             "id": 21877,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Judul",
+             "sizing": {
+              "horizontal": "fill",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:11"
+             },
+             "textAlign": "left",
+             "textAutoResize": "height",
+             "textStyleRanges": [
+              [
+               0,
+               38,
+               "S:11"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 235.0,
+             "x": 0.0,
+             "y": 0.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 31.0,
+              "x": 2676.0,
+              "y": 5443.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "1 jam",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21878,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Waktu",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               5,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 31.0,
+             "x": 243.0,
+             "y": 9.5
+            }
+           ],
+           "clip": false,
+           "height": 36.0,
+           "id": 21876,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             0.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Judul",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 0.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 17.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5474.0
+           },
+           "boundVariables": {
+            "fill": "VariableID:12"
+           },
+           "characters": "Realisasi 78% dari target harian.",
+           "fills": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "fontFamily": "Poppins",
+           "fontSize": 12.0,
+           "fontStyle": "Regular",
+           "height": 17.0,
+           "id": 21879,
+           "letterSpacing": "0%",
+           "lineHeight": "140%",
+           "name": "Deskripsi",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "styles": {
+            "effect": null,
+            "fill": null,
+            "grid": null,
+            "stroke": null,
+            "text": "S:12"
+           },
+           "textAlign": "left",
+           "textAutoResize": "height",
+           "textStyleRanges": [
+            [
+             0,
+             33,
+             "S:12"
+            ]
+           ],
+           "type": "TEXT",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 40.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 26.0,
+            "width": 174.0,
+            "x": 2433.0,
+            "y": 5495.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 22.0,
+              "width": 84.0,
+              "x": 2433.0,
+              "y": 5499.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:23"
+             },
+             "children": [
+              {
+               "absoluteBounds": {
+                "height": 17.0,
+                "width": 68.0,
+                "x": 2441.0,
+                "y": 5501.5
+               },
+               "boundVariables": {
+                "fill": "VariableID:24"
+               },
+               "characters": "Peringatan",
+               "fills": [
+                {
+                 "color": "#B7791F",
+                 "type": "solid"
+                }
+               ],
+               "fontFamily": "Poppins",
+               "fontSize": 12.0,
+               "fontStyle": "SemiBold",
+               "height": 17.0,
+               "id": 21882,
+               "letterSpacing": "0%",
+               "lineHeight": "140%",
+               "name": "Label",
+               "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+               },
+               "styles": {
+                "effect": null,
+                "fill": null,
+                "grid": null,
+                "stroke": null,
+                "text": "S:13"
+               },
+               "textAlign": "left",
+               "textAutoResize": "widthAndHeight",
+               "textStyleRanges": [
+                [
+                 0,
+                 10,
+                 "S:13"
+                ]
+               ],
+               "type": "TEXT",
+               "width": 68.0,
+               "x": 8.0,
+               "y": 2.5
+              }
+             ],
+             "clip": false,
+             "componentProperties": {
+              "Label": "Peringatan"
+             },
+             "cornerRadius": 999.0,
+             "fills": [
+              {
+               "color": "#FDF3E2",
+               "type": "solid"
+              }
+             ],
+             "height": 22.0,
+             "id": 21881,
+             "layout": {
+              "columnTracks": [],
+              "contentAlign": "auto",
+              "crossAlign": "center",
+              "crossGap": 10.0,
+              "gap": 0.0,
+              "gridColumns": 2,
+              "gridRows": 2,
+              "mainAlign": "center",
+              "mode": "horizontal",
+              "padding": [
+               0.0,
+               8.0,
+               0.0,
+               8.0
+              ],
+              "reverseZ": false,
+              "rowTracks": [],
+              "strokesIncluded": true,
+              "wrap": false
+             },
+             "mainComponent": 701,
+             "mainComponentName": "Tone=Warning",
+             "name": "Badge",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "fixed"
+             },
+             "type": "INSTANCE",
+             "width": 84.0,
+             "x": 0.0,
+             "y": 4.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 82.0,
+              "x": 2525.0,
+              "y": 5501.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "Jawa Tengah",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21883,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Meta",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               11,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 82.0,
+             "x": 92.0,
+             "y": 6.5
+            }
+           ],
+           "clip": false,
+           "height": 26.0,
+           "id": 21880,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             4.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Meta",
+           "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 174.0,
+           "x": 0.0,
+           "y": 61.0
+          }
+         ],
+         "clip": false,
+         "height": 87.0,
+         "id": 21875,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "min",
+          "crossGap": 10.0,
+          "gap": 4.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "min",
+          "mode": "vertical",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Isi",
+         "sizing": {
+          "horizontal": "fill",
+          "vertical": "hug"
+         },
+         "type": "FRAME",
+         "width": 274.0,
+         "x": 67.0,
+         "y": 15.0
+        }
+       ],
+       "clip": true,
+       "componentProperties": {
+        "Deskripsi": "Realisasi 78% dari target harian.",
+        "Judul": "Gross add FWA Semarang di bawah target",
+        "Meta": "Jawa Tengah",
+        "Waktu": "1 jam"
+       },
+       "cornerRadius": 16.0,
+       "fills": [
+        {
+         "color": "#FFFFFF",
+         "type": "solid"
+        }
+       ],
+       "height": 117.0,
+       "id": 21868,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "min",
+        "crossGap": 10.0,
+        "gap": 12.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "horizontal",
+        "padding": [
+         14.0,
+         16.0,
+         14.0,
+         18.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "mainComponent": 1148,
+       "mainComponentName": "Severity=Peringatan",
+       "name": "Alert card",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "hug"
+       },
+       "strokeAlign": "inside",
+       "strokeWeight": 1.0,
+       "strokes": [
+        {
+         "color": "#E1E9E7",
+         "type": "solid"
+        }
+       ],
+       "type": "INSTANCE",
+       "width": 358.0,
+       "x": 16.0,
+       "y": 170.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 14.0,
+        "width": 54.0,
+        "x": 2366.0,
+        "y": 5548.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:13"
+       },
+       "characters": "Kemarin",
+       "fills": [
+        {
+         "color": "#5A6B68",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 11.0,
+       "fontStyle": "SemiBold",
+       "height": 14.0,
+       "id": 21888,
+       "letterSpacing": "8%",
+       "lineHeight": "130%",
+       "name": "Kemarin",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:15"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         7,
+         "S:15"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 54.0,
+       "x": 16.0,
+       "y": 299.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 99.0,
+        "width": 358.0,
+        "x": 2366.0,
+        "y": 5574.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:16",
+        "stroke": "VariableID:14"
+       },
+       "children": [
+        {
+         "absolute": true,
+         "absoluteBounds": {
+          "height": 400.0,
+          "width": 4.0,
+          "x": 2366.0,
+          "y": 5574.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:22"
+         },
+         "constraints": {
+          "horizontal": "left",
+          "vertical": "top"
+         },
+         "fills": [
+          {
+           "color": "#F5A623",
+           "type": "solid"
+          }
+         ],
+         "height": 400.0,
+         "id": 21890,
+         "name": "Accent",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 4.0,
+         "x": 0.0,
+         "y": 0.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 36.0,
+          "width": 36.0,
+          "x": 2385.0,
+          "y": 5589.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:23"
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.0,
+            "width": 18.0,
+            "x": 2394.0,
+            "y": 5598.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 15.0,
+              "width": 15.0,
+              "x": 2395.5,
+              "y": 5599.5
+             },
+             "boundVariables": {
+              "stroke": "VariableID:24"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 15.0,
+             "id": 21906,
+             "name": "Ellipse",
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#B7791F",
+               "type": "solid"
+              }
+             ],
+             "type": "ELLIPSE",
+             "width": 15.0,
+             "x": 1.5,
+             "y": 1.5
+            },
+            {
+             "absoluteBounds": {
+              "height": 3.0,
+              "width": 0.0,
+              "x": 2403.0,
+              "y": 5604.0
+             },
+             "boundVariables": {
+              "stroke": "VariableID:24"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 0.0,
+             "id": 21907,
+             "name": "Line",
+             "rotation": -90.0,
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#B7791F",
+               "type": "solid"
+              }
+             ],
+             "type": "LINE",
+             "width": 3.0,
+             "x": 9.0,
+             "y": 6.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 0.0,
+              "width": 0.01,
+              "x": 2403.0,
+              "y": 5610.0
+             },
+             "boundVariables": {
+              "stroke": "VariableID:24"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 0.0,
+             "id": 21908,
+             "name": "Line",
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#B7791F",
+               "type": "solid"
+              }
+             ],
+             "type": "LINE",
+             "width": 0.01,
+             "x": 9.0,
+             "y": 12.0
+            }
+           ],
+           "clip": false,
+           "height": 18.0,
+           "id": 21905,
+           "mainComponent": 365,
+           "mainComponentName": "Icon/alert-circle",
+           "name": "Icon/alert-circle",
+           "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+           },
+           "type": "INSTANCE",
+           "width": 18.0,
+           "x": 9.0,
+           "y": 9.0
+          }
+         ],
+         "clip": false,
+         "cornerRadius": 10.0,
+         "fills": [
+          {
+           "color": "#FDF3E2",
+           "type": "solid"
+          }
+         ],
+         "height": 36.0,
+         "id": 21891,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "center",
+          "crossGap": 10.0,
+          "gap": 0.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "center",
+          "mode": "horizontal",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Ikon",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "FRAME",
+         "width": 36.0,
+         "x": 19.0,
+         "y": 15.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 69.0,
+          "width": 274.0,
+          "x": 2433.0,
+          "y": 5589.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5589.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 18.0,
+              "width": 241.0,
+              "x": 2433.0,
+              "y": 5589.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:11"
+             },
+             "characters": "Market share Cianjur −0,8 pp",
+             "fills": [
+              {
+               "color": "#0F1F1D",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 13.0,
+             "fontStyle": "SemiBold",
+             "height": 18.0,
+             "id": 21898,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Judul",
+             "sizing": {
+              "horizontal": "fill",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:11"
+             },
+             "textAlign": "left",
+             "textAutoResize": "height",
+             "textStyleRanges": [
+              [
+               0,
+               28,
+               "S:11"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 241.0,
+             "x": 0.0,
+             "y": 0.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 25.0,
+              "x": 2682.0,
+              "y": 5589.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "21.10",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21899,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Waktu",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               5,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 25.0,
+             "x": 249.0,
+             "y": 0.5
+            }
+           ],
+           "clip": false,
+           "height": 18.0,
+           "id": 21897,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             0.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Judul",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 0.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 17.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5611.0
+           },
+           "boundVariables": {
+            "fill": "VariableID:12"
+           },
+           "characters": "Kompetitor agresif di 6 kecamatan selatan.",
+           "fills": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "fontFamily": "Poppins",
+           "fontSize": 12.0,
+           "fontStyle": "Regular",
+           "height": 17.0,
+           "id": 21900,
+           "letterSpacing": "0%",
+           "lineHeight": "140%",
+           "name": "Deskripsi",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "styles": {
+            "effect": null,
+            "fill": null,
+            "grid": null,
+            "stroke": null,
+            "text": "S:12"
+           },
+           "textAlign": "left",
+           "textAutoResize": "height",
+           "textStyleRanges": [
+            [
+             0,
+             42,
+             "S:12"
+            ]
+           ],
+           "type": "TEXT",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 22.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 26.0,
+            "width": 161.0,
+            "x": 2433.0,
+            "y": 5632.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 22.0,
+              "width": 84.0,
+              "x": 2433.0,
+              "y": 5636.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:23"
+             },
+             "children": [
+              {
+               "absoluteBounds": {
+                "height": 17.0,
+                "width": 68.0,
+                "x": 2441.0,
+                "y": 5638.5
+               },
+               "boundVariables": {
+                "fill": "VariableID:24"
+               },
+               "characters": "Peringatan",
+               "fills": [
+                {
+                 "color": "#B7791F",
+                 "type": "solid"
+                }
+               ],
+               "fontFamily": "Poppins",
+               "fontSize": 12.0,
+               "fontStyle": "SemiBold",
+               "height": 17.0,
+               "id": 21903,
+               "letterSpacing": "0%",
+               "lineHeight": "140%",
+               "name": "Label",
+               "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+               },
+               "styles": {
+                "effect": null,
+                "fill": null,
+                "grid": null,
+                "stroke": null,
+                "text": "S:13"
+               },
+               "textAlign": "left",
+               "textAutoResize": "widthAndHeight",
+               "textStyleRanges": [
+                [
+                 0,
+                 10,
+                 "S:13"
+                ]
+               ],
+               "type": "TEXT",
+               "width": 68.0,
+               "x": 8.0,
+               "y": 2.5
+              }
+             ],
+             "clip": false,
+             "componentProperties": {
+              "Label": "Peringatan"
+             },
+             "cornerRadius": 999.0,
+             "fills": [
+              {
+               "color": "#FDF3E2",
+               "type": "solid"
+              }
+             ],
+             "height": 22.0,
+             "id": 21902,
+             "layout": {
+              "columnTracks": [],
+              "contentAlign": "auto",
+              "crossAlign": "center",
+              "crossGap": 10.0,
+              "gap": 0.0,
+              "gridColumns": 2,
+              "gridRows": 2,
+              "mainAlign": "center",
+              "mode": "horizontal",
+              "padding": [
+               0.0,
+               8.0,
+               0.0,
+               8.0
+              ],
+              "reverseZ": false,
+              "rowTracks": [],
+              "strokesIncluded": true,
+              "wrap": false
+             },
+             "mainComponent": 701,
+             "mainComponentName": "Tone=Warning",
+             "name": "Badge",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "fixed"
+             },
+             "type": "INSTANCE",
+             "width": 84.0,
+             "x": 0.0,
+             "y": 4.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 69.0,
+              "x": 2525.0,
+              "y": 5638.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "Jawa Barat",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21904,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Meta",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               10,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 69.0,
+             "x": 92.0,
+             "y": 6.5
+            }
+           ],
+           "clip": false,
+           "height": 26.0,
+           "id": 21901,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             4.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Meta",
+           "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 161.0,
+           "x": 0.0,
+           "y": 43.0
+          }
+         ],
+         "clip": false,
+         "height": 69.0,
+         "id": 21896,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "min",
+          "crossGap": 10.0,
+          "gap": 4.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "min",
+          "mode": "vertical",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Isi",
+         "sizing": {
+          "horizontal": "fill",
+          "vertical": "hug"
+         },
+         "type": "FRAME",
+         "width": 274.0,
+         "x": 67.0,
+         "y": 15.0
+        }
+       ],
+       "clip": true,
+       "componentProperties": {
+        "Deskripsi": "Kompetitor agresif di 6 kecamatan selatan.",
+        "Judul": "Market share Cianjur −0,8 pp",
+        "Meta": "Jawa Barat",
+        "Waktu": "21.10"
+       },
+       "cornerRadius": 16.0,
+       "fills": [
+        {
+         "color": "#FFFFFF",
+         "type": "solid"
+        }
+       ],
+       "height": 99.0,
+       "id": 21889,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "min",
+        "crossGap": 10.0,
+        "gap": 12.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "horizontal",
+        "padding": [
+         14.0,
+         16.0,
+         14.0,
+         18.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "mainComponent": 1148,
+       "mainComponentName": "Severity=Peringatan",
+       "name": "Alert card",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "hug"
+       },
+       "strokeAlign": "inside",
+       "strokeWeight": 1.0,
+       "strokes": [
+        {
+         "color": "#E1E9E7",
+         "type": "solid"
+        }
+       ],
+       "type": "INSTANCE",
+       "width": 358.0,
+       "x": 16.0,
+       "y": 325.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 99.0,
+        "width": 358.0,
+        "x": 2366.0,
+        "y": 5685.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:16",
+        "stroke": "VariableID:14"
+       },
+       "children": [
+        {
+         "absolute": true,
+         "absoluteBounds": {
+          "height": 400.0,
+          "width": 4.0,
+          "x": 2366.0,
+          "y": 5685.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:6"
+         },
+         "constraints": {
+          "horizontal": "left",
+          "vertical": "top"
+         },
+         "fills": [
+          {
+           "color": "#15A697",
+           "type": "solid"
+          }
+         ],
+         "height": 400.0,
+         "id": 21910,
+         "name": "Accent",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "RECTANGLE",
+         "width": 4.0,
+         "x": 0.0,
+         "y": 0.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 36.0,
+          "width": 36.0,
+          "x": 2385.0,
+          "y": 5700.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:1"
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.0,
+            "width": 18.0,
+            "x": 2394.0,
+            "y": 5709.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 15.0,
+              "width": 15.0,
+              "x": 2395.5,
+              "y": 5710.5
+             },
+             "boundVariables": {
+              "stroke": "VariableID:8"
+             },
+             "constraints": {
+              "horizontal": "scale",
+              "vertical": "scale"
+             },
+             "height": 15.0,
+             "id": 21926,
+             "name": "Vector",
+             "segments": 11,
+             "strokeAlign": "center",
+             "strokeJoin": "round",
+             "strokeWeight": 2.0,
+             "strokes": [
+              {
+               "color": "#0A6A5F",
+               "type": "solid"
+              }
+             ],
+             "type": "VECTOR",
+             "vertices": 12,
+             "width": 15.0,
+             "x": 1.5,
+             "y": 1.5
+            }
+           ],
+           "clip": false,
+           "height": 18.0,
+           "id": 21925,
+           "mainComponent": 497,
+           "mainComponentName": "Icon/activity",
+           "name": "Icon/activity",
+           "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+           },
+           "type": "INSTANCE",
+           "width": 18.0,
+           "x": 9.0,
+           "y": 9.0
+          }
+         ],
+         "clip": false,
+         "cornerRadius": 10.0,
+         "fills": [
+          {
+           "color": "#E6F7F5",
+           "type": "solid"
+          }
+         ],
+         "height": 36.0,
+         "id": 21911,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "center",
+          "crossGap": 10.0,
+          "gap": 0.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "center",
+          "mode": "horizontal",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Ikon",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "FRAME",
+         "width": 36.0,
+         "x": 19.0,
+         "y": 15.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 69.0,
+          "width": 274.0,
+          "x": 2433.0,
+          "y": 5700.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5700.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 18.0,
+              "width": 237.0,
+              "x": 2433.0,
+              "y": 5700.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:11"
+             },
+             "characters": "Availability Bekasi pulih",
+             "fills": [
+              {
+               "color": "#0F1F1D",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 13.0,
+             "fontStyle": "SemiBold",
+             "height": 18.0,
+             "id": 21918,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Judul",
+             "sizing": {
+              "horizontal": "fill",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:11"
+             },
+             "textAlign": "left",
+             "textAutoResize": "height",
+             "textStyleRanges": [
+              [
+               0,
+               25,
+               "S:11"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 237.0,
+             "x": 0.0,
+             "y": 0.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 29.0,
+              "x": 2678.0,
+              "y": 5700.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "16.02",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21919,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Waktu",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               5,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 29.0,
+             "x": 245.0,
+             "y": 0.5
+            }
+           ],
+           "clip": false,
+           "height": 18.0,
+           "id": 21917,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             0.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Judul",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 0.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 17.0,
+            "width": 274.0,
+            "x": 2433.0,
+            "y": 5722.0
+           },
+           "boundVariables": {
+            "fill": "VariableID:12"
+           },
+           "characters": "Kembali 99,7% setelah 6 jam.",
+           "fills": [
+            {
+             "color": "#3D4C49",
+             "type": "solid"
+            }
+           ],
+           "fontFamily": "Poppins",
+           "fontSize": 12.0,
+           "fontStyle": "Regular",
+           "height": 17.0,
+           "id": 21920,
+           "letterSpacing": "0%",
+           "lineHeight": "140%",
+           "name": "Deskripsi",
+           "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+           },
+           "styles": {
+            "effect": null,
+            "fill": null,
+            "grid": null,
+            "stroke": null,
+            "text": "S:12"
+           },
+           "textAlign": "left",
+           "textAutoResize": "height",
+           "textStyleRanges": [
+            [
+             0,
+             28,
+             "S:12"
+            ]
+           ],
+           "type": "TEXT",
+           "width": 274.0,
+           "x": 0.0,
+           "y": 22.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 26.0,
+            "width": 117.0,
+            "x": 2433.0,
+            "y": 5743.0
+           },
+           "children": [
+            {
+             "absoluteBounds": {
+              "height": 22.0,
+              "width": 40.0,
+              "x": 2433.0,
+              "y": 5747.0
+             },
+             "boundVariables": {
+              "fill": "VariableID:1"
+             },
+             "children": [
+              {
+               "absoluteBounds": {
+                "height": 17.0,
+                "width": 24.0,
+                "x": 2441.0,
+                "y": 5749.5
+               },
+               "boundVariables": {
+                "fill": "VariableID:8"
+               },
+               "characters": "Info",
+               "fills": [
+                {
+                 "color": "#0A6A5F",
+                 "type": "solid"
+                }
+               ],
+               "fontFamily": "Poppins",
+               "fontSize": 12.0,
+               "fontStyle": "SemiBold",
+               "height": 17.0,
+               "id": 21923,
+               "letterSpacing": "0%",
+               "lineHeight": "140%",
+               "name": "Label",
+               "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+               },
+               "styles": {
+                "effect": null,
+                "fill": null,
+                "grid": null,
+                "stroke": null,
+                "text": "S:13"
+               },
+               "textAlign": "left",
+               "textAutoResize": "widthAndHeight",
+               "textStyleRanges": [
+                [
+                 0,
+                 4,
+                 "S:13"
+                ]
+               ],
+               "type": "TEXT",
+               "width": 24.0,
+               "x": 8.0,
+               "y": 2.5
+              }
+             ],
+             "clip": false,
+             "componentProperties": {
+              "Label": "Info"
+             },
+             "cornerRadius": 999.0,
+             "fills": [
+              {
+               "color": "#E6F7F5",
+               "type": "solid"
+              }
+             ],
+             "height": 22.0,
+             "id": 21922,
+             "layout": {
+              "columnTracks": [],
+              "contentAlign": "auto",
+              "crossAlign": "center",
+              "crossGap": 10.0,
+              "gap": 0.0,
+              "gridColumns": 2,
+              "gridRows": 2,
+              "mainAlign": "center",
+              "mode": "horizontal",
+              "padding": [
+               0.0,
+               8.0,
+               0.0,
+               8.0
+              ],
+              "reverseZ": false,
+              "rowTracks": [],
+              "strokesIncluded": true,
+              "wrap": false
+             },
+             "mainComponent": 705,
+             "mainComponentName": "Tone=Teal",
+             "name": "Badge",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "fixed"
+             },
+             "type": "INSTANCE",
+             "width": 40.0,
+             "x": 0.0,
+             "y": 4.0
+            },
+            {
+             "absoluteBounds": {
+              "height": 17.0,
+              "width": 69.0,
+              "x": 2481.0,
+              "y": 5749.5
+             },
+             "boundVariables": {
+              "fill": "VariableID:13"
+             },
+             "characters": "Jawa Barat",
+             "fills": [
+              {
+               "color": "#5A6B68",
+               "type": "solid"
+              }
+             ],
+             "fontFamily": "Poppins",
+             "fontSize": 12.0,
+             "fontStyle": "Regular",
+             "height": 17.0,
+             "id": 21924,
+             "letterSpacing": "0%",
+             "lineHeight": "140%",
+             "name": "Meta",
+             "sizing": {
+              "horizontal": "hug",
+              "vertical": "hug"
+             },
+             "styles": {
+              "effect": null,
+              "fill": null,
+              "grid": null,
+              "stroke": null,
+              "text": "S:12"
+             },
+             "textAlign": "left",
+             "textAutoResize": "widthAndHeight",
+             "textStyleRanges": [
+              [
+               0,
+               10,
+               "S:12"
+              ]
+             ],
+             "type": "TEXT",
+             "width": 69.0,
+             "x": 48.0,
+             "y": 6.5
+            }
+           ],
+           "clip": false,
+           "height": 26.0,
+           "id": 21921,
+           "layout": {
+            "columnTracks": [],
+            "contentAlign": "auto",
+            "crossAlign": "center",
+            "crossGap": 10.0,
+            "gap": 8.0,
+            "gridColumns": 2,
+            "gridRows": 2,
+            "mainAlign": "min",
+            "mode": "horizontal",
+            "padding": [
+             4.0,
+             0.0,
+             0.0,
+             0.0
+            ],
+            "reverseZ": false,
+            "rowTracks": [],
+            "strokesIncluded": true,
+            "wrap": false
+           },
+           "name": "Meta",
+           "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+           },
+           "type": "FRAME",
+           "width": 117.0,
+           "x": 0.0,
+           "y": 43.0
+          }
+         ],
+         "clip": false,
+         "height": 69.0,
+         "id": 21916,
+         "layout": {
+          "columnTracks": [],
+          "contentAlign": "auto",
+          "crossAlign": "min",
+          "crossGap": 10.0,
+          "gap": 4.0,
+          "gridColumns": 2,
+          "gridRows": 2,
+          "mainAlign": "min",
+          "mode": "vertical",
+          "padding": [
+           0.0,
+           0.0,
+           0.0,
+           0.0
+          ],
+          "reverseZ": false,
+          "rowTracks": [],
+          "strokesIncluded": true,
+          "wrap": false
+         },
+         "name": "Isi",
+         "sizing": {
+          "horizontal": "fill",
+          "vertical": "hug"
+         },
+         "type": "FRAME",
+         "width": 274.0,
+         "x": 67.0,
+         "y": 15.0
+        }
+       ],
+       "clip": true,
+       "componentProperties": {
+        "Deskripsi": "Kembali 99,7% setelah 6 jam.",
+        "Judul": "Availability Bekasi pulih",
+        "Meta": "Jawa Barat",
+        "Waktu": "16.02"
+       },
+       "cornerRadius": 16.0,
+       "fills": [
+        {
+         "color": "#FFFFFF",
+         "type": "solid"
+        }
+       ],
+       "height": 99.0,
+       "id": 21909,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "min",
+        "crossGap": 10.0,
+        "gap": 12.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "horizontal",
+        "padding": [
+         14.0,
+         16.0,
+         14.0,
+         18.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "mainComponent": 1164,
+       "mainComponentName": "Severity=Info",
+       "name": "Alert card",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "hug"
+       },
+       "strokeAlign": "inside",
+       "strokeWeight": 1.0,
+       "strokes": [
+        {
+         "color": "#E1E9E7",
+         "type": "solid"
+        }
+       ],
+       "type": "INSTANCE",
+       "width": 358.0,
+       "x": 16.0,
+       "y": 436.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 158.0,
+        "width": 358.0,
+        "x": 2366.0,
+        "y": 5796.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 120.0,
+          "width": 168.0,
+          "x": 2461.0,
+          "y": 5808.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 103.2,
+            "width": 145.2,
+            "x": 2473.0,
+            "y": 5814.6
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "blend": "normal",
+             "from": [
+              0.5,
+              0.5
+             ],
+             "kind": "radial",
+             "opacity": 1.0,
+             "stops": [
+              {
+               "color": {
+                "a": 0.20999999344348907,
+                "b": 0.7647058963775635,
+                "g": 0.8078431487083435,
+                "r": 0.35686275362968445
+               },
+               "position": 0.0
+              },
+              {
+               "color": {
+                "a": 0.09030000120401382,
+                "b": 0.7647058963775635,
+                "g": 0.8078431487083435,
+                "r": 0.35686275362968445
+               },
+               "position": 0.550000011920929
+              },
+              {
+               "color": {
+                "a": 0.0,
+                "b": 0.7647058963775635,
+                "g": 0.8078431487083435,
+                "r": 0.35686275362968445
+               },
+               "position": 1.0
+              }
+             ],
+             "to": [
+              1.0,
+              0.5
+             ],
+             "type": "gradient",
+             "visible": true,
+             "width": [
+              0.5,
+              1.0
+             ]
+            }
+           ],
+           "height": 103.2,
+           "id": 21929,
+           "name": "Ellipse",
+           "type": "ELLIPSE",
+           "width": 145.2,
+           "x": 12.0,
+           "y": 6.6
+          },
+          {
+           "absoluteBounds": {
+            "height": 15.6,
+            "width": 116.4,
+            "x": 2487.4,
+            "y": 5901.6
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "blend": "normal",
+             "from": [
+              0.5,
+              0.5
+             ],
+             "kind": "radial",
+             "opacity": 1.0,
+             "stops": [
+              {
+               "color": {
+                "a": 0.17000000178813934,
+                "b": 0.2705882489681244,
+                "g": 0.3019607961177826,
+                "r": 0.027450980618596077
+               },
+               "position": 0.0
+              },
+              {
+               "color": {
+                "a": 0.0731000006198883,
+                "b": 0.2705882489681244,
+                "g": 0.3019607961177826,
+                "r": 0.027450980618596077
+               },
+               "position": 0.550000011920929
+              },
+              {
+               "color": {
+                "a": 0.0,
+                "b": 0.2705882489681244,
+                "g": 0.3019607961177826,
+                "r": 0.027450980618596077
+               },
+               "position": 1.0
+              }
+             ],
+             "to": [
+              1.0,
+              0.5
+             ],
+             "type": "gradient",
+             "visible": true,
+             "width": [
+              0.5,
+              1.0
+             ]
+            }
+           ],
+           "height": 15.6,
+           "id": 21930,
+           "name": "Ellipse",
+           "type": "ELLIPSE",
+           "width": 116.4,
+           "x": 26.4,
+           "y": 93.6
+          },
+          {
+           "absoluteBounds": {
+            "height": 45.63,
+            "width": 110.36,
+            "x": 2487.22,
+            "y": 5855.37
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#8FDFD7",
+             "type": "solid"
+            }
+           ],
+           "height": 45.63,
+           "id": 21932,
+           "name": "Vector",
+           "opacity": 0.5,
+           "segments": 6,
+           "type": "VECTOR",
+           "vertices": 6,
+           "width": 110.36,
+           "x": 26.22,
+           "y": 47.37
+          },
+          {
+           "absoluteBounds": {
+            "height": 45.63,
+            "width": 110.36,
+            "x": 2487.22,
+            "y": 5852.37
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "blend": "normal",
+             "from": [
+              5.5865692403310724e-09,
+              3.771684647117849e-08
+             ],
+             "kind": "linear",
+             "opacity": 1.0,
+             "stops": [
+              {
+               "color": {
+                "a": 1.0,
+                "b": 1.0,
+                "g": 1.0,
+                "r": 1.0
+               },
+               "position": 0.0
+              },
+              {
+               "color": {
+                "a": 1.0,
+                "b": 0.9098039269447327,
+                "g": 0.929411768913269,
+                "r": 0.7529411911964417
+               },
+               "position": 1.0
+              }
+             ],
+             "to": [
+              0.9999999773715985,
+              1.0
+             ],
+             "type": "gradient",
+             "visible": true,
+             "width": [
+              -0.9999999661984599,
+              1.0
+             ]
+            }
+           ],
+           "height": 45.63,
+           "id": 21933,
+           "name": "Vector",
+           "segments": 6,
+           "type": "VECTOR",
+           "vertices": 6,
+           "width": 110.36,
+           "x": 26.22,
+           "y": 44.37
+          },
+          {
+           "absoluteBounds": {
+            "height": 10.8,
+            "width": 49.2,
+            "x": 2512.6,
+            "y": 5886.0
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#0E8579",
+             "type": "solid"
+            }
+           ],
+           "height": 10.8,
+           "id": 21935,
+           "name": "Ellipse",
+           "opacity": 0.11999999731779099,
+           "type": "ELLIPSE",
+           "width": 49.2,
+           "x": 51.6,
+           "y": 78.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 12.0,
+            "width": 12.0,
+            "x": 2531.8,
+            "y": 5879.4
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#0A6A5F",
+             "type": "solid"
+            }
+           ],
+           "height": 12.0,
+           "id": 21936,
+           "name": "Ellipse",
+           "type": "ELLIPSE",
+           "width": 12.0,
+           "x": 70.8,
+           "y": 71.4
+          },
+          {
+           "absoluteBounds": {
+            "height": 45.6,
+            "width": 42.0,
+            "x": 2516.8,
+            "y": 5838.0
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "blend": "normal",
+             "from": [
+              0.0,
+              0.0
+             ],
+             "kind": "linear",
+             "opacity": 1.0,
+             "stops": [
+              {
+               "color": {
+                "a": 1.0,
+                "b": 0.843137264251709,
+                "g": 0.8745098114013672,
+                "r": 0.5607843399047852
+               },
+               "position": 0.0
+              },
+              {
+               "color": {
+                "a": 1.0,
+                "b": 0.4745098054409027,
+                "g": 0.5215686559677124,
+                "r": 0.054901961237192154
+               },
+               "position": 1.0
+              }
+             ],
+             "to": [
+              1.0,
+              1.0
+             ],
+             "type": "gradient",
+             "visible": true,
+             "width": [
+              -1.0,
+              1.0
+             ]
+            }
+           ],
+           "height": 45.6,
+           "id": 21937,
+           "name": "Vector",
+           "segments": 7,
+           "type": "VECTOR",
+           "vertices": 7,
+           "width": 42.0,
+           "x": 55.8,
+           "y": 30.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 45.67,
+            "width": 21.0,
+            "x": 2537.8,
+            "y": 5838.0
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#0E8579",
+             "type": "solid"
+            }
+           ],
+           "height": 45.67,
+           "id": 21938,
+           "name": "Vector",
+           "segments": 5,
+           "type": "VECTOR",
+           "vertices": 5,
+           "width": 21.0,
+           "x": 76.8,
+           "y": 30.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 10.2,
+            "width": 7.2,
+            "x": 2534.2,
+            "y": 5831.4
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "cornerRadius": 6.0,
+           "fills": [
+            {
+             "color": "#0E8579",
+             "type": "solid"
+            }
+           ],
+           "height": 10.2,
+           "id": 21939,
+           "name": "Rectangle",
+           "type": "RECTANGLE",
+           "width": 7.2,
+           "x": 73.2,
+           "y": 23.4
+          },
+          {
+           "absoluteBounds": {
+            "height": 10.8,
+            "width": 7.8,
+            "x": 2527.6,
+            "y": 5844.6
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 10.8,
+           "id": 21941,
+           "name": "Vector",
+           "opacity": 0.6499999761581421,
+           "segments": 1,
+           "strokeAlign": "center",
+           "strokeWeight": 4.0,
+           "strokes": [
+            {
+             "color": "#FFFFFF",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 2,
+           "width": 7.8,
+           "x": 66.6,
+           "y": 36.6
+          },
+          {
+           "absoluteBounds": {
+            "height": 3.9,
+            "width": 40.8,
+            "x": 2517.4,
+            "y": 5879.4
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 3.9,
+           "id": 21942,
+           "name": "Vector",
+           "segments": 1,
+           "strokeAlign": "center",
+           "strokeWeight": 4.0,
+           "strokes": [
+            {
+             "color": "#0A6A5F",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 2,
+           "width": 40.8,
+           "x": 56.4,
+           "y": 71.4
+          },
+          {
+           "absoluteBounds": {
+            "height": 31.2,
+            "width": 31.2,
+            "x": 2552.2,
+            "y": 5866.2
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#C0EDE8",
+             "type": "solid"
+            }
+           ],
+           "height": 31.2,
+           "id": 21943,
+           "name": "Ellipse",
+           "type": "ELLIPSE",
+           "width": 31.2,
+           "x": 91.2,
+           "y": 58.2
+          },
+          {
+           "absoluteBounds": {
+            "height": 26.4,
+            "width": 26.4,
+            "x": 2554.6,
+            "y": 5867.4
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#0E8579",
+             "type": "solid"
+            }
+           ],
+           "height": 26.4,
+           "id": 21944,
+           "name": "Ellipse",
+           "type": "ELLIPSE",
+           "width": 26.4,
+           "x": 93.6,
+           "y": 59.4
+          },
+          {
+           "absoluteBounds": {
+            "height": 9.6,
+            "width": 13.2,
+            "x": 2561.2,
+            "y": 5875.8
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 9.6,
+           "id": 21945,
+           "name": "Vector",
+           "segments": 2,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 4.0,
+           "strokes": [
+            {
+             "color": "#FFFFFF",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 3,
+           "width": 13.2,
+           "x": 100.2,
+           "y": 67.8
+          },
+          {
+           "absoluteBounds": {
+            "height": 9.6,
+            "width": 9.6,
+            "x": 2500.6,
+            "y": 5844.0
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#5BCEC3",
+             "type": "solid"
+            }
+           ],
+           "height": 9.6,
+           "id": 21946,
+           "name": "Vector",
+           "segments": 8,
+           "type": "VECTOR",
+           "vertices": 8,
+           "width": 9.6,
+           "x": 39.6,
+           "y": 36.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 7.2,
+            "width": 7.2,
+            "x": 2575.6,
+            "y": 5840.4
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#FFD27A",
+             "type": "solid"
+            }
+           ],
+           "height": 7.2,
+           "id": 21947,
+           "name": "Vector",
+           "segments": 8,
+           "type": "VECTOR",
+           "vertices": 8,
+           "width": 7.2,
+           "x": 114.6,
+           "y": 32.4
+          },
+          {
+           "absoluteBounds": {
+            "height": 3.6,
+            "width": 3.6,
+            "x": 2586.4,
+            "y": 5857.8
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "fills": [
+            {
+             "color": "#8FDFD7",
+             "type": "solid"
+            }
+           ],
+           "height": 3.6,
+           "id": 21948,
+           "name": "Ellipse",
+           "type": "ELLIPSE",
+           "width": 3.6,
+           "x": 125.4,
+           "y": 49.8
+          }
+         ],
+         "clip": true,
+         "height": 120.0,
+         "id": 21928,
+         "name": "Ilustrasi (Codex)",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "FRAME",
+         "width": 168.0,
+         "x": 95.0,
+         "y": 12.0
+        },
+        {
+         "absoluteBounds": {
+          "height": 18.0,
+          "width": 199.0,
+          "x": 2445.5,
+          "y": 5936.0
+         },
+         "boundVariables": {
+          "fill": "VariableID:12"
+         },
+         "characters": "Tidak ada alert lain minggu ini",
+         "fills": [
+          {
+           "color": "#3D4C49",
+           "type": "solid"
+          }
+         ],
+         "fontFamily": "Poppins",
+         "fontSize": 13.0,
+         "fontStyle": "SemiBold",
+         "height": 18.0,
+         "id": 21949,
+         "letterSpacing": "0%",
+         "lineHeight": "140%",
+         "name": "Tidak ada alert lain minggu ini",
+         "sizing": {
+          "horizontal": "hug",
+          "vertical": "hug"
+         },
+         "styles": {
+          "effect": null,
+          "fill": null,
+          "grid": null,
+          "stroke": null,
+          "text": "S:11"
+         },
+         "textAlign": "left",
+         "textAutoResize": "widthAndHeight",
+         "textStyleRanges": [
+          [
+           0,
+           31,
+           "S:11"
+          ]
+         ],
+         "type": "TEXT",
+         "width": 199.0,
+         "x": 79.5,
+         "y": 140.0
+        }
+       ],
+       "clip": false,
+       "height": 158.0,
+       "id": 21927,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 8.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "min",
+        "mode": "vertical",
+        "padding": [
+         12.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Kosong",
+       "sizing": {
+        "horizontal": "fill",
+        "vertical": "hug"
+       },
+       "type": "FRAME",
+       "width": 358.0,
+       "x": 16.0,
+       "y": 547.0
+      }
+     ],
+     "clip": true,
+     "height": 593.0,
+     "id": 21850,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "min",
+      "crossGap": 10.0,
+      "gap": 12.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "vertical",
+      "padding": [
+       16.0,
+       16.0,
+       16.0,
+       16.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "Isi",
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "fill"
+     },
+     "type": "FRAME",
+     "width": 390.0,
+     "x": 0.0,
+     "y": 113.0
+    }
+   ],
+   "clip": true,
+   "height": 706.0,
+   "id": 21786,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "min",
+    "crossGap": 10.0,
+    "gap": 0.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "min",
+    "mode": "vertical",
+    "padding": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "Konten",
+   "sizing": {
+    "horizontal": "fill",
+    "vertical": "fill"
+   },
+   "type": "FRAME",
+   "width": 390.0,
+   "x": 0.0,
+   "y": 36.0
+  },
+  {
+   "absoluteBounds": {
+    "height": 82.0,
+    "width": 390.0,
+    "x": 2350.0,
+    "y": 5842.0
+   },
+   "boundVariables": {
+    "fill": "VariableID:16",
+    "stroke": "VariableID:14"
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 81.0,
+      "width": 76.4,
+      "x": 2354.0,
+      "y": 5843.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 32.0,
+        "width": 64.0,
+        "x": 2360.2,
+        "y": 5855.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 22.0,
+          "width": 22.0,
+          "x": 2381.2,
+          "y": 5860.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 18.33,
+            "width": 18.33,
+            "x": 2383.03,
+            "y": 5861.83
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 18.33,
+           "id": 21791,
+           "name": "Vector",
+           "segments": 20,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 20,
+           "width": 18.33,
+           "x": 1.83,
+           "y": 1.83
+          },
+          {
+           "absoluteBounds": {
+            "height": 3.67,
+            "width": 0.0,
+            "x": 2399.53,
+            "y": 5862.75
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21792,
+           "name": "Line",
+           "rotation": -90.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 3.67,
+           "x": 18.33,
+           "y": 2.75
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 3.67,
+            "x": 2397.7,
+            "y": 5864.58
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21793,
+           "name": "Line",
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 3.67,
+           "x": 20.17,
+           "y": 4.58
+          },
+          {
+           "absoluteBounds": {
+            "height": 1.83,
+            "width": 0.0,
+            "x": 2384.87,
+            "y": 5875.58
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21794,
+           "name": "Line",
+           "rotation": -90.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 1.83,
+           "x": 3.67,
+           "y": 15.58
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 1.83,
+            "x": 2383.95,
+            "y": 5876.5
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21795,
+           "name": "Line",
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 1.83,
+           "x": 4.58,
+           "y": 16.5
+          }
+         ],
+         "clip": false,
+         "height": 22.0,
+         "id": 21790,
+         "mainComponent": 278,
+         "mainComponentName": "Icon/sparkles",
+         "name": "Icon/sparkles",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "INSTANCE",
+         "width": 22.0,
+         "x": 21.0,
+         "y": 5.0
+        }
+       ],
+       "clip": false,
+       "cornerRadius": 999.0,
+       "height": 32.0,
+       "id": 21789,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Indicator",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 64.0,
+       "x": 6.2,
+       "y": 12.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 17.0,
+        "width": 36.0,
+        "x": 2374.2,
+        "y": 5891.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:12"
+       },
+       "characters": "Agent",
+       "fills": [
+        {
+         "color": "#3D4C49",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 12.0,
+       "fontStyle": "Regular",
+       "height": 17.0,
+       "id": 21796,
+       "letterSpacing": "0%",
+       "lineHeight": "140%",
+       "name": "Label",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:12"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         5,
+         "S:12"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 36.0,
+       "x": 20.2,
+       "y": 48.0
+      }
+     ],
+     "clip": false,
+     "componentProperties": {
+      "Icon": 278,
+      "Label": "Agent"
+     },
+     "height": 81.0,
+     "id": 21788,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "dest": 17287,
+         "type": "navigate"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "smartAnimate"
+       },
+       "trigger": {
+        "type": "onClick"
+       }
+      }
+     ],
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 4.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "vertical",
+      "padding": [
+       12.0,
+       0.0,
+       16.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "mainComponent": 772,
+     "mainComponentName": "State=Default",
+     "name": "Agent",
+     "overrides": [
+      "interactions"
+     ],
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "hug"
+     },
+     "type": "INSTANCE",
+     "width": 76.4,
+     "x": 4.0,
+     "y": 1.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 81.0,
+      "width": 76.4,
+      "x": 2430.4,
+      "y": 5843.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 32.0,
+        "width": 64.0,
+        "x": 2436.6,
+        "y": 5855.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 24.0,
+          "width": 24.0,
+          "x": 2456.6,
+          "y": 5859.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 9.0,
+            "width": 7.0,
+            "x": 2459.6,
+            "y": 5862.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "cornerRadius": 1.0,
+           "height": 9.0,
+           "id": 21800,
+           "name": "Rectangle",
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "RECTANGLE",
+           "width": 7.0,
+           "x": 3.0,
+           "y": 3.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 5.0,
+            "width": 7.0,
+            "x": 2470.6,
+            "y": 5862.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "cornerRadius": 1.0,
+           "height": 5.0,
+           "id": 21801,
+           "name": "Rectangle",
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "RECTANGLE",
+           "width": 7.0,
+           "x": 14.0,
+           "y": 3.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 9.0,
+            "width": 7.0,
+            "x": 2470.6,
+            "y": 5871.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "cornerRadius": 1.0,
+           "height": 9.0,
+           "id": 21802,
+           "name": "Rectangle",
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "RECTANGLE",
+           "width": 7.0,
+           "x": 14.0,
+           "y": 12.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 5.0,
+            "width": 7.0,
+            "x": 2459.6,
+            "y": 5875.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "cornerRadius": 1.0,
+           "height": 5.0,
+           "id": 21803,
+           "name": "Rectangle",
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "RECTANGLE",
+           "width": 7.0,
+           "x": 3.0,
+           "y": 16.0
+          }
+         ],
+         "clip": false,
+         "height": 24.0,
+         "id": 21799,
+         "mainComponent": 286,
+         "mainComponentName": "Icon/dashboard",
+         "name": "Icon/dashboard",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "INSTANCE",
+         "width": 24.0,
+         "x": 20.0,
+         "y": 4.0
+        }
+       ],
+       "clip": false,
+       "cornerRadius": 999.0,
+       "height": 32.0,
+       "id": 21798,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Indicator",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 64.0,
+       "x": 6.2,
+       "y": 12.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 17.0,
+        "width": 68.0,
+        "x": 2434.6,
+        "y": 5891.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:12"
+       },
+       "characters": "Dashboard",
+       "fills": [
+        {
+         "color": "#3D4C49",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 12.0,
+       "fontStyle": "Regular",
+       "height": 17.0,
+       "id": 21804,
+       "letterSpacing": "0%",
+       "lineHeight": "140%",
+       "name": "Label",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:12"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         9,
+         "S:12"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 68.0,
+       "x": 4.2,
+       "y": 48.0
+      }
+     ],
+     "clip": false,
+     "componentProperties": {
+      "Icon": 286,
+      "Label": "Dashboard"
+     },
+     "height": 81.0,
+     "id": 21797,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "dest": 17507,
+         "type": "navigate"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "smartAnimate"
+       },
+       "trigger": {
+        "type": "onClick"
+       }
+      }
+     ],
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 4.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "vertical",
+      "padding": [
+       12.0,
+       0.0,
+       16.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "mainComponent": 772,
+     "mainComponentName": "State=Default",
+     "name": "Dashboard",
+     "overrides": [
+      "interactions"
+     ],
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "hug"
+     },
+     "type": "INSTANCE",
+     "width": 76.4,
+     "x": 80.4,
+     "y": 1.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 81.0,
+      "width": 76.4,
+      "x": 2506.8,
+      "y": 5843.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 32.0,
+        "width": 64.0,
+        "x": 2513.0,
+        "y": 5855.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:2"
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 24.0,
+          "width": 24.0,
+          "x": 2533.0,
+          "y": 5859.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 15.0,
+            "width": 18.0,
+            "x": 2536.0,
+            "y": 5861.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:9"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 15.0,
+           "id": 21808,
+           "name": "Vector",
+           "segments": 5,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#074D45",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 5,
+           "width": 18.0,
+           "x": 3.0,
+           "y": 2.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 1.01,
+            "width": 3.4,
+            "x": 2543.3,
+            "y": 5880.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:9"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 1.01,
+           "id": 21809,
+           "name": "Vector",
+           "segments": 2,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#074D45",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 3,
+           "width": 3.4,
+           "x": 10.3,
+           "y": 21.0
+          }
+         ],
+         "clip": false,
+         "height": 24.0,
+         "id": 21807,
+         "mainComponent": 291,
+         "mainComponentName": "Icon/bell",
+         "name": "Icon/bell",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "INSTANCE",
+         "width": 24.0,
+         "x": 20.0,
+         "y": 4.0
+        }
+       ],
+       "clip": false,
+       "cornerRadius": 999.0,
+       "fills": [
+        {
+         "color": "#C0EDE8",
+         "type": "solid"
+        }
+       ],
+       "height": 32.0,
+       "id": 21806,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Indicator",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 64.0,
+       "x": 6.2,
+       "y": 12.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 17.0,
+        "width": 29.0,
+        "x": 2530.5,
+        "y": 5891.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:9"
+       },
+       "characters": "Alert",
+       "fills": [
+        {
+         "color": "#074D45",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 12.0,
+       "fontStyle": "SemiBold",
+       "height": 17.0,
+       "id": 21810,
+       "letterSpacing": "0%",
+       "lineHeight": "140%",
+       "name": "Label",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:13"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         5,
+         "S:13"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 29.0,
+       "x": 23.7,
+       "y": 48.0
+      }
+     ],
+     "clip": false,
+     "componentProperties": {
+      "Icon": 291,
+      "Label": "Alert"
+     },
+     "height": 81.0,
+     "id": 21805,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 4.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "vertical",
+      "padding": [
+       12.0,
+       0.0,
+       16.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "mainComponent": 781,
+     "mainComponentName": "State=Active",
+     "name": "Alert",
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "hug"
+     },
+     "type": "INSTANCE",
+     "width": 76.4,
+     "x": 156.8,
+     "y": 1.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 81.0,
+      "width": 76.4,
+      "x": 2583.2,
+      "y": 5843.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 32.0,
+        "width": 64.0,
+        "x": 2589.4,
+        "y": 5855.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 24.0,
+          "width": 24.0,
+          "x": 2609.4,
+          "y": 5859.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 20.0,
+            "width": 16.0,
+            "x": 2613.4,
+            "y": 5861.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 20.0,
+           "id": 21814,
+           "name": "Vector",
+           "segments": 8,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 8,
+           "width": 16.0,
+           "x": 4.0,
+           "y": 2.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 6.0,
+            "width": 6.0,
+            "x": 2623.4,
+            "y": 5861.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 6.0,
+           "id": 21815,
+           "name": "Vector",
+           "segments": 3,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 4,
+           "width": 6.0,
+           "x": 14.0,
+           "y": 2.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 2.0,
+            "x": 2617.4,
+            "y": 5868.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21816,
+           "name": "Line",
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 2.0,
+           "x": 10.0,
+           "y": 9.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 8.0,
+            "x": 2617.4,
+            "y": 5872.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21817,
+           "name": "Line",
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 8.0,
+           "x": 16.0,
+           "y": 13.0
+          },
+          {
+           "absoluteBounds": {
+            "height": 0.0,
+            "width": 8.0,
+            "x": 2617.4,
+            "y": 5876.0
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21818,
+           "name": "Line",
+           "rotation": 180.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 8.0,
+           "x": 16.0,
+           "y": 17.0
+          }
+         ],
+         "clip": false,
+         "height": 24.0,
+         "id": 21813,
+         "mainComponent": 299,
+         "mainComponentName": "Icon/file-text",
+         "name": "Icon/file-text",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "INSTANCE",
+         "width": 24.0,
+         "x": 20.0,
+         "y": 4.0
+        }
+       ],
+       "clip": false,
+       "cornerRadius": 999.0,
+       "height": 32.0,
+       "id": 21812,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Indicator",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 64.0,
+       "x": 6.2,
+       "y": 12.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 17.0,
+        "width": 50.0,
+        "x": 2596.4,
+        "y": 5891.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:12"
+       },
+       "characters": "Laporan",
+       "fills": [
+        {
+         "color": "#3D4C49",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 12.0,
+       "fontStyle": "Regular",
+       "height": 17.0,
+       "id": 21819,
+       "letterSpacing": "0%",
+       "lineHeight": "140%",
+       "name": "Label",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:12"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         7,
+         "S:12"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 50.0,
+       "x": 13.2,
+       "y": 48.0
+      }
+     ],
+     "clip": false,
+     "componentProperties": {
+      "Icon": 299,
+      "Label": "Laporan"
+     },
+     "height": 81.0,
+     "id": 21811,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "dest": 21525,
+         "type": "navigate"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "smartAnimate"
+       },
+       "trigger": {
+        "type": "onClick"
+       }
+      }
+     ],
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 4.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "vertical",
+      "padding": [
+       12.0,
+       0.0,
+       16.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "mainComponent": 772,
+     "mainComponentName": "State=Default",
+     "name": "Laporan",
+     "overrides": [
+      "interactions"
+     ],
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "hug"
+     },
+     "type": "INSTANCE",
+     "width": 76.4,
+     "x": 233.2,
+     "y": 1.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 81.0,
+      "width": 76.4,
+      "x": 2659.6,
+      "y": 5843.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 32.0,
+        "width": 64.0,
+        "x": 2665.8,
+        "y": 5855.0
+       },
+       "children": [
+        {
+         "absoluteBounds": {
+          "height": 24.0,
+          "width": 24.0,
+          "x": 2685.8,
+          "y": 5859.0
+         },
+         "children": [
+          {
+           "absoluteBounds": {
+            "height": 17.53,
+            "width": 18.0,
+            "x": 2688.8,
+            "y": 5862.24
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 17.53,
+           "id": 21823,
+           "name": "Vector",
+           "segments": 18,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "VECTOR",
+           "vertices": 18,
+           "width": 18.0,
+           "x": 3.0,
+           "y": 3.24
+          },
+          {
+           "absoluteBounds": {
+            "height": 15.0,
+            "width": 0.0,
+            "x": 2700.8,
+            "y": 5864.76
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21824,
+           "name": "Line",
+           "rotation": -90.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 15.0,
+           "x": 15.0,
+           "y": 5.76
+          },
+          {
+           "absoluteBounds": {
+            "height": 15.0,
+            "width": 0.0,
+            "x": 2694.8,
+            "y": 5862.24
+           },
+           "boundVariables": {
+            "stroke": "VariableID:13"
+           },
+           "constraints": {
+            "horizontal": "scale",
+            "vertical": "scale"
+           },
+           "height": 0.0,
+           "id": 21825,
+           "name": "Line",
+           "rotation": -90.0,
+           "strokeAlign": "center",
+           "strokeJoin": "round",
+           "strokeWeight": 2.0,
+           "strokes": [
+            {
+             "color": "#5A6B68",
+             "type": "solid"
+            }
+           ],
+           "type": "LINE",
+           "width": 15.0,
+           "x": 9.0,
+           "y": 3.24
+          }
+         ],
+         "clip": false,
+         "height": 24.0,
+         "id": 21822,
+         "mainComponent": 305,
+         "mainComponentName": "Icon/map",
+         "name": "Icon/map",
+         "sizing": {
+          "horizontal": "fixed",
+          "vertical": "fixed"
+         },
+         "type": "INSTANCE",
+         "width": 24.0,
+         "x": 20.0,
+         "y": 4.0
+        }
+       ],
+       "clip": false,
+       "cornerRadius": 999.0,
+       "height": 32.0,
+       "id": 21821,
+       "layout": {
+        "columnTracks": [],
+        "contentAlign": "auto",
+        "crossAlign": "center",
+        "crossGap": 10.0,
+        "gap": 0.0,
+        "gridColumns": 2,
+        "gridRows": 2,
+        "mainAlign": "center",
+        "mode": "horizontal",
+        "padding": [
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "reverseZ": false,
+        "rowTracks": [],
+        "strokesIncluded": true,
+        "wrap": false
+       },
+       "name": "Indicator",
+       "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+       },
+       "type": "FRAME",
+       "width": 64.0,
+       "x": 6.2,
+       "y": 12.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 17.0,
+        "width": 27.0,
+        "x": 2684.3,
+        "y": 5891.0
+       },
+       "boundVariables": {
+        "fill": "VariableID:12"
+       },
+       "characters": "Peta",
+       "fills": [
+        {
+         "color": "#3D4C49",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 12.0,
+       "fontStyle": "Regular",
+       "height": 17.0,
+       "id": 21826,
+       "letterSpacing": "0%",
+       "lineHeight": "140%",
+       "name": "Label",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:12"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         4,
+         "S:12"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 27.0,
+       "x": 24.7,
+       "y": 48.0
+      }
+     ],
+     "clip": false,
+     "componentProperties": {
+      "Icon": 305,
+      "Label": "Peta"
+     },
+     "height": 81.0,
+     "id": 21820,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "dest": 21955,
+         "type": "navigate"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "smartAnimate"
+       },
+       "trigger": {
+        "type": "onClick"
+       }
+      }
+     ],
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 4.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "vertical",
+      "padding": [
+       12.0,
+       0.0,
+       16.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "mainComponent": 772,
+     "mainComponentName": "State=Default",
+     "name": "Peta",
+     "overrides": [
+      "interactions"
+     ],
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "hug"
+     },
+     "type": "INSTANCE",
+     "width": 76.4,
+     "x": 309.6,
+     "y": 1.0
+    },
+    {
+     "absolute": true,
+     "absoluteBounds": {
+      "height": 18.0,
+      "width": 20.0,
+      "x": 2555.0,
+      "y": 5849.0
+     },
+     "boundVariables": {
+      "fill": "VariableID:21",
+      "stroke": "VariableID:16"
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 13.0,
+        "width": 6.0,
+        "x": 2562.0,
+        "y": 5851.5
+       },
+       "boundVariables": {
+        "fill": "VariableID:18"
+       },
+       "characters": "3",
+       "fills": [
+        {
+         "color": "#FFFFFF",
+         "type": "solid"
+        }
+       ],
+       "fontFamily": "Poppins",
+       "fontSize": 10.0,
+       "fontStyle": "Medium",
+       "height": 13.0,
+       "id": 21828,
+       "letterSpacing": "0%",
+       "lineHeight": "130%",
+       "name": "3",
+       "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+       },
+       "styles": {
+        "effect": null,
+        "fill": null,
+        "grid": null,
+        "stroke": null,
+        "text": "S:14"
+       },
+       "textAlign": "left",
+       "textAutoResize": "widthAndHeight",
+       "textStyleRanges": [
+        [
+         0,
+         1,
+         "S:14"
+        ]
+       ],
+       "type": "TEXT",
+       "width": 6.0,
+       "x": 7.0,
+       "y": 2.5
+      }
+     ],
+     "clip": false,
+     "constraints": {
+      "horizontal": "left",
+      "vertical": "top"
+     },
+     "cornerRadius": 999.0,
+     "fills": [
+      {
+       "color": "#E04848",
+       "type": "solid"
+      }
+     ],
+     "height": 18.0,
+     "id": 21827,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 0.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "center",
+      "mode": "horizontal",
+      "padding": [
+       0.0,
+       5.0,
+       0.0,
+       5.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "Badge alert",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "fixed"
+     },
+     "strokeAlign": "inside",
+     "strokeWeight": 2.0,
+     "strokes": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "type": "FRAME",
+     "width": 20.0,
+     "x": 205.0,
+     "y": 7.0
+    }
+   ],
+   "clip": false,
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "height": 82.0,
+   "id": 21787,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "min",
+    "crossGap": 10.0,
+    "gap": 0.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "min",
+    "mode": "horizontal",
+    "padding": [
+     0.0,
+     4.0,
+     0.0,
+     4.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "mainComponent": 900,
+   "mainComponentName": "Aktif=Alert",
+   "name": "Bottom nav",
+   "overrides": [
+    "name"
+   ],
+   "sizing": {
+    "horizontal": "fill",
+    "vertical": "hug"
+   },
+   "strokeAlign": "inside",
+   "strokeSides": [
+    1.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "strokeWeight": 1.0,
+   "strokes": [
+    {
+     "color": "#E1E9E7",
+     "type": "solid"
+    }
+   ],
+   "type": "INSTANCE",
+   "width": 390.0,
+   "x": 0.0,
+   "y": 742.0
+  },
+  {
+   "absoluteBounds": {
+    "height": 20.0,
+    "width": 390.0,
+    "x": 2350.0,
+    "y": 5924.0
+   },
+   "boundVariables": {
+    "fill": "VariableID:16"
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 4.0,
+      "width": 108.0,
+      "x": 2491.0,
+      "y": 5932.0
+     },
+     "cornerRadius": 2.0,
+     "fills": [
+      {
+       "color": "#0F1F1D",
+       "opacity": 0.30000001192092896,
+       "type": "solid"
+      }
+     ],
+     "height": 4.0,
+     "id": 21830,
+     "name": "Rect",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "RECTANGLE",
+     "width": 108.0,
+     "x": 141.0,
+     "y": 8.0
+    }
+   ],
+   "clip": false,
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "height": 20.0,
+   "id": 21829,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "center",
+    "crossGap": 10.0,
+    "gap": 0.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "center",
+    "mode": "horizontal",
+    "padding": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "Gesture bar",
+   "sizing": {
+    "horizontal": "fill",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 390.0,
+   "x": 0.0,
+   "y": 824.0
+  },
+  {
+   "absolute": true,
+   "absoluteBounds": {
+    "height": 56.0,
+    "width": 138.0,
+    "x": 2564.0,
+    "y": 5768.0
+   },
+   "boundVariables": {
+    "fill": "VariableID:7"
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 22.0,
+      "width": 22.0,
+      "x": 2580.0,
+      "y": 5785.0
+     },
+     "children": [
+      {
+       "absoluteBounds": {
+        "height": 0.0,
+        "width": 12.83,
+        "x": 2584.58,
+        "y": 5796.0
+       },
+       "boundVariables": {
+        "stroke": "VariableID:18"
+       },
+       "constraints": {
+        "horizontal": "scale",
+        "vertical": "scale"
+       },
+       "height": 0.0,
+       "id": 21952,
+       "name": "Line",
+       "overrides": [
+        "strokes"
+       ],
+       "strokeAlign": "center",
+       "strokeJoin": "round",
+       "strokeWeight": 2.0,
+       "strokes": [
+        {
+         "color": "#FFFFFF",
+         "type": "solid"
+        }
+       ],
+       "type": "LINE",
+       "width": 12.83,
+       "x": 4.58,
+       "y": 11.0
+      },
+      {
+       "absoluteBounds": {
+        "height": 12.83,
+        "width": 0.0,
+        "x": 2591.0,
+        "y": 5789.58
+       },
+       "boundVariables": {
+        "stroke": "VariableID:18"
+       },
+       "constraints": {
+        "horizontal": "scale",
+        "vertical": "scale"
+       },
+       "height": 0.0,
+       "id": 21953,
+       "name": "Line",
+       "overrides": [
+        "strokes"
+       ],
+       "rotation": -90.0,
+       "strokeAlign": "center",
+       "strokeJoin": "round",
+       "strokeWeight": 2.0,
+       "strokes": [
+        {
+         "color": "#FFFFFF",
+         "type": "solid"
+        }
+       ],
+       "type": "LINE",
+       "width": 12.83,
+       "x": 11.0,
+       "y": 4.58
+      }
+     ],
+     "clip": false,
+     "height": 22.0,
+     "id": 21951,
+     "mainComponent": 309,
+     "mainComponentName": "Icon/plus",
+     "name": "Icon/plus",
+     "overrides": [
+      "size"
+     ],
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "INSTANCE",
+     "width": 22.0,
+     "x": 16.0,
+     "y": 17.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 20.0,
+      "width": 70.0,
+      "x": 2612.0,
+      "y": 5786.0
+     },
+     "boundVariables": {
+      "fill": "VariableID:18"
+     },
+     "characters": "Buat alert",
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Poppins",
+     "fontSize": 14.0,
+     "fontStyle": "SemiBold",
+     "height": 20.0,
+     "id": 21954,
+     "letterSpacing": "0%",
+     "lineHeight": "140%",
+     "name": "Buat alert",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "styles": {
+      "effect": null,
+      "fill": null,
+      "grid": null,
+      "stroke": null,
+      "text": "S:9"
+     },
+     "textAlign": "left",
+     "textAutoResize": "widthAndHeight",
+     "textStyleRanges": [
+      [
+       0,
+       10,
+       "S:9"
+      ]
+     ],
+     "type": "TEXT",
+     "width": 70.0,
+     "x": 48.0,
+     "y": 18.0
+    }
+   ],
+   "clip": false,
+   "constraints": {
+    "horizontal": "left",
+    "vertical": "top"
+   },
+   "cornerRadius": 18.0,
+   "effects": [
+    {
+     "blend": "normal",
+     "color": {
+      "a": 0.3490196168422699,
+      "b": 0.4745098054409027,
+      "g": 0.5215686559677124,
+      "r": 0.054901961237192154
+     },
+     "offset": [
+      0.0,
+      8.0
+     ],
+     "radius": 20.0,
+     "showBehind": false,
+     "spread": 0.0,
+     "type": "dropShadow",
+     "visible": true
+    },
+    {
+     "blend": "normal",
+     "color": {
+      "a": 0.10196078568696976,
+      "b": 0.11372549086809158,
+      "g": 0.12156862765550613,
+      "r": 0.05882352963089943
+     },
+     "offset": [
+      0.0,
+      2.0
+     ],
+     "radius": 4.0,
+     "showBehind": false,
+     "spread": 0.0,
+     "type": "dropShadow",
+     "visible": true
+    }
+   ],
+   "fills": [
+    {
+     "color": "#0E8579",
+     "type": "solid"
+    }
+   ],
+   "height": 56.0,
+   "id": 21950,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "center",
+    "crossGap": 10.0,
+    "gap": 10.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "min",
+    "mode": "horizontal",
+    "padding": [
+     0.0,
+     20.0,
+     0.0,
+     16.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "FAB Buat alert",
+   "sizing": {
+    "horizontal": "hug",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 138.0,
+   "x": 214.0,
+   "y": 668.0
+  }
+ ],
+ "clip": true,
+ "fills": [
+  {
+   "color": "#F5F9F8",
+   "type": "solid"
+  }
+ ],
+ "height": 844.0,
+ "id": 21770,
+ "layout": {
+  "columnTracks": [],
+  "contentAlign": "auto",
+  "crossAlign": "min",
+  "crossGap": 10.0,
+  "gap": 0.0,
+  "gridColumns": 2,
+  "gridRows": 2,
+  "mainAlign": "min",
+  "mode": "vertical",
+  "padding": [
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "reverseZ": false,
+  "rowTracks": [],
+  "strokesIncluded": true,
+  "wrap": false
+ },
+ "name": "Android · Watchlist & Alert",
+ "sizing": {
+  "horizontal": "fixed",
+  "vertical": "fixed"
+ },
+ "type": "FRAME",
+ "width": 390.0,
+ "x": 2350.0,
+ "y": 5100.0
+}

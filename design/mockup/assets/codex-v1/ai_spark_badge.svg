@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="badgeFill" x1="8" y1="4" x2="56" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#15A697"/>
+      <stop offset="100%" stop-color="#0A6A5F"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="18" fill="url(#badgeFill)"/>
+  <path d="M28 18 C30.3 30 33 32.7 45 35 C33 37.3 30.3 40 28 52 C25.7 40 23 37.3 11 35 C23 32.7 25.7 30 28 18 Z" fill="#FFFFFF"/>
+  <path d="M46 10.5 C46.9 15.1 47.9 16.1 52.5 17 C47.9 17.9 46.9 18.9 46 23.5 C45.1 18.9 44.1 17.9 39.5 17 C44.1 16.1 45.1 15.1 46 10.5 Z" fill="#FFFFFF" opacity="0.92"/>
+</svg>

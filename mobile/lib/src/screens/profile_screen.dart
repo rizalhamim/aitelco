@@ -169,6 +169,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 16),
                 _aboutCard(),
                 const SizedBox(height: 16),
+                _shortcutsCard(),
+                const SizedBox(height: 16),
                 _preferencesCard(),
                 const SizedBox(height: 16),
                 _card(
@@ -251,6 +253,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
+  }
+
+  Widget _shortcutsCard() {
+    Widget item(IconData icon, String label, VoidCallback onTap, {Color? color}) => InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(children: [
+              Icon(icon, size: 20, color: color ?? context.vInk),
+              const SizedBox(width: 12),
+              Expanded(child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color ?? context.vInk))),
+              if (color == null) Icon(Icons.chevron_right, size: 20, color: context.vMute),
+            ]),
+          ),
+        );
+    return _card(
+      title: _id ? 'Aplikasi & Akun' : 'App & Account',
+      icon: Icons.apps_outlined,
+      children: [
+        item(Icons.download_outlined, _id ? 'Unduh APK' : 'Download APK', () => Navigator.of(context).pushNamed('/download')),
+        if (AuthState.isAdmin)
+          item(Icons.insights_outlined, _id ? 'Statistik aplikasi' : 'App statistics', () => Navigator.of(context).pushNamed('/stats')),
+        item(Icons.logout, _id ? 'Keluar' : 'Log out', _logout, color: IOH.red),
+      ],
+    );
+  }
+
+  Future<void> _logout() async {
+    await AuthState.clear();
+    if (mounted) Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
   }
 
   Widget _preferencesCard() {

@@ -6,14 +6,19 @@ import 'src/app_state.dart';
 import 'src/services/keep_alive_service.dart';
 import 'src/screens/login_screen.dart';
 import 'src/screens/chat_screen.dart';
+import 'src/screens/download_screen.dart';
+import 'src/screens/home_shell.dart';
 import 'src/screens/profile_screen.dart';
 import 'src/screens/map_query_screen.dart';
 import 'src/screens/reports_screen.dart';
 import 'src/screens/site_performance_screen.dart';
+import 'src/screens/splash_screen.dart';
+import 'src/screens/stats_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   KeepAliveService.init();
+  await ClientInfo.init();
   await AuthState.load();
   await AppState.I.load();
   runApp(const BizplanApp());
@@ -41,18 +46,22 @@ class _BizplanAppState extends State<BizplanApp> {
       themeMode: AppState.I.themeMode,
       // WithForegroundTask lets the keep-alive foreground service coordinate
       // with the app lifecycle so in-flight requests survive backgrounding.
-      // Slightly shrink all text (~ -1px on ~13px base) for a denser UI, while
-      // still respecting (and capping) the user's OS font-scale setting.
+      // Text sizes follow the mockups 1:1; the OS font scale is respected but
+      // capped so cards keep their layout.
       builder: (context, child) {
         final mq = MediaQuery.of(context);
         final base = mq.textScaler.scale(1.0).clamp(1.0, 1.3);
         return MediaQuery(
-          data: mq.copyWith(textScaler: TextScaler.linear(base * 0.92)),
+          data: mq.copyWith(textScaler: TextScaler.linear(base)),
           child: WithForegroundTask(child: child ?? const SizedBox.shrink()),
         );
       },
-      initialRoute: AuthState.isLoggedIn ? '/chat' : '/login',
+      initialRoute: '/splash',
       routes: {
+        '/splash': (_) => const SplashScreen(),
+        '/home': (_) => const HomeShell(),
+        '/stats': (_) => const StatsScreen(),
+        '/download': (_) => const DownloadScreen(),
         '/login': (_) => const LoginScreen(),
         '/chat': (_) => const ChatScreen(),
         '/profile': (_) => const ProfileScreen(),

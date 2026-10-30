@@ -3,13 +3,13 @@ import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from .database import (
-    get_db, User, ChatSession, ChatMessage, UsageLog,
+    get_db, User, ChatSession, ChatMessage, UsageLog, LoginAudit,
     PasswordReset, Notification, utcnow,
 )
 from .auth import (
@@ -47,19 +47,35 @@ class TokenResp(BaseModel):
     user: dict
 
 
+def _audit(db: Session, user: User, action: str, request: Request | None) -> None:
+    """Login audit row for the admin Statistik page. Failure actions name the reason:
+    failed_login (wrong password), failed_inactive, failed_token."""
+    ip = ua = None
+    if request is not None:
+        fwd = request.headers.get("x-forwarded-for", "")
+        ip = (fwd.split(",")[0].strip() or (request.client.host if request.client else None))
+        ip = ip[:45] if ip else None
+        ua = (request.headers.get("user-agent") or "")[:500] or None
+    db.add(LoginAudit(user_id=user.id, action=action, ip_address=ip, user_agent=ua))
+    db.commit()
+
+
 @router.post("/login", response_model=TokenResp)
-def login(req: LoginReq, db: Session = Depends(get_db)):
+def login(req: LoginReq, request: Request, db: Session = Depends(get_db)):
     """Direct username+password login. Returns access+refresh tokens immediately."""
     user = db.query(User).filter(User.username == req.username).first()
     if not user or not verify_password(req.password, user.hashed_password):
+        if user:
+            _audit(db, user, "failed_login", request)
         raise HTTPException(401, "Invalid username or password")
     if not user.is_active:
+        _audit(db, user, "failed_inactive", request)
         raise HTTPException(403, "Account is deactivated")
 
     user.last_login = utcnow()
     user.login_count = (user.login_count or 0) + 1
     db.add(UsageLog(user_id=user.id, action="login"))
-    db.commit()
+    _audit(db, user, "login", request)
 
     access = create_access_token({"sub": user.username, "role": user.role})
     refresh = create_refresh_token({"sub": user.username})
@@ -118,7 +134,7 @@ def request_login_token(req: LoginReq, bg: BackgroundTasks, db: Session = Depend
     return {"ok": True, "message": f"Token sent to {masked_email}"}
 
 @router.post("/login/verify", response_model=TokenResp)
-def verify_login_token(req: VerifyTokenReq, db: Session = Depends(get_db)):
+def verify_login_token(req: VerifyTokenReq, request: Request, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == req.username).first()
     if not user:
         raise HTTPException(401, "Invalid username")
@@ -133,9 +149,11 @@ def verify_login_token(req: VerifyTokenReq, db: Session = Depends(get_db)):
     ).order_by(LoginToken.created_at.desc()).first()
     
     if not token_entry:
+        _audit(db, user, "failed_token", request)
         raise HTTPException(401, "Invalid token")
         
     if token_entry.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
+        _audit(db, user, "failed_token", request)
         raise HTTPException(401, "Token expired")
 
     token_entry.used = True
@@ -144,7 +162,7 @@ def verify_login_token(req: VerifyTokenReq, db: Session = Depends(get_db)):
     db.commit()
 
     db.add(UsageLog(user_id=user.id, action="login"))
-    db.commit()
+    _audit(db, user, "login", request)
 
     access = create_access_token({"sub": user.username, "role": user.role})
     refresh = create_refresh_token({"sub": user.username})
@@ -628,6 +646,8 @@ def get_user_detail(
 class UpdateUserReq(BaseModel):
     is_active: bool | None = None
     role: str | None = None
+    full_name: str | None = None
+    email: str | None = None
 
 @admin_router.put("/users/{user_id}")
 def update_user(

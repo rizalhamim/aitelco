@@ -19,11 +19,19 @@ from . import geo_locate
 from . import site_perf
 from . import map_synth_agent
 from . import correlate_agent
+from . import chart_spec
+from . import telemetry
+from starlette.concurrency import run_in_threadpool
 from .database import init_db, get_db, ChatSession, ChatMessage, UsageLog, utcnow
 from .auth import get_current_user_optional
 from .routes_auth import router as auth_router, admin_router, history_router
 from .app_update import router as app_update_router
 from .routes_reports import router as reports_router
+from .routes_stats import router as stats_router, usage_router
+from .dashboard import router as dashboard_router
+from .watchlist import router as watchlist_router, evaluate_all as evaluate_watchlist
+from .report_schedule import links_router as report_links_router, router as report_schedule_router, run_due as run_due_reports
+from .map_overview import router as map_router
 from sqlalchemy.orm import Session
 
 app = FastAPI(title="Telco AI Orchestrator", version="1.0")
@@ -40,17 +48,56 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+@app.middleware("http")
+async def _client_telemetry(request: Request, call_next):
+    # Records app version / device for clients that send X-Client-Platform.
+    response = await call_next(request)
+    if request.headers.get("x-client-platform"):
+        await run_in_threadpool(telemetry.record_client, request.headers)
+    return response
+
+
 # Register auth/admin/history routes
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(history_router)
 app.include_router(app_update_router)
 app.include_router(reports_router)
+app.include_router(stats_router)
+app.include_router(usage_router)
+app.include_router(dashboard_router)
+app.include_router(watchlist_router)
+app.include_router(report_schedule_router)
+app.include_router(report_links_router)
+app.include_router(map_router)
 
 # Init database on startup
 @app.on_event("startup")
 def startup():
     init_db()
+
+
+@app.on_event("startup")
+async def start_watchlist_loop():
+    """Hourly: check watchlist rules (each at most once per day) and send due scheduled reports."""
+    import asyncio
+    import logging
+
+    async def loop():
+        await asyncio.sleep(60)
+        while True:
+            try:
+                await run_in_threadpool(evaluate_watchlist)
+            except Exception as e:  # keep the loop alive
+                logging.getLogger("watchlist").warning(f"watchlist loop: {e}")
+            try:
+                await run_in_threadpool(run_due_reports)
+            except Exception as e:
+                logging.getLogger("report_schedule").warning(f"report loop: {e}")
+            await asyncio.sleep(3600)
+
+    if _os.environ.get("WATCHLIST_LOOP", "1") != "0":
+        app.state.watchlist_task = asyncio.create_task(loop())
 
 
 def _backfill_coords(result: dict) -> dict:
@@ -277,8 +324,29 @@ import os as _os
 _GEO_DIR = _os.path.join(_os.path.dirname(_os.path.dirname(__file__)), "data", "geo")
 
 
+_JAVA_PROV = ("JAWA", "BANTEN", "JAKARTA", "YOGYA")
+_scoped_geo: dict[str, bytes] = {}
+
+
+def _java_shapes(level: str, gz: str, plain: str) -> bytes:
+    """Kabupaten/kecamatan polygons for the provinces on Java only (cached)."""
+    import gzip as _gzip
+    import json as _json
+    if level not in _scoped_geo:
+        if _os.path.exists(plain):
+            with open(plain, "rb") as f:
+                fc = _json.loads(f.read())
+        else:
+            with open(gz, "rb") as f:
+                fc = _json.loads(_gzip.decompress(f.read()))
+        fc["features"] = [ft for ft in fc.get("features", [])
+                          if any(p in str((ft.get("properties") or {}).get("provinsi", "")).upper() for p in _JAVA_PROV)]
+        _scoped_geo[level] = _json.dumps(fc, separators=(",", ":")).encode("utf-8")
+    return _scoped_geo[level]
+
+
 @app.get("/api/geo/shapes/{level}")
-def geo_shapes(level: str, request: Request):
+def geo_shapes(level: str, request: Request, scope: str = ""):
     """Serve the pre-built simplified GeoJSON polygons for choropleth.
     level = 'kecamatan' (key: kec_id) or 'kabupaten' (key: kabkot_id).
 
@@ -297,6 +365,13 @@ def geo_shapes(level: str, request: Request):
 
     accepts_gzip = "gzip" in (request.headers.get("accept-encoding") or "").lower()
     base_headers = {"Cache-Control": "public, max-age=604800", "X-Geo-Level": level}
+
+    if scope == "java":
+        data = _java_shapes(level, gz, plain)
+        if accepts_gzip:
+            return Response(content=_gzip.compress(data, 6), media_type="application/json",
+                            headers={**base_headers, "Content-Encoding": "gzip"})
+        return Response(content=data, media_type="application/json", headers=base_headers)
 
     if accepts_gzip and _os.path.exists(gz):
         with open(gz, "rb") as f:
@@ -654,6 +729,7 @@ def chat_stream(req: ChatReq, request: Request):
             yield sse("result", {
                 "columns": merged["columns"], "rows": merged["rows"],
                 "row_count": merged["row_count"], "sql": None, "bytes_processed": 0,
+                "chart": chart_spec.suggest(merged["columns"], merged["rows"], "korelasi " + req.message),
             })
 
             yield sse("step_start", {"step": "synth", "label": "Correlation Analyst", "desc": "Menganalisis hubungan 2 metrik"})
@@ -750,6 +826,8 @@ def chat_stream(req: ChatReq, request: Request):
                     "rows": dr.get("rows", []),
                     "sql": dr.get("sql"),
                     "explanation": dr.get("explanation", ""),
+                    "chart": chart_spec.suggest(dr.get("columns", []), dr.get("rows", []),
+                                                dr.get("section_title", "")),
                 })
 
             # re-order results to the planned section order for a coherent deck
@@ -969,6 +1047,7 @@ def chat_stream(req: ChatReq, request: Request):
                         "row_count": result["row_count"], "sql": result["sql"],
                         "bytes_processed": result["bytes_processed"],
                         "refine_round": refine_round,
+                        "chart": chart_spec.suggest(result["columns"], result["rows"], req.message),
                     })
                     break
                 except Exception as e:

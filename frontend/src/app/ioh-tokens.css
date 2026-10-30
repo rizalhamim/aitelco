@@ -45,7 +45,7 @@
   --tint-danger:  #FDECEC;
 
   /* Typography */
-  --font-sans:    var(--font-prompt),  "Prompt",  system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans:    var(--font-poppins), "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-poppins), "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* Spacing */

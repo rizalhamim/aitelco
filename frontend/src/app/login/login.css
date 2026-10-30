@@ -1,0 +1,281 @@
+/* Login — matches design/mockup/spec/Web - Login.json (1440×1080 frame). */
+.lg-root {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #04332e;
+  font-family: var(--font-poppins), "Poppins", system-ui, sans-serif;
+  color: #fff;
+}
+.lg-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lg-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 51, 46, 0) 35%, rgba(4, 51, 46, 0.85) 100%),
+    linear-gradient(90deg, rgba(4, 51, 46, 0.94) 0%, rgba(4, 51, 46, 0.6) 50%, rgba(4, 51, 46, 0.25) 100%);
+}
+.lg-glow {
+  position: absolute;
+  left: -200px;
+  top: calc(50% + 60px);
+  width: 900px;
+  height: 700px;
+  background: radial-gradient(closest-side, rgba(51, 188, 173, 0.2), rgba(51, 188, 173, 0));
+  pointer-events: none;
+}
+.lg-layout {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 1440px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 760px) 440px;
+  justify-content: space-between;
+  align-items: start;
+  padding: 0 100px 0 112px;
+}
+.lg-brand {
+  margin-top: max(48px, calc(50vh - 180px));
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.lg-product {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.lg-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 20.16px;
+  background: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  object-fit: cover;
+}
+.lg-product-name {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.003em;
+}
+.lg-headline {
+  margin: 0;
+  font-size: 92px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.lg-accent {
+  width: 96px;
+  height: 4px;
+  border-radius: 2px;
+  background: #f5a623;
+}
+
+.lg-card {
+  margin-top: max(24px, calc(50vh - 310px));
+  margin-bottom: 24px;
+  width: 440px;
+  padding: 40px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
+  box-shadow: 0 30px 80px -10px rgba(0, 0, 0, 0.35);
+  color: #0f1f1d;
+}
+.lg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.lg-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #0f1f1d;
+}
+.lg-sub {
+  margin: -6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5a6b68;
+}
+.lg-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lg-label {
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #3d4c49;
+}
+.lg-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e1e9e7;
+  color: #5a6b68;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.lg-field:focus-within {
+  border-color: #0e8579;
+  box-shadow: 0 0 0 3px rgba(14, 133, 121, 0.15);
+}
+.lg-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: #0f1f1d;
+}
+.lg-field input::placeholder {
+  color: #5a6b68;
+}
+.lg-eye {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-right: -6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #3d4c49;
+  cursor: pointer;
+}
+.lg-eye:hover {
+  background: #f1f5f4;
+}
+.lg-options {
+  display: flex;
+  justify-content: flex-end;
+}
+.lg-link {
+  line-height: 1.3;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0a6a5f;
+  cursor: pointer;
+}
+.lg-link:hover {
+  text-decoration: underline;
+}
+.lg-submit {
+  display: grid;
+  place-items: center;
+  height: 52px;
+  border: 0;
+  border-radius: 12px;
+  background: #0e8579;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(15, 31, 29, 0.05);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.lg-submit:hover:not(:disabled) {
+  background: #0a6a5f;
+}
+.lg-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.lg-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3d4c49;
+  cursor: pointer;
+}
+.lg-msg {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.lg-msg.err {
+  background: #fdecec;
+  color: #b42318;
+}
+.lg-msg.ok {
+  background: #e6f7f3;
+  color: #0a6a5f;
+}
+.lg-spin {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: lg-spin 0.8s linear infinite;
+}
+@keyframes lg-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1180px) {
+  .lg-layout {
+    grid-template-columns: 1fr 420px;
+    padding: 0 48px;
+    gap: 40px;
+  }
+  .lg-headline { font-size: 72px; }
+  .lg-card { width: 420px; }
+}
+@media (max-width: 860px) {
+  .lg-layout {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 32px;
+    padding: max(32px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  }
+  .lg-brand { margin-top: 0; gap: 18px; }
+  .lg-logo { width: 56px; height: 56px; border-radius: 16px; }
+  .lg-product-name { font-size: 20px; }
+  .lg-headline { font-size: clamp(44px, 12vw, 64px); }
+  .lg-card { margin: 0; width: 100%; max-width: 440px; padding: 28px 24px; border-radius: 24px; }
+  .lg-shade {
+    background:
+      linear-gradient(180deg, rgba(4, 51, 46, 0.55) 0%, rgba(4, 51, 46, 0.35) 40%, rgba(4, 51, 46, 0.92) 100%);
+  }
+}

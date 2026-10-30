@@ -1,8 +1,35 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config.dart';
+
+/// Identifies this install to the backend (X-Client-Platform, X-App-Version,
+/// X-App-Build, X-Device-Model, X-OS-Version) so admin Statistik can show
+/// versions and devices. Filled once at startup; every request sends it.
+class ClientInfo {
+  static final Map<String, String> headers = {'X-Client-Platform': 'android'};
+
+  static Future<void> init() async {
+    try {
+      final pkg = await PackageInfo.fromPlatform();
+      headers['X-App-Version'] = pkg.version;
+      headers['X-App-Build'] = pkg.buildNumber;
+    } catch (_) {}
+    try {
+      if (Platform.isAndroid) {
+        final a = await DeviceInfoPlugin().androidInfo;
+        final maker = a.manufacturer.isEmpty ? '' : '${a.manufacturer[0].toUpperCase()}${a.manufacturer.substring(1)} ';
+        headers['X-Device-Model'] = '$maker${a.model}'.trim();
+        headers['X-OS-Version'] = 'Android ${a.version.release} (SDK ${a.version.sdkInt})';
+      }
+    } catch (_) {}
+  }
+}
 
 class AuthState {
   static String? accessToken;
@@ -70,7 +97,7 @@ class ApiClient {
   static String get base => AppConfig.apiBase;
 
   static Map<String, String> _headers({bool json = true}) {
-    final h = <String, String>{};
+    final h = <String, String>{...ClientInfo.headers};
     if (json) h['Content-Type'] = 'application/json';
     if (AuthState.accessToken != null) {
       h['Authorization'] = 'Bearer ${AuthState.accessToken}';
@@ -87,7 +114,7 @@ class ApiClient {
     if (rt == null || rt.isEmpty) return false;
     try {
       final res = await http.post(Uri.parse('$base/api/auth/refresh'),
-          headers: {'Content-Type': 'application/json'},
+          headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
           body: jsonEncode({'refresh_token': rt}));
       if (res.statusCode != 200) return false;
       final data = jsonDecode(res.body) as Map<String, dynamic>;
@@ -115,7 +142,7 @@ class ApiClient {
 
   static Future<Map<String, dynamic>> requestLoginToken(String username, String password) async {
     final res = await http.post(Uri.parse('$base/api/auth/login/request-token'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'password': password}));
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200) {
@@ -126,7 +153,7 @@ class ApiClient {
 
   static Future<Map<String, dynamic>> verifyLoginToken(String username, String code, {bool rememberMe = false}) async {
     final res = await http.post(Uri.parse('$base/api/auth/login/verify'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'code': code}));
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200) {
@@ -138,7 +165,7 @@ class ApiClient {
 
   static Future<String> forgotPassword(String email) async {
     final res = await http.post(Uri.parse('$base/api/auth/forgot-password'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
         body: jsonEncode({'email': email}));
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200) throw Exception(data['detail'] ?? 'Gagal');
@@ -182,7 +209,7 @@ class ApiClient {
   }
 
   static Future<Map<String, dynamic>> appVersion() async {
-    final res = await http.get(Uri.parse('$base/api/app/version')).timeout(const Duration(seconds: 10));
+    final res = await http.get(Uri.parse('$base/api/app/version'), headers: ClientInfo.headers).timeout(const Duration(seconds: 10));
     if (res.statusCode != 200) return {};
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
@@ -320,6 +347,122 @@ class ApiClient {
   }
 
   // ── Chat history ──
+  // ── Redesign v1 screens ──
+
+  static Future<Map<String, dynamic>> _getJson(String path, [Map<String, String>? q]) async {
+    final res = await _authGet(Uri.parse('$base$path').replace(queryParameters: q));
+    final body = jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode != 200) {
+      throw Exception(body is Map && body['detail'] != null ? body['detail'].toString() : 'HTTP ${res.statusCode}');
+    }
+    if (body is Map<String, dynamic> && body['error'] != null) throw Exception(body['error'].toString());
+    return body as Map<String, dynamic>;
+  }
+
+  static Future<Map<String, dynamic>> _sendJson(String method, String path, [Object? body]) async {
+    Future<http.Response> go() {
+      final uri = Uri.parse('$base$path');
+      final b = body == null ? null : jsonEncode(body);
+      return switch (method) {
+        'POST' => http.post(uri, headers: _headers(), body: b),
+        'PATCH' => http.patch(uri, headers: _headers(), body: b),
+        'PUT' => http.put(uri, headers: _headers(), body: b),
+        _ => http.delete(uri, headers: _headers()),
+      };
+    }
+
+    var res = await go();
+    if (res.statusCode == 401 && await refreshAccessToken()) res = await go();
+    final data = res.body.isEmpty ? <String, dynamic>{} : jsonDecode(utf8.decode(res.bodyBytes));
+    if (res.statusCode >= 300) {
+      throw Exception(data is Map && data['detail'] != null ? data['detail'].toString() : 'HTTP ${res.statusCode}');
+    }
+    return data is Map<String, dynamic> ? data : {'data': data};
+  }
+
+  /// Dashboard Monitoring numbers (KPIs, sparklines, revenue per region, agent summary).
+  static Future<Map<String, dynamic>> dashboardOverview({String region = ''}) =>
+      _getJson('/api/dashboard/overview', {if (region.isNotEmpty) 'region': region});
+
+  static Future<List<dynamic>> watchAlerts({String status = 'all'}) async =>
+      (await _getJson('/api/watchlist/alerts', {'status': status}))['alerts'] as List? ?? [];
+
+  static Future<List<dynamic>> watchRules() async =>
+      (await _getJson('/api/watchlist/rules'))['rules'] as List? ?? [];
+
+  static Future<Map<String, dynamic>> watchMeta() => _getJson('/api/watchlist/meta');
+
+  static Future<int> alertCount() async {
+    try {
+      return ((await _getJson('/api/watchlist/alerts/count'))['active'] as num?)?.toInt() ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  static Future<void> ackAlert(int id) => _sendJson('POST', '/api/watchlist/alerts/$id/ack');
+
+  static Future<Map<String, dynamic>> createWatchRule(Map<String, dynamic> body) => _sendJson('POST', '/api/watchlist/rules', body);
+
+  static Future<Map<String, dynamic>> updateWatchRule(int id, Map<String, dynamic> patch) =>
+      _sendJson('PATCH', '/api/watchlist/rules/$id', patch);
+
+  static Future<void> deleteWatchRule(int id) => _sendJson('DELETE', '/api/watchlist/rules/$id');
+
+  static Future<Map<String, dynamic>> mapKabupaten({String metric = 'revenue', String region = ''}) =>
+      _getJson('/api/map/kabupaten', {'metric': metric, if (region.isNotEmpty) 'region': region});
+
+  static Future<Map<String, dynamic>> mapKabupatenDetail(String kabupaten, String provinsi) =>
+      _getJson('/api/map/kabupaten/detail', {'kabupaten': kabupaten, 'provinsi': provinsi});
+
+  static Future<List<dynamic>> reportSchedules() async {
+    final res = await _authGet(Uri.parse('$base/api/report-schedules'));
+    if (res.statusCode != 200) return [];
+    final body = jsonDecode(utf8.decode(res.bodyBytes));
+    return body is List ? body : (body['schedules'] as List? ?? []);
+  }
+
+  static Future<Map<String, dynamic>> appStats({int days = 30}) => _getJson('/api/admin/app-stats', {'days': '$days'});
+
+  static Future<int> remindUsers(List<int> ids) async =>
+      ((await _sendJson('POST', '/api/admin/app-stats/remind', {'user_ids': ids}))['sent'] as num?)?.toInt() ?? 0;
+
+  static Future<List<dynamic>> appReleases() async {
+    final res = await http.get(Uri.parse('$base/api/app/releases'), headers: ClientInfo.headers);
+    if (res.statusCode != 200) return [];
+    return (jsonDecode(utf8.decode(res.bodyBytes))['releases'] as List?) ?? [];
+  }
+
+  /// Logged so admin Statistik can show exports in a user's timeline.
+  static Future<List<dynamic>> reportRuns() async => (await _getJson('/api/report-schedules/runs'))['runs'] as List? ?? [];
+
+  static Future<Map<String, dynamic>> createSchedule(Map<String, dynamic> body) => _sendJson('POST', '/api/report-schedules', body);
+
+  static Future<Map<String, dynamic>> updateSchedule(int id, Map<String, dynamic> patch) =>
+      _sendJson('PATCH', '/api/report-schedules/$id', patch);
+
+  static Future<void> deleteSchedule(int id) => _sendJson('DELETE', '/api/report-schedules/$id');
+
+  static Future<Map<String, dynamic>> sendScheduleNow(int id) => _sendJson('POST', '/api/report-schedules/$id/send-now');
+
+  /// A read-only link to the live report that anyone can open for 7 days.
+  /// With [columns] and [rows] the link shows that table as it is now (an ad-hoc answer).
+  static Future<String> createReportLink(String title, {String region = '', List<String>? columns, List<Map<String, dynamic>>? rows}) async {
+    final r = await _sendJson('POST', '/api/report-links', {
+      'title': title,
+      'region': region,
+      if (columns != null) 'columns': columns,
+      if (columns != null) 'rows': (rows ?? const []).take(2000).toList(),
+    });
+    return '$base${r['path']}';
+  }
+
+  static Future<void> logExport(String format, String title, {String? domain}) async {
+    try {
+      await _sendJson('POST', '/api/usage/export', {'format': format, 'title': title, if (domain != null) 'domain': domain});
+    } catch (_) {}
+  }
+
   static Future<List<dynamic>> historySessions() async {
     final res = await _authGet(Uri.parse('$base/api/history/sessions'));
     if (res.statusCode != 200) return [];

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="360" viewBox="0 0 420 360">
+<defs>
+<radialGradient id="iso_tower_glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#5BCEC3" stop-opacity=".34"/><stop offset="0.55" stop-color="#5BCEC3" stop-opacity="0.1632"/><stop offset="1" stop-color="#5BCEC3" stop-opacity="0"/></radialGradient><radialGradient id="iso_tower_ground" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#0A6A5F" stop-opacity=".23"/><stop offset="0.55" stop-color="#0A6A5F" stop-opacity="0.1104"/><stop offset="1" stop-color="#0A6A5F" stop-opacity="0"/></radialGradient><linearGradient id="iso_tower_terrain" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C0EDE8"/><stop offset="1" stop-color="#8FDFD7"/></linearGradient><linearGradient id="iso_tower_metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C0EDE8"/><stop offset="1" stop-color="#15A697"/></linearGradient><linearGradient id="iso_tower_antenna" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#8FDFD7"/></linearGradient><linearGradient id="iso_tower_dish" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#5BCEC3"/></linearGradient>
+</defs>
+<ellipse cx="210" cy="170" rx="167" ry="158" fill="url(#iso_tower_glow)"/>
+<ellipse cx="211" cy="322" rx="155" ry="25" fill="url(#iso_tower_ground)"/>
+<path d="M65 283 207 218 352 281 211 347Z" fill="#0A6A5F"/>
+<path d="M65 270 207 205 352 268 211 334Z" fill="url(#iso_tower_terrain)"/>
+<path d="M65 270 211 334 211 347 65 283Z" fill="#0E8579"/>
+<path d="M211 334 352 268 352 281 211 347Z" fill="#0A6A5F"/>
+<path d="M86 271 207 216 332 269" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity=".7"/>
+<path d="M102 286 194 244 289 285 198 327Z" fill="#5BCEC3" opacity=".28"/>
+<path d="M121 292 199 256 280 292 202 328Z" fill="#0E8579" opacity=".13"/>
+<path d="M121 287 150 274 173 284 144 298Z M274 271 296 261 315 269 293 280Z" fill="#E6F7F5" opacity=".68"/>
+<path d="M111 308 130 300 143 306 125 314Z M278 304 295 296 311 303 294 311Z" fill="#0E8579" opacity=".4"/>
+<g fill="none" stroke="#5BCEC3" stroke-linecap="round">
+<path d="M157 69C133 88 133 119 155 138 M263 69C288 88 288 119 265 138" stroke-width="4" opacity=".8"/>
+<path d="M137 51C102 81 102 129 135 158 M283 51C318 81 318 129 285 158" stroke-width="3" opacity=".49"/>
+<path d="M116 34C72 73 72 138 113 176 M304 34C349 73 349 138 307 176" stroke-width="2.3" opacity=".22"/>
+</g>
+<path d="M178 282 211 73 246 279 230 286 210 132 194 289Z" fill="#0A6A5F"/>
+<path d="M160 283 211 73 229 289 218 294 208 129 175 290Z" fill="url(#iso_tower_metal)"/>
+<g fill="none" stroke="#0E8579" stroke-width="4" stroke-linejoin="round">
+<path d="M178 248 222 250 187 216 218 218 195 179 216 181 203 140 213 142"/>
+<path d="M177 248 218 294 M187 216 222 250 M195 179 218 218 M203 140 216 181"/>
+</g>
+<g fill="none" stroke="#8FDFD7" stroke-width="2.5" stroke-linecap="round">
+<path d="M231 249 218 218 224 218 214 181 218 181 211 142"/>
+<path d="M169 281 211 76" stroke-opacity=".8"/>
+</g>
+<path d="M153 281 169 274 184 281 169 288 169 297 153 290Z" fill="#074D45"/>
+<path d="M153 281 169 274 184 281 169 288Z" fill="#C0EDE8"/>
+<path d="M216 289 231 282 245 288 230 296 230 304 216 297Z" fill="#074D45"/>
+<path d="M216 289 231 282 245 288 230 296Z" fill="#C0EDE8"/>
+<path d="M235 275 246 270 257 275 246 280 246 288 235 283Z" fill="#074D45"/>
+<path d="M235 275 246 270 257 275 246 280Z" fill="#8FDFD7"/>
+<path d="M182 111 241 86 M184 131 240 106" stroke="#0A6A5F" stroke-width="5" stroke-linecap="round"/>
+<path d="M175 73 189 67 196 71 196 128 183 135 175 131Z" fill="#0E8579"/>
+<path d="M175 73 189 67 189 123 175 131Z" fill="url(#iso_tower_antenna)"/>
+<path d="M204 57 217 51 224 55 224 114 211 121 204 117Z" fill="#0E8579"/>
+<path d="M204 57 217 51 217 110 204 117Z" fill="url(#iso_tower_antenna)"/>
+<path d="M235 76 248 70 255 74 255 130 242 137 235 133Z" fill="#0E8579"/>
+<path d="M235 76 248 70 248 126 235 133Z" fill="url(#iso_tower_antenna)"/>
+<path d="M181 79V119 M210 64V105 M241 82V121" stroke="#FFFFFF" stroke-width="1.6" opacity=".8"/>
+<path d="M218 167 246 153" stroke="#0A6A5F" stroke-width="5"/>
+<ellipse cx="249" cy="152" rx="22" ry="27" fill="#0A6A5F"/>
+<ellipse cx="244" cy="150" rx="21" ry="26" fill="url(#iso_tower_dish)"/>
+<ellipse cx="241" cy="148" rx="13" ry="18" fill="#8FDFD7"/>
+<path d="M241 148 263 139" stroke="#074D45" stroke-width="3.5" stroke-linecap="round"/>
+<circle cx="263" cy="139" r="4" fill="#FFD27A"/>
+<path d="M212 50V35" stroke="#0E8579" stroke-width="3" stroke-linecap="round"/>
+<circle cx="212" cy="33" r="3.5" fill="#FFD27A"/>
+<path d="M280 235 298 227 315 234 297 243 297 266 280 258Z" fill="#0A6A5F"/>
+<path d="M280 235 298 227 315 234 297 243Z" fill="#E6F7F5"/>
+<path d="M280 235 297 243 297 266 280 258Z" fill="#33BCAD"/>
+<path d="M284 243 291 246 M284 248 291 251" stroke="#C0EDE8" stroke-width="2" stroke-linecap="round"/>
+<circle cx="307" cy="247" r="2" fill="#FFD27A"/>
+<g transform="translate(93 187)"><polygon points="0,-7.5 15,0 0,7.5 -15,0" fill="#C0EDE8"/><polygon points="-15,0 0,7.5 0,22.5 -15,15" fill="#15A697"/><polygon points="0,7.5 15,0 15,15 0,22.5" fill="#0A6A5F"/><path d="M-15 0 0 7.5 15 0" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.2"/></g><g transform="translate(323 182)"><polygon points="0,-6.5 13,0 0,6.5 -13,0" fill="#C0EDE8"/><polygon points="-13,0 0,6.5 0,19.5 -13,13" fill="#15A697"/><polygon points="0,6.5 13,0 13,13 0,19.5" fill="#0A6A5F"/><path d="M-13 0 0 6.5 13 0" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.2"/></g><g transform="translate(287 52)"><polygon points="0,-4.5 9,0 0,4.5 -9,0" fill="#C0EDE8"/><polygon points="-9,0 0,4.5 0,13.5 -9,9" fill="#15A697"/><polygon points="0,4.5 9,0 9,9 0,13.5" fill="#0A6A5F"/><path d="M-9 0 0 4.5 9 0" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.2"/></g><g transform="translate(120 95)"><polygon points="0,-4 8,0 0,4 -8,0" fill="#C0EDE8"/><polygon points="-8,0 0,4 0,12 -8,8" fill="#15A697"/><polygon points="0,4 8,0 8,8 0,12" fill="#0A6A5F"/><path d="M-8 0 0 4 8 0" fill="none" stroke="#FFFFFF" stroke-opacity=".55" stroke-width="1.2"/></g>
+<path d="m78 235 4-9 4 9 9 4-9 4-4 9-4-9-9-4Z" fill="#8FDFD7" opacity=".65"/>
+<circle cx="345" cy="227" r="3" fill="#FFD27A"/>
+</svg>
