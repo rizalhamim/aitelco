@@ -78,14 +78,6 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [qaExpanded, setQaExpanded] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (!isLoggedIn()) { router.push("/login"); return; }
-      if (!isAdmin()) { router.push("/"); return; }
-    }
-    loadData();
-  }, [tab]);
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
@@ -102,6 +94,13 @@ export default function AdminPage() {
     } catch (e) { console.error(e); }
     setLoading(false);
   }, [tab]);
+
+  useEffect(() => {
+    if (!isLoggedIn()) { router.push("/login"); return; }
+    if (!isAdmin()) { router.push("/"); return; }
+    const timer = window.setTimeout(() => { void loadData(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [loadData, router]);
 
   async function loadUserDetail(userId: number) {
     const [detailRes, activityRes] = await Promise.all([
@@ -654,8 +653,8 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
       setUsername(""); setFullName(""); setEmail(""); setPassword(""); setRole("end_user");
       setOpen(false);
       onCreated();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -866,13 +865,11 @@ function DomainDonut({ data }: { data: { domain: string; count: number }[] }) {
 
   const size = 160, cx = size / 2, cy = size / 2, r = 55, cutout = 0.68;
   const innerR = r * cutout;
-  let cumAngle = -Math.PI / 2;
 
   const segments = data.map((d, i) => {
     const angle = (d.count / total) * Math.PI * 2;
-    const startAngle = cumAngle;
-    cumAngle += angle;
-    const endAngle = cumAngle;
+    const startAngle = -Math.PI / 2 + data.slice(0, i).reduce((sum, item) => sum + item.count, 0) / total * Math.PI * 2;
+    const endAngle = startAngle + angle;
 
     const x1 = cx + r * Math.cos(startAngle);
     const y1 = cy + r * Math.sin(startAngle);

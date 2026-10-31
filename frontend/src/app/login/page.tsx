@@ -3,10 +3,11 @@ import { useState, FormEvent, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { login, isLoggedIn } from "@/lib/auth";
+import { startFluid } from "@/lib/fluid";
 
 const AGENT_CAPABILITIES = [
-  { icon: "SQL", label: "SQL Writer", desc: "Auto-generates optimized BigQuery" },
-  { icon: "BQ", label: "BigQuery", desc: "2.56B rows across 118 tables" },
+  { icon: "SQL", label: "SQL Writer", desc: "Auto-generates optimized queries" },
+  { icon: "DA", label: "Data Engine", desc: "Warehouse-scale analytics" },
   { icon: "AN", label: "Analyst", desc: "Intent analysis & validation" },
   { icon: "EX", label: "Export", desc: "XLSX & PDF branded reports" },
 ];
@@ -16,8 +17,15 @@ const PIPELINE_STEPS = [
   "Orchestrator",
   "Domain Agent",
   "SQL Writer",
-  "BigQuery",
+  "Data Engine",
   "Synthesizer",
+];
+
+const LOGIN_STATS = [
+  { num: "13", label: "Agents" },
+  { num: "5", label: "Domains" },
+  { num: "~15s", label: "Avg Query" },
+  { num: "24/7", label: "Ready" },
 ];
 
 export default function LoginPage() {
@@ -26,7 +34,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const leftRef = useRef<HTMLDivElement>(null);
+  const blobRef = useRef<HTMLCanvasElement>(null);
+  const flowRef = useRef<HTMLCanvasElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const rightBlobRef = useRef<HTMLCanvasElement>(null);
   const [activeStep, setActiveStep] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [mode, setMode] = useState<"login" | "forgot" | "reset">("login");
@@ -40,7 +52,7 @@ export default function LoginPage() {
   const TYPING_QUERIES = [
     "Top 5 kecamatan revenue data tertinggi...",
     "Market share IM3 vs Telkomsel...",
-    "Forecast revenue micro-cluster bulan depan...",
+    "Pertumbuhan revenue per district bulan ini...",
     "Profile lengkap kota Surabaya...",
     "Traffic 5G per region bulan terakhir...",
   ];
@@ -54,8 +66,8 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     const tok = params.get("reset");
     if (tok) {
-      setResetToken(tok);
-      setMode("reset");
+      const timer = window.setTimeout(() => { setResetToken(tok); setMode("reset"); }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [router]);
 
@@ -100,201 +112,74 @@ export default function LoginPage() {
     return () => clearInterval(id);
   }, []);
 
+  // Fluid background: liquid mesh + flow particles on the left, a slow faint
+  // mesh behind the form so both halves read as one surface.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!blobRef.current) return;
 
-    let animId: number;
-    let w = 0;
-    let h = 0;
+    // Phones drop the particle layer entirely (battery). Low-core desktops keep
+    // it but with a smaller swarm, since core count under-reports on many machines.
+    const cores = navigator.hardwareConcurrency || 4;
+    const coarse = window.matchMedia("(hover: none)");
+    const wide = window.matchMedia("(min-width: 900px)");
+    const swarm = cores <= 4 ? 700 : 1400;
 
-    function resize() {
-      if (!canvas) return;
-      const rect = canvas.parentElement?.getBoundingClientRect();
-      if (!rect) return;
-      const dpr = window.devicePixelRatio || 1;
-      w = rect.width * dpr;
-      h = rect.height * dpr;
-      canvas.width = w;
-      canvas.height = h;
-      canvas.style.width = rect.width + "px";
-      canvas.style.height = rect.height + "px";
-      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    resize();
-    window.addEventListener("resize", resize);
+    let stopLeft: (() => void) | undefined;
+    let stopRight: (() => void) | undefined;
 
-    const COLORS = ["#15A697", "#0E8579", "#F5A623", "#33BCAD", "#0A6A5F"];
+    function build() {
+      if (!blobRef.current) return;
+      const light = !wide.matches || coarse.matches;
 
-    interface Particle {
-      x: number; y: number;
-      vx: number; vy: number;
-      r: number; color: string;
-      alpha: number; pulse: number; pulseSpeed: number;
-      isNode: boolean;
-    }
-
-    const realW = () => w / (window.devicePixelRatio || 1);
-    const realH = () => h / (window.devicePixelRatio || 1);
-
-    const particles: Particle[] = [];
-    const NUM = 80;
-    for (let i = 0; i < NUM; i++) {
-      const isNode = i < 12;
-      particles.push({
-        x: Math.random() * 1200,
-        y: Math.random() * 1200,
-        vx: (Math.random() - 0.5) * (isNode ? 0.25 : 0.5),
-        vy: (Math.random() - 0.5) * (isNode ? 0.25 : 0.5),
-        r: isNode ? (Math.random() * 3 + 3) : (Math.random() * 2 + 0.8),
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        alpha: isNode ? (Math.random() * 0.3 + 0.4) : (Math.random() * 0.3 + 0.1),
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: Math.random() * 0.02 + 0.005,
-        isNode,
+      stopLeft = startFluid({
+        blobCanvas: blobRef.current,
+        flowCanvas: light ? null : flowRef.current,
+        pointerTarget: leftRef.current,
+        blobs: light ? 4 : 6,
+        particles: light ? 0 : swarm,
+        speed: 1,
+        blobAlpha: 0.78,
+        flowAlpha: 0.22,
+        seed: 20260829,
       });
+
+      // below the breakpoint the right canvas is display:none, so skip it
+      if (!light && rightBlobRef.current) {
+        stopRight = startFluid({
+          blobCanvas: rightBlobRef.current,
+          flowCanvas: null,
+          pointerTarget: rightRef.current,
+          blobs: 3,
+          particles: 0,
+          speed: 0.4,
+          blobAlpha: 0.5,
+          seed: 77113,
+        });
+      }
     }
 
-    function hexToRgb(hex: string) {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return { r, g, b };
+    function teardown() {
+      stopLeft?.();
+      stopRight?.();
+      stopLeft = undefined;
+      stopRight = undefined;
     }
 
-    function draw(t: number) {
-      if (!ctx) return;
-      const rw = realW();
-      const rh = realH();
-      ctx.clearRect(0, 0, rw, rh);
-
-      const cx = rw * 0.48;
-      const cy = rh * 0.42;
-      const maxR = Math.min(rw, rh) * 0.32;
-
-      for (let ri = 0; ri < 4; ri++) {
-        const rr = maxR * (0.3 + ri * 0.25);
-        const rot = t * 0.00025 * (ri % 2 === 0 ? 1 : -1);
-        const segments = 80;
-        ctx.beginPath();
-        for (let s = 0; s <= segments; s++) {
-          const angle = (s / segments) * Math.PI * 2 + rot;
-          const wobble = Math.sin(angle * 4 + t * 0.0008 + ri) * rr * 0.04;
-          const px = cx + Math.cos(angle) * (rr + wobble);
-          const py = cy + Math.sin(angle) * (rr + wobble);
-          if (s === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        const c = COLORS[ri % COLORS.length];
-        const { r, g, b } = hexToRgb(c);
-        ctx.strokeStyle = `rgba(${r},${g},${b},0.15)`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        const dashes = 8;
-        for (let d = 0; d < dashes; d++) {
-          const a = ((d / dashes) * Math.PI * 2) + rot * 3 + t * 0.0005;
-          const dr = rr + Math.sin(a * 3 + t * 0.001) * rr * 0.04;
-          const dx = cx + Math.cos(a) * dr;
-          const dy = cy + Math.sin(a) * dr;
-          ctx.beginPath();
-          ctx.arc(dx, dy, 1.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r},${g},${b},0.25)`;
-          ctx.fill();
-        }
-      }
-
-      const CONNECTION_DIST = Math.min(rw, rh) * 0.18;
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.pulse += p.pulseSpeed;
-        if (p.x < -20) p.x = rw + 20;
-        if (p.x > rw + 20) p.x = -20;
-        if (p.y < -20) p.y = rh + 20;
-        if (p.y > rh + 20) p.y = -20;
-      }
-
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < CONNECTION_DIST) {
-            const a = (1 - dist / CONNECTION_DIST);
-            const bothNodes = particles[i].isNode && particles[j].isNode;
-            const opacity = bothNodes ? a * 0.2 : a * 0.07;
-            const { r, g, b } = hexToRgb(particles[i].color);
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
-            ctx.lineWidth = bothNodes ? 1.2 : 0.5;
-            ctx.stroke();
-
-            if (bothNodes && dist < CONNECTION_DIST * 0.6) {
-              const progress = ((t * 0.001 + i * 0.3) % 1);
-              const bx = particles[i].x + (particles[j].x - particles[i].x) * progress;
-              const by = particles[i].y + (particles[j].y - particles[i].y) * progress;
-              ctx.beginPath();
-              ctx.arc(bx, by, 1.5, 0, Math.PI * 2);
-              ctx.fillStyle = `rgba(${r},${g},${b},${0.4 * a})`;
-              ctx.fill();
-            }
-          }
-        }
-      }
-
-      for (const p of particles) {
-        const pulseR = p.r * (1 + Math.sin(p.pulse) * 0.25);
-        const { r, g, b } = hexToRgb(p.color);
-
-        if (p.isNode) {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, pulseR * 3, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r},${g},${b},0.04)`;
-          ctx.fill();
-
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, pulseR * 1.8, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r},${g},${b},0.08)`;
-          ctx.fill();
-        }
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, pulseR, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${b},${p.alpha + Math.sin(p.pulse) * 0.1})`;
-        ctx.fill();
-      }
-
-      const scanPeriod = 6000;
-      const scanProgress = (t % scanPeriod) / scanPeriod;
-      const scanY = rh * scanProgress;
-      const scanGrad = ctx.createLinearGradient(0, scanY - 30, 0, scanY + 30);
-      scanGrad.addColorStop(0, "rgba(21, 166, 151,0)");
-      scanGrad.addColorStop(0.5, "rgba(21, 166, 151,0.03)");
-      scanGrad.addColorStop(1, "rgba(21, 166, 151,0)");
-      ctx.fillStyle = scanGrad;
-      ctx.fillRect(0, scanY - 30, rw, 60);
-
-      const pulseAlpha = (Math.sin(t * 0.002) * 0.5 + 0.5) * 0.06;
-      const centerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 1.2);
-      centerGrad.addColorStop(0, `rgba(21, 166, 151,${pulseAlpha})`);
-      centerGrad.addColorStop(0.5, `rgba(236,0,140,${pulseAlpha * 0.5})`);
-      centerGrad.addColorStop(1, "rgba(21, 166, 151,0)");
-      ctx.fillStyle = centerGrad;
-      ctx.fillRect(0, 0, rw, rh);
-
-      animId = requestAnimationFrame(draw);
+    // rebuild on rotation or window resize across the breakpoint, so the tier
+    // never stays stuck at whatever it was on first paint
+    function rebuild() {
+      teardown();
+      build();
     }
 
-    animId = requestAnimationFrame(draw);
+    build();
+    wide.addEventListener("change", rebuild);
+    coarse.addEventListener("change", rebuild);
+
     return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
+      wide.removeEventListener("change", rebuild);
+      coarse.removeEventListener("change", rebuild);
+      teardown();
     };
   }, []);
 
@@ -365,11 +250,13 @@ export default function LoginPage() {
 
   return (
     <div className="login-shell">
-      <div className="login-left">
-        <canvas ref={canvasRef} className="login-canvas" />
+      <div className="login-left" ref={leftRef}>
+        <canvas ref={blobRef} className="login-blob-canvas" />
+        <canvas ref={flowRef} className="login-flow-canvas" />
+        <div className="login-left-veil" />
 
         <div className="login-brand-content">
-          <div className="login-logo-row">
+          <div className="login-logo-row login-rise" style={{ animationDelay: "0.05s" }}>
             <div className="login-logo-img-wrap">
               <Image
                 src="/icon_circle_java.png"
@@ -387,16 +274,17 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="login-headline">
+          <h1 className="login-headline login-rise" style={{ animationDelay: "0.14s" }}>
             Your data, <span className="red">answered</span> by AI agents.
           </h1>
 
-          <p className="login-lede">
-            13 specialized AI agents analyze your BigQuery data across revenue, network, market share, forecast, and KPI domains — delivering insights in seconds.
+          <p className="login-lede login-rise" style={{ animationDelay: "0.2s" }}>
+            13 specialized AI agents analyze your business data across revenue, network,
+            market share, forecast, and KPI domains, delivering insights in seconds.
           </p>
 
           {/* AI Typing Demo */}
-          <div className="login-typing-demo">
+          <div className="login-typing-demo login-rise" style={{ animationDelay: "0.26s" }}>
             <div className="login-typing-label">
               <span className="login-typing-dot" />
               AI Agent Processing
@@ -409,7 +297,7 @@ export default function LoginPage() {
           </div>
 
           {/* Agent Pipeline Animation */}
-          <div className="login-pipeline">
+          <div className="login-pipeline login-rise" style={{ animationDelay: "0.32s" }}>
             <div className="login-pipeline-label">Agent Pipeline</div>
             <div className="login-pipeline-steps">
               {PIPELINE_STEPS.map((step, i) => (
@@ -427,7 +315,7 @@ export default function LoginPage() {
           </div>
 
           {/* Agent Capability Cards */}
-          <div className="login-agents-grid">
+          <div className="login-agents-grid login-rise" style={{ animationDelay: "0.38s" }}>
             {AGENT_CAPABILITIES.map((agent) => (
               <div key={agent.label} className="login-agent-card">
                 <div className="login-agent-icon">{agent.icon}</div>
@@ -439,13 +327,8 @@ export default function LoginPage() {
             ))}
           </div>
 
-          <div className="login-stats">
-            {[
-              { num: "13", label: "Agents" },
-              { num: "118", label: "Tables" },
-              { num: "2.56B", label: "Rows" },
-              { num: "~15s", label: "Avg Query" },
-            ].map((s) => (
+          <div className="login-stats login-rise" style={{ animationDelay: "0.44s" }}>
+            {LOGIN_STATS.map((s) => (
               <div key={s.label} className="login-stat">
                 <div className="login-stat-num">{s.num}</div>
                 <div className="login-stat-label">{s.label}</div>
@@ -456,7 +339,8 @@ export default function LoginPage() {
         <div className="login-footer-left">Confidential · Internal Use Only</div>
       </div>
 
-      <div className="login-right">
+      <div className="login-right" ref={rightRef}>
+        <canvas ref={rightBlobRef} className="login-blob-canvas login-blob-canvas-right" />
         <div className="login-form-card">
           <div className="login-form-header">
             <div className="login-form-logo-wrap">
@@ -476,7 +360,7 @@ export default function LoginPage() {
 
           {error && (
             <div className="login-error">
-              <svg viewBox="0 0 16 16" width="14" height="14" fill="var(--ioh-red)">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="var(--ioh-danger)">
                 <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 10.5a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5zM8.75 4.5v4a.75.75 0 0 1-1.5 0v-4a.75.75 0 0 1 1.5 0z"/>
               </svg>
               {error}
@@ -484,7 +368,7 @@ export default function LoginPage() {
           )}
 
           {mode === "login" && (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} key="login" className="login-pane">
               <div className="login-field">
                 <label className="login-label">Username</label>
                 <div className="login-input-wrap">
@@ -516,7 +400,7 @@ export default function LoginPage() {
           )}
 
           {mode === "forgot" && !forgotSent && (
-            <form onSubmit={handleForgot}>
+            <form onSubmit={handleForgot} key="forgot" className="login-pane">
               <div className="login-field">
                 <label className="login-label">Email Address</label>
                 <div className="login-input-wrap">
@@ -537,7 +421,7 @@ export default function LoginPage() {
           )}
 
           {mode === "forgot" && forgotSent && (
-            <div className="login-sent-msg">
+            <div className="login-sent-msg login-pane">
               <div className="login-sent-icon">
                 <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--ioh-teal)" strokeWidth="2">
                   <path d="M22 2L11 13" strokeLinecap="round" />
@@ -551,7 +435,7 @@ export default function LoginPage() {
           )}
 
           {mode === "reset" && (
-            <form onSubmit={handleReset}>
+            <form onSubmit={handleReset} key="reset" className="login-pane">
               <div className="login-field">
                 <label className="login-label">New Password</label>
                 <div className="login-input-wrap">

@@ -5,12 +5,23 @@ import '../theme.dart';
 
 /// Shows the "update available" dialog. Handles download progress + install.
 /// Pass [info] from UpdateService.check().
+Future<void>? _activeDialog;
+
 Future<void> showUpdateDialog(BuildContext context, UpdateInfo info) async {
-  await showDialog<void>(
+  if (_activeDialog != null) {
+    await _activeDialog;
+    return;
+  }
+  _activeDialog = showDialog<void>(
     context: context,
     barrierDismissible: !info.mandatory,
     builder: (_) => _UpdateDialog(info: info),
-  );
+  ).then((_) {});
+  try {
+    await _activeDialog;
+  } finally {
+    _activeDialog = null;
+  }
 }
 
 class _UpdateDialog extends StatefulWidget {
@@ -59,6 +70,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
   Widget build(BuildContext context) {
     final info = widget.info;
     return AlertDialog(
+      scrollable: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: Row(
         children: [
@@ -66,7 +78,8 @@ class _UpdateDialogState extends State<_UpdateDialog> {
           const SizedBox(width: 10),
           const Expanded(
             child: Text('Update Tersedia',
-                style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -81,7 +94,8 @@ class _UpdateDialogState extends State<_UpdateDialog> {
           if (info.notes.trim().isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(info.notes,
-                style: const TextStyle(fontFamily: 'Prompt', fontSize: 13, color: Colors.black54)),
+                style: const TextStyle(
+                    fontFamily: 'Prompt', fontSize: 13, color: Colors.black54)),
           ],
           if (_downloading) ...[
             const SizedBox(height: 18),
@@ -99,13 +113,15 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               _progress > 0
                   ? 'Mengunduh ${(_progress * 100).toStringAsFixed(0)}%'
                   : 'Menyiapkan unduhan…',
-              style: const TextStyle(fontFamily: 'Prompt', fontSize: 12, color: Colors.black54),
+              style: const TextStyle(
+                  fontFamily: 'Prompt', fontSize: 12, color: Colors.black54),
             ),
           ],
           if (_error != null) ...[
             const SizedBox(height: 14),
             Text(_error!,
-                style: const TextStyle(fontFamily: 'Prompt', fontSize: 12.5, color: IOH.red)),
+                style: const TextStyle(
+                    fontFamily: 'Prompt', fontSize: 12.5, color: IOH.red)),
           ],
         ],
       ),
@@ -115,13 +131,15 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               if (!info.mandatory)
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Nanti', style: TextStyle(fontFamily: 'Prompt')),
+                  child: const Text('Nanti',
+                      style: TextStyle(fontFamily: 'Prompt')),
                 ),
               FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: IOH.red),
                 onPressed: _startUpdate,
                 child: Text(_error != null ? 'Coba Lagi' : 'Update Sekarang',
-                    style: const TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.w600)),
+                    style: const TextStyle(
+                        fontFamily: 'Prompt', fontWeight: FontWeight.w600)),
               ),
             ],
     );

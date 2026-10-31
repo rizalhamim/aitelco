@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: date_columns"
 type: generated-knowledge
 data_fact: "date_columns"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `date_columns`
@@ -13,7 +13,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ## Flattened fact paths
 
 - **`date_columns.dt_id`:** DATE, daily grain, partition key on big tables. Format YYYY-MM-DD.
-- **`date_columns.month_id`:** YYYYMM format (e.g. 202605). WARNING: type varies by table - STRING in site/fb tables, INT64 in forecast/kpi/marketing/reporting/avail tables. Always CAST(month_id AS STRING) before PARSE_DATE.
+- **`date_columns.month_id`:** YYYYMM format (e.g. 202605). WARNING: type varies by table ; STRING in site/fb tables, INT64 in forecast/kpi/marketing/reporting/avail tables. Always CAST(month_id AS STRING) before PARSE_DATE.
 - **`date_columns.week`:** weekly grain (string/int).
 
 ## Related

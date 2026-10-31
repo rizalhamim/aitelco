@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: ftth_tables"
 type: generated-knowledge
 data_fact: "ftth_tables"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `ftth_tables`
@@ -12,7 +12,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Flattened fact paths
 
-- **`ftth_tables.date_val_column`:** date_val is INT64 (e.g. 20250901) - NOT a date. It's YYYYMMDD as integer. To use: PARSE_DATE('%Y%m%d', CAST(date_val AS STRING)).
+- **`ftth_tables.date_val_column`:** date_val is INT64 (e.g. 20250901) ; NOT a date. It's YYYYMMDD as integer. To use: PARSE_DATE('%Y%m%d', CAST(date_val AS STRING)).
 - **`ftth_tables.use_date_columns`:** ALWAYS prefer date_pa/date_sa/date_so (DATE type) for filtering. These are the actual date columns. year_month and date_val are derived/auxiliary.
 - **`ftth_tables.year_month_format`:** FTTH tables (rham_ftth_pa/sa/so_detail) have year_month as STRING in 'Mon-YY' format (e.g. 'Sep-25', 'Jan-26'). To filter by date, use the actual date columns: date_pa, date_sa, date_so (DATE type). To convert year_month for comparison: PARSE_DATE('%b-%y', year_month). For monthly aggregation, GROUP BY year_month or use FORMAT_DATE('%b-%y', date_xx) to match.
 

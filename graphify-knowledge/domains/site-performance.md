@@ -2,7 +2,7 @@
 title: "Runtime KB domain: site_performance"
 type: generated-knowledge
 domain: "site_performance"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `site_performance`
@@ -12,11 +12,14 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** Site Performance
 - **Description:** Performance per cell SITE (subscriber, revenue, churn, usage, RGU, VLR, PAU) daily/mtd/monthly + site databank with coordinates & territory. Use for per-site metrics, top sites, and coordinate/map queries.
-- **Tables:** 6
+- **Tables:** 9
 - **Agent identifier:** `Site Performance Analyst`
 
 ## Domain to table relationships
 
+- Domain `site_performance` contains table `rham_site_ga_quality_daily`.
+- Domain `site_performance` contains table `rham_site_ga_quality_mtd`.
+- Domain `site_performance` contains table `rham_site_ga_quality_mth`.
 - Domain `site_performance` contains table `rham_site_wise_addr_java`.
 - Domain `site_performance` contains table `rham_site_wise_addr_java_perf`.
 - Domain `site_performance` contains table `rham_site_wise_addr_java_perf_yoy`.
@@ -25,6 +28,181 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Domain `site_performance` contains table `rham_site_wise_mtd`.
 
 ## Table schemas
+
+### `rham_site_ga_quality_daily`
+
+- Relationship: domain `site_performance` contains table `rham_site_ga_quality_daily`.
+- Column count: 45.
+- Partition columns: `dt_id`.
+- Source kind: `observed`.
+- Grain: `date_x_site_x_brand`.
+- Period semantics: `daily`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `standard`.
+- Relative cost tier: `high`.
+- Metric families: `acquisition`, `retention`, `device mix`.
+- Columns:
+  - `dt_id`: `DATE` (partition)
+  - `site_id`: `STRING`
+  - `brand`: `STRING`
+  - `kabkota`: `STRING`
+  - `kecamatan`: `STRING`
+  - `kec_unik`: `STRING`
+  - `rgu_ga`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_unknown`: `INT64`
+  - `ga_5g`: `INT64`
+  - `ga_dev_5g`: `INT64`
+  - `ga_dev_5g_w_trfc_5g`: `INT64`
+  - `ga_new_imei_5g`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `ga_qsc_100_mb`: `INT64`
+  - `ga_qsc_500mb`: `INT64`
+  - `ga_qsc_1gb`: `INT64`
+  - `ga_qsc_3gb`: `INT64`
+  - `m1s`: `INT64`
+  - `tot_rev_m1`: `FLOAT64`
+  - `rgu_m1_rev_min_50k`: `INT64`
+  - `rgu_m1_rev_min_100k`: `INT64`
+  - `m1_usg_100mb`: `INT64`
+  - `m1_usg_500mb`: `INT64`
+  - `m1_usg_1gb`: `INT64`
+  - `m1_usg_3gb`: `INT64`
+  - `m2s`: `INT64`
+  - `tot_rev_m2`: `FLOAT64`
+  - `rgu_m2_rev_min_50k`: `INT64`
+  - `rgu_m2_rev_min_100k`: `INT64`
+  - `m2_usg_100mb`: `INT64`
+  - `m2_usg_500mb`: `INT64`
+  - `m2_usg_1gb`: `INT64`
+  - `m2_usg_3gb`: `INT64`
+  - `m3s`: `INT64`
+  - `tot_rev_m3`: `FLOAT64`
+  - `rgu_m3_rev_min_50k`: `INT64`
+  - `rgu_m3_rev_min_100k`: `INT64`
+  - `m3_usg_100mb`: `INT64`
+  - `m3_usg_500mb`: `INT64`
+  - `m3_usg_1gb`: `INT64`
+  - `m3_usg_3gb`: `INT64`
+  - `cohort_dt`: `DATE`
+  - `metric_month_offset`: `INT64`
+
+### `rham_site_ga_quality_mtd`
+
+- Relationship: domain `site_performance` contains table `rham_site_ga_quality_mtd`.
+- Column count: 44.
+- Partition columns: `dt_id`.
+- Source kind: `observed`.
+- Grain: `month_x_site_x_brand`.
+- Period semantics: `mtd_cutoff_aligned`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `medium`.
+- Metric families: `acquisition`, `retention`, `device mix`, `revenue`.
+- Columns:
+  - `month_id`: `DATE`
+  - `dt_id`: `DATE` (partition)
+  - `site_id`: `STRING`
+  - `brand`: `STRING`
+  - `kabkota`: `STRING`
+  - `kecamatan`: `STRING`
+  - `kec_unik`: `STRING`
+  - `rgu_ga`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_unknown`: `INT64`
+  - `ga_5g`: `INT64`
+  - `ga_dev_5g`: `INT64`
+  - `ga_dev_5g_w_trfc_5g`: `INT64`
+  - `ga_new_imei_5g`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `ga_qsc_100_mb`: `INT64`
+  - `ga_qsc_500mb`: `INT64`
+  - `ga_qsc_1gb`: `INT64`
+  - `ga_qsc_3gb`: `INT64`
+  - `m1s`: `INT64`
+  - `tot_rev_m1`: `FLOAT64`
+  - `rgu_m1_rev_min_50k`: `INT64`
+  - `rgu_m1_rev_min_100k`: `INT64`
+  - `m1_usg_100mb`: `INT64`
+  - `m1_usg_500mb`: `INT64`
+  - `m1_usg_1gb`: `INT64`
+  - `m1_usg_3gb`: `INT64`
+  - `m2s`: `INT64`
+  - `tot_rev_m2`: `FLOAT64`
+  - `rgu_m2_rev_min_50k`: `INT64`
+  - `rgu_m2_rev_min_100k`: `INT64`
+  - `m2_usg_100mb`: `INT64`
+  - `m2_usg_500mb`: `INT64`
+  - `m2_usg_1gb`: `INT64`
+  - `m2_usg_3gb`: `INT64`
+  - `m3s`: `INT64`
+  - `tot_rev_m3`: `FLOAT64`
+  - `rgu_m3_rev_min_50k`: `INT64`
+  - `rgu_m3_rev_min_100k`: `INT64`
+  - `m3_usg_100mb`: `INT64`
+  - `m3_usg_500mb`: `INT64`
+  - `m3_usg_1gb`: `INT64`
+  - `m3_usg_3gb`: `INT64`
+
+### `rham_site_ga_quality_mth`
+
+- Relationship: domain `site_performance` contains table `rham_site_ga_quality_mth`.
+- Column count: 44.
+- Partition columns: `dt_id`.
+- Source kind: `observed`.
+- Grain: `month_x_site_x_brand`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `medium`.
+- Metric families: `acquisition`, `retention`, `device mix`, `revenue`.
+- Columns:
+  - `month_id`: `DATE`
+  - `dt_id`: `DATE` (partition)
+  - `site_id`: `STRING`
+  - `brand`: `STRING`
+  - `kabkota`: `STRING`
+  - `kecamatan`: `STRING`
+  - `kec_unik`: `STRING`
+  - `rgu_ga`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_unknown`: `INT64`
+  - `ga_5g`: `INT64`
+  - `ga_dev_5g`: `INT64`
+  - `ga_dev_5g_w_trfc_5g`: `INT64`
+  - `ga_new_imei_5g`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `ga_qsc_100_mb`: `INT64`
+  - `ga_qsc_500mb`: `INT64`
+  - `ga_qsc_1gb`: `INT64`
+  - `ga_qsc_3gb`: `INT64`
+  - `m1s`: `INT64`
+  - `tot_rev_m1`: `FLOAT64`
+  - `rgu_m1_rev_min_50k`: `INT64`
+  - `rgu_m1_rev_min_100k`: `INT64`
+  - `m1_usg_100mb`: `INT64`
+  - `m1_usg_500mb`: `INT64`
+  - `m1_usg_1gb`: `INT64`
+  - `m1_usg_3gb`: `INT64`
+  - `m2s`: `INT64`
+  - `tot_rev_m2`: `FLOAT64`
+  - `rgu_m2_rev_min_50k`: `INT64`
+  - `rgu_m2_rev_min_100k`: `INT64`
+  - `m2_usg_100mb`: `INT64`
+  - `m2_usg_500mb`: `INT64`
+  - `m2_usg_1gb`: `INT64`
+  - `m2_usg_3gb`: `INT64`
+  - `m3s`: `INT64`
+  - `tot_rev_m3`: `FLOAT64`
+  - `rgu_m3_rev_min_50k`: `INT64`
+  - `rgu_m3_rev_min_100k`: `INT64`
+  - `m3_usg_100mb`: `INT64`
+  - `m3_usg_500mb`: `INT64`
+  - `m3_usg_1gb`: `INT64`
+  - `m3_usg_3gb`: `INT64`
 
 ### `rham_site_wise_addr_java`
 
@@ -93,7 +271,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_site_wise_addr_java_perf`
 
 - Relationship: domain `site_performance` contains table `rham_site_wise_addr_java_perf`.
-- Column count: 288.
+- Column count: 364.
 - Partition columns: `perf_dt_id`.
 - Source kind: `observed`.
 - Grain: `site`.
@@ -391,6 +569,82 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `ga_p2m_lmtd`: `FLOAT64`
   - `ga_p2m_mtd`: `FLOAT64`
   - `ga_p2m_mtd_growth`: `FLOAT64`
+  - `rev_prepaid_llm`: `FLOAT64`
+  - `rev_prepaid_llmtd`: `FLOAT64`
+  - `rev_vsd_llm`: `FLOAT64`
+  - `rev_vsd_llmtd`: `FLOAT64`
+  - `rev_nonvsd_llm`: `FLOAT64`
+  - `rev_nonvsd_llmtd`: `FLOAT64`
+  - `rev_voice_llm`: `FLOAT64`
+  - `rev_voice_llmtd`: `FLOAT64`
+  - `rev_sms_llm`: `FLOAT64`
+  - `rev_sms_llmtd`: `FLOAT64`
+  - `rev_data_llm`: `FLOAT64`
+  - `rev_data_llmtd`: `FLOAT64`
+  - `rev_nontrade_llm`: `FLOAT64`
+  - `rev_nontrade_llmtd`: `FLOAT64`
+  - `rev_trade_llm`: `FLOAT64`
+  - `rev_trade_llmtd`: `FLOAT64`
+  - `rev_organic_llm`: `FLOAT64`
+  - `rev_organic_llmtd`: `FLOAT64`
+  - `rev_acquisition_m0_llm`: `FLOAT64`
+  - `rev_acquisition_m0_llmtd`: `FLOAT64`
+  - `gross_churn_90d_llm`: `FLOAT64`
+  - `gross_churn_90d_llmtd`: `FLOAT64`
+  - `gross_churn_30d_llm`: `FLOAT64`
+  - `gross_churn_30d_llmtd`: `FLOAT64`
+  - `churn_back_90d_llm`: `FLOAT64`
+  - `churn_back_90d_llmtd`: `FLOAT64`
+  - `churn_back_30d_llm`: `FLOAT64`
+  - `churn_back_30d_llmtd`: `FLOAT64`
+  - `net_add_90d_llm`: `FLOAT64`
+  - `net_add_90d_llmtd`: `FLOAT64`
+  - `net_add_30d_llm`: `FLOAT64`
+  - `net_add_30d_llmtd`: `FLOAT64`
+  - `usg_data_gb_llm`: `FLOAT64`
+  - `usg_data_gb_llmtd`: `FLOAT64`
+  - `usg_og_voice_min_llm`: `FLOAT64`
+  - `usg_og_voice_min_llmtd`: `FLOAT64`
+  - `usg_og_sms_cnt_llm`: `FLOAT64`
+  - `usg_og_sms_cnt_llmtd`: `FLOAT64`
+  - `avg_subs_pau_daily_llm`: `FLOAT64`
+  - `avg_subs_pau_daily_llmtd`: `FLOAT64`
+  - `avg_subs_vlr_daily_llm`: `FLOAT64`
+  - `avg_subs_vlr_daily_llmtd`: `FLOAT64`
+  - `subs_rgu_90d_llm`: `FLOAT64`
+  - `subs_rgu_90d_llmtd`: `FLOAT64`
+  - `subs_rgu_30d_llm`: `FLOAT64`
+  - `subs_rgu_30d_llmtd`: `FLOAT64`
+  - `subs_rgu_90d_opening_llm`: `FLOAT64`
+  - `subs_rgu_90d_opening_llmtd`: `FLOAT64`
+  - `subs_rgu_30d_opening_llm`: `FLOAT64`
+  - `subs_rgu_30d_opening_llmtd`: `FLOAT64`
+  - `subs_net_churn_90d_llm`: `FLOAT64`
+  - `subs_net_churn_90d_llmtd`: `FLOAT64`
+  - `subs_net_churn_30d_llm`: `FLOAT64`
+  - `subs_net_churn_30d_llmtd`: `FLOAT64`
+  - `subs_gross_add_llm`: `FLOAT64`
+  - `subs_gross_add_llmtd`: `FLOAT64`
+  - `subs_pau_llm`: `FLOAT64`
+  - `subs_pau_llmtd`: `FLOAT64`
+  - `subs_vlr_30d_llm`: `FLOAT64`
+  - `subs_vlr_30d_llmtd`: `FLOAT64`
+  - `subs_avg_vlr_daily_llm`: `FLOAT64`
+  - `subs_avg_vlr_daily_llmtd`: `FLOAT64`
+  - `subs_pau_daily_llm`: `FLOAT64`
+  - `subs_pau_daily_llmtd`: `FLOAT64`
+  - `datauu_llm`: `FLOAT64`
+  - `datauu_llmtd`: `FLOAT64`
+  - `datauu30d_llm`: `FLOAT64`
+  - `datauu30d_llmtd`: `FLOAT64`
+  - `ga_m1s_llm`: `FLOAT64`
+  - `ga_m1s_llmtd`: `FLOAT64`
+  - `ga_m2s_llm`: `FLOAT64`
+  - `ga_m2s_llmtd`: `FLOAT64`
+  - `ga_p1m_llm`: `FLOAT64`
+  - `ga_p1m_llmtd`: `FLOAT64`
+  - `ga_p2m_llm`: `FLOAT64`
+  - `ga_p2m_llmtd`: `FLOAT64`
 
 ### `rham_site_wise_addr_java_perf_yoy`
 
@@ -816,6 +1070,8 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - addr_java_perf suffixes: _lm/_fm/_growth/_lmtd/_mtd/_mtd_growth per base metric.
 - rev_prepaid = default revenue; rev_vsd=voice+sms+data.
 - daily=rham_site_wise_daily, monthly=_monthly, mtd=_mtd (62 cols each).
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
 
 ## Related
 

@@ -20,13 +20,17 @@ from typing import Optional
 
 from . import config
 from .bigquery_tool import run_query
+from .territory import scope_column
 from .report_formulas import metric_value, safe_growth, shift_month_id
-from .report_metric_catalog import PREPAID_METRICS, catalog_payload, metric_fields
+from .report_metric_catalog import (HVC_MTD_MIXED_NOTE, HVC_UNRELIABLE_NOTE, PREPAID_METRICS, catalog_payload,
+                                    hvc_unreliable, metric_fields)
 
 _PROJECT = config.BQ_PROJECT
 _DATASET = config.BQ_DATASET
-_MTD = f"`{_PROJECT}.{_DATASET}.rham_mkt_highlevel_mtd`"
-_MTH = f"`{_PROJECT}.{_DATASET}.rham_mkt_highlevel_mth`"
+# Serving views: same rows and columns as rham_mkt_highlevel_*, with subs_hvc and
+# hvc_rev_total recovered. Base HVC is NULL/stale from 2026-09.
+_MTD = f"`{_PROJECT}.{_DATASET}.rham_hvc_highlevel_mtd_serving`"
+_MTH = f"`{_PROJECT}.{_DATASET}.rham_hvc_highlevel_mth_serving`"
 _TERR = f"`{_PROJECT}.{_DATASET}.rham_ref_territory`"
 
 # ── SECTIONS catalog ─────────────────────────────────────────────────────────
@@ -58,8 +62,7 @@ _BIO_ALL = ("(m.ga_traditional_biometric + m.ga_dsf_biometric + m.ga_modern_biom
 _BIO_TRADE = "(m.ga_traditional_biometric + m.ga_dsf_biometric)"
 _GA_TRADE = "(m.ga_traditional + m.ga_dsf)"
 # Gross Add derived from RGU-GA components (per request: gross add dari rgu ga)
-_RGU_GA = ("(m.rgu_ga_fwa + m.rgu_ga_digital_nat + m.rgu_ga_others_nat + "
-           "m.rgu_ga_trad_dsf_nat + m.rgu_ga_trad_outlet_nat)")
+_RGU_GA = "m.gaq_rgu_ga"
 
 SECTIONS: list[dict] = [
     {"title": "Site", "metrics": [
@@ -182,12 +185,17 @@ SECTIONS: list[dict] = [
     ]},
     {"title": "Trade", "group": "Trade", "metrics": [
         _m("num_outlet", "Number of Outlets", "Outlets", snapshot=True),
-        _m("primary_all", "Primary", "Outlets", snapshot=True),
-        _m("secondary_nat", "Secondary", "Outlets", snapshot=True),
-        _m("tertiary_a_nat", "Tertiary A", "Outlets", snapshot=True),
-        _m("tertiary_b", "Tertiary B", "Outlets", snapshot=True),
-        _m("tertiary_b_inner", "Tertiary B Inner", "Outlets", snapshot=True),
-        _m("tertiary_b_outer", "Tertiary B Outer", "Outlets", snapshot=True),
+        # Source renamed primary_all/secondary_nat and dropped tertiary_a_nat on 2026-10-07.
+        # Codes stay stable for clients and caches; only the source column moved.
+        _m("primary_all", "Primary", "Outlets", expr="m.`primary`", snapshot=True),
+        _m("secondary_nat", "Secondary", "Outlets", expr="m.secondary", snapshot=True),
+        # Traditional trade value comes from both components, not the source total.
+        # Keep an entirely missing value NULL; retain a populated single component.
+        _m("tertiary_b", "Tertiary B Trad", "IDR",
+           expr="COALESCE(m.tertiary_b_inner + m.tertiary_b_outer, "
+                "m.tertiary_b_inner, m.tertiary_b_outer)", snapshot=True),
+        _m("tertiary_b_inner", "Tertiary B Inner", "IDR", snapshot=True),
+        _m("tertiary_b_outer", "Tertiary B Outer", "IDR", snapshot=True),
         _m("trade_demand", "Trade Demand", "Subs"),
         _m("trade_demand_inner", "Trade Demand Inner", "Subs"),
         _m("trade_demand_outer", "Trade Demand Outer", "Subs"),
@@ -298,10 +306,7 @@ def _brand_cols(m: dict) -> str:
 def _terr_filter(filter_type: str, filter_value: str) -> str:
     if not filter_value:
         return ""
-    col = {"region": "t.region", "area": "t.area_im3", "branch": "t.branch_im3",
-           "kabkota": "t.kabkot", "kecamatan": "t.kec_id",
-           "microcluster": "t.micro_cluster_im3",
-           "supergtm": "t.super_gtm", "island": "t.island"}.get(filter_type)
+    col = scope_column(filter_type)
     return f" AND {col} = '{_esc(filter_value)}'" if col else ""
 
 
@@ -433,6 +438,28 @@ def build_comprehensive(circle: str, month_id: Optional[int],
         except Exception:
             r_lytd_point = {}
 
+    # HVC revenue is a subset of prepaid revenue. Some MTD months carry the
+    # full-month HVC value (7-8x prepaid MTD), so a month where HVC > prepaid is
+    # N/A instead of a fake +1000% swing. Checked per brand on the raw MTD rows.
+    hvc_rev_codes = [m["code"] for m in base if m["expr"].startswith("m.hvc_rev_")]
+    def _gate_hvc_revenue(row, ref):
+        nonlocal hvc_mixed
+        for brand in ("ioh", "im3", "3id"):
+            hvc = row.get(f"hvc_rev_total_{brand}", row.get(f"hvc_rev_total_pt_{brand}"))
+            prepaid = ref.get(f"rev_prepaid_h_{brand}")
+            # A separate reference without prepaid cannot clear the value: N/A.
+            unchecked = prepaid is None and ref is not row
+            if hvc is not None and (unchecked or prepaid is not None and float(hvc) > float(prepaid)):
+                hvc_mixed = True
+                for code in hvc_rev_codes:
+                    if f"{code}_{brand}" in row:
+                        row[f"{code}_{brand}"] = None
+    hvc_mixed = False
+    for row in (r_mtd, r_lmtd, r_llmtd, r_lytd_cur_mtd):
+        _gate_hvc_revenue(row, row)
+    # r_lytd_point holds snapshot codes only; prepaid comes from the same month's flow row.
+    _gate_hvc_revenue(r_lytd_point, r_lytd_cur_mtd)
+
     def num(d, k):
         v = d.get(k)
         return float(v) if v is not None else 0.0
@@ -452,6 +479,8 @@ def build_comprehensive(circle: str, month_id: Optional[int],
 
     # Build a value-map for every base metric: vals[code][brand] = {timeframes}
     snap_codes = {m["code"] for m in snap_m}
+    tf_month = {"llmtd": llmtd, "lmtd": lmtd, "mtd": mid, "ytd": mid, "lytd": mid_ly}
+    hvc_na = False
     vals: dict[str, dict] = {}
     for m in base:
         code = m["code"]
@@ -478,6 +507,12 @@ def build_comprehensive(circle: str, month_id: Optional[int],
                     bool(prior_months_ly),
                 )
             vals[code][brand] = {"llmtd": llm, "lmtd": lm, "mtd": mtd, "ytd": ytd, "lytd": lytd}
+        # YTD sums end at mid, LYTD at mid_ly: the latest month decides validity.
+        for tf, month in tf_month.items():
+            if hvc_unreliable(m["expr"].removeprefix("m."), month):
+                hvc_na = True
+                for brand in vals[code]:
+                    vals[code][brand][tf] = None
 
     def _rec_base(m):
         code = m["code"]
@@ -663,6 +698,7 @@ def build_comprehensive(circle: str, month_id: Optional[int],
                   "data_as_of": _data_as_of()},
         "catalog": {"prepaid": catalog_payload("prepaid")},
         "sections": out_sections,
+        "notes": ([HVC_UNRELIABLE_NOTE] if hvc_na else []) + ([HVC_MTD_MIXED_NOTE] if hvc_mixed else []),
     }
 
 

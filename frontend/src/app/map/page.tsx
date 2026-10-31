@@ -92,7 +92,7 @@ type MapSpec = {
   lon_key?: string;
   label_key?: string;
   metric_key?: string | null;
-  coloring?: "sign" | "range";
+  coloring?: "sign" | "range" | "favorable_sign";
   legend?: string | null;
   style?: MapStyle;
 };
@@ -274,7 +274,7 @@ const EXAMPLES = [
 export default function MapQueryPage() {
   const router = useRouter();
   const [authed, setAuthed] = useState(false);
-  const [userLoc, setUserLoc] = useState<{ lat: number; lon: number } | null>(null);
+  const [userLoc, setUserLoc] = useState<{ lat: number; lon: number; accuracy?: number; timestamp?: number } | null>(null);
   const [locating, setLocating] = useState(true);
   const [points, setPoints] = useState<MapPoint[]>([]);
   const [choropleth, setChoropleth] = useState<Choropleth | null>(null);
@@ -285,6 +285,7 @@ export default function MapQueryPage() {
   const [resultCount, setResultCount] = useState<number | null>(null);
   const [fixMode, setFixMode] = useState(false);
   const [fixLoading, setFixLoading] = useState(false);
+  const [fixError, setFixError] = useState("");
   const [fixMonth, setFixMonth] = useState<string | null>(null);
   const [fixAuto, setFixAuto] = useState(false);
   const [labelOn, setLabelOn] = useState(false);
@@ -317,8 +318,9 @@ export default function MapQueryPage() {
         { key: "Jarak", value: `${s.distance_km ?? "—"} km` },
         { key: "Type", value: String(s.site_type ?? "—") },
         { key: "Category", value: String(s.category ?? "—") },
-        { key: "Branch", value: String(s.branch ?? "—") },
-        { key: "Micro Cluster", value: String(s.micro_cluster ?? "—") },
+        { key: "Area", value: String(s.branch ?? "N/A") },
+        { key: "District", value: String(s.micro_cluster ?? "N/A") },
+        { key: "Cakupan detail channel", value: "Kecamatan" },
         { key: "Kecamatan", value: `${s.kecamatan ?? "—"}, ${s.kabupaten ?? "—"}` },
       ];
       const metrics = [
@@ -339,18 +341,17 @@ export default function MapQueryPage() {
   }
 
   async function loadFixSites() {
+    if (fixLoading) return;
     setFixLoading(true);
-    let loc = userLoc;
-    if (!loc) {
-      loc = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+    setFixError("");
+    const loc = await new Promise<{ lat: number; lon: number; accuracy: number; timestamp: number } | null>((resolve) => {
         if (!navigator.geolocation) return resolve(null);
         navigator.geolocation.getCurrentPosition(
-          (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-          () => resolve(null), { enableHighAccuracy: true, timeout: 15000 });
+          (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy, timestamp: p.timestamp }),
+          () => resolve(null), { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
       });
-      if (loc) setUserLoc(loc);
-    }
-    if (!loc) { setFixLoading(false); return; }
+    if (loc) setUserLoc(loc);
+    if (!loc) { setFixError("Lokasi GPS belum tersedia. Periksa izin lokasi dan coba lagi."); setFixLoading(false); return; }
     try {
       const r = await fetch("/api/geo/nearest-sites", { method: "POST", headers: { "Content-Type": "application/json", ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}) }, body: JSON.stringify(loc) });
       const d = await r.json();
@@ -359,8 +360,8 @@ export default function MapQueryPage() {
         fixSitesRef.current = sites;
         setFixMonth(d.month_id ?? null);
         setPoints(buildFixPoints(sites, labelOn, labelMetric, d.month_id ?? null));
-      }
-    } catch { /* ignore */ }
+      } else setFixError(d.error || "Data site belum tersedia.");
+    } catch (error) { setFixError(String(error)); }
     setFixLoading(false);
   }
 
@@ -423,7 +424,7 @@ export default function MapQueryPage() {
     if (typeof navigator !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setUserLoc({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+          setUserLoc({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: pos.timestamp });
           setLocating(false);
         },
         () => setLocating(false),
@@ -653,7 +654,7 @@ export default function MapQueryPage() {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLoc({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+        setUserLoc({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy, timestamp: pos.timestamp });
         setLocating(false);
       },
       () => setLocating(false),
@@ -677,7 +678,7 @@ export default function MapQueryPage() {
           ))}
         </div>
         <div className="mq-loc">
-          {locating ? "📍 …" : userLoc ? `📍 ${userLoc.lat.toFixed(3)}, ${userLoc.lon.toFixed(3)}` : "📍 N/A"}
+          {locating ? "📍 …" : userLoc ? `GPS${userLoc.accuracy === undefined ? "" : ` ±${Math.round(userLoc.accuracy)} m`}` : "GPS N/A"}
         </div>
         <button className="mq-recenter" onClick={recenter} title="Perbarui lokasi saya">⟳</button>
         <button className="mq-recenter" onClick={refreshMap} title="Refresh map (hapus hasil)">🗑</button>
@@ -686,7 +687,7 @@ export default function MapQueryPage() {
       {/* Fix panel — compact: status + label toggle/picker + auto + refresh */}
       {fixMode && (
         <div style={{ position: "absolute", top: 64, left: 12, right: 12, zIndex: 1000, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, background: "rgba(255,255,255,.96)", border: "1px solid #E1E9E7", borderRadius: 10, padding: "6px 10px", boxShadow: "0 2px 8px rgba(0,0,0,.1)" }}>
-          <span style={{ flex: 1, minWidth: 120, fontSize: 12, fontWeight: 600, color: "#0F1F1D" }}>{fixLoading ? "Memuat…" : `${points.length} site${fixMonth ? ` · ${fixMonth}` : ""}`}</span>
+          <span style={{ flex: 1, minWidth: 120, fontSize: 12, fontWeight: 600, color: "#0F1F1D" }}>{fixLoading ? "Memuat…" : fixError || `${points.length} site${fixMonth ? ` · ${fixMonth}` : ""}`}</span>
           <button onClick={() => setLabelOn((v) => !v)} title="Tampilkan label di marker"
             style={{ border: `1px solid ${labelOn ? "#15A697" : "#E1E9E7"}`, background: labelOn ? "#15A697" : "#fff", color: labelOn ? "#fff" : "#5A6B68", borderRadius: 999, padding: "4px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>🏷 Label</button>
           {labelOn && (

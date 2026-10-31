@@ -2,7 +2,7 @@
 title: "Runtime KB domain: acquisition"
 type: generated-knowledge
 domain: "acquisition"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `acquisition`
@@ -12,12 +12,13 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** Acquisition (Gross Add)
 - **Description:** Acquisition / gross-add performance across ALL channels (modern, OLA, online, FWA, gerai, bank, H2H, traditional, DSF + biometric) at site & branch grain.
-- **Tables:** 4
+- **Tables:** 5
 - **Agent identifier:** `Acquisition Analyst`
 
 ## Domain to table relationships
 
 - Domain `acquisition` contains table `rham_branch_ga_daily`.
+- Domain `acquisition` contains table `rham_postpaid_ga_daily`.
 - Domain `acquisition` contains table `rham_sellin_ga_location`.
 - Domain `acquisition` contains table `rham_site_acquisition_rev`.
 - Domain `acquisition` contains table `rham_site_ga_daily`.
@@ -66,6 +67,36 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `ga_usage_500mb_plus`: `INT64`
   - `ga_usage_1gb_plus`: `INT64`
   - `ga_total`: `INT64`
+
+### `rham_postpaid_ga_daily`
+
+- Relationship: domain `acquisition` contains table `rham_postpaid_ga_daily`.
+- Column count: 16.
+- Partition columns: `activation_date`.
+- Source kind: `observed`.
+- Grain: `activation_date_x_store_x_channel_x_order_x_package`.
+- Period semantics: `daily`.
+- Aggregation rule: `sum_additive_metrics`.
+- Priority: `standard`.
+- Relative cost tier: `low`.
+- Metric families: `acquisition`, `postpaid`, `revenue`.
+- Columns:
+  - `activation_date`: `DATE` (partition)
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `store_code`: `STRING`
+  - `channel`: `STRING`
+  - `channel_group`: `STRING`
+  - `rcm`: `STRING`
+  - `order_type`: `STRING`
+  - `order_group`: `STRING`
+  - `package_type`: `STRING`
+  - `tenure_pack`: `STRING`
+  - `package_rev`: `STRING`
+  - `acq_revenue_mio`: `FLOAT64`
+  - `guaranteed_revenue_mio`: `FLOAT64`
+  - `gross_add`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
 
 ### `rham_sellin_ga_location`
 
@@ -164,6 +195,8 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Each channel has a _biometric variant (subset verified via biometric).
 - ga_usage_*_plus = acquisition quality (GA that reached a data-usage tier).
 - site grain: rham_site_ga_daily; branch grain: rham_branch_ga_daily.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
 
 ## Related
 

@@ -67,11 +67,11 @@ def app_version():
         "version_code": int(rel.get("version_code", 1)),
         "notes": rel.get("notes", ""),
         "mandatory": bool(rel.get("mandatory", False)),
-        "download_url": "/api/app/download",
+        "download_url": rel.get("download_url") or "/api/app/download",
         "size_bytes": size,
         "available": size > 0,
         "released_at": released_at,
-    })
+    }, headers={"Cache-Control": "no-store, max-age=0"})
 
 
 @router.get("/download")

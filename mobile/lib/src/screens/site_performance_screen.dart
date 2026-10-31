@@ -419,6 +419,10 @@ class _SitePerformanceScreenState extends State<SitePerformanceScreen> {
                     '$siteId · ${_brand.toUpperCase()}${month == null ? '' : ' · $month'} · ${_view == 'snapshot' ? 'Snapshot MTD' : 'Full Month'}',
                     style: TextStyle(fontSize: 10.5, color: context.vMute),
                     maxLines: 2),
+                if (_detail?['detail_grain'] == 'kecamatan')
+                  Text(
+                      'Channel, produk, dan slab: Kecamatan ${_detail?['detail_scope'] ?? ''}, periode ${_detail?['detail_month_id'] ?? 'N/A'}. KPI utama tetap per site.',
+                      style: TextStyle(fontSize: 11, color: context.vMute)),
               ],
             )),
           ]),
@@ -591,7 +595,7 @@ class _SitePerformanceScreenState extends State<SitePerformanceScreen> {
               '${str(a['site_type'])} · ${str(a['category'])} · ${str(a['kecamatan'])}, ${str(a['kabupaten'])}',
               style: TextStyle(fontSize: 12, color: context.vMute)),
           Text(
-              'Branch ${str(a['branch'])} · MC ${str(a['micro_cluster'])} · Region ${str(a['region'])} · Bulan ${str(d['month_id'])}',
+              'Area ${str(a['branch'])} · District ${str(a['micro_cluster'])} · Region ${str(a['region'])} · Bulan ${str(d['month_id'])}',
               style: TextStyle(fontSize: 11, color: context.vMute)),
         ]),
       ),
@@ -601,6 +605,11 @@ class _SitePerformanceScreenState extends State<SitePerformanceScreen> {
       const SizedBox(height: 8),
       _diagnosticSummary(d),
       const SizedBox(height: 8),
+      for (final note in (d['notes'] as List?) ?? const [])
+        Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text('Catatan: $note',
+                style: TextStyle(fontSize: 11, color: context.vMute))),
       _chapterControls(),
       const SizedBox(height: 8),
       if (_view == 'fullmonth') ...[
@@ -933,9 +942,8 @@ class _SitePerformanceScreenState extends State<SitePerformanceScreen> {
             : IOH.danger;
     final value = _isRev(code) ? _mn(metric['mtd']) : _num(metric['mtd']);
     final prior = _isRev(code) ? _mn(metric['lmtd']) : _num(metric['lmtd']);
-    final growthText = growth == null
-        ? 'Comparison unavailable'
-        : reportGrowth(growth);
+    final growthText =
+        growth == null ? 'Comparison unavailable' : reportGrowth(growth);
     final semantic =
         '${_metricLabels[code] ?? code}, MTD $value, LMTD $prior, $growthText${favorable == null ? '' : favorable ? ', favorable' : ', unfavorable'}';
     return Semantics(
@@ -1771,10 +1779,7 @@ class _SitePerformanceScreenState extends State<SitePerformanceScreen> {
                       color: context.vInk))),
           Expanded(
               flex: 3,
-              child: Text(
-                  g == null
-                      ? 'N/A'
-                      : reportGrowth(g),
+              child: Text(g == null ? 'N/A' : reportGrowth(g),
                   textAlign: TextAlign.right,
                   style: TextStyle(
                       fontSize: 11, color: _deltaColor(codes[i], g)))),
@@ -1856,10 +1861,7 @@ class _SitePerformanceScreenState extends State<SitePerformanceScreen> {
                         color: context.vInk))),
             Expanded(
                 flex: 3,
-                child: Text(
-                    g == null
-                        ? 'N/A'
-                        : reportGrowth(g),
+                child: Text(g == null ? 'N/A' : reportGrowth(g),
                     textAlign: TextAlign.right,
                     style: TextStyle(fontSize: 11, color: sg(g)))),
           ])));

@@ -11,7 +11,7 @@ detail the vault does not carry. Paths relative to repo root `/home/ubuntu/telco
 
 | Source doc | Size | Read it for | Distilled in |
 |------------|------|-------------|--------------|
-| `AGENTS.md` | 14KB | the authoritative project brief (backend/frontend/mobile, reports, deploy) | most of `10-*`, `20-*`, `50-*` |
+| `AGENTS.md` | 9KB | shared operating guide for all coding models (loop, gates, KB workflow) | [[model-roster]] |
 | `FTTH_KNOWLEDGE_BASE.txt` | 48KB | legacy PHP FTTH reverse-engineering, full funnel/hierarchy detail | [[ftth]] |
 | `SESSION_KNOWLEDGE_2026-06.md` | 8KB | the live FTTH implementation session notes | [[ftth]], [[ytd-lytd-apple-to-apple]] |
 | `TELCO_REPORTS_REPLICATION_KNOWLEDGE.txt` | 9KB | report replication detail (section 6 = FTTH) | [[reports]] |

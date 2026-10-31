@@ -350,11 +350,15 @@ class ApiClient {
       {String circle = 'JAVA',
       String scope = 'total',
       String brand = 'ioh',
+      String filterType = 'all',
+      String filterValue = '',
       int? monthId}) async {
     final q = <String, String>{
       'circle': circle,
       'scope': scope,
       'brand': brand,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue,
       if (monthId != null) 'month_id': '$monthId'
     };
     final uri = Uri.parse('$base/api/reports/product-demand')

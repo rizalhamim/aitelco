@@ -67,6 +67,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else {
         _toast(_id ? 'Aplikasi sudah versi terbaru.' : 'App is up to date.');
       }
+    } on UpdateCheckException catch (e) {
+      if (mounted) _toast(e.message, error: true);
     } catch (e) {
       if (mounted) _toast(_id ? 'Gagal memeriksa pembaruan.' : 'Failed to check updates.', error: true);
     }

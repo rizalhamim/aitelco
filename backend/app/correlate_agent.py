@@ -31,10 +31,10 @@ Available domains and what they hold:
 
 Your job: split the question into EXACTLY TWO sub-queries (A and B). Rules:
 - Each sub-query targets ONE domain and asks for that domain's metric AGGREGATED
-  PER TERRITORY at the SAME grain (default: per kabkota; use kecamatan/branch/region
+  PER TERRITORY at the SAME grain (default: per kabkota; use kecamatan/area/district/region
   only if the user said so). Both A and B MUST use the SAME grain and the SAME
   join key name.
-- Choose `join_key`: 'kabkota' (default), or 'kec_id' for kecamatan, or 'region'/'branch'.
+- Choose `join_key`: 'kabkota' (default), 'kec_id' for kecamatan, or 'region'/'area'/'district'.
 - Each sub-query's `question` MUST instruct the SQL agent to output: the join key
   column (named exactly = join_key), plus the metric column(s) for that domain, for
   the latest period (and a prior period if the user asked YoY/MoM/trend), filtered
@@ -50,8 +50,8 @@ Your job: split the question into EXACTLY TWO sub-queries (A and B). Rules:
 
 Output ONLY compact JSON with this FLAT schema (no nested objects). All 8 keys are REQUIRED:
 {{
- "territory_grain": "kabkota|kecamatan|region|branch",
- "join_key": "kabkota|kec_id|region|branch",
+ "territory_grain": "kabkota|kecamatan|region|area|district",
+ "join_key": "kabkota|kec_id|region|area|district",
  "relation_hint": "<short phrase>",
  "language": "id|en",
  "domain_a": "<domain key for metric A>",
@@ -135,7 +135,7 @@ def _find_key_col(columns: list[str], join_key: str) -> str | None:
         if c.lower() == jk:
             return c
     # fallbacks
-    for cand in (jk, "kabkota", "kabkot", "kec_id", "kecamatan", "region", "branch"):
+    for cand in (jk, "kabkota", "kabkot", "kec_id", "kecamatan", "region", "area", "district", "branch"):
         for c in columns:
             if c.lower() == cand:
                 return c

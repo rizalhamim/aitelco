@@ -57,7 +57,8 @@ def build_network_benchmark(circle: str, filter_type: str = "all", filter_value:
         t_level = _esc(filter_type)
         t_name = _esc(filter_value)
     
-    if t_level == 'microcluster': t_level = 'micro_cluster'
+    if t_level in ('district', 'microcluster'): t_level = 'micro_cluster'
+    if t_level == 'area': t_level = 'branch'
     if t_level == 'kabkota': t_level = 'kabkot'
 
     # --- FB Network Data (Weekly data, we will aggregate to monthly for the last 3 months) ---

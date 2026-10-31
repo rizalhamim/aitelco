@@ -1,7 +1,7 @@
 ---
 title: Runtime knowledge projection for Graphify
 type: generated-knowledge-index
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime knowledge projection for Graphify
@@ -14,15 +14,15 @@ This directory is a deterministic, development-only projection of
 
 ## Coverage
 
-- Source SHA-256: `54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107`
+- Source SHA-256: `7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5`
 - Project: `data-java-prd-97b9`
 - Dataset: `java_precalc`
 - Region: `asia-southeast2`
 - Domains: 17
-- Tables: 157
-- Columns: 7125
-- Approved domain key facts: 99
-- Approved global data fact groups: 26
+- Tables: 162
+- Columns: 8121
+- Approved domain key facts: 134
+- Approved global data fact groups: 30
 
 ## Security and ownership boundary
 
@@ -36,21 +36,21 @@ for production business metrics or chat answers.
 ## Domains
 
 - [`5g`](domains/5g.md): 9 tables, 5G Performance
-- [`acquisition`](domains/acquisition.md): 4 tables, Acquisition (Gross Add)
-- [`competitive`](domains/competitive.md): 28 tables, Competitive Market Share
-- [`customer_demand`](domains/customer-demand.md): 13 tables, Customer Demand & Digital Behavior
-- [`customer_hvc`](domains/customer-hvc.md): 6 tables, High Value Customer
-- [`forecast`](domains/forecast.md): 14 tables, Forecast (Revenue Prediction)
-- [`ftth`](domains/ftth.md): 10 tables, FTTH / HBB Home Broadband
-- [`fwa`](domains/fwa.md): 10 tables, FWA Business
-- [`kpi_summary`](domains/kpi-summary.md): 9 tables, KPI Summary (Marketing High-Level)
+- [`acquisition`](domains/acquisition.md): 5 tables, Acquisition (Gross Add)
+- [`competitive`](domains/competitive.md): 31 tables, Competitive Market Share
+- [`customer_demand`](domains/customer-demand.md): 10 tables, Customer Demand & Digital Behavior
+- [`customer_hvc`](domains/customer-hvc.md): 8 tables, High Value Customer
+- [`forecast`](domains/forecast.md): 0 tables, Forecast (Revenue Prediction)
+- [`ftth`](domains/ftth.md): 12 tables, FTTH / HBB Home Broadband
+- [`fwa`](domains/fwa.md): 9 tables, FWA Business
+- [`kpi_summary`](domains/kpi-summary.md): 5 tables, KPI Summary (Marketing High-Level)
 - [`network`](domains/network.md): 8 tables, Network Quality & Availability
 - [`network_benchmark`](domains/network-benchmark.md): 13 tables, Network Benchmark (Competitor)
 - [`performance_outlook_extended`](domains/performance-outlook-extended.md): 0 tables, Performance Outlook Extended
 - [`product`](domains/product.md): 3 tables, Product Revenue Intelligence
 - [`revenue`](domains/revenue.md): 6 tables, Revenue Deep-Dive
-- [`sales_distribution`](domains/sales-distribution.md): 14 tables, Sales & Distribution
-- [`site_performance`](domains/site-performance.md): 6 tables, Site Performance
+- [`sales_distribution`](domains/sales-distribution.md): 30 tables, Sales & Distribution
+- [`site_performance`](domains/site-performance.md): 9 tables, Site Performance
 - [`territory_reference`](domains/territory-reference.md): 4 tables, Territory Reference
 
 ## Global data facts
@@ -67,19 +67,23 @@ for production business metrics or chat answers.
 - [`forecast_tables`](data-facts/forecast-tables.md)
 - [`ftth_tables`](data-facts/ftth-tables.md)
 - [`geography`](data-facts/geography.md)
+- [`hvc_source_status`](data-facts/hvc-source-status.md)
 - [`knowledge_governance`](data-facts/knowledge-governance.md)
 - [`metric_prefixes`](data-facts/metric-prefixes.md)
 - [`month_id_arithmetic`](data-facts/month-id-arithmetic.md)
 - [`month_id_casting`](data-facts/month-id-casting.md)
 - [`operators_for_competitive`](data-facts/operators-for-competitive.md)
 - [`partial_period_warning`](data-facts/partial-period-warning.md)
+- [`query_cost_policy`](data-facts/query-cost-policy.md)
 - [`query_guidance`](data-facts/query-guidance.md)
 - [`read_only`](data-facts/read-only.md)
 - [`revenue_defaults`](data-facts/revenue-defaults.md)
 - [`runtime_graph`](data-facts/runtime-graph.md)
 - [`site_kec_id_mapping`](data-facts/site-kec-id-mapping.md)
+- [`source_grain_migration`](data-facts/source-grain-migration.md)
 - [`table_grains`](data-facts/table-grains.md)
 - [`table_routing_constraints`](data-facts/table-routing-constraints.md)
+- [`territory_hierarchy`](data-facts/territory-hierarchy.md)
 - [`window_filter_examples`](data-facts/window-filter-examples.md)
 
 ## Governance

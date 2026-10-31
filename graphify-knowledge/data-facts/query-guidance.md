@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: query_guidance"
 type: generated-knowledge
 data_fact: "query_guidance"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `query_guidance`
@@ -12,7 +12,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Flattened fact paths
 
-- **`query_guidance`:** ALWAYS filter dt_id (partition) to bound cost. Big tables: rham_site_data_rev_channel_daily (873M rows), rham_site_data_rev_price_slab_daily (736M), rham_site_wise_daily_raw (441M). For monthly use month_id string compare.
+- **`query_guidance`:** ALWAYS filter dt_id (partition) to bound cost. Big tables: rham_kec_data_rev_channel_daily (873M rows), rham_kec_data_rev_price_slab_daily (736M), rham_site_wise_daily_raw (441M). For monthly use month_id string compare.
 
 ## Related
 

@@ -18,11 +18,13 @@ import 'location_sheet.dart';
 
 class _ChoroPoly {
   final List<LatLng> ring;
+  final List<List<LatLng>> holes;
   final Color color;
   final String label;
   final double value;
   final Map<String, dynamic> extra;
-  _ChoroPoly(this.ring, this.color, this.label, this.value, this.extra);
+  _ChoroPoly(this.ring, this.color, this.label, this.value, this.extra,
+      {this.holes = const []});
 }
 
 class _Turn {
@@ -226,7 +228,8 @@ class _MapStructuredValue extends StatelessWidget {
       }
     }
     flush();
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: blocks);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch, children: blocks);
   }
 
   Widget _empty(BuildContext context) => Padding(
@@ -269,14 +272,17 @@ String mapFeatureScalarValue(dynamic value, {String key = ''}) {
   if (value == null) return kReportNotAvailable;
   if (value is bool) return value ? 'Ya' : 'Tidak';
   if (key.isEmpty) {
-    if (value is num) return reportMagnitude(value, decimals: 1, useThousand: false);
+    if (value is num) {
+      return reportMagnitude(value, decimals: 1, useThousand: false);
+    }
     return value.toString();
   }
   return reportValueForKey(key, value);
 }
 
 /// One field as a shared attribute row, label humanised and value formatted.
-ReportAttribute mapFeatureAttribute(String key, dynamic value, {int depth = 0}) {
+ReportAttribute mapFeatureAttribute(String key, dynamic value,
+    {int depth = 0}) {
   final label = mapFeatureFieldLabel(key);
   return ReportAttribute(
     label: label,
@@ -383,7 +389,11 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
   List<_ChoroPoly> _polys = [];
   String? _legendMetric;
   double _legendMin = 0, _legendMax = 0;
+  String _legendColoring = 'range';
+  int _unmappedCount = 0;
+  int _renderGeneration = 0;
   LatLng? _userLoc;
+  LocationFix? _locationFix;
   bool _satellite = true;
   bool _chatOpen = true;
   bool _busy = false;
@@ -485,6 +495,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
   }
 
   Future<void> _refreshMap() async {
+    _renderGeneration++;
     _sub?.cancel();
     _input.clear();
     setState(() {
@@ -517,6 +528,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
 
   // ── Fix mode ──
   void _setMode(String mode) {
+    _renderGeneration++;
     final fix = mode == 'fix';
     final explore = mode == 'explore';
     setState(() {
@@ -549,22 +561,23 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
   }
 
   Future<void> _loadFixSites() async {
+    if (_fixLoading) return;
+    final generation = _renderGeneration;
     setState(() {
       _fixLoading = true;
     });
-    LatLng? loc = _userLoc;
-    if (loc == null) {
-      final c = await getCurrentCoord(context);
-      if (c != null) loc = LatLng(c.$1, c.$2);
-    }
-    if (loc == null) {
+    final fix = await getCurrentLocationFix(context);
+    if (!mounted) return;
+    if (fix == null || generation != _renderGeneration) {
       if (mounted) setState(() => _fixLoading = false);
       return;
     }
+    final loc = LatLng(fix.latitude, fix.longitude);
     _userLoc = loc;
+    _locationFix = fix;
     try {
       final d = await ApiClient.nearestSites(loc.latitude, loc.longitude);
-      if (!mounted) return;
+      if (!mounted || generation != _renderGeneration) return;
       if (d['ok'] == true) {
         _fixSitesRaw =
             (d['sites'] as List?)?.cast<Map<String, dynamic>>() ?? [];
@@ -573,9 +586,18 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
           _fixMonth = d['month_id']?.toString();
           _selected = -1;
         });
-        _mapController.move(loc, 14);
+        _fitBounds();
+      } else {
+        throw Exception(d['error'] ?? 'Data site belum tersedia.');
       }
-    } catch (_) {}
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memuat site terdekat: $error')));
+      }
+    } finally {
+      if (mounted) setState(() => _fixLoading = false);
+    }
     if (mounted) setState(() => _fixLoading = false);
   }
 
@@ -619,10 +641,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
         setState(() => _exploreError = data['error'].toString());
         return;
       }
-      final result = <String, dynamic>{
-        'columns': (data['columns'] as List?) ?? const [],
-        'rows': (data['rows'] as List?) ?? const [],
-      };
+      final result = Map<String, dynamic>.from(data);
       final spec =
           (data['map_spec'] as Map?)?.cast<String, dynamic>() ?? const {};
       _exploreResult = result;
@@ -655,7 +674,14 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
     for (final s in _fixSitesRaw) {
       final la = (s['latitude'] as num?)?.toDouble();
       final lo = (s['longitude'] as num?)?.toDouble();
-      if (la == null || lo == null) continue;
+      if (la == null ||
+          lo == null ||
+          !la.isFinite ||
+          !lo.isFinite ||
+          la.abs() > 90 ||
+          lo.abs() > 180) {
+        continue;
+      }
       pts.add(_MPoint(
           la, lo, (s['site_name'] ?? s['site_id'] ?? 'Site').toString(), s,
           fix: true, labelText: _labelOn ? _fixLabel(s) : null));
@@ -689,12 +715,13 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
 
   Future<void> _getLoc() async {
     setState(() => _locating = true);
-    final c = await getCurrentCoord(context);
+    final fix = await getCurrentLocationFix(context);
     if (!mounted) return;
     setState(() {
       _locating = false;
-      if (c != null) {
-        _userLoc = LatLng(c.$1, c.$2);
+      if (fix != null) {
+        _locationFix = fix;
+        _userLoc = LatLng(fix.latitude, fix.longitude);
       }
     });
     if (_userLoc != null && _points.isEmpty) {
@@ -711,13 +738,9 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       Color(0xFFE13838); // semantic red (decline / low), real red
 
   Color _colorFor(double v, double min, double max) {
-    if (max == min) return IOH.yellow;
+    if (max == min) return IOH.teal;
     final t = ((v - min) / (max - min)).clamp(0.0, 1.0);
-    // 0 red -> 0.5 yellow -> 1 teal
-    if (t <= 0.5) {
-      return Color.lerp(_red, IOH.yellow, t / 0.5)!;
-    }
-    return Color.lerp(IOH.yellow, IOH.teal, (t - 0.5) / 0.5)!;
+    return Color.lerp(_neutral, IOH.teal, t)!;
   }
 
   // Zero-anchored sign scale: negative=red, ~0=neutral, positive=green.
@@ -793,6 +816,13 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
 
   Future<void> _renderChoroplethSpec(
       Map<String, dynamic> spec, List<String> cols, List rows) async {
+    final generation = ++_renderGeneration;
+    setState(() {
+      _polys = [];
+      _points = [];
+      _legendMetric = null;
+      _resultCount = 0;
+    });
     if (rows.isEmpty) return;
     final dissolveBy = (spec['dissolve_by'] ?? 'id').toString();
     final level = (spec['level'] ?? 'kecamatan').toString();
@@ -822,7 +852,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       final m = (r as Map).cast<String, dynamic>();
       final key = (m[keyKey] ?? '').toString().toUpperCase();
       final v = _toD(m[metricKey]);
-      if (key.isEmpty || v == null) continue;
+      if (key.isEmpty || v == null || !v.isFinite) continue;
       valueMap[key] = {
         'value': v,
         'label': (m[labelKey] ?? key).toString(),
@@ -842,7 +872,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       final value = entry['value'] as double;
       if (favorableMode) {
         final favorable = (entry['extra'] as Map)['favorable'];
-        if (favorable is! bool) return _neutral;
+        if (favorable is! bool || maxAbs == 0) return _neutral;
         final intensity = (value.abs() / maxAbs).clamp(0.0, 1.0);
         return Color.lerp(_neutral, favorable ? _green : _red, intensity)!;
       }
@@ -863,7 +893,9 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       return;
     }
 
+    if (!mounted || generation != _renderGeneration) return;
     final polys = <_ChoroPoly>[];
+    final matched = <String>{};
     final allPts = <LatLng>[];
     for (final f in feats) {
       Map<String, dynamic>? entry;
@@ -876,28 +908,34 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       }
       if (entry == null) continue;
       final color = colorOf(entry);
-      for (final ring in f.rings) {
+      matched.add(entry['label'] as String);
+      for (final part in f.parts) {
         polys.add(_ChoroPoly(
-            ring,
+            part.points,
             color,
             entry['label'] as String,
             entry['value'] as double,
-            (entry['extra'] as Map).cast<String, dynamic>()));
-        allPts.addAll(ring);
+            (entry['extra'] as Map).cast<String, dynamic>(),
+            holes: part.holes));
+        allPts.addAll(part.points);
       }
     }
-    if (!mounted || polys.isEmpty) return;
+    if (!mounted || generation != _renderGeneration) return;
     setState(() {
       _points = [];
       _polys = polys;
       _legendMetric = (spec['legend'] ?? metricKey).toString();
-      _legendMin = mn;
-      _legendMax = mx;
-      _resultCount = valueMap.length;
+      _legendColoring = coloring;
+      _legendMin = signMode || favorableMode ? -maxAbs : mn;
+      _legendMax = signMode || favorableMode ? maxAbs : mx;
+      _resultCount = matched.length;
+      _unmappedCount = rows.length - matched.length;
       _selected = -1;
     });
-    _mapController.fitCamera(CameraFit.coordinates(
-        coordinates: allPts, padding: const EdgeInsets.all(40)));
+    if (allPts.isNotEmpty) {
+      _mapController.fitCamera(
+          CameraFit.coordinates(coordinates: allPts, padding: _mapPadding));
+    }
   }
 
   bool _tryChoropleth(List<String> cols, List rows) {
@@ -967,45 +1005,25 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
 
   Future<void> _renderChoropleth(String level,
       Map<String, Map<String, dynamic>> valueMap, String metric) async {
-    final vals = valueMap.values.map((e) => e['value'] as double).toList();
-    final mn = vals.reduce((a, b) => a < b ? a : b);
-    final mx = vals.reduce((a, b) => a > b ? a : b);
-    List<GeoFeature> feats;
-    try {
-      feats = await GeoAssets.load(level);
-    } catch (e) {
-      return;
-    }
-    final polys = <_ChoroPoly>[];
-    final allPts = <LatLng>[];
-    for (final f in feats) {
-      final entry = valueMap[f.id];
-      if (entry == null) continue;
-      final color = _colorFor(entry['value'] as double, mn, mx);
-      for (final ring in f.rings) {
-        polys.add(_ChoroPoly(
-            ring,
-            color,
-            entry['label'] as String,
-            entry['value'] as double,
-            (entry['extra'] as Map).cast<String, dynamic>()));
-        allPts.addAll(ring);
-      }
-    }
-    if (!mounted) return;
-    setState(() {
-      _points = [];
-      _polys = polys;
-      _legendMetric = metric;
-      _legendMin = mn;
-      _legendMax = mx;
-      _resultCount = valueMap.length;
-      _selected = -1;
-    });
-    if (allPts.isNotEmpty) {
-      _mapController.fitCamera(CameraFit.coordinates(
-          coordinates: allPts, padding: const EdgeInsets.all(40)));
-    }
+    final idKey = level == 'kabupaten' ? 'kabkot_id' : 'kec_id';
+    final rows = valueMap.entries
+        .map((entry) => <String, dynamic>{
+              ...entry.value['extra'] as Map<String, dynamic>,
+              idKey: entry.key,
+              metric: entry.value['value'],
+            })
+        .toList();
+    await _renderChoroplethSpec({
+      'dissolve_by': 'id',
+      'geo_key': idKey,
+      'metric_key': metric,
+      'legend': metric,
+      'coloring':
+          RegExp(r'growth|pertumbuhan|change|delta|trend', caseSensitive: false)
+                  .hasMatch(metric)
+              ? 'sign'
+              : 'range',
+    }, rows.first.keys.toList(), rows);
   }
 
   void _ingestResult(Map<String, dynamic> data, {Map<String, dynamic>? style}) {
@@ -1032,7 +1050,13 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       }
     }
     if (latKey == null || lonKey == null) {
-      setState(() => _resultCount = 0);
+      _renderGeneration++;
+      setState(() {
+        _resultCount = 0;
+        _points = [];
+        _polys = [];
+        _legendMetric = null;
+      });
       return;
     }
     String labelKey = cols.firstWhere(
@@ -1074,7 +1098,14 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       final m = (rows[i] as Map).cast<String, dynamic>();
       final lat = _toD(m[latKey]);
       final lon = _toD(m[lonKey]);
-      if (lat == null || lon == null || lat == 0 || lon == 0) continue;
+      if (lat == null ||
+          lon == null ||
+          !lat.isFinite ||
+          !lon.isFinite ||
+          lat.abs() > 90 ||
+          lon.abs() > 180) {
+        continue;
+      }
       Color? color;
       for (var ri = 0; ri < rules.length; ri++) {
         final rule = (rules[ri] as Map).cast<String, dynamic>();
@@ -1140,7 +1171,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
   void _fitBounds() {
     final all = [
       ..._points.map((p) => LatLng(p.lat, p.lon)),
-      if (_userLoc != null) _userLoc!
+      if (_fixMode && _userLoc != null) _userLoc!
     ];
     if (all.isEmpty) return;
     if (all.length == 1) {
@@ -1148,36 +1179,26 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
       return;
     }
     _mapController.fitCamera(CameraFit.coordinates(
-        coordinates: all, padding: const EdgeInsets.all(60), maxZoom: 16));
+        coordinates: all, padding: _mapPadding, maxZoom: 16));
   }
+
+  EdgeInsets get _mapPadding => EdgeInsets.fromLTRB(
+      48,
+      120,
+      48,
+      _chatOpen && !_fixMode && !_exploreMode
+          ? MediaQuery.sizeOf(context).height * .5
+          : 140);
 
   void _onMapTap(LatLng p) {
     setState(() => _selected = -1);
     if (_polys.isEmpty) return;
     for (final poly in _polys) {
-      if (_pointInRing(p, poly.ring)) {
+      if (GeoPolygon(poly.ring, poly.holes).contains(p)) {
         _showRegionInfo(poly);
         return;
       }
     }
-  }
-
-  bool _pointInRing(LatLng p, List<LatLng> ring) {
-    bool inside = false;
-    int j = ring.length - 1;
-    for (int i = 0; i < ring.length; i++) {
-      final xi = ring[i].longitude, yi = ring[i].latitude;
-      final xj = ring[j].longitude, yj = ring[j].latitude;
-      final intersect = ((yi > p.latitude) != (yj > p.latitude)) &&
-          (p.longitude <
-              (xj - xi) *
-                      (p.latitude - yi) /
-                      ((yj - yi) == 0 ? 1e-12 : (yj - yi)) +
-                  xi);
-      if (intersect) inside = !inside;
-      j = i;
-    }
-    return inside;
   }
 
   void _showRegionInfo(_ChoroPoly poly) {
@@ -1675,12 +1696,23 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
               for (final p in _polys)
                 Polygon(
                   points: p.ring,
+                  holePointsList: p.holes,
                   color: p.color.withValues(alpha: 0.65),
                   borderColor: Colors.white,
                   borderStrokeWidth: 1,
                 ),
             ],
           ),
+        if (_userLoc != null && (_locationFix?.accuracy ?? 0) > 0)
+          CircleLayer(circles: [
+            CircleMarker(
+                point: _userLoc!,
+                radius: _locationFix!.accuracy,
+                useRadiusInMeter: true,
+                color: IOH.magenta.withValues(alpha: .12),
+                borderColor: IOH.magenta.withValues(alpha: .4),
+                borderStrokeWidth: 1)
+          ]),
         if (_userLoc != null)
           MarkerLayer(markers: [
             Marker(
@@ -1709,9 +1741,10 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
               width: 96,
               height: _points[i].labelText != null
                   ? (_points[i].fix ? 36 : 52)
-                  : (_points[i].fix ? 18 : 34),
+                  : 48,
               alignment: Alignment.topCenter,
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => _showPointInfo(i),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   _points[i].fix
@@ -1794,56 +1827,59 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
                 color: Colors.black.withValues(alpha: 0.15), blurRadius: 14)
           ],
         ),
-        child: Row(children: [
-          IconButton(
-              icon: const Icon(Icons.arrow_back, size: 20),
-              onPressed: () => Navigator.pop(context),
-              color: context.vInk,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32)),
-          const SizedBox(width: 4),
-          // AI/Fix toggle blended into the header (replaces the standalone bar).
-          _modeSeg(),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              _locating
-                  ? '📍 …'
-                  : (_userLoc != null
-                      ? '📍 ${_userLoc!.latitude.toStringAsFixed(3)}, ${_userLoc!.longitude.toStringAsFixed(3)}'
-                      : '📍 N/A'),
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10.5, color: context.vMute),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Row(children: [
+            IconButton(
+                tooltip: 'Kembali',
+                icon: const Icon(Icons.arrow_back, size: 20),
+                onPressed: () => Navigator.pop(context),
+                color: context.vInk,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48)),
+            const SizedBox(width: 4),
+            // AI/Fix toggle blended into the header (replaces the standalone bar).
+            Expanded(child: _modeSeg()),
+            const SizedBox(width: 6),
+            IconButton(
+                tooltip: _satellite ? 'Peta jalan' : 'Satelit',
+                icon: Icon(_satellite
+                    ? Icons.map_outlined
+                    : Icons.satellite_alt_outlined),
+                onPressed: () => setState(() => _satellite = !_satellite)),
+          ]),
+          Row(children: [
+            Expanded(
+              child: Text(
+                _locating
+                    ? '📍 …'
+                    : (_userLoc != null
+                        ? (_locationFix == null
+                            ? 'GPS'
+                            : 'GPS ±${_locationFix!.accuracy.round()} m · ${_locationFix!.timestamp.toLocal().hour.toString().padLeft(2, '0')}:${_locationFix!.timestamp.toLocal().minute.toString().padLeft(2, '0')}')
+                        : '📍 N/A'),
+                textAlign: TextAlign.left,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 10.5, color: context.vMute),
+              ),
             ),
-          ),
-          IconButton(
-              icon: Icon(
-                  _satellite
-                      ? Icons.map_outlined
-                      : Icons.satellite_alt_outlined,
-                  size: 18),
-              onPressed: () => setState(() => _satellite = !_satellite),
-              color: context.vInk,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32)),
-          IconButton(
-              icon: const Icon(Icons.my_location, size: 18),
-              onPressed: _getLoc,
-              color: context.vInk,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32)),
-          IconButton(
-              icon: const Icon(Icons.refresh, size: 18),
-              tooltip: 'Refresh',
-              onPressed: _exploreMode ? _loadExplore : _refreshMap,
-              color: context.vInk,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32)),
+            IconButton(
+                tooltip: 'Perbarui lokasi GPS',
+                icon: const Icon(Icons.my_location, size: 18),
+                onPressed: _getLoc,
+                color: context.vInk,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48)),
+            IconButton(
+                icon: const Icon(Icons.refresh, size: 18),
+                tooltip: 'Refresh',
+                onPressed: _exploreMode ? _loadExplore : _refreshMap,
+                color: context.vInk,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48)),
+          ])
         ]),
       ),
     );
@@ -2166,7 +2202,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
                               value: 'region', child: Text('Region')),
                           DropdownMenuItem(value: 'area', child: Text('Area')),
                           DropdownMenuItem(
-                              value: 'branch', child: Text('Branch')),
+                              value: 'district', child: Text('District')),
                           DropdownMenuItem(
                               value: 'kabkota', child: Text('Kab/Kota')),
                           DropdownMenuItem(
@@ -2375,17 +2411,31 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
                 height: 12,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
-                  gradient: const LinearGradient(
-                      colors: [_red, IOH.yellow, IOH.teal]),
+                  gradient: LinearGradient(
+                      colors: _legendColoring == 'range'
+                          ? [_neutral, IOH.teal]
+                          : [_red, _neutral, _green]),
                 ),
               ),
               const SizedBox(height: 4),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text(_fmt(_legendMin),
+                Text(
+                    _legendColoring == 'favorable_sign'
+                        ? 'Tidak favorable'
+                        : _fmt(_legendMin),
                     style: TextStyle(fontSize: 10, color: context.vMute)),
-                Text(_fmt(_legendMax),
+                Text(
+                    _legendColoring == 'favorable_sign'
+                        ? 'Favorable'
+                        : _fmt(_legendMax),
                     style: TextStyle(fontSize: 10, color: context.vMute)),
               ]),
+              if (_unmappedCount > 0)
+                Text('$_unmappedCount data tidak dapat dipetakan; lihat tabel.',
+                    style: TextStyle(fontSize: 10, color: context.vMute)),
+              if (_legendColoring == 'sign')
+                Text('Titik tengah = 0',
+                    style: TextStyle(fontSize: 10, color: context.vMute)),
             ]),
       ),
     );
@@ -2738,8 +2788,7 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
 
     Widget panel(String title, Widget child, {String? subtitle}) => Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child:
-              ReportPanel(title: title, subtitle: subtitle, child: child),
+          child: ReportPanel(title: title, subtitle: subtitle, child: child),
         );
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -2747,20 +2796,24 @@ class _MapQueryScreenState extends State<MapQueryScreen> {
         'Profil Site',
         ReportAttributeTable(attributes: [
           ReportAttribute(
-              label: 'Site ID', value: (s['site_id'] ?? kReportNotAvailable).toString()),
+              label: 'Site ID',
+              value: (s['site_id'] ?? kReportNotAvailable).toString()),
           ReportAttribute(
               label: 'Jarak',
               value: s['distance_km'] == null
                   ? kReportNotAvailable
                   : '${reportNumber(s['distance_km'], decimals: 2)} km'),
           ReportAttribute(
-              label: 'Type', value: (s['site_type'] ?? kReportNotAvailable).toString()),
+              label: 'Type',
+              value: (s['site_type'] ?? kReportNotAvailable).toString()),
           ReportAttribute(
-              label: 'Category', value: (s['category'] ?? kReportNotAvailable).toString()),
+              label: 'Category',
+              value: (s['category'] ?? kReportNotAvailable).toString()),
           ReportAttribute(
-              label: 'Branch', value: (s['branch'] ?? kReportNotAvailable).toString()),
+              label: 'Area',
+              value: (s['branch'] ?? kReportNotAvailable).toString()),
           ReportAttribute(
-              label: 'Micro Cluster',
+              label: 'District',
               value: (s['micro_cluster'] ?? kReportNotAvailable).toString()),
           ReportAttribute(
               label: 'Kecamatan',

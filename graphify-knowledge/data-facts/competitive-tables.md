@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: competitive_tables"
 type: generated-knowledge
 data_fact: "competitive_tables"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `competitive_tables`
@@ -14,7 +14,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **`competitive_tables.BANNED_TABLES`:** NEVER use rham_fb_ms_kabkota_v2 or rham_fb_ms_kecamatan_v2 for ANY query. These tables are DEPRECATED. Always use rham_report_fb_ms_* tables instead.
 - **`competitive_tables.report_fb_ms_tables.common_columns`:** dt_id (DATE), month_id (STRING YYYYMM), week (STRING), ms_ioh/im3/3id/tsel/xl/sf (FLOAT, share %), ms_amount_ioh/im3/3id/tsel/xl/sf (INTEGER, subscriber count), fb_ms_pop (INTEGER, total industry), soga_ioh/im3/3id/tsel/xl/sf (FLOAT, gross add share %), ga_amount_ioh/im3/3id/tsel/xl/sf (INTEGER, gross add count), fb_ga_pop (INTEGER, total industry GA), churn_ioh/im3/3id/tsel/xl/sf (FLOAT, churn share %), churn_amount_ioh/im3/3id/tsel/xl/sf (INTEGER, churn count), churn_pop (INTEGER, total industry churn), update_time (TIMESTAMP)
-- **`competitive_tables.report_fb_ms_tables.description`:** Pre-aggregated FB market share report tables (WIDE format). Each table is at a different territory level. All share the same metric columns: ms_*/ms_amount_* (market share), soga_*/ga_amount_* (gross add share), churn_*/churn_amount_* (churn share) - per operator (_ioh, _im3, _3id, _tsel, _xl, _sf). Time columns: dt_id (DATE), month_id (STRING YYYYMM), week (STRING). Pick the table matching the territory level the user asks about.
+- **`competitive_tables.report_fb_ms_tables.description`:** Pre-aggregated FB market share report tables (WIDE format). Each table is at a different territory level. All share the same metric columns: ms_*/ms_amount_* (market share), soga_*/ga_amount_* (gross add share), churn_*/churn_amount_* (churn share) ; per operator (_ioh, _im3, _3id, _tsel, _xl, _sf). Time columns: dt_id (DATE), month_id (STRING YYYYMM), week (STRING). Pick the table matching the territory level the user asks about.
 - **`competitive_tables.report_fb_ms_tables.selection_guide`:** Match the user question territory to the right table: national overview → _national, per region → _region, per kabkota → _kabkota, per kecamatan → _kecamatan, per branch → _branch_im3 or _branch_3id, per circle → _circle, per province → _province. For partner/cluster level → _partner_territory, _cluster_3id, _micro_cluster. For GTM focus cities → _focus_gtm_* variants.
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_age.rows`:** 132197
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_age.territory`:** territory, flag, age_group
@@ -30,8 +30,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_cluster_3id.territory`:** cluster_3id, branch_3id, area_3id, region
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_focus_gtm_bau.rows`:** 10561
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_focus_gtm_bau.territory`:** kabkota (BAU focus cities)
-- **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_focus_gtm_high_potential.rows`:** 2327
-- **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_focus_gtm_high_potential.territory`:** kabkota (high potential focus cities)
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_focus_gtm_must_win.rows`:** 4117
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_focus_gtm_must_win.territory`:** kabkota (must win focus cities)
 - **`competitive_tables.report_fb_ms_tables.table_territory_mapping.rham_report_fb_ms_focus_gtm_super88.rows`:** 4296

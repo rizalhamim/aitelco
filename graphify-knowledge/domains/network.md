@@ -2,7 +2,7 @@
 title: "Runtime KB domain: network"
 type: generated-knowledge
 domain: "network"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `network`
@@ -1112,6 +1112,8 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - HOS = High Order Sectorization (antenna multibeam untuk tambahan kapasitas). LTE bands: L9=LTE900, L18=LTE1800, L21=LTE2100; l<band>_less_3 = site/cell dengan <3 sektor.
 - PERIOD MISMATCH (network): rham_site_wise_occupancy (congestion/PRB/occupancy) is frozen at month_id 202512, while rham_avail_stat_site_monthly (availability) runs to the current month. Joining them on a shared MAX(month_id) returns ZERO rows. WORKING RECIPE (verified): build one CTE per table, each filtered to ITS OWN (SELECT MAX(month_id) FROM that same table), then join the two CTEs on the territory key. The column names differ: occupancy uses `kabkota`, availability uses `kabkot`, so join on UPPER(TRIM(...)) of each. Do NOT add a redundant month_start predicate. Always state BOTH periods in the answer and say the comparison is not same-period.
 - AVAILABILITY IS UNIFORMLY HIGH: kabkota-level avg_avail_pct_4g spans about 98.8 to 100.0 (measured; 0 of 120 kabkota below 95, only 1 below 99). NEVER filter on a guessed absolute threshold such as `< 95` or `< 90`: it returns ZERO rows and looks like missing data. For 'availability rendah' questions, RANK instead (ORDER BY availability ASC LIMIT N) or compare against the actual distribution, e.g. the bottom decile via APPROX_QUANTILES. Same rule for any tight-distribution metric: when the user says high or low without a number, rank, do not threshold.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
 
 ## Related
 

@@ -8,8 +8,9 @@ from __future__ import annotations
 import calendar
 from typing import Any, Optional
 
-from . import config
+from . import config, knowledge
 from .bigquery_tool import run_query
+from .territory import scope_column
 from .report_formulas import (
     comparison_values,
     merge_bags,
@@ -62,16 +63,7 @@ def _territory_clause(circle: str, filter_type: str, filter_value: str) -> str:
     clauses: list[str] = []
     if (circle or "").strip().upper() != "ALL":
         clauses.append(f"t.circle='{_esc(circle)}'")
-    column = {
-        "region": "t.region",
-        "area": "t.area_im3",
-        "branch": "t.branch_im3",
-        "kabkota": "t.kabkot",
-        "kecamatan": "t.kec_id",
-        "microcluster": "t.micro_cluster_im3",
-        "supergtm": "t.super_gtm",
-        "island": "t.island",
-    }.get(filter_type)
+    column = scope_column(filter_type)
     if filter_value and column:
         clauses.append(f"{column}='{_esc(filter_value)}'")
     return " AND ".join(clauses) if clauses else "1=1"
@@ -102,8 +94,10 @@ def _query_months(
 ) -> list[dict[str, Any]]:
     if not months:
         return []
+    available = {c['name'] for c in knowledge.table_index()[table.strip('`').split('.')[-1]]['columns']}
     selections = ",\n  ".join(
-        f"SUM(SAFE_CAST(m.{field} AS FLOAT64)) AS {field}" for field in _FIELDS
+        f"SUM(SAFE_CAST(m.{field} AS FLOAT64)) AS {field}" if field in available
+        else f"CAST(NULL AS FLOAT64) AS {field}" for field in _FIELDS
     )
     unique_months = sorted(set(months))
     month_values = ",".join(str(month) for month in unique_months)

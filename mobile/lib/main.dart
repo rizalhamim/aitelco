@@ -10,6 +10,7 @@ import 'src/screens/profile_screen.dart';
 import 'src/screens/map_query_screen.dart';
 import 'src/screens/reports_screen.dart';
 import 'src/screens/site_performance_screen.dart';
+import 'src/widgets/app_update_checker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ class BizplanApp extends StatefulWidget {
 }
 
 class _BizplanAppState extends State<BizplanApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
   @override
   void initState() {
     super.initState();
@@ -35,6 +37,7 @@ class _BizplanAppState extends State<BizplanApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Bizplan Java Agent',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
@@ -43,8 +46,10 @@ class _BizplanAppState extends State<BizplanApp> {
       // WithForegroundTask lets the keep-alive foreground service coordinate
       // with the app lifecycle so in-flight requests survive backgrounding.
       // Keep the platform MediaQuery unchanged so OS text scaling is respected.
-      builder: (context, child) =>
-          WithForegroundTask(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => AppUpdateChecker(
+        navigatorKey: _navigatorKey,
+        child: WithForegroundTask(child: child ?? const SizedBox.shrink()),
+      ),
       initialRoute: AuthState.isLoggedIn ? '/chat' : '/login',
       routes: {
         '/login': (_) => const LoginScreen(),

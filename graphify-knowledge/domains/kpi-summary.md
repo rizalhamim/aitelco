@@ -2,7 +2,7 @@
 title: "Runtime KB domain: kpi_summary"
 type: generated-knowledge
 domain: "kpi_summary"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `kpi_summary`
@@ -12,625 +12,436 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** KPI Summary (Marketing High-Level)
 - **Description:** High-level marketing KPI summary at kecamatan x brand grain (160-178 cols): revenue, subscriber, RGU, gross add, churn, usage, VLR, pack subs, FB MS, outlet, HVC, FWA, site counts, trade. DEFAULT for general KPI questions. Grains daily/mtd/monthly.
-- **Tables:** 9
+- **Tables:** 5
 - **Agent identifier:** `KPI Summary Analyst`
 
 ## Domain to table relationships
 
-- Domain `kpi_summary` contains table `rham_desa_perf_history`.
-- Domain `kpi_summary` contains table `rham_desa_perf_monthly`.
-- Domain `kpi_summary` contains table `rham_desa_perf_mtd`.
-- Domain `kpi_summary` contains table `rham_kpi_highlevel_dly`.
-- Domain `kpi_summary` contains table `rham_kpi_highlevel_mtd`.
-- Domain `kpi_summary` contains table `rham_kpi_highlevel_mth`.
+- Domain `kpi_summary` contains table `rham_kec_wise_tnr_mtd`.
+- Domain `kpi_summary` contains table `rham_kec_wise_tnr_mth`.
 - Domain `kpi_summary` contains table `rham_mkt_highlevel_mtd`.
 - Domain `kpi_summary` contains table `rham_mkt_highlevel_mth`.
 - Domain `kpi_summary` contains table `rham_mkt_kpi_highlevel_dly`.
 
 ## Table schemas
 
-### `rham_desa_perf_history`
+### `rham_kec_wise_tnr_mtd`
 
-- Relationship: domain `kpi_summary` contains table `rham_desa_perf_history`.
-- Column count: 136.
-- Partition columns: none declared.
+- Relationship: domain `kpi_summary` contains table `rham_kec_wise_tnr_mtd`.
+- Column count: 189.
+- Partition columns: `dt_id`.
 - Source kind: `observed`.
-- Grain: `site`.
-- Period semantics: `latest_available`.
-- Aggregation rule: `sum_additive_metrics`.
-- Priority: `standard`.
-- Relative cost tier: `low`.
-- Metric families: `acquisition`, `churn`, `revenue`, `traffic`.
-- Columns:
-  - `desa_region`: `STRING`
-  - `brand`: `STRING`
-  - `team_brand`: `STRING`
-  - `desa_name`: `STRING`
-  - `site_id`: `STRING`
-  - `kecamatan_desa`: `STRING`
-  - `city`: `STRING`
-  - `mc_desa`: `STRING`
-  - `branch_desa`: `STRING`
-  - `cse_rse_name`: `STRING`
-  - `rge_bme_name`: `STRING`
-  - `perf_month_id`: `STRING`
-  - `perf_dt_id`: `DATE`
-  - `perf_days_elapsed`: `INT64`
-  - `perf_days_in_month`: `INT64`
-  - `site_name`: `STRING`
-  - `addr_longitude`: `STRING`
-  - `addr_latitude`: `STRING`
-  - `circle`: `STRING`
-  - `region_net`: `STRING`
-  - `area`: `STRING`
-  - `branch_net`: `STRING`
-  - `island`: `STRING`
-  - `kecamatan_unik`: `STRING`
-  - `kecamatan_net`: `STRING`
-  - `kabkota`: `STRING`
-  - `mc_net`: `STRING`
-  - `addressable`: `STRING`
-  - `site_type`: `STRING`
-  - `java_flag`: `STRING`
-  - `lrs_lrk_17k`: `STRING`
-  - `profitability_status_m1`: `STRING`
-  - `category`: `STRING`
-  - `rev_prepaid_lm`: `FLOAT64`
-  - `rev_prepaid_fm`: `FLOAT64`
-  - `rev_prepaid_growth`: `FLOAT64`
-  - `rev_prepaid_lmtd`: `FLOAT64`
-  - `rev_prepaid_mtd`: `FLOAT64`
-  - `rev_prepaid_mtd_growth`: `FLOAT64`
-  - `rev_vsd_lm`: `FLOAT64`
-  - `rev_vsd_fm`: `FLOAT64`
-  - `rev_vsd_growth`: `FLOAT64`
-  - `rev_vsd_lmtd`: `FLOAT64`
-  - `rev_vsd_mtd`: `FLOAT64`
-  - `rev_vsd_mtd_growth`: `FLOAT64`
-  - `rev_nonvsd_lm`: `FLOAT64`
-  - `rev_nonvsd_fm`: `FLOAT64`
-  - `rev_nonvsd_growth`: `FLOAT64`
-  - `rev_nonvsd_lmtd`: `FLOAT64`
-  - `rev_nonvsd_mtd`: `FLOAT64`
-  - `rev_nonvsd_mtd_growth`: `FLOAT64`
-  - `rev_voice_lm`: `FLOAT64`
-  - `rev_voice_fm`: `FLOAT64`
-  - `rev_voice_growth`: `FLOAT64`
-  - `rev_voice_lmtd`: `FLOAT64`
-  - `rev_voice_mtd`: `FLOAT64`
-  - `rev_voice_mtd_growth`: `FLOAT64`
-  - `rev_sms_lm`: `FLOAT64`
-  - `rev_sms_fm`: `FLOAT64`
-  - `rev_sms_growth`: `FLOAT64`
-  - `rev_sms_lmtd`: `FLOAT64`
-  - `rev_sms_mtd`: `FLOAT64`
-  - `rev_sms_mtd_growth`: `FLOAT64`
-  - `rev_data_lm`: `FLOAT64`
-  - `rev_data_fm`: `FLOAT64`
-  - `rev_data_growth`: `FLOAT64`
-  - `rev_data_lmtd`: `FLOAT64`
-  - `rev_data_mtd`: `FLOAT64`
-  - `rev_data_mtd_growth`: `FLOAT64`
-  - `subs_gross_add_lm`: `FLOAT64`
-  - `subs_gross_add_fm`: `FLOAT64`
-  - `subs_gross_add_growth`: `FLOAT64`
-  - `subs_gross_add_lmtd`: `FLOAT64`
-  - `subs_gross_add_mtd`: `FLOAT64`
-  - `subs_gross_add_mtd_growth`: `FLOAT64`
-  - `subs_rgu_90d_lm`: `FLOAT64`
-  - `subs_rgu_90d_fm`: `FLOAT64`
-  - `subs_rgu_90d_growth`: `FLOAT64`
-  - `subs_rgu_90d_lmtd`: `FLOAT64`
-  - `subs_rgu_90d_mtd`: `FLOAT64`
-  - `subs_rgu_90d_mtd_growth`: `FLOAT64`
-  - `subs_rgu_30d_lm`: `FLOAT64`
-  - `subs_rgu_30d_fm`: `FLOAT64`
-  - `subs_rgu_30d_growth`: `FLOAT64`
-  - `subs_rgu_30d_lmtd`: `FLOAT64`
-  - `subs_rgu_30d_mtd`: `FLOAT64`
-  - `subs_rgu_30d_mtd_growth`: `FLOAT64`
-  - `net_add_90d_lm`: `FLOAT64`
-  - `net_add_90d_fm`: `FLOAT64`
-  - `net_add_90d_growth`: `FLOAT64`
-  - `net_add_90d_lmtd`: `FLOAT64`
-  - `net_add_90d_mtd`: `FLOAT64`
-  - `net_add_90d_mtd_growth`: `FLOAT64`
-  - `avg_subs_vlr_daily_lm`: `FLOAT64`
-  - `avg_subs_vlr_daily_fm`: `FLOAT64`
-  - `avg_subs_vlr_daily_growth`: `FLOAT64`
-  - `avg_subs_vlr_daily_lmtd`: `FLOAT64`
-  - `avg_subs_vlr_daily_mtd`: `FLOAT64`
-  - `avg_subs_vlr_daily_mtd_growth`: `FLOAT64`
-  - `avg_subs_pau_daily_lm`: `FLOAT64`
-  - `avg_subs_pau_daily_fm`: `FLOAT64`
-  - `avg_subs_pau_daily_growth`: `FLOAT64`
-  - `avg_subs_pau_daily_lmtd`: `FLOAT64`
-  - `avg_subs_pau_daily_mtd`: `FLOAT64`
-  - `avg_subs_pau_daily_mtd_growth`: `FLOAT64`
-  - `datauu_lm`: `FLOAT64`
-  - `datauu_fm`: `FLOAT64`
-  - `datauu_growth`: `FLOAT64`
-  - `datauu_lmtd`: `FLOAT64`
-  - `datauu_mtd`: `FLOAT64`
-  - `datauu_mtd_growth`: `FLOAT64`
-  - `usg_data_gb_lm`: `FLOAT64`
-  - `usg_data_gb_fm`: `FLOAT64`
-  - `usg_data_gb_growth`: `FLOAT64`
-  - `usg_data_gb_lmtd`: `FLOAT64`
-  - `usg_data_gb_mtd`: `FLOAT64`
-  - `usg_data_gb_mtd_growth`: `FLOAT64`
-  - `ga_m1s_lm`: `FLOAT64`
-  - `ga_m1s_fm`: `FLOAT64`
-  - `ga_m1s_growth`: `FLOAT64`
-  - `ga_m1s_lmtd`: `FLOAT64`
-  - `ga_m1s_mtd`: `FLOAT64`
-  - `ga_m1s_mtd_growth`: `FLOAT64`
-  - `gross_churn_90d_lm`: `FLOAT64`
-  - `gross_churn_90d_fm`: `FLOAT64`
-  - `gross_churn_90d_growth`: `FLOAT64`
-  - `gross_churn_90d_lmtd`: `FLOAT64`
-  - `gross_churn_90d_mtd`: `FLOAT64`
-  - `gross_churn_90d_mtd_growth`: `FLOAT64`
-  - `subs_pau_lm`: `FLOAT64`
-  - `subs_pau_fm`: `FLOAT64`
-  - `subs_pau_growth`: `FLOAT64`
-  - `subs_pau_lmtd`: `FLOAT64`
-  - `subs_pau_mtd`: `FLOAT64`
-  - `subs_pau_mtd_growth`: `FLOAT64`
-  - `refreshed_at`: `TIMESTAMP`
-
-### `rham_desa_perf_monthly`
-
-- Relationship: domain `kpi_summary` contains table `rham_desa_perf_monthly`.
-- Column count: 36.
-- Partition columns: none declared.
-- Source kind: `observed`.
-- Grain: `branch`.
-- Period semantics: `monthly`.
-- Aggregation rule: `sum_additive_metrics`.
-- Priority: `high`.
-- Relative cost tier: `low`.
-- Metric families: `acquisition`, `revenue`, `traffic`.
-- Columns:
-  - `region`: `STRING`
-  - `brand`: `STRING`
-  - `team_brand`: `STRING`
-  - `desa_name`: `STRING`
-  - `site_id_ref`: `STRING`
-  - `kecamatan_desa`: `STRING`
-  - `city`: `STRING`
-  - `micro_cluster`: `STRING`
-  - `branch`: `STRING`
-  - `cse_rse_name`: `STRING`
-  - `rge_bme_name`: `STRING`
-  - `site_name`: `STRING`
-  - `longitude`: `FLOAT64`
-  - `latitude`: `FLOAT64`
-  - `circle`: `STRING`
-  - `region_net`: `STRING`
-  - `area`: `STRING`
-  - `branch_net`: `STRING`
-  - `island`: `STRING`
-  - `kecamatan_unik`: `STRING`
-  - `kecamatan_net`: `STRING`
-  - `kabkota`: `STRING`
-  - `addressable`: `STRING`
-  - `month_id`: `STRING`
-  - `dt_id`: `DATE`
-  - `rev_prepaid`: `FLOAT64`
-  - `rev_vsd`: `FLOAT64`
-  - `rev_data`: `FLOAT64`
-  - `subs_rgu_90d`: `FLOAT64`
-  - `subs_rgu_30d`: `FLOAT64`
-  - `avg_vlr_daily`: `FLOAT64`
-  - `subs_gross_add`: `FLOAT64`
-  - `datauu`: `FLOAT64`
-  - `avg_subs_pau_daily`: `FLOAT64`
-  - `usg_data_gb`: `FLOAT64`
-  - `net_add_90d`: `FLOAT64`
-
-### `rham_desa_perf_mtd`
-
-- Relationship: domain `kpi_summary` contains table `rham_desa_perf_mtd`.
-- Column count: 37.
-- Partition columns: none declared.
-- Source kind: `observed`.
-- Grain: `branch`.
+- Grain: `month_x_kecamatan_x_brand_x_tenure_group`.
 - Period semantics: `mtd_cutoff_aligned`.
-- Aggregation rule: `sum_additive_metrics`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
 - Priority: `high`.
-- Relative cost tier: `low`.
-- Metric families: `acquisition`, `revenue`, `traffic`.
-- Columns:
-  - `region`: `STRING`
-  - `brand`: `STRING`
-  - `team_brand`: `STRING`
-  - `desa_name`: `STRING`
-  - `site_id_ref`: `STRING`
-  - `kecamatan_desa`: `STRING`
-  - `city`: `STRING`
-  - `micro_cluster`: `STRING`
-  - `branch`: `STRING`
-  - `cse_rse_name`: `STRING`
-  - `rge_bme_name`: `STRING`
-  - `site_name`: `STRING`
-  - `longitude`: `FLOAT64`
-  - `latitude`: `FLOAT64`
-  - `circle`: `STRING`
-  - `region_net`: `STRING`
-  - `area`: `STRING`
-  - `branch_net`: `STRING`
-  - `island`: `STRING`
-  - `kecamatan_unik`: `STRING`
-  - `kecamatan_net`: `STRING`
-  - `kabkota`: `STRING`
-  - `addressable`: `STRING`
-  - `perf_month_id`: `STRING`
-  - `perf_dt_id`: `DATE`
-  - `perf_days_elapsed`: `INT64`
-  - `rev_prepaid`: `FLOAT64`
-  - `rev_vsd`: `FLOAT64`
-  - `rev_data`: `FLOAT64`
-  - `subs_rgu_90d`: `FLOAT64`
-  - `subs_rgu_30d`: `FLOAT64`
-  - `avg_vlr_daily`: `FLOAT64`
-  - `subs_gross_add`: `FLOAT64`
-  - `datauu`: `FLOAT64`
-  - `avg_subs_pau_daily`: `FLOAT64`
-  - `usg_data_gb`: `FLOAT64`
-  - `net_add_90d`: `FLOAT64`
-
-### `rham_kpi_highlevel_dly`
-
-- Relationship: domain `kpi_summary` contains table `rham_kpi_highlevel_dly`.
-- Column count: 36.
-- Partition columns: none declared.
-- Source kind: `observed`.
-- Grain: `kecamatan`.
-- Period semantics: `daily`.
-- Aggregation rule: `sum_additive_metrics`.
-- Priority: `standard`.
 - Relative cost tier: `medium`.
-- Metric families: `acquisition`, `churn`, `revenue`, `traffic`.
+- Metric families: `revenue`, `traffic`, `churn`, `acquisition`, `subscriber segment`.
 - Columns:
-  - `dt_id`: `DATE`
-  - `kecamatan`: `STRING`
-  - `kabkot`: `STRING`
+  - `month_id`: `STRING`
+  - `dt_id`: `DATE` (partition)
   - `kec_id`: `STRING`
-  - `rev_prepaid`: `FLOAT64`
-  - `rev_vsd`: `FLOAT64`
-  - `rev_voice`: `FLOAT64`
-  - `rev_sms`: `FLOAT64`
-  - `rev_data`: `FLOAT64`
-  - `rgu_90d`: `INT64`
-  - `rgu_30d`: `INT64`
-  - `gross_add`: `INT64`
-  - `pack_subs`: `INT64`
-  - `avg_vlr_daily`: `INT64`
-  - `net_churn_90d`: `INT64`
-  - `net_churn_30d`: `INT64`
-  - `usg_data_gb`: `FLOAT64`
-  - `usg_og_voice_min`: `FLOAT64`
-  - `usg_og_sms_hit`: `INT64`
-  - `rev_acquisition_m0`: `FLOAT64`
-  - `arpu_0_90d_hvc`: `INT64`
-  - `arpu_0_90d_mvc`: `INT64`
-  - `arpu_0_90d_lvc`: `INT64`
-  - `arpu_0_90d_nvc`: `INT64`
-  - `rev_data_mobo_non_trade`: `FLOAT64`
-  - `rev_data_mobo_trade`: `FLOAT64`
-  - `rev_data_organic`: `FLOAT64`
-  - `data_uu_daily`: `INT64`
-  - `data_uu_30`: `INT64`
-  - `gross_churn_90d`: `INT64`
-  - `churn_back_90d`: `INT64`
-  - `ga_m2s`: `INT64`
-  - `m2s`: `INT64`
   - `brand`: `STRING`
-  - `month_id`: `INT64`
-  - `dt_day`: `INT64`
+  - `tenure_group`: `STRING`
+  - `acq_ga_inject`: `FLOAT64`
+  - `acq_ga_inject_hv`: `FLOAT64`
+  - `acq_ga_inject_lv`: `FLOAT64`
+  - `acq_ga_inject_mv`: `FLOAT64`
+  - `acq_qsc_m0`: `FLOAT64`
+  - `acq_sc_m0`: `FLOAT64`
+  - `data_uu_30d`: `FLOAT64`
+  - `data_uu_daily`: `FLOAT64`
+  - `data_uu_daily_4g`: `FLOAT64`
+  - `data_uu_daily_5g`: `FLOAT64`
+  - `data_uu_istimewa_30d`: `FLOAT64`
+  - `data_uu_mtd`: `FLOAT64`
+  - `ga_m1s_site`: `FLOAT64`
+  - `ga_m2s_site`: `FLOAT64`
+  - `ga_p1m_site`: `FLOAT64`
+  - `ga_p2m_site`: `FLOAT64`
+  - `hits_rebuy_lrs_site`: `FLOAT64`
+  - `hits_sp_lrs_site`: `FLOAT64`
+  - `hits_total_fwa_site`: `FLOAT64`
+  - `pau_30d`: `FLOAT64`
+  - `pau_daily`: `FLOAT64`
+  - `pau_data_30d`: `FLOAT64`
+  - `pau_data_daily`: `FLOAT64`
+  - `pau_data_mtd`: `FLOAT64`
+  - `pau_mtd`: `FLOAT64`
+  - `rev_acq_m0`: `FLOAT64`
+  - `rev_acq_qsc_m0`: `FLOAT64`
+  - `rev_data`: `FLOAT64`
+  - `rev_data_atl`: `FLOAT64`
+  - `rev_data_atl_mtd`: `FLOAT64`
+  - `rev_data_btl`: `FLOAT64`
+  - `rev_data_btl_mtd`: `FLOAT64`
+  - `rev_data_mtd`: `FLOAT64`
+  - `rev_data_site`: `FLOAT64`
+  - `rev_ewallet`: `FLOAT64`
+  - `rev_ewallet_site`: `FLOAT64`
+  - `rev_fdv`: `FLOAT64`
+  - `rev_fdv_data_site`: `FLOAT64`
+  - `rev_fdv_site`: `FLOAT64`
+  - `rev_fdv_sms_site`: `FLOAT64`
+  - `rev_fdv_voice_site`: `FLOAT64`
+  - `rev_loan_balance`: `FLOAT64`
+  - `rev_loan_balance_mtd`: `FLOAT64`
+  - `rev_loan_balance_site`: `FLOAT64`
+  - `rev_mobo_data_site`: `FLOAT64`
+  - `rev_mobo_site`: `FLOAT64`
+  - `rev_mobo_sms_site`: `FLOAT64`
+  - `rev_mobo_voice_site`: `FLOAT64`
+  - `rev_mobosp`: `FLOAT64`
+  - `rev_mobosp_site`: `FLOAT64`
+  - `rev_nondata`: `FLOAT64`
+  - `rev_nondata_mtd`: `FLOAT64`
+  - `rev_nondata_others`: `FLOAT64`
+  - `rev_nondata_others_mtd`: `FLOAT64`
+  - `rev_nondata_site`: `FLOAT64`
+  - `rev_nontrade`: `FLOAT64`
+  - `rev_nontrade_mtd`: `FLOAT64`
+  - `rev_nonvsd`: `FLOAT64`
+  - `rev_nonvsd_mtd`: `FLOAT64`
+  - `rev_org_data_alloc_site`: `FLOAT64`
+  - `rev_org_sms_alloc_site`: `FLOAT64`
+  - `rev_org_voice_alloc_site`: `FLOAT64`
+  - `rev_organic`: `FLOAT64`
+  - `rev_organic_mtd`: `FLOAT64`
+  - `rev_organic_site`: `FLOAT64`
+  - `rev_other`: `FLOAT64`
+  - `rev_other_site`: `FLOAT64`
+  - `rev_pgi_site`: `FLOAT64`
+  - `rev_rebuy_lrs_site`: `FLOAT64`
+  - `rev_sc_m0`: `FLOAT64`
+  - `rev_sms`: `FLOAT64`
+  - `rev_sms_mtd`: `FLOAT64`
+  - `rev_sms_site`: `FLOAT64`
+  - `rev_sms_voucher_site`: `FLOAT64`
+  - `rev_sp`: `FLOAT64`
+  - `rev_sp_data`: `FLOAT64`
+  - `rev_sp_data_site`: `FLOAT64`
+  - `rev_sp_lrs_site`: `FLOAT64`
+  - `rev_sp_mtd`: `FLOAT64`
+  - `rev_total`: `FLOAT64`
+  - `rev_total_fwa_site`: `FLOAT64`
+  - `rev_total_istimewa_mtd`: `FLOAT64`
+  - `rev_total_mtd`: `FLOAT64`
+  - `rev_total_site`: `FLOAT64`
+  - `rev_trade`: `FLOAT64`
+  - `rev_trade_mtd`: `FLOAT64`
+  - `rev_trade_sp`: `FLOAT64`
+  - `rev_trade_sp_mtd`: `FLOAT64`
+  - `rev_vas_gross_site`: `FLOAT64`
+  - `rev_vas_net_bi`: `FLOAT64`
+  - `rev_vas_net_bi_mtd`: `FLOAT64`
+  - `rev_vas_net_dcb`: `FLOAT64`
+  - `rev_vas_net_dcb_mtd`: `FLOAT64`
+  - `rev_vas_net_new`: `FLOAT64`
+  - `rev_vas_net_new_mtd`: `FLOAT64`
+  - `rev_vas_net_new_site`: `FLOAT64`
+  - `rev_vas_net_site`: `FLOAT64`
+  - `rev_vchori`: `FLOAT64`
+  - `rev_vchori_data_site`: `FLOAT64`
+  - `rev_vchori_site`: `FLOAT64`
+  - `rev_vchori_sms_site`: `FLOAT64`
+  - `rev_vchori_voice_site`: `FLOAT64`
+  - `rev_voice`: `FLOAT64`
+  - `rev_voice_mtd`: `FLOAT64`
+  - `rev_voice_site`: `FLOAT64`
+  - `rev_voucher_games`: `FLOAT64`
+  - `rev_voucher_games_site`: `FLOAT64`
+  - `rev_vsd`: `FLOAT64`
+  - `rev_vsd_mtd`: `FLOAT64`
+  - `rev_vsd_site`: `FLOAT64`
+  - `rgu30_churn_back`: `FLOAT64`
+  - `rgu30_churn_back_site`: `FLOAT64`
+  - `rgu30_closing_base`: `FLOAT64`
+  - `rgu30_closing_base_fwa_site`: `FLOAT64`
+  - `rgu30_closing_base_site`: `FLOAT64`
+  - `rgu30_gross_add`: `FLOAT64`
+  - `rgu30_gross_add_site`: `FLOAT64`
+  - `rgu30_gross_churn`: `FLOAT64`
+  - `rgu30_gross_churn_site`: `FLOAT64`
+  - `rgu30_net_add`: `FLOAT64`
+  - `rgu30_net_add_site`: `FLOAT64`
+  - `rgu30_net_churn`: `FLOAT64`
+  - `rgu30_net_churn_site`: `FLOAT64`
+  - `rgu30_opening_base`: `FLOAT64`
+  - `rgu30_opening_base_site`: `FLOAT64`
+  - `rgu90_churn_back`: `FLOAT64`
+  - `rgu90_churn_back_istimewa`: `FLOAT64`
+  - `rgu90_churn_back_site`: `FLOAT64`
+  - `rgu90_closing_base`: `FLOAT64`
+  - `rgu90_closing_base_fwa_site`: `FLOAT64`
+  - `rgu90_closing_base_istimewa`: `FLOAT64`
+  - `rgu90_closing_base_site`: `FLOAT64`
+  - `rgu90_cnx_below_7_istimewa`: `FLOAT64`
+  - `rgu90_gross_add`: `FLOAT64`
+  - `rgu90_gross_add_lrs_non_ol_site`: `FLOAT64`
+  - `rgu90_gross_add_lrs_ol_site`: `FLOAT64`
+  - `rgu90_gross_add_site`: `FLOAT64`
+  - `rgu90_gross_churn`: `FLOAT64`
+  - `rgu90_gross_churn_istimewa`: `FLOAT64`
+  - `rgu90_gross_churn_site`: `FLOAT64`
+  - `rgu90_in_gross_add_istimewa`: `FLOAT64`
+  - `rgu90_in_upgrade_istimewa`: `FLOAT64`
+  - `rgu90_net_add`: `FLOAT64`
+  - `rgu90_net_add_istimewa`: `FLOAT64`
+  - `rgu90_net_add_site`: `FLOAT64`
+  - `rgu90_net_churn`: `FLOAT64`
+  - `rgu90_net_churn_istimewa`: `FLOAT64`
+  - `rgu90_net_churn_site`: `FLOAT64`
+  - `rgu90_opening_base`: `FLOAT64`
+  - `rgu90_opening_base_site`: `FLOAT64`
+  - `rgu90_out_churn_istimewa`: `FLOAT64`
+  - `rgu90_out_downgrade_istimewa`: `FLOAT64`
+  - `rgu90_stay_istimewa`: `FLOAT64`
+  - `rgu_daily`: `FLOAT64`
+  - `sms_uu_30d`: `FLOAT64`
+  - `sms_uu_daily`: `FLOAT64`
+  - `sms_uu_mtd`: `FLOAT64`
+  - `traffic_data_4g_gb_istimewa_30d`: `FLOAT64`
+  - `traffic_data_4g_gb_istimewa_mtd`: `FLOAT64`
+  - `traffic_data_5g_gb_istimewa_30d`: `FLOAT64`
+  - `traffic_data_5g_gb_istimewa_mtd`: `FLOAT64`
+  - `traffic_data_5g_gb_site`: `FLOAT64`
+  - `traffic_data_gb`: `FLOAT64`
+  - `traffic_data_gb_istimewa_30d`: `FLOAT64`
+  - `traffic_data_gb_istimewa_mtd`: `FLOAT64`
+  - `traffic_data_gb_mtd`: `FLOAT64`
+  - `traffic_data_gb_site`: `FLOAT64`
+  - `traffic_sms_hit`: `FLOAT64`
+  - `traffic_sms_hit_mtd`: `FLOAT64`
+  - `traffic_sms_hit_site`: `FLOAT64`
+  - `traffic_voice_min`: `FLOAT64`
+  - `traffic_voice_min_mtd`: `FLOAT64`
+  - `traffic_voice_min_site`: `FLOAT64`
+  - `vlr_30d`: `FLOAT64`
+  - `vlr_active_30d`: `FLOAT64`
+  - `vlr_active_daily`: `FLOAT64`
+  - `vlr_active_daily_site`: `FLOAT64`
+  - `vlr_active_mtd`: `FLOAT64`
+  - `vlr_daily`: `FLOAT64`
+  - `vlr_daily_site`: `FLOAT64`
+  - `vlr_mtd`: `FLOAT64`
+  - `voice_uu_30d`: `FLOAT64`
+  - `voice_uu_daily`: `FLOAT64`
+  - `voice_uu_mtd`: `FLOAT64`
 
-### `rham_kpi_highlevel_mtd`
+### `rham_kec_wise_tnr_mth`
 
-- Relationship: domain `kpi_summary` contains table `rham_kpi_highlevel_mtd`.
-- Column count: 129.
-- Partition columns: none declared.
+- Relationship: domain `kpi_summary` contains table `rham_kec_wise_tnr_mth`.
+- Column count: 189.
+- Partition columns: `dt_id`.
 - Source kind: `observed`.
-- Grain: `kecamatan`.
-- Period semantics: `mtd_cutoff_aligned`.
-- Aggregation rule: `sum_additive_metrics`.
+- Grain: `month_x_kecamatan_x_brand_x_tenure_group`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
 - Priority: `high`.
-- Relative cost tier: `low`.
-- Metric families: `acquisition`, `churn`, `fwa`, `outlet distribution`, `revenue`, `traffic`.
+- Relative cost tier: `medium`.
+- Metric families: `revenue`, `traffic`, `churn`, `acquisition`, `subscriber segment`.
 - Columns:
-  - `month_id`: `INT64`
-  - `dt_id`: `DATE`
-  - `brand`: `STRING`
-  - `kecamatan`: `STRING`
-  - `kabkot`: `STRING`
+  - `month_id`: `STRING`
+  - `dt_id`: `DATE` (partition)
   - `kec_id`: `STRING`
-  - `rev_prepaid`: `FLOAT64`
-  - `rev_vsd`: `FLOAT64`
-  - `rev_voice`: `FLOAT64`
-  - `rev_sms`: `FLOAT64`
-  - `rev_data`: `FLOAT64`
-  - `rgu_90d`: `INT64`
-  - `rgu_30d`: `INT64`
-  - `gross_add`: `INT64`
-  - `pack_subs`: `INT64`
-  - `avg_vlr_daily`: `INT64`
-  - `net_churn_90d`: `INT64`
-  - `net_churn_30d`: `INT64`
-  - `usg_data_gb`: `FLOAT64`
-  - `usg_og_voice_min`: `FLOAT64`
-  - `usg_og_sms_hit`: `INT64`
-  - `rev_acquisition_m0`: `FLOAT64`
-  - `rev_data_mobo_non_trade`: `FLOAT64`
-  - `rev_data_mobo_trade`: `FLOAT64`
-  - `rev_data_organic`: `FLOAT64`
-  - `data_uu_daily`: `INT64`
-  - `data_uu_30`: `INT64`
-  - `gross_churn_90d`: `INT64`
-  - `churn_back_90d`: `INT64`
-  - `ga_m2s`: `INT64`
-  - `m2s`: `INT64`
-  - `rev_base`: `FLOAT64`
-  - `close_rgu90d`: `INT64`
-  - `close_rgu30d`: `INT64`
-  - `net_add_90d`: `INT64`
-  - `net_add_30d`: `INT64`
-  - `trade_supply`: `FLOAT64`
-  - `site_trade_supply_zero`: `FLOAT64`
-  - `site_trade_supply_5mio`: `FLOAT64`
-  - `site_trade_supply_10mio`: `FLOAT64`
-  - `site_trade_supply_20mio`: `FLOAT64`
-  - `tertiary_b`: `FLOAT64`
-  - `tertiary_b_inner`: `FLOAT64`
-  - `tertiary_b_outer`: `FLOAT64`
-  - `total_site`: `INT64`
-  - `addr_site`: `INT64`
-  - `base_site`: `INT64`
-  - `new_site`: `INT64`
-  - `site_5_uro`: `INT64`
-  - `site_3_uro`: `INT64`
-  - `site_3_quro`: `INT64`
-  - `site_5_quro`: `INT64`
-  - `site_3_sso`: `INT64`
-  - `site_5_sso`: `INT64`
-  - `site_3_qsso`: `INT64`
-  - `site_5_qsso`: `INT64`
-  - `site_20_qsc`: `INT64`
-  - `site_40_qsc`: `INT64`
-  - `site_20_ga`: `INT64`
-  - `site_40_ga`: `INT64`
-  - `vlr_postpaid`: `INT64`
-  - `sso`: `INT64`
-  - `q_uro`: `INT64`
-  - `q_sso`: `INT64`
-  - `qsc`: `INT64`
-  - `uro`: `INT64`
-  - `site_tsel`: `INT64`
-  - `site_xl`: `INT64`
-  - `site_sf`: `INT64`
-  - `fb_soga_industry`: `INT64`
-  - `fb_soga_im3`: `INT64`
-  - `fb_soga_3id`: `INT64`
-  - `fb_soga_tsel`: `INT64`
-  - `fb_soga_xl`: `INT64`
-  - `fb_soga_sf`: `INT64`
-  - `fb_ms_industry`: `INT64`
-  - `fb_ms_im3`: `INT64`
-  - `fb_ms_3id`: `INT64`
-  - `fb_ms_tsel`: `INT64`
-  - `fb_ms_xl`: `INT64`
-  - `fb_ms_sf`: `INT64`
-  - `fb_churn_industry`: `INT64`
-  - `fb_churn_im3`: `INT64`
-  - `fb_churn_3id`: `INT64`
-  - `fb_churn_tsel`: `INT64`
-  - `fb_churn_xl`: `INT64`
-  - `fb_churn_sf`: `INT64`
-  - `site_addr_rev`: `FLOAT64`
-  - `site_addr_vlr_daily`: `INT64`
-  - `site_addr_rgu_90d`: `INT64`
-  - `site_base_rev`: `FLOAT64`
-  - `site_base_vlr_daily`: `INT64`
-  - `site_base_rgu_90d`: `INT64`
-  - `site_new_rev`: `FLOAT64`
-  - `site_new_vlr_daily`: `INT64`
-  - `site_new_rgu_90d`: `INT64`
-  - `num_outlet`: `INT64`
-  - `site_base_less_50mio`: `INT64`
-  - `site_addr_less_50mio`: `INT64`
-  - `site_addr_no_ga`: `INT64`
-  - `site_base_no_ga`: `INT64`
-  - `site_new_no_ga`: `INT64`
-  - `population`: `INT64`
-  - `ncp`: `INT64`
-  - `area_square`: `FLOAT64`
-  - `nca`: `FLOAT64`
-  - `site_5_quro_nat`: `INT64`
-  - `site_3_qsso_nat`: `INT64`
-  - `rgu_ga_fwa`: `INT64`
-  - `osa_nat`: `INT64`
-  - `primary_all`: `INT64`
-  - `qsso_nat`: `INT64`
-  - `quro_nat`: `INT64`
-  - `qsc_nat`: `INT64`
-  - `rgu_ga_digital_nat`: `INT64`
-  - `rgu_ga_digital_modern_nat`: `INT64`
-  - `rgu_ga_digital_ola_nat`: `INT64`
-  - `rgu_ga_digital_online_nat`: `INT64`
-  - `rgu_ga_others_nat`: `INT64`
-  - `rgu_ga_trad_nat`: `INT64`
-  - `rgu_ga_trad_dsf_nat`: `INT64`
-  - `rgu_ga_trad_outlet_nat`: `INT64`
-  - `secondary_nat`: `INT64`
-  - `sso_nat`: `INT64`
-  - `tertiary_a_nat`: `FLOAT64`
-  - `trade_demand_nat`: `FLOAT64`
-  - `trade_supply_nat`: `FLOAT64`
-  - `uro_nat`: `INT64`
-  - `ono_nat`: `INT64`
-
-### `rham_kpi_highlevel_mth`
-
-- Relationship: domain `kpi_summary` contains table `rham_kpi_highlevel_mth`.
-- Column count: 133.
-- Partition columns: none declared.
-- Source kind: `observed`.
-- Grain: `kecamatan`.
-- Period semantics: `monthly`.
-- Aggregation rule: `sum_additive_metrics`.
-- Priority: `high`.
-- Relative cost tier: `low`.
-- Metric families: `acquisition`, `churn`, `fwa`, `outlet distribution`, `revenue`, `traffic`.
-- Columns:
-  - `month_id`: `INT64`
-  - `dt_id`: `DATE`
   - `brand`: `STRING`
-  - `kecamatan`: `STRING`
-  - `kabkot`: `STRING`
-  - `kec_id`: `STRING`
-  - `rev_prepaid`: `FLOAT64`
-  - `rev_vsd`: `FLOAT64`
-  - `rev_voice`: `FLOAT64`
-  - `rev_sms`: `FLOAT64`
+  - `tenure_group`: `STRING`
+  - `acq_ga_inject`: `FLOAT64`
+  - `acq_ga_inject_hv`: `FLOAT64`
+  - `acq_ga_inject_lv`: `FLOAT64`
+  - `acq_ga_inject_mv`: `FLOAT64`
+  - `acq_qsc_m0`: `FLOAT64`
+  - `acq_sc_m0`: `FLOAT64`
+  - `data_uu_30d`: `FLOAT64`
+  - `data_uu_daily`: `FLOAT64`
+  - `data_uu_daily_4g`: `FLOAT64`
+  - `data_uu_daily_5g`: `FLOAT64`
+  - `data_uu_istimewa_30d`: `FLOAT64`
+  - `data_uu_mtd`: `FLOAT64`
+  - `ga_m1s_site`: `FLOAT64`
+  - `ga_m2s_site`: `FLOAT64`
+  - `ga_p1m_site`: `FLOAT64`
+  - `ga_p2m_site`: `FLOAT64`
+  - `hits_rebuy_lrs_site`: `FLOAT64`
+  - `hits_sp_lrs_site`: `FLOAT64`
+  - `hits_total_fwa_site`: `FLOAT64`
+  - `pau_30d`: `FLOAT64`
+  - `pau_daily`: `FLOAT64`
+  - `pau_data_30d`: `FLOAT64`
+  - `pau_data_daily`: `FLOAT64`
+  - `pau_data_mtd`: `FLOAT64`
+  - `pau_mtd`: `FLOAT64`
+  - `rev_acq_m0`: `FLOAT64`
+  - `rev_acq_qsc_m0`: `FLOAT64`
   - `rev_data`: `FLOAT64`
-  - `rgu_90d`: `INT64`
-  - `rgu_30d`: `INT64`
-  - `gross_add`: `INT64`
-  - `pack_subs`: `INT64`
-  - `avg_vlr_daily`: `INT64`
-  - `net_churn_90d`: `INT64`
-  - `net_churn_30d`: `INT64`
-  - `usg_data_gb`: `FLOAT64`
-  - `usg_og_voice_min`: `FLOAT64`
-  - `usg_og_sms_hit`: `INT64`
-  - `rev_acquisition_m0`: `FLOAT64`
-  - `arpu_0_90d_hvc`: `INT64`
-  - `arpu_0_90d_mvc`: `INT64`
-  - `arpu_0_90d_lvc`: `INT64`
-  - `arpu_0_90d_nvc`: `INT64`
-  - `rev_data_mobo_non_trade`: `FLOAT64`
-  - `rev_data_mobo_trade`: `FLOAT64`
-  - `rev_data_organic`: `FLOAT64`
-  - `data_uu_daily`: `INT64`
-  - `data_uu_30`: `INT64`
-  - `gross_churn_90d`: `INT64`
-  - `churn_back_90d`: `INT64`
-  - `ga_m2s`: `INT64`
-  - `m2s`: `INT64`
-  - `rev_base`: `FLOAT64`
-  - `close_rgu90d`: `INT64`
-  - `close_rgu30d`: `INT64`
-  - `net_add_90d`: `INT64`
-  - `net_add_30d`: `INT64`
-  - `trade_supply`: `FLOAT64`
-  - `site_trade_supply_zero`: `FLOAT64`
-  - `site_trade_supply_5mio`: `FLOAT64`
-  - `site_trade_supply_10mio`: `FLOAT64`
-  - `site_trade_supply_20mio`: `FLOAT64`
-  - `tertiary_b`: `FLOAT64`
-  - `tertiary_b_inner`: `FLOAT64`
-  - `tertiary_b_outer`: `FLOAT64`
-  - `total_site`: `INT64`
-  - `addr_site`: `INT64`
-  - `base_site`: `INT64`
-  - `new_site`: `INT64`
-  - `site_5_uro`: `INT64`
-  - `site_3_uro`: `INT64`
-  - `site_3_quro`: `INT64`
-  - `site_5_quro`: `INT64`
-  - `site_3_sso`: `INT64`
-  - `site_5_sso`: `INT64`
-  - `site_3_qsso`: `INT64`
-  - `site_5_qsso`: `INT64`
-  - `site_20_qsc`: `INT64`
-  - `site_40_qsc`: `INT64`
-  - `site_20_ga`: `INT64`
-  - `site_40_ga`: `INT64`
-  - `vlr_postpaid`: `INT64`
-  - `sso`: `INT64`
-  - `q_uro`: `INT64`
-  - `q_sso`: `INT64`
-  - `qsc`: `INT64`
-  - `uro`: `INT64`
-  - `site_tsel`: `INT64`
-  - `site_xl`: `INT64`
-  - `site_sf`: `INT64`
-  - `fb_soga_industry`: `INT64`
-  - `fb_soga_im3`: `INT64`
-  - `fb_soga_3id`: `INT64`
-  - `fb_soga_tsel`: `INT64`
-  - `fb_soga_xl`: `INT64`
-  - `fb_soga_sf`: `INT64`
-  - `fb_ms_industry`: `INT64`
-  - `fb_ms_im3`: `INT64`
-  - `fb_ms_3id`: `INT64`
-  - `fb_ms_tsel`: `INT64`
-  - `fb_ms_xl`: `INT64`
-  - `fb_ms_sf`: `INT64`
-  - `fb_churn_industry`: `INT64`
-  - `fb_churn_im3`: `INT64`
-  - `fb_churn_3id`: `INT64`
-  - `fb_churn_tsel`: `INT64`
-  - `fb_churn_xl`: `INT64`
-  - `fb_churn_sf`: `INT64`
-  - `site_addr_rev`: `FLOAT64`
-  - `site_addr_vlr_daily`: `INT64`
-  - `site_addr_rgu_90d`: `INT64`
-  - `site_base_rev`: `FLOAT64`
-  - `site_base_vlr_daily`: `INT64`
-  - `site_base_rgu_90d`: `INT64`
-  - `site_new_rev`: `FLOAT64`
-  - `site_new_vlr_daily`: `INT64`
-  - `site_new_rgu_90d`: `INT64`
-  - `num_outlet`: `INT64`
-  - `site_base_less_50mio`: `INT64`
-  - `site_addr_less_50mio`: `INT64`
-  - `site_addr_no_ga`: `INT64`
-  - `site_base_no_ga`: `INT64`
-  - `site_new_no_ga`: `INT64`
-  - `population`: `INT64`
-  - `ncp`: `INT64`
-  - `area_square`: `FLOAT64`
-  - `nca`: `FLOAT64`
-  - `site_5_quro_nat`: `INT64`
-  - `site_3_qsso_nat`: `INT64`
-  - `rgu_ga_fwa`: `INT64`
-  - `osa_nat`: `FLOAT64`
-  - `primary_all`: `FLOAT64`
-  - `qsso_nat`: `INT64`
-  - `quro_nat`: `INT64`
-  - `qsc_nat`: `INT64`
-  - `rgu_ga_digital_nat`: `INT64`
-  - `rgu_ga_digital_modern_nat`: `INT64`
-  - `rgu_ga_digital_ola_nat`: `INT64`
-  - `rgu_ga_digital_online_nat`: `INT64`
-  - `rgu_ga_others_nat`: `INT64`
-  - `rgu_ga_trad_nat`: `INT64`
-  - `rgu_ga_trad_dsf_nat`: `INT64`
-  - `rgu_ga_trad_outlet_nat`: `INT64`
-  - `secondary_nat`: `FLOAT64`
-  - `sso_nat`: `INT64`
-  - `tertiary_a_nat`: `FLOAT64`
-  - `trade_demand_nat`: `FLOAT64`
-  - `trade_supply_nat`: `FLOAT64`
-  - `uro_nat`: `INT64`
-  - `ono_nat`: `INT64`
+  - `rev_data_atl`: `FLOAT64`
+  - `rev_data_atl_mtd`: `FLOAT64`
+  - `rev_data_btl`: `FLOAT64`
+  - `rev_data_btl_mtd`: `FLOAT64`
+  - `rev_data_mtd`: `FLOAT64`
+  - `rev_data_site`: `FLOAT64`
+  - `rev_ewallet`: `FLOAT64`
+  - `rev_ewallet_site`: `FLOAT64`
+  - `rev_fdv`: `FLOAT64`
+  - `rev_fdv_data_site`: `FLOAT64`
+  - `rev_fdv_site`: `FLOAT64`
+  - `rev_fdv_sms_site`: `FLOAT64`
+  - `rev_fdv_voice_site`: `FLOAT64`
+  - `rev_loan_balance`: `FLOAT64`
+  - `rev_loan_balance_mtd`: `FLOAT64`
+  - `rev_loan_balance_site`: `FLOAT64`
+  - `rev_mobo_data_site`: `FLOAT64`
+  - `rev_mobo_site`: `FLOAT64`
+  - `rev_mobo_sms_site`: `FLOAT64`
+  - `rev_mobo_voice_site`: `FLOAT64`
+  - `rev_mobosp`: `FLOAT64`
+  - `rev_mobosp_site`: `FLOAT64`
+  - `rev_nondata`: `FLOAT64`
+  - `rev_nondata_mtd`: `FLOAT64`
+  - `rev_nondata_others`: `FLOAT64`
+  - `rev_nondata_others_mtd`: `FLOAT64`
+  - `rev_nondata_site`: `FLOAT64`
+  - `rev_nontrade`: `FLOAT64`
+  - `rev_nontrade_mtd`: `FLOAT64`
+  - `rev_nonvsd`: `FLOAT64`
+  - `rev_nonvsd_mtd`: `FLOAT64`
+  - `rev_org_data_alloc_site`: `FLOAT64`
+  - `rev_org_sms_alloc_site`: `FLOAT64`
+  - `rev_org_voice_alloc_site`: `FLOAT64`
+  - `rev_organic`: `FLOAT64`
+  - `rev_organic_mtd`: `FLOAT64`
+  - `rev_organic_site`: `FLOAT64`
+  - `rev_other`: `FLOAT64`
+  - `rev_other_site`: `FLOAT64`
+  - `rev_pgi_site`: `FLOAT64`
+  - `rev_rebuy_lrs_site`: `FLOAT64`
+  - `rev_sc_m0`: `FLOAT64`
+  - `rev_sms`: `FLOAT64`
+  - `rev_sms_mtd`: `FLOAT64`
+  - `rev_sms_site`: `FLOAT64`
+  - `rev_sms_voucher_site`: `FLOAT64`
+  - `rev_sp`: `FLOAT64`
+  - `rev_sp_data`: `FLOAT64`
+  - `rev_sp_data_site`: `FLOAT64`
+  - `rev_sp_lrs_site`: `FLOAT64`
+  - `rev_sp_mtd`: `FLOAT64`
+  - `rev_total`: `FLOAT64`
+  - `rev_total_fwa_site`: `FLOAT64`
+  - `rev_total_istimewa_mtd`: `FLOAT64`
+  - `rev_total_mtd`: `FLOAT64`
+  - `rev_total_site`: `FLOAT64`
+  - `rev_trade`: `FLOAT64`
+  - `rev_trade_mtd`: `FLOAT64`
+  - `rev_trade_sp`: `FLOAT64`
+  - `rev_trade_sp_mtd`: `FLOAT64`
+  - `rev_vas_gross_site`: `FLOAT64`
+  - `rev_vas_net_bi`: `FLOAT64`
+  - `rev_vas_net_bi_mtd`: `FLOAT64`
+  - `rev_vas_net_dcb`: `FLOAT64`
+  - `rev_vas_net_dcb_mtd`: `FLOAT64`
+  - `rev_vas_net_new`: `FLOAT64`
+  - `rev_vas_net_new_mtd`: `FLOAT64`
+  - `rev_vas_net_new_site`: `FLOAT64`
+  - `rev_vas_net_site`: `FLOAT64`
+  - `rev_vchori`: `FLOAT64`
+  - `rev_vchori_data_site`: `FLOAT64`
+  - `rev_vchori_site`: `FLOAT64`
+  - `rev_vchori_sms_site`: `FLOAT64`
+  - `rev_vchori_voice_site`: `FLOAT64`
+  - `rev_voice`: `FLOAT64`
+  - `rev_voice_mtd`: `FLOAT64`
+  - `rev_voice_site`: `FLOAT64`
+  - `rev_voucher_games`: `FLOAT64`
+  - `rev_voucher_games_site`: `FLOAT64`
+  - `rev_vsd`: `FLOAT64`
+  - `rev_vsd_mtd`: `FLOAT64`
+  - `rev_vsd_site`: `FLOAT64`
+  - `rgu30_churn_back`: `FLOAT64`
+  - `rgu30_churn_back_site`: `FLOAT64`
+  - `rgu30_closing_base`: `FLOAT64`
+  - `rgu30_closing_base_fwa_site`: `FLOAT64`
+  - `rgu30_closing_base_site`: `FLOAT64`
+  - `rgu30_gross_add`: `FLOAT64`
+  - `rgu30_gross_add_site`: `FLOAT64`
+  - `rgu30_gross_churn`: `FLOAT64`
+  - `rgu30_gross_churn_site`: `FLOAT64`
+  - `rgu30_net_add`: `FLOAT64`
+  - `rgu30_net_add_site`: `FLOAT64`
+  - `rgu30_net_churn`: `FLOAT64`
+  - `rgu30_net_churn_site`: `FLOAT64`
+  - `rgu30_opening_base`: `FLOAT64`
+  - `rgu30_opening_base_site`: `FLOAT64`
+  - `rgu90_churn_back`: `FLOAT64`
+  - `rgu90_churn_back_istimewa`: `FLOAT64`
+  - `rgu90_churn_back_site`: `FLOAT64`
+  - `rgu90_closing_base`: `FLOAT64`
+  - `rgu90_closing_base_fwa_site`: `FLOAT64`
+  - `rgu90_closing_base_istimewa`: `FLOAT64`
+  - `rgu90_closing_base_site`: `FLOAT64`
+  - `rgu90_cnx_below_7_istimewa`: `FLOAT64`
+  - `rgu90_gross_add`: `FLOAT64`
+  - `rgu90_gross_add_lrs_non_ol_site`: `FLOAT64`
+  - `rgu90_gross_add_lrs_ol_site`: `FLOAT64`
+  - `rgu90_gross_add_site`: `FLOAT64`
+  - `rgu90_gross_churn`: `FLOAT64`
+  - `rgu90_gross_churn_istimewa`: `FLOAT64`
+  - `rgu90_gross_churn_site`: `FLOAT64`
+  - `rgu90_in_gross_add_istimewa`: `FLOAT64`
+  - `rgu90_in_upgrade_istimewa`: `FLOAT64`
+  - `rgu90_net_add`: `FLOAT64`
+  - `rgu90_net_add_istimewa`: `FLOAT64`
+  - `rgu90_net_add_site`: `FLOAT64`
+  - `rgu90_net_churn`: `FLOAT64`
+  - `rgu90_net_churn_istimewa`: `FLOAT64`
+  - `rgu90_net_churn_site`: `FLOAT64`
+  - `rgu90_opening_base`: `FLOAT64`
+  - `rgu90_opening_base_site`: `FLOAT64`
+  - `rgu90_out_churn_istimewa`: `FLOAT64`
+  - `rgu90_out_downgrade_istimewa`: `FLOAT64`
+  - `rgu90_stay_istimewa`: `FLOAT64`
+  - `rgu_daily`: `FLOAT64`
+  - `sms_uu_30d`: `FLOAT64`
+  - `sms_uu_daily`: `FLOAT64`
+  - `sms_uu_mtd`: `FLOAT64`
+  - `traffic_data_4g_gb_istimewa_30d`: `FLOAT64`
+  - `traffic_data_4g_gb_istimewa_mtd`: `FLOAT64`
+  - `traffic_data_5g_gb_istimewa_30d`: `FLOAT64`
+  - `traffic_data_5g_gb_istimewa_mtd`: `FLOAT64`
+  - `traffic_data_5g_gb_site`: `FLOAT64`
+  - `traffic_data_gb`: `FLOAT64`
+  - `traffic_data_gb_istimewa_30d`: `FLOAT64`
+  - `traffic_data_gb_istimewa_mtd`: `FLOAT64`
+  - `traffic_data_gb_mtd`: `FLOAT64`
+  - `traffic_data_gb_site`: `FLOAT64`
+  - `traffic_sms_hit`: `FLOAT64`
+  - `traffic_sms_hit_mtd`: `FLOAT64`
+  - `traffic_sms_hit_site`: `FLOAT64`
+  - `traffic_voice_min`: `FLOAT64`
+  - `traffic_voice_min_mtd`: `FLOAT64`
+  - `traffic_voice_min_site`: `FLOAT64`
+  - `vlr_30d`: `FLOAT64`
+  - `vlr_active_30d`: `FLOAT64`
+  - `vlr_active_daily`: `FLOAT64`
+  - `vlr_active_daily_site`: `FLOAT64`
+  - `vlr_active_mtd`: `FLOAT64`
+  - `vlr_daily`: `FLOAT64`
+  - `vlr_daily_site`: `FLOAT64`
+  - `vlr_mtd`: `FLOAT64`
+  - `voice_uu_30d`: `FLOAT64`
+  - `voice_uu_daily`: `FLOAT64`
+  - `voice_uu_mtd`: `FLOAT64`
 
 ### `rham_mkt_highlevel_mtd`
 
 - Relationship: domain `kpi_summary` contains table `rham_mkt_highlevel_mtd`.
-- Column count: 183.
+- Column count: 297.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `kecamatan`.
 - Period semantics: `mtd_cutoff_aligned`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `high`.
-- Relative cost tier: `low`.
+- Relative cost tier: `medium`.
 - Metric families: `acquisition`, `churn`, `fwa`, `outlet distribution`, `revenue`, `traffic`.
 - Columns:
   - `month_id`: `INT64`
@@ -675,24 +486,8 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `addr_site`: `INT64`
   - `base_site`: `INT64`
   - `new_site`: `INT64`
-  - `site_5_uro`: `INT64`
-  - `site_3_uro`: `INT64`
-  - `site_3_quro`: `INT64`
-  - `site_5_quro`: `INT64`
-  - `site_3_sso`: `INT64`
-  - `site_5_sso`: `INT64`
-  - `site_3_qsso`: `INT64`
-  - `site_5_qsso`: `INT64`
-  - `site_20_qsc`: `INT64`
-  - `site_40_qsc`: `INT64`
   - `site_20_ga`: `INT64`
   - `site_40_ga`: `INT64`
-  - `vlr_postpaid`: `INT64`
-  - `sso`: `INT64`
-  - `q_uro`: `INT64`
-  - `q_sso`: `INT64`
-  - `qsc`: `INT64`
-  - `uro`: `INT64`
   - `site_addr_rev`: `FLOAT64`
   - `site_addr_vlr_daily`: `FLOAT64`
   - `site_addr_rgu_90d`: `FLOAT64`
@@ -720,32 +515,61 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fb_churn_tsel`: `INT64`
   - `fb_churn_xl`: `INT64`
   - `fb_churn_sf`: `INT64`
-  - `trade_supply`: `NUMERIC`
+  - `acq_rev`: `NUMERIC`
+  - `acq_rev_ga_trad`: `NUMERIC`
+  - `acq_rev_rgu_ga_trad_data`: `NUMERIC`
+  - `ga_m1`: `NUMERIC`
+  - `snd_ga_m1s`: `NUMERIC`
+  - `ga_m2`: `NUMERIC`
+  - `snd_ga_m2s`: `NUMERIC`
+  - `ono`: `NUMERIC`
+  - `osa`: `NUMERIC`
+  - `outlet_demand`: `NUMERIC`
+  - `outlet_no_ga`: `NUMERIC`
+  - `outlet_pjp`: `NUMERIC`
+  - `outlet_total`: `NUMERIC`
+  - `primary`: `NUMERIC`
+  - `qsso_m0`: `NUMERIC`
+  - `quro`: `NUMERIC`
+  - `rev_game`: `NUMERIC`
+  - `rev_gift`: `NUMERIC`
+  - `rev_m2s`: `NUMERIC`
+  - `rgu_ga`: `NUMERIC`
+  - `rgu_ga_100mb`: `NUMERIC`
+  - `rgu_ga_fwa`: `NUMERIC`
+  - `rgu_ga_no_inj`: `NUMERIC`
+  - `rgu_ga_trad_hvc`: `NUMERIC`
+  - `rgu_ga_trad_lvc`: `NUMERIC`
+  - `rgu_ga_trad_mvc`: `NUMERIC`
+  - `rgu_ga_trad_no_inj`: `NUMERIC`
+  - `rgu_ga_trade`: `NUMERIC`
+  - `rguga_digital_modern`: `NUMERIC`
+  - `rguga_digital_ola`: `NUMERIC`
+  - `rguga_digital_online`: `NUMERIC`
+  - `secondary`: `NUMERIC`
+  - `sellin_fwa`: `NUMERIC`
+  - `sellin_sp_3gb`: `NUMERIC`
+  - `site_3qsso`: `NUMERIC`
+  - `site_5quro`: `NUMERIC`
+  - `site_addr`: `NUMERIC`
+  - `sso`: `NUMERIC`
+  - `tertiary_b`: `NUMERIC`
+  - `tertiary_b_datapack_inner`: `NUMERIC`
+  - `tertiary_b_datapack_outer`: `NUMERIC`
+  - `tertiary_b_inner`: `NUMERIC`
+  - `tertiary_b_outer`: `NUMERIC`
+  - `tertiary_b_reload_inner`: `NUMERIC`
+  - `tertiary_b_reload_outer`: `NUMERIC`
+  - `tertiary_b_sp_inner`: `NUMERIC`
+  - `tertiary_b_sp_outer`: `NUMERIC`
+  - `tertiary_b_voucher_inner`: `NUMERIC`
+  - `tertiary_b_voucher_outer`: `NUMERIC`
   - `trade_demand`: `NUMERIC`
   - `trade_demand_inner`: `NUMERIC`
   - `trade_demand_outer`: `NUMERIC`
-  - `tertiary_b`: `NUMERIC`
-  - `tertiary_b_inner`: `NUMERIC`
-  - `tertiary_b_outer`: `NUMERIC`
-  - `ono_nat`: `NUMERIC`
-  - `osa_nat`: `NUMERIC`
-  - `primary_all`: `NUMERIC`
-  - `secondary_nat`: `NUMERIC`
-  - `tertiary_a_nat`: `NUMERIC`
-  - `rgu_ga_fwa`: `NUMERIC`
-  - `site_3_qsso_nat`: `NUMERIC`
-  - `site_5_quro_nat`: `NUMERIC`
-  - `qsso_nat`: `NUMERIC`
-  - `quro_nat`: `NUMERIC`
-  - `rgu_ga_digital_nat`: `NUMERIC`
-  - `rgu_ga_digital_modern_nat`: `NUMERIC`
-  - `rgu_ga_digital_ola_nat`: `NUMERIC`
-  - `rgu_ga_digital_online_nat`: `NUMERIC`
-  - `rgu_ga_others_nat`: `NUMERIC`
-  - `rgu_ga_trad_dsf_nat`: `NUMERIC`
-  - `rgu_ga_trad_outlet_nat`: `NUMERIC`
-  - `sso_nat`: `NUMERIC`
-  - `uro_nat`: `NUMERIC`
+  - `trade_supply`: `NUMERIC`
+  - `uro`: `NUMERIC`
+  - `rguga_digital`: `NUMERIC`
   - `subs_hvc`: `INT64`
   - `subs_hvc_stay`: `INT64`
   - `subs_hvc_in`: `INT64`
@@ -759,16 +583,91 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `rev_atl_gift`: `FLOAT64`
   - `rev_atl_renewal`: `FLOAT64`
   - `rev_btl`: `FLOAT64`
+  - `rev_vsd_ex_gift`: `FLOAT64`
+  - `fwa_rgu90`: `NUMERIC`
+  - `fwa_rgu90_closing`: `NUMERIC`
+  - `fwa_cb90`: `NUMERIC`
+  - `fwa_gc90`: `NUMERIC`
+  - `fwa_net_churn90`: `NUMERIC`
+  - `fwa_net_add_subs`: `NUMERIC`
+  - `fwa_rev_regular`: `NUMERIC`
+  - `fwa_rev_fwa_pack`: `NUMERIC`
+  - `fwa_rev_sim`: `NUMERIC`
+  - `fwa_rev_total`: `NUMERIC`
+  - `fwa_rgu90_5g`: `INT64`
+  - `fwa_rgu90_4g`: `INT64`
+  - `fwa_traffic_5g`: `NUMERIC`
+  - `fwa_traffic_4g`: `NUMERIC`
+  - `fwa_traffic_5g_dly`: `NUMERIC`
+  - `fwa_traffic_4g_dly`: `NUMERIC`
+  - `fwa_subs_usg_10gb_30d`: `INT64`
+  - `fwa_subs_usg_20gb_30d`: `INT64`
+  - `fwa_subs_usg_50gb_30d`: `INT64`
+  - `fwa_data_uu_5g`: `INT64`
+  - `fwa_data_uu_4g`: `INT64`
+  - `fwa_vlr`: `INT64`
+  - `fwa_vlr_no_fu`: `INT64`
+  - `fwa_vlr_less_90d`: `INT64`
+  - `fwa_vlr_91d_180d`: `INT64`
+  - `fwa_vlr_above_180d`: `INT64`
+  - `fwa_rev_sim_v2`: `NUMERIC`
+  - `fwa_rev_non_data_v2`: `NUMERIC`
+  - `fwa_rev_fwa_pack_v2`: `NUMERIC`
+  - `fwa_rev_fwa_data_pack_v2`: `NUMERIC`
+  - `fwa_rev_regular_pack_v2`: `NUMERIC`
+  - `fwa_rev_total_v2`: `NUMERIC`
+  - `fwa_all_packsubs`: `INT64`
+  - `fwa_fwa_packsubs`: `INT64`
+  - `fwa_regular_packsubs`: `INT64`
+  - `fwa_sim_packsubs`: `INT64`
+  - `fwa_hit_sim_v2`: `INT64`
+  - `fwa_hit_non_data`: `INT64`
+  - `fwa_hit_fwa_pack`: `INT64`
+  - `fwa_hit_dwa_data_pack`: `INT64`
+  - `fwa_hit_regular_pack`: `INT64`
+  - `fwa_hit_total`: `INT64`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_100_5g`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_500_5g`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_1gb_5g`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_2gb_5g`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_5gb_5g`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_10gb_5g`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_50gb_5g`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `fwa_qsc_100gb_5g`: `INT64`
+  - `fwa_rgu_ga`: `INT64`
+  - `fwa_rgu_ga_5g`: `INT64`
+  - `fwa_rgu_ga_4g`: `INT64`
+  - `fwa_acq_rev`: `FLOAT64`
+  - `fwa_acq_rev_5g`: `FLOAT64`
+  - `fwa_acq_rev_4g`: `FLOAT64`
   - `fwa_pack_hits`: `INT64`
   - `rev_fwa_pack`: `NUMERIC`
   - `rev_fwa_sim`: `NUMERIC`
   - `rev_fwa_regular`: `NUMERIC`
   - `rev_fwa_non_broadband`: `NUMERIC`
   - `rev_fwa_total`: `NUMERIC`
+  - `fwa_churnback90`: `NUMERIC`
+  - `fwa_grosschurn90`: `NUMERIC`
+  - `fwa_net_churn`: `NUMERIC`
+  - `fwa_net_add`: `NUMERIC`
+  - `fwa_net_add_acq`: `NUMERIC`
+  - `fwa_net_add_90_closing`: `NUMERIC`
+  - `vlr_total`: `INT64`
+  - `vlr_fwa_less_90d`: `INT64`
+  - `vlr_fwa_91_180d`: `INT64`
+  - `vlr_fwa_above_181d`: `INT64`
+  - `vlr_fwa_no_FU`: `INT64`
   - `ga_modern`: `INT64`
   - `ga_ola`: `INT64`
   - `ga_online`: `INT64`
-  - `ga_fwa`: `INT64`
   - `ga_gerai`: `INT64`
   - `ga_bank`: `INT64`
   - `ga_h2h`: `INT64`
@@ -788,18 +687,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `ga_usage_500mb_plus`: `INT64`
   - `ga_usage_1gb_plus`: `INT64`
   - `ga_total`: `INT64`
-  - `fwa_rgu_ga`: `NUMERIC`
-  - `fwa_churnback90`: `NUMERIC`
-  - `fwa_grosschurn90`: `NUMERIC`
-  - `fwa_rgu90`: `NUMERIC`
-  - `fwa_net_add_90_closing`: `NUMERIC`
-  - `fwa_net_churn`: `NUMERIC`
-  - `fwa_net_add`: `NUMERIC`
-  - `vlr_fwa_less_90d`: `NUMERIC`
-  - `vlr_fwa_91_180d`: `NUMERIC`
-  - `vlr_fwa_above_181d`: `NUMERIC`
-  - `vlr_fwa_no_FU`: `NUMERIC`
-  - `vlr_total`: `NUMERIC`
   - `site_addr_0_ga`: `INT64`
   - `site_addr_1_10_ga`: `INT64`
   - `site_addr_11_20_ga`: `INT64`
@@ -816,18 +703,56 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `site_addr_rev_gt_150mn`: `INT64`
   - `site_addr_growth`: `INT64`
   - `site_addr_degrowth`: `INT64`
+  - `gaq_dt_id`: `DATE`
+  - `gaq_rgu_ga`: `INT64`
+  - `gaq_ga_new_imei`: `INT64`
+  - `gaq_ga_old_imei`: `INT64`
+  - `gaq_ga_imei_unknown`: `INT64`
+  - `gaq_ga_5g`: `INT64`
+  - `ga_dev_5g`: `INT64`
+  - `ga_dev_5g_w_trfc_5g`: `INT64`
+  - `gaq_ga_new_imei_5g`: `INT64`
+  - `gaq_acq_rev_m0`: `FLOAT64`
+  - `gaq_ga_qsc_100_mb`: `INT64`
+  - `gaq_ga_qsc_500mb`: `INT64`
+  - `gaq_ga_qsc_1gb`: `INT64`
+  - `gaq_ga_qsc_3gb`: `INT64`
+  - `gaq_m1s`: `INT64`
+  - `gaq_tot_rev_m1`: `FLOAT64`
+  - `gaq_rgu_m1_rev_min_50k`: `INT64`
+  - `gaq_rgu_m1_rev_min_100k`: `INT64`
+  - `gaq_m1_usg_100mb`: `INT64`
+  - `gaq_m1_usg_500mb`: `INT64`
+  - `gaq_m1_usg_1gb`: `INT64`
+  - `gaq_m1_usg_3gb`: `INT64`
+  - `gaq_m2s`: `INT64`
+  - `gaq_tot_rev_m2`: `FLOAT64`
+  - `gaq_rgu_m2_rev_min_50k`: `INT64`
+  - `gaq_rgu_m2_rev_min_100k`: `INT64`
+  - `gaq_m2_usg_100mb`: `INT64`
+  - `gaq_m2_usg_500mb`: `INT64`
+  - `gaq_m2_usg_1gb`: `INT64`
+  - `gaq_m2_usg_3gb`: `INT64`
+  - `gaq_m3s`: `INT64`
+  - `gaq_tot_rev_m3`: `FLOAT64`
+  - `gaq_rgu_m3_rev_min_50k`: `INT64`
+  - `gaq_rgu_m3_rev_min_100k`: `INT64`
+  - `gaq_m3_usg_100mb`: `INT64`
+  - `gaq_m3_usg_500mb`: `INT64`
+  - `gaq_m3_usg_1gb`: `INT64`
+  - `gaq_m3_usg_3gb`: `INT64`
 
 ### `rham_mkt_highlevel_mth`
 
 - Relationship: domain `kpi_summary` contains table `rham_mkt_highlevel_mth`.
-- Column count: 167.
+- Column count: 281.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `kecamatan`.
 - Period semantics: `monthly`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `high`.
-- Relative cost tier: `low`.
+- Relative cost tier: `medium`.
 - Metric families: `acquisition`, `churn`, `fwa`, `outlet distribution`, `revenue`, `traffic`.
 - Columns:
   - `month_id`: `INT64`
@@ -872,24 +797,8 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `addr_site`: `INT64`
   - `base_site`: `INT64`
   - `new_site`: `INT64`
-  - `site_5_uro`: `INT64`
-  - `site_3_uro`: `INT64`
-  - `site_3_quro`: `INT64`
-  - `site_5_quro`: `INT64`
-  - `site_3_sso`: `INT64`
-  - `site_5_sso`: `INT64`
-  - `site_3_qsso`: `INT64`
-  - `site_5_qsso`: `INT64`
-  - `site_20_qsc`: `INT64`
-  - `site_40_qsc`: `INT64`
   - `site_20_ga`: `INT64`
   - `site_40_ga`: `INT64`
-  - `vlr_postpaid`: `INT64`
-  - `sso`: `INT64`
-  - `q_uro`: `INT64`
-  - `q_sso`: `INT64`
-  - `qsc`: `INT64`
-  - `uro`: `INT64`
   - `site_addr_rev`: `FLOAT64`
   - `site_addr_vlr_daily`: `FLOAT64`
   - `site_addr_rgu_90d`: `FLOAT64`
@@ -917,32 +826,61 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fb_churn_tsel`: `INT64`
   - `fb_churn_xl`: `INT64`
   - `fb_churn_sf`: `INT64`
-  - `trade_supply`: `NUMERIC`
+  - `acq_rev`: `NUMERIC`
+  - `acq_rev_ga_trad`: `NUMERIC`
+  - `acq_rev_rgu_ga_trad_data`: `NUMERIC`
+  - `ga_m1`: `NUMERIC`
+  - `snd_ga_m1s`: `NUMERIC`
+  - `ga_m2`: `NUMERIC`
+  - `snd_ga_m2s`: `NUMERIC`
+  - `ono`: `NUMERIC`
+  - `osa`: `NUMERIC`
+  - `outlet_demand`: `NUMERIC`
+  - `outlet_no_ga`: `NUMERIC`
+  - `outlet_pjp`: `NUMERIC`
+  - `outlet_total`: `NUMERIC`
+  - `primary`: `NUMERIC`
+  - `qsso_m0`: `NUMERIC`
+  - `quro`: `NUMERIC`
+  - `rev_game`: `NUMERIC`
+  - `rev_gift`: `NUMERIC`
+  - `rev_m2s`: `NUMERIC`
+  - `rgu_ga`: `NUMERIC`
+  - `rgu_ga_100mb`: `NUMERIC`
+  - `rgu_ga_fwa`: `NUMERIC`
+  - `rgu_ga_no_inj`: `NUMERIC`
+  - `rgu_ga_trad_hvc`: `NUMERIC`
+  - `rgu_ga_trad_lvc`: `NUMERIC`
+  - `rgu_ga_trad_mvc`: `NUMERIC`
+  - `rgu_ga_trad_no_inj`: `NUMERIC`
+  - `rgu_ga_trade`: `NUMERIC`
+  - `rguga_digital_modern`: `NUMERIC`
+  - `rguga_digital_ola`: `NUMERIC`
+  - `rguga_digital_online`: `NUMERIC`
+  - `secondary`: `NUMERIC`
+  - `sellin_fwa`: `NUMERIC`
+  - `sellin_sp_3gb`: `NUMERIC`
+  - `site_3qsso`: `NUMERIC`
+  - `site_5quro`: `NUMERIC`
+  - `site_addr`: `NUMERIC`
+  - `sso`: `NUMERIC`
+  - `tertiary_b`: `NUMERIC`
+  - `tertiary_b_datapack_inner`: `NUMERIC`
+  - `tertiary_b_datapack_outer`: `NUMERIC`
+  - `tertiary_b_inner`: `NUMERIC`
+  - `tertiary_b_outer`: `NUMERIC`
+  - `tertiary_b_reload_inner`: `NUMERIC`
+  - `tertiary_b_reload_outer`: `NUMERIC`
+  - `tertiary_b_sp_inner`: `NUMERIC`
+  - `tertiary_b_sp_outer`: `NUMERIC`
+  - `tertiary_b_voucher_inner`: `NUMERIC`
+  - `tertiary_b_voucher_outer`: `NUMERIC`
   - `trade_demand`: `NUMERIC`
   - `trade_demand_inner`: `NUMERIC`
   - `trade_demand_outer`: `NUMERIC`
-  - `tertiary_b`: `NUMERIC`
-  - `tertiary_b_inner`: `NUMERIC`
-  - `tertiary_b_outer`: `NUMERIC`
-  - `ono_nat`: `NUMERIC`
-  - `osa_nat`: `NUMERIC`
-  - `primary_all`: `NUMERIC`
-  - `secondary_nat`: `NUMERIC`
-  - `tertiary_a_nat`: `NUMERIC`
-  - `rgu_ga_fwa`: `NUMERIC`
-  - `site_3_qsso_nat`: `NUMERIC`
-  - `site_5_quro_nat`: `NUMERIC`
-  - `qsso_nat`: `NUMERIC`
-  - `quro_nat`: `NUMERIC`
-  - `rgu_ga_digital_nat`: `NUMERIC`
-  - `rgu_ga_digital_modern_nat`: `NUMERIC`
-  - `rgu_ga_digital_ola_nat`: `NUMERIC`
-  - `rgu_ga_digital_online_nat`: `NUMERIC`
-  - `rgu_ga_others_nat`: `NUMERIC`
-  - `rgu_ga_trad_dsf_nat`: `NUMERIC`
-  - `rgu_ga_trad_outlet_nat`: `NUMERIC`
-  - `sso_nat`: `NUMERIC`
-  - `uro_nat`: `NUMERIC`
+  - `trade_supply`: `NUMERIC`
+  - `uro`: `NUMERIC`
+  - `rguga_digital`: `NUMERIC`
   - `subs_hvc`: `INT64`
   - `subs_hvc_stay`: `INT64`
   - `subs_hvc_in`: `INT64`
@@ -956,16 +894,91 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `rev_atl_gift`: `FLOAT64`
   - `rev_atl_renewal`: `FLOAT64`
   - `rev_btl`: `FLOAT64`
+  - `rev_vsd_ex_gift`: `FLOAT64`
+  - `fwa_rgu90`: `NUMERIC`
+  - `fwa_rgu90_closing`: `NUMERIC`
+  - `fwa_cb90`: `NUMERIC`
+  - `fwa_gc90`: `NUMERIC`
+  - `fwa_net_churn90`: `NUMERIC`
+  - `fwa_net_add_subs`: `NUMERIC`
+  - `fwa_rev_regular`: `NUMERIC`
+  - `fwa_rev_fwa_pack`: `NUMERIC`
+  - `fwa_rev_sim`: `NUMERIC`
+  - `fwa_rev_total`: `NUMERIC`
+  - `fwa_rgu90_5g`: `INT64`
+  - `fwa_rgu90_4g`: `INT64`
+  - `fwa_traffic_5g`: `NUMERIC`
+  - `fwa_traffic_4g`: `NUMERIC`
+  - `fwa_traffic_5g_dly`: `NUMERIC`
+  - `fwa_traffic_4g_dly`: `NUMERIC`
+  - `fwa_subs_usg_10gb_30d`: `INT64`
+  - `fwa_subs_usg_20gb_30d`: `INT64`
+  - `fwa_subs_usg_50gb_30d`: `INT64`
+  - `fwa_data_uu_5g`: `INT64`
+  - `fwa_data_uu_4g`: `INT64`
+  - `fwa_vlr`: `INT64`
+  - `fwa_vlr_no_fu`: `INT64`
+  - `fwa_vlr_less_90d`: `INT64`
+  - `fwa_vlr_91d_180d`: `INT64`
+  - `fwa_vlr_above_180d`: `INT64`
+  - `fwa_rev_sim_v2`: `NUMERIC`
+  - `fwa_rev_non_data_v2`: `NUMERIC`
+  - `fwa_rev_fwa_pack_v2`: `NUMERIC`
+  - `fwa_rev_fwa_data_pack_v2`: `NUMERIC`
+  - `fwa_rev_regular_pack_v2`: `NUMERIC`
+  - `fwa_rev_total_v2`: `NUMERIC`
+  - `fwa_all_packsubs`: `INT64`
+  - `fwa_fwa_packsubs`: `INT64`
+  - `fwa_regular_packsubs`: `INT64`
+  - `fwa_sim_packsubs`: `INT64`
+  - `fwa_hit_sim_v2`: `INT64`
+  - `fwa_hit_non_data`: `INT64`
+  - `fwa_hit_fwa_pack`: `INT64`
+  - `fwa_hit_dwa_data_pack`: `INT64`
+  - `fwa_hit_regular_pack`: `INT64`
+  - `fwa_hit_total`: `INT64`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_100_5g`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_500_5g`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_1gb_5g`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_2gb_5g`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_5gb_5g`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_10gb_5g`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_50gb_5g`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `fwa_qsc_100gb_5g`: `INT64`
+  - `fwa_rgu_ga`: `INT64`
+  - `fwa_rgu_ga_5g`: `INT64`
+  - `fwa_rgu_ga_4g`: `INT64`
+  - `fwa_acq_rev`: `FLOAT64`
+  - `fwa_acq_rev_5g`: `FLOAT64`
+  - `fwa_acq_rev_4g`: `FLOAT64`
   - `fwa_pack_hits`: `INT64`
   - `rev_fwa_pack`: `NUMERIC`
   - `rev_fwa_sim`: `NUMERIC`
   - `rev_fwa_regular`: `NUMERIC`
   - `rev_fwa_non_broadband`: `NUMERIC`
   - `rev_fwa_total`: `NUMERIC`
+  - `fwa_churnback90`: `NUMERIC`
+  - `fwa_grosschurn90`: `NUMERIC`
+  - `fwa_net_churn`: `NUMERIC`
+  - `fwa_net_add`: `NUMERIC`
+  - `fwa_net_add_acq`: `NUMERIC`
+  - `fwa_net_add_90_closing`: `NUMERIC`
+  - `vlr_total`: `INT64`
+  - `vlr_fwa_less_90d`: `INT64`
+  - `vlr_fwa_91_180d`: `INT64`
+  - `vlr_fwa_above_181d`: `INT64`
+  - `vlr_fwa_no_FU`: `INT64`
   - `ga_modern`: `INT64`
   - `ga_ola`: `INT64`
   - `ga_online`: `INT64`
-  - `ga_fwa`: `INT64`
   - `ga_gerai`: `INT64`
   - `ga_bank`: `INT64`
   - `ga_h2h`: `INT64`
@@ -985,33 +998,59 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `ga_usage_500mb_plus`: `INT64`
   - `ga_usage_1gb_plus`: `INT64`
   - `ga_total`: `INT64`
-  - `fwa_rgu_ga`: `NUMERIC`
-  - `fwa_churnback90`: `NUMERIC`
-  - `fwa_grosschurn90`: `NUMERIC`
-  - `fwa_rgu90`: `NUMERIC`
-  - `fwa_net_add_90_closing`: `NUMERIC`
-  - `fwa_net_churn`: `NUMERIC`
-  - `fwa_net_add`: `NUMERIC`
-  - `vlr_fwa_less_90d`: `NUMERIC`
-  - `vlr_fwa_91_180d`: `NUMERIC`
-  - `vlr_fwa_above_181d`: `NUMERIC`
-  - `vlr_fwa_no_FU`: `NUMERIC`
-  - `vlr_total`: `NUMERIC`
+  - `gaq_dt_id`: `DATE`
+  - `gaq_rgu_ga`: `INT64`
+  - `gaq_ga_new_imei`: `INT64`
+  - `gaq_ga_old_imei`: `INT64`
+  - `gaq_ga_imei_unknown`: `INT64`
+  - `gaq_ga_5g`: `INT64`
+  - `ga_dev_5g`: `INT64`
+  - `ga_dev_5g_w_trfc_5g`: `INT64`
+  - `gaq_ga_new_imei_5g`: `INT64`
+  - `gaq_acq_rev_m0`: `FLOAT64`
+  - `gaq_ga_qsc_100_mb`: `INT64`
+  - `gaq_ga_qsc_500mb`: `INT64`
+  - `gaq_ga_qsc_1gb`: `INT64`
+  - `gaq_ga_qsc_3gb`: `INT64`
+  - `gaq_m1s`: `INT64`
+  - `gaq_tot_rev_m1`: `FLOAT64`
+  - `gaq_rgu_m1_rev_min_50k`: `INT64`
+  - `gaq_rgu_m1_rev_min_100k`: `INT64`
+  - `gaq_m1_usg_100mb`: `INT64`
+  - `gaq_m1_usg_500mb`: `INT64`
+  - `gaq_m1_usg_1gb`: `INT64`
+  - `gaq_m1_usg_3gb`: `INT64`
+  - `gaq_m2s`: `INT64`
+  - `gaq_tot_rev_m2`: `FLOAT64`
+  - `gaq_rgu_m2_rev_min_50k`: `INT64`
+  - `gaq_rgu_m2_rev_min_100k`: `INT64`
+  - `gaq_m2_usg_100mb`: `INT64`
+  - `gaq_m2_usg_500mb`: `INT64`
+  - `gaq_m2_usg_1gb`: `INT64`
+  - `gaq_m2_usg_3gb`: `INT64`
+  - `gaq_m3s`: `INT64`
+  - `gaq_tot_rev_m3`: `FLOAT64`
+  - `gaq_rgu_m3_rev_min_50k`: `INT64`
+  - `gaq_rgu_m3_rev_min_100k`: `INT64`
+  - `gaq_m3_usg_100mb`: `INT64`
+  - `gaq_m3_usg_500mb`: `INT64`
+  - `gaq_m3_usg_1gb`: `INT64`
+  - `gaq_m3_usg_3gb`: `INT64`
 
 ### `rham_mkt_kpi_highlevel_dly`
 
 - Relationship: domain `kpi_summary` contains table `rham_mkt_kpi_highlevel_dly`.
 - Column count: 40.
-- Partition columns: none declared.
+- Partition columns: `dt_id`.
 - Source kind: `observed`.
-- Grain: `kabkota`.
+- Grain: `day_x_kecamatan_x_brand`.
 - Period semantics: `daily`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `standard`.
 - Relative cost tier: `medium`.
 - Metric families: `acquisition`, `churn`, `revenue`, `traffic`.
 - Columns:
-  - `dt_id`: `DATE`
+  - `dt_id`: `DATE` (partition)
   - `brand`: `STRING`
   - `kecamatan_nm`: `STRING`
   - `kabkot_nm`: `STRING`
@@ -1060,6 +1099,9 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Has fb_ms_*/fb_soga_*/fb_churn_* (quick market share without joining competitive domain).
 - Daily table = rham_mkt_kpi_highlevel_dly (40 cols); wide = _mtd / _mth (160+ cols).
 - Distribution KPIs present: URO/QURO/SSO/QSSO/QSC (site_<n>_<kpi> = #site dengan >=n), M1S/M2S survival.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
+- Marketing highlevel SND columns (2026-10-08): use ono, osa, `primary`, secondary, sso, uro, quro, qsso_m0, site_3qsso, site_5quro, rguga_digital, rguga_digital_modern, rguga_digital_ola, rguga_digital_online and rgu_ga_trad_no_inj. sso/uro now contain real SND data. Since 2026-10-08 all 54 SND metrics are also loaded here under their metric names (outlet_total, tertiary_b*, trade_supply, trade_demand, rgu_ga, sellin_fwa, acq_rev, rev_game ...); SND survival is snd_ga_m1s/snd_ga_m2s because ga_m1s/ga_m2s here are the Marketing metrics. The always-zero placeholders q_uro, q_sso, qsc, vlr_postpaid, site_3/5_uro, site_3/5_quro, site_3/5_sso, site_3/5_qsso and site_20/40_qsc were dropped and do not exist. Revenue/RGU/VLR columns remain valid in Marketing highlevel.
 
 ## Related
 

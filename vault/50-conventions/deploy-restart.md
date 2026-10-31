@@ -37,7 +37,7 @@ sudo systemctl restart telco-backend       # picks up the new app_release.json
 
 Bump BOTH `mobile/pubspec.yaml` version AND `backend/data/app_release.json`
 (`version_name` / `version_code` / `apk_sha256` / `size_bytes` / `notes`).
-Current release: **1.47.0+62** (verify before bumping).
+Current release: read `backend/data/app_release.json` (authoritative; 1.48.3+66 on 2026-10-14).
 
 ### Release signing
 

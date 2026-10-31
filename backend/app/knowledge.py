@@ -172,13 +172,14 @@ def schema_for_question(
     )
     question_tokens = knowledge_graph.tokenize(question)
     territory_columns = {
-        "area": {"area"},
+        "area": {"branch", "branch_im3"},
         "branch": {"branch"},
+        "district": {"im3_mc", "micro_cluster_im3", "micro_cluster", "mc"},
         "circle": {"circle", "region_circle"},
         "kabkota": {"kabkota", "kabkot", "kabkot_nm", "city"},
         "kabkot": {"kabkota", "kabkot", "kabkot_nm", "city"},
         "kabupaten": {"kabkota", "kabkot", "kabkot_nm", "city"},
-        "kecamatan": {"kec_id", "kecamatan"},
+        "kecamatan": {"kec_id", "unik_kec", "kecamatan", "kecamatan_nm"},
         "kota": {"kabkota", "kabkot", "kabkot_nm", "city"},
         "province": {"province", "provinsi"},
         "provinsi": {"province", "provinsi"},
@@ -189,11 +190,16 @@ def schema_for_question(
         for token in question_tokens
         if token in territory_columns
     )) if question_tokens.intersection(territory_columns) else set()
-    primary = table_index().get(selection["tables"][0], {}) if selection["tables"] else {}
-    primary_columns = {
-        str(column.get("name", "")).lower() for column in primary.get("columns", [])
-    }
-    needs_reference = bool(requested_columns and not requested_columns.intersection(primary_columns))
+    index = table_index()
+    # A secondary source can require a territory join even when the first
+    # retrieved table already has a native geography column.
+    needs_reference = bool(requested_columns and any(
+        not requested_columns.intersection({
+            str(column.get("name", "")).lower()
+            for column in index.get(name, {}).get("columns", [])
+        })
+        for name in selection["tables"]
+    ))
     if needs_reference:
         reference = "zz_territory_kecamatan"
         if reference in approved_table_names() and reference not in selection["tables"]:
@@ -253,7 +259,7 @@ MAP_SITE_TABLES = [
     "rham_site_wise_monthly",
     "rham_site_wise_daily",
     "rham_5g_site_monthly",
-    "rham_site_fwa_daily",
+    "rham_fwa_site_wise_daily",
     "rham_avail_stat_site_monthly",
 ]
 
@@ -302,6 +308,8 @@ def territory_ref_schema(question: str = "") -> str:
 def _fact_score(key: str, value: Any, tokens: set[str], domain_key: str | None) -> int:
     text = key + " " + json.dumps(value, ensure_ascii=False, default=str)
     score = len(tokens.intersection(knowledge_graph.tokenize(text)))
+    if key in {"territory_hierarchy", "source_grain_migration", "query_cost_policy"}:
+        score += 30
     if key in {"banned_tables", "read_only", "query_guidance", "table_routing_constraints"}:
         score += 20
     if key in {"date_columns", "month_id_arithmetic", "month_id_casting", "partial_period_warning"}:

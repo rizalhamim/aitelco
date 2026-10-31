@@ -1,0 +1,30 @@
+{
+  "review_id": "kpi-source-migration-2026-09-21",
+  "reviewed_at": "2026-09-21",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Retire the three legacy KPI high-level sources before they are deleted from BigQuery.",
+  "method": "Live BigQuery inventory and schema comparison against the active marketing KPI daily, MTD, and monthly sources.",
+  "decisions": {
+    "rham_kpi_highlevel_dly": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_mkt_kpi_highlevel_dly",
+      "reason": "Legacy daily KPI source is being retired. Use the active marketing KPI daily source and its current column contract.",
+      "evidence": "Both tables were present in BigQuery on 2026-09-21. The replacement covers 2024-01-01 through 2026-09-19 and exposes the current 40-column daily schema."
+    },
+    "rham_kpi_highlevel_mtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_mkt_highlevel_mtd",
+      "reason": "Legacy MTD KPI source is being retired. Use the active marketing high-level MTD source.",
+      "evidence": "The replacement was present in BigQuery on 2026-09-21, covers month_id 202401 through 202609, and provides 184 columns including dt_id_snapshot."
+    },
+    "rham_kpi_highlevel_mth": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_mkt_highlevel_mth",
+      "reason": "Legacy monthly KPI source is being retired. Use the active marketing high-level monthly source.",
+      "evidence": "The replacement was present in BigQuery on 2026-09-21, covers month_id 202401 through 202609, and provides 168 columns including dt_id_snapshot."
+    }
+  }
+}

@@ -4,7 +4,7 @@
 class AppConfig {
   static const String apiBase = String.fromEnvironment(
     'API_BASE',
-    defaultValue: 'http://agent-02.bizplan-java.com:8000',
+    defaultValue: 'https://agent.bizplan-java.com',
   );
 
   static const String appName = 'Bizplan Java Agent';

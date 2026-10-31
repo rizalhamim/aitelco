@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: geography"
 type: generated-knowledge
 data_fact: "geography"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `geography`
@@ -12,7 +12,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Flattened fact paths
 
-- **`geography.grain_hierarchy`:** region > circle > branch > kabkota(kota/kabupaten) > kecamatan(kec_id) > kelurahan/desa > site_id
+- **`geography.grain_hierarchy`:** circle > region > area (physical branch) > district (physical MC); administrative kabkota > kecamatan > desa; infrastructure site_id
 - **`geography.java_focus`:** Dataset focuses on Java island (java_non_java flag exists on site tables).
 - **`geography.n_kecamatan`:** 5793
 

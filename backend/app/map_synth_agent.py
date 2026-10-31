@@ -28,7 +28,7 @@ _LON_RE = re.compile(r"^(lon|long|longitude)$|_lon(g|gitude)?$|^(addr_)?longitud
 _GROWTH_RE = re.compile(r"growth|pertumbuhan|change|delta|_pp$|_pct$|_pct_|trend|mom|yoy|qoq|naik|turun", re.I)
 _EXCLUDE_METRIC_RE = re.compile(
     r"_id$|^provinsi$|^province$|^prov$|^kabupaten$|^kabkota$|^kabkot$|^kecamatan$|^kec$|"
-    r"^region$|^area$|^branch$|^circle$|month|mth|periode?$|^dt_id|^site_id$|^outlet_id$|"
+    r"^region$|^area$|^district$|^branch$|^microcluster$|^circle$|month|mth|periode?$|^dt_id|^site_id$|^outlet_id$|"
     r"^site_name$|^site_nm$|^outlet_name$|^nama",
     re.I,
 )
@@ -64,12 +64,12 @@ def detect_map_spec(columns: list[str], rows: list[dict]) -> dict:
         gl_col = lc.get("geo_level")
         if gl_col and rows and isinstance(rows[0].get(gl_col), str):
             geo_level = str(rows[0][gl_col]).strip().lower()
-        if geo_level not in ("kecamatan", "kabupaten", "kabkota", "branch", "region", "circle", "area", "province"):
+        if geo_level not in ("kecamatan", "kabupaten", "kabkota", "branch", "microcluster", "district", "region", "circle", "area", "province"):
             geo_level = "kecamatan" if kec_key else "kabupaten"
         # readable label column for the level
         label_key = (
             lc.get(geo_level) or lc.get("territory_name") or lc.get("geo_name")
-            or lc.get("branch") or lc.get("region") or lc.get("circle")
+            or lc.get("district") or lc.get("branch") or lc.get("region") or lc.get("circle")
             or lc.get("area") or lc.get("kecamatan") or lc.get("kabupaten") or lc.get("kabkota")
             or lc.get("kabkot") or region_key
         )
@@ -79,7 +79,7 @@ def detect_map_spec(columns: list[str], rows: list[dict]) -> dict:
             signed = _is_signed_metric(metric_key, rows)
             return {
                 "mode": "choropleth",
-                "level": geo_level,                       # the dissolve level
+                "level": {"branch": "area", "microcluster": "district"}.get(geo_level, geo_level),
                 "geo_key": "kec_id" if kec_key else "kabkot_id",   # geometry join key
                 "group_key": label_key,                   # value-by-territory grouping name
                 "id_key": "kec_id" if kec_key else "kabkot_id",    # kept for back-compat
@@ -112,14 +112,14 @@ def detect_map_spec(columns: list[str], rows: list[dict]) -> dict:
     # The agent naturally returns one row per territory (e.g. 12 regions). The map
     # dissolves kecamatan polygons by that level using zz_territory_kecamatan.
     # Supported levels map to a ref column the client loads.
-    for lvl in ("kecamatan", "kabkota", "kabupaten", "branch", "region", "circle", "area", "province"):
+    for lvl in ("kecamatan", "kabkota", "kabupaten", "district", "area", "branch", "microcluster", "region", "circle", "province"):
         key = lc.get(lvl)
         if key:
             metric_key = _pick_metric(cols, rows, exclude={key})
             if metric_key:
                 signed = _is_signed_metric(metric_key, rows)
                 # normalise level name to the territory-ref column
-                ref_level = {"kabupaten": "kabkota", "province": "province"}.get(lvl, lvl)
+                ref_level = {"kabupaten": "kabkota", "branch": "area", "microcluster": "district"}.get(lvl, lvl)
                 return {
                     "mode": "choropleth",
                     "level": ref_level,

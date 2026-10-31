@@ -2,7 +2,7 @@
 title: "Runtime KB domain: fwa"
 type: generated-knowledge
 domain: "fwa"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `fwa`
@@ -12,7 +12,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** FWA Business
 - **Description:** Fixed Wireless Access (FWA) business performance per site: subscriber, traffic, RGU90D, revenue (pack/sim/regular), churn.
-- **Tables:** 10
+- **Tables:** 9
 - **Agent identifier:** `FWA Business Analyst`
 
 ## Domain to table relationships
@@ -26,14 +26,13 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Domain `fwa` contains table `rham_fwa_site_wise_mtd`.
 - Domain `fwa` contains table `rham_fwa_site_wise_mth`.
 - Domain `fwa` contains table `rham_master_tracker_fwa`.
-- Domain `fwa` contains table `rham_site_fwa_daily`.
 
 ## Table schemas
 
 ### `rham_fwa_kec_wise_daily`
 
 - Relationship: domain `fwa` contains table `rham_fwa_kec_wise_daily`.
-- Column count: 64.
+- Column count: 61.
 - Partition columns: `dt_id`.
 - Source kind: `observed`.
 - Grain: `kecamatan`.
@@ -44,20 +43,23 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Metric families: `5g experience`, `churn`, `fwa`, `revenue`, `traffic`.
 - Columns:
   - `dt_id`: `DATE` (partition)
-  - `kec_id`: `STRING`
   - `brand`: `STRING`
+  - `device_flag`: `STRING`
+  - `channel_group`: `STRING`
+  - `kec_id`: `STRING`
   - `branch`: `STRING`
   - `region_circle`: `STRING`
   - `circle`: `STRING`
   - `ga_fwa`: `INT64`
-  - `ga_fwa_4g`: `INT64`
-  - `ga_fwa_5g`: `INT64`
-  - `ga_fwa_mpx_sdp`: `INT64`
-  - `ga_fwa_partner`: `INT64`
-  - `ga_fwa_digital`: `INT64`
-  - `ga_fwa_retail`: `INT64`
-  - `ga_fwa_others`: `INT64`
-  - `ga_fwa_all`: `NUMERIC`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `acq_rev`: `FLOAT64`
   - `fwa_rgu90`: `NUMERIC`
   - `fwa_rgu90_closing`: `NUMERIC`
   - `fwa_cb90`: `NUMERIC`
@@ -75,12 +77,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fwa_traffic_4g`: `NUMERIC`
   - `fwa_traffic_5g_dly`: `NUMERIC`
   - `fwa_traffic_4g_dly`: `NUMERIC`
-  - `fwa_qsc_100`: `INT64`
-  - `fwa_qsc_500`: `INT64`
-  - `fwa_qsc_1gb`: `INT64`
-  - `fwa_qsc_2gb`: `INT64`
-  - `fwa_qsc_5gb`: `INT64`
-  - `fwa_qsc_10gb`: `INT64`
   - `fwa_subs_usg_10gb_30d`: `INT64`
   - `fwa_subs_usg_20gb_30d`: `INT64`
   - `fwa_subs_usg_50gb_30d`: `INT64`
@@ -111,7 +107,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_fwa_kec_wise_mtd`
 
 - Relationship: domain `fwa` contains table `rham_fwa_kec_wise_mtd`.
-- Column count: 66.
+- Column count: 63.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `kecamatan`.
@@ -124,20 +120,23 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `month_id`: `INT64`
   - `mth_dt`: `DATE` (partition)
   - `dt_id`: `DATE`
-  - `kec_id`: `STRING`
   - `brand`: `STRING`
+  - `device_flag`: `STRING`
+  - `channel_group`: `STRING`
+  - `kec_id`: `STRING`
   - `branch`: `STRING`
   - `region_circle`: `STRING`
   - `circle`: `STRING`
   - `ga_fwa`: `INT64`
-  - `ga_fwa_4g`: `INT64`
-  - `ga_fwa_5g`: `INT64`
-  - `ga_fwa_mpx_sdp`: `INT64`
-  - `ga_fwa_partner`: `INT64`
-  - `ga_fwa_digital`: `INT64`
-  - `ga_fwa_retail`: `INT64`
-  - `ga_fwa_others`: `INT64`
-  - `ga_fwa_all`: `NUMERIC`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `acq_rev`: `FLOAT64`
   - `fwa_rgu90`: `NUMERIC`
   - `fwa_rgu90_closing`: `NUMERIC`
   - `fwa_cb90`: `NUMERIC`
@@ -155,12 +154,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fwa_traffic_4g`: `NUMERIC`
   - `fwa_traffic_5g_dly`: `NUMERIC`
   - `fwa_traffic_4g_dly`: `NUMERIC`
-  - `fwa_qsc_100`: `INT64`
-  - `fwa_qsc_500`: `INT64`
-  - `fwa_qsc_1gb`: `INT64`
-  - `fwa_qsc_2gb`: `INT64`
-  - `fwa_qsc_5gb`: `INT64`
-  - `fwa_qsc_10gb`: `INT64`
   - `fwa_subs_usg_10gb_30d`: `INT64`
   - `fwa_subs_usg_20gb_30d`: `INT64`
   - `fwa_subs_usg_50gb_30d`: `INT64`
@@ -191,7 +184,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_fwa_kec_wise_mth`
 
 - Relationship: domain `fwa` contains table `rham_fwa_kec_wise_mth`.
-- Column count: 66.
+- Column count: 63.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `kecamatan`.
@@ -204,20 +197,23 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `month_id`: `INT64`
   - `mth_dt`: `DATE` (partition)
   - `dt_id`: `DATE`
-  - `kec_id`: `STRING`
   - `brand`: `STRING`
+  - `device_flag`: `STRING`
+  - `channel_group`: `STRING`
+  - `kec_id`: `STRING`
   - `branch`: `STRING`
   - `region_circle`: `STRING`
   - `circle`: `STRING`
   - `ga_fwa`: `INT64`
-  - `ga_fwa_4g`: `INT64`
-  - `ga_fwa_5g`: `INT64`
-  - `ga_fwa_mpx_sdp`: `INT64`
-  - `ga_fwa_partner`: `INT64`
-  - `ga_fwa_digital`: `INT64`
-  - `ga_fwa_retail`: `INT64`
-  - `ga_fwa_others`: `INT64`
-  - `ga_fwa_all`: `NUMERIC`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `acq_rev`: `FLOAT64`
   - `fwa_rgu90`: `NUMERIC`
   - `fwa_rgu90_closing`: `NUMERIC`
   - `fwa_cb90`: `NUMERIC`
@@ -235,12 +231,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fwa_traffic_4g`: `NUMERIC`
   - `fwa_traffic_5g_dly`: `NUMERIC`
   - `fwa_traffic_4g_dly`: `NUMERIC`
-  - `fwa_qsc_100`: `INT64`
-  - `fwa_qsc_500`: `INT64`
-  - `fwa_qsc_1gb`: `INT64`
-  - `fwa_qsc_2gb`: `INT64`
-  - `fwa_qsc_5gb`: `INT64`
-  - `fwa_qsc_10gb`: `INT64`
   - `fwa_subs_usg_10gb_30d`: `INT64`
   - `fwa_subs_usg_20gb_30d`: `INT64`
   - `fwa_subs_usg_50gb_30d`: `INT64`
@@ -271,7 +261,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_fwa_monthly`
 
 - Relationship: domain `fwa` contains table `rham_fwa_monthly`.
-- Column count: 30.
+- Column count: 32.
 - Partition columns: `month_dt`.
 - Source kind: `observed`.
 - Grain: `kecamatan`.
@@ -311,6 +301,8 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `vlr_total`: `NUMERIC`
   - `days`: `INT64`
   - `circle`: `STRING`
+  - `fwa_rgu_ga_4g`: `NUMERIC`
+  - `fwa_rgu_ga_5g`: `NUMERIC`
 
 ### `rham_fwa_monthly_kpi`
 
@@ -382,32 +374,35 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_fwa_site_wise_daily`
 
 - Relationship: domain `fwa` contains table `rham_fwa_site_wise_daily`.
-- Column count: 65.
+- Column count: 62.
 - Partition columns: `dt_id`.
 - Source kind: `observed`.
 - Grain: `site`.
 - Period semantics: `daily`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `standard`.
-- Relative cost tier: `medium`.
+- Relative cost tier: `high`.
 - Metric families: `5g experience`, `churn`, `fwa`, `revenue`, `traffic`.
 - Columns:
   - `dt_id`: `DATE` (partition)
   - `site_id`: `STRING`
   - `brand`: `STRING`
-  - `branch`: `STRING`
+  - `device_flag`: `STRING`
+  - `channel_group`: `STRING`
   - `kec_id`: `STRING`
+  - `branch`: `STRING`
   - `region_circle`: `STRING`
   - `circle`: `STRING`
   - `ga_fwa`: `INT64`
-  - `ga_fwa_4g`: `INT64`
-  - `ga_fwa_5g`: `INT64`
-  - `ga_fwa_mpx_sdp`: `INT64`
-  - `ga_fwa_partner`: `INT64`
-  - `ga_fwa_digital`: `INT64`
-  - `ga_fwa_retail`: `INT64`
-  - `ga_fwa_others`: `INT64`
-  - `ga_fwa_all`: `NUMERIC`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `acq_rev`: `FLOAT64`
   - `fwa_rgu90`: `NUMERIC`
   - `fwa_rgu90_closing`: `NUMERIC`
   - `fwa_cb90`: `NUMERIC`
@@ -425,12 +420,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fwa_traffic_4g`: `NUMERIC`
   - `fwa_traffic_5g_dly`: `NUMERIC`
   - `fwa_traffic_4g_dly`: `NUMERIC`
-  - `fwa_qsc_100`: `INT64`
-  - `fwa_qsc_500`: `INT64`
-  - `fwa_qsc_1gb`: `INT64`
-  - `fwa_qsc_2gb`: `INT64`
-  - `fwa_qsc_5gb`: `INT64`
-  - `fwa_qsc_10gb`: `INT64`
   - `fwa_subs_usg_10gb_30d`: `INT64`
   - `fwa_subs_usg_20gb_30d`: `INT64`
   - `fwa_subs_usg_50gb_30d`: `INT64`
@@ -461,7 +450,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_fwa_site_wise_mtd`
 
 - Relationship: domain `fwa` contains table `rham_fwa_site_wise_mtd`.
-- Column count: 67.
+- Column count: 64.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `site`.
@@ -476,19 +465,22 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `dt_id`: `DATE`
   - `site_id`: `STRING`
   - `brand`: `STRING`
-  - `branch`: `STRING`
+  - `device_flag`: `STRING`
+  - `channel_group`: `STRING`
   - `kec_id`: `STRING`
+  - `branch`: `STRING`
   - `region_circle`: `STRING`
   - `circle`: `STRING`
   - `ga_fwa`: `INT64`
-  - `ga_fwa_4g`: `INT64`
-  - `ga_fwa_5g`: `INT64`
-  - `ga_fwa_mpx_sdp`: `INT64`
-  - `ga_fwa_partner`: `INT64`
-  - `ga_fwa_digital`: `INT64`
-  - `ga_fwa_retail`: `INT64`
-  - `ga_fwa_others`: `INT64`
-  - `ga_fwa_all`: `NUMERIC`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `acq_rev`: `FLOAT64`
   - `fwa_rgu90`: `NUMERIC`
   - `fwa_rgu90_closing`: `NUMERIC`
   - `fwa_cb90`: `NUMERIC`
@@ -506,12 +498,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fwa_traffic_4g`: `NUMERIC`
   - `fwa_traffic_5g_dly`: `NUMERIC`
   - `fwa_traffic_4g_dly`: `NUMERIC`
-  - `fwa_qsc_100`: `INT64`
-  - `fwa_qsc_500`: `INT64`
-  - `fwa_qsc_1gb`: `INT64`
-  - `fwa_qsc_2gb`: `INT64`
-  - `fwa_qsc_5gb`: `INT64`
-  - `fwa_qsc_10gb`: `INT64`
   - `fwa_subs_usg_10gb_30d`: `INT64`
   - `fwa_subs_usg_20gb_30d`: `INT64`
   - `fwa_subs_usg_50gb_30d`: `INT64`
@@ -542,7 +528,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_fwa_site_wise_mth`
 
 - Relationship: domain `fwa` contains table `rham_fwa_site_wise_mth`.
-- Column count: 67.
+- Column count: 64.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `site`.
@@ -557,19 +543,22 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `dt_id`: `DATE`
   - `site_id`: `STRING`
   - `brand`: `STRING`
-  - `branch`: `STRING`
+  - `device_flag`: `STRING`
+  - `channel_group`: `STRING`
   - `kec_id`: `STRING`
+  - `branch`: `STRING`
   - `region_circle`: `STRING`
   - `circle`: `STRING`
   - `ga_fwa`: `INT64`
-  - `ga_fwa_4g`: `INT64`
-  - `ga_fwa_5g`: `INT64`
-  - `ga_fwa_mpx_sdp`: `INT64`
-  - `ga_fwa_partner`: `INT64`
-  - `ga_fwa_digital`: `INT64`
-  - `ga_fwa_retail`: `INT64`
-  - `ga_fwa_others`: `INT64`
-  - `ga_fwa_all`: `NUMERIC`
+  - `fwa_qsc_100`: `INT64`
+  - `fwa_qsc_500`: `INT64`
+  - `fwa_qsc_1gb`: `INT64`
+  - `fwa_qsc_2gb`: `INT64`
+  - `fwa_qsc_5gb`: `INT64`
+  - `fwa_qsc_10gb`: `INT64`
+  - `fwa_qsc_50gb`: `INT64`
+  - `fwa_qsc_100gb`: `INT64`
+  - `acq_rev`: `FLOAT64`
   - `fwa_rgu90`: `NUMERIC`
   - `fwa_rgu90_closing`: `NUMERIC`
   - `fwa_cb90`: `NUMERIC`
@@ -587,12 +576,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `fwa_traffic_4g`: `NUMERIC`
   - `fwa_traffic_5g_dly`: `NUMERIC`
   - `fwa_traffic_4g_dly`: `NUMERIC`
-  - `fwa_qsc_100`: `INT64`
-  - `fwa_qsc_500`: `INT64`
-  - `fwa_qsc_1gb`: `INT64`
-  - `fwa_qsc_2gb`: `INT64`
-  - `fwa_qsc_5gb`: `INT64`
-  - `fwa_qsc_10gb`: `INT64`
   - `fwa_subs_usg_10gb_30d`: `INT64`
   - `fwa_subs_usg_20gb_30d`: `INT64`
   - `fwa_subs_usg_50gb_30d`: `INT64`
@@ -654,61 +637,15 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `addfield11`: `STRING`
   - `val`: `NUMERIC`
 
-### `rham_site_fwa_daily`
-
-- Relationship: domain `fwa` contains table `rham_site_fwa_daily`.
-- Column count: 34.
-- Partition columns: `dt_id`.
-- Source kind: `observed`.
-- Grain: `site`.
-- Period semantics: `daily`.
-- Aggregation rule: `sum_additive_metrics`.
-- Priority: `standard`.
-- Relative cost tier: `high`.
-- Metric families: `churn`, `fwa`, `revenue`, `traffic`.
-- Columns:
-  - `dt_id`: `DATE` (partition)
-  - `brand`: `STRING`
-  - `site_id`: `STRING`
-  - `site_nm`: `STRING`
-  - `latitude`: `FLOAT64`
-  - `longitude`: `FLOAT64`
-  - `kec_nm`: `STRING`
-  - `kabkota_nm`: `STRING`
-  - `kec_id`: `STRING`
-  - `rev_prepaid`: `FLOAT64`
-  - `rev_vsd`: `FLOAT64`
-  - `rev_data`: `FLOAT64`
-  - `subs_rgu_90d`: `FLOAT64`
-  - `usg_data_gb`: `FLOAT64`
-  - `hit`: `INT64`
-  - `fwa_pack_hits`: `INT64`
-  - `rev_fwa_pack`: `NUMERIC`
-  - `rev_fwa_sim`: `NUMERIC`
-  - `rev_fwa_regular`: `NUMERIC`
-  - `rev_fwa_non_broadband`: `NUMERIC`
-  - `rev_fwa_total`: `NUMERIC`
-  - `fwa_rgu90`: `NUMERIC`
-  - `fwa_rgu_ga`: `NUMERIC`
-  - `fwa_churnback90`: `NUMERIC`
-  - `fwa_grosschurn90`: `NUMERIC`
-  - `fwa_net_churn90`: `NUMERIC`
-  - `fwa_net_add_90_formula`: `NUMERIC`
-  - `fwa_rgu_90_closing`: `NUMERIC`
-  - `fwa_net_add_90_closing`: `NUMERIC`
-  - `vlr_fwa_less_90d`: `NUMERIC`
-  - `vlr_fwa_91_180d`: `NUMERIC`
-  - `vlr_fwa_above_181d`: `NUMERIC`
-  - `vlr_fwa_no_FU`: `NUMERIC`
-  - `vlr_total`: `NUMERIC`
-
 ## Approved agent key facts
 
 - rev_fwa_total = total FWA revenue (pack+sim+regular+non_broadband).
 - fwa_rgu90 = active FWA subscribers (90d). vlr_fwa_* = device aging buckets.
 - Churn: fwa_grosschurn90, fwa_churnback90, fwa_net_churn90.
-- Has latitude/longitude - supports map queries.
-- FWA 90d COLUMN POPULATION (rham_site_fwa_daily, measured): fwa_net_add_90_closing is the usable net-add column (~72k of 112k rows populated). fwa_net_add_90_formula and fwa_net_churn90 are effectively EMPTY (about 1 row) so never rank or filter on them. fwa_grosschurn90 is populated on only ~480 rows nationwide and its values are NEGATIVE (a churn of -3 means 3 subscribers lost), so 'high churn' means a LARGE ABSOLUTE value, not > 0. Only ~62 rows nationwide have both a churn value and a positive net add, and NONE are in Surabaya. If a churn-plus-net-add question returns nothing, say that the churn column is sparsely populated for that territory rather than implying the sites do not exist.
+- Has latitude/longitude ; supports map queries.
+- FWA 90d COLUMN POPULATION (rham_fwa_site_wise_daily, measured): fwa_net_add_90_closing is the usable net-add column (~72k of 112k rows populated). fwa_net_add_90_formula and fwa_net_churn90 are effectively EMPTY (about 1 row) so never rank or filter on them. fwa_grosschurn90 is populated on only ~480 rows nationwide and its values are NEGATIVE (a churn of -3 means 3 subscribers lost), so 'high churn' means a LARGE ABSOLUTE value, not > 0. Only ~62 rows nationwide have both a churn value and a positive net add, and NONE are in Surabaya. If a churn-plus-net-add question returns nothing, say that the churn column is sparsely populated for that territory rather than implying the sites do not exist.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
 
 ## Related
 

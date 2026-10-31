@@ -31,13 +31,13 @@ export type MapPoint = {
 
 export type Choropleth = {
   // "id" = values keyed by kec_id/kabkot_id (direct geometry match)
-  // "name" = values keyed by a territory NAME (region/branch/circle/area/kabkota);
+  // "name" = values keyed by an operational territory name or administrative view.
   //          polygons are dissolved/grouped via the territory map.
   dissolveBy: "id" | "name";
   level: string; // kecamatan | kabupaten | kabkota | region | branch | circle | area | province
   idKey?: "kec_id" | "kabkot_id";
   metricKey: string;
-  coloring?: "sign" | "range";
+  coloring?: "sign" | "range" | "favorable_sign";
   legend?: string;
   values: Record<string, { value: number; label: string; extra: Record<string, unknown> }>;
 };
@@ -46,7 +46,7 @@ export type Choropleth = {
 let territoryMap: Record<string, Record<string, string>> | null = null;
 async function loadTerritoryMap(): Promise<Record<string, Record<string, string>>> {
   if (territoryMap) return territoryMap;
-  const res = await fetch(`/api/geo/territory-map`, { cache: "force-cache" });
+  const res = await fetch(`/api/geo/territory-map?v=2026-10`, { cache: "force-cache" });
   if (!res.ok) throw new Error(`territory-map HTTP ${res.status}`);
   territoryMap = (await res.json()) as Record<string, Record<string, string>>;
   return territoryMap;
@@ -54,7 +54,7 @@ async function loadTerritoryMap(): Promise<Record<string, Record<string, string>
 
 type Props = {
   points: MapPoint[];
-  userLoc: { lat: number; lon: number } | null;
+  userLoc: { lat: number; lon: number; accuracy?: number } | null;
   choropleth?: Choropleth | null;
 };
 
@@ -80,7 +80,6 @@ function lerpColor(a: number[], b: number[], f: number): string {
 const C_RED = [225, 56, 56];      // red — decline (#E13838)
 const C_GREEN = [47, 168, 79];    // green — growth (#2FA84F)
 const C_NEUTRAL = [236, 243, 241];
-const C_YELLOW = [245, 166, 35];  // amber (#F5A623)
 const C_TEAL = [21, 166, 151];    // teal-500 (#15A697)
 
 // Sign-based diverging scale anchored at ZERO: negative -> red, ~0 -> neutral,
@@ -92,12 +91,16 @@ function colorBySign(v: number, maxAbs: number): string {
   return lerpColor(C_NEUTRAL, C_RED, t);
 }
 
-// Plain min-max scale (red -> yellow -> teal) for non-signed magnitude metrics.
+// Magnitude is sequential, not a red/green performance judgement.
 function colorByRange(v: number, min: number, max: number): string {
-  if (max === min) return `rgb(${C_YELLOW.join(",")})`;
-  const t = (v - min) / (max - min);
-  if (t <= 0.5) return lerpColor(C_RED, C_YELLOW, t / 0.5);
-  return lerpColor(C_YELLOW, C_TEAL, (t - 0.5) / 0.5);
+  if (max === min) return `rgb(${C_TEAL.join(",")})`;
+  return lerpColor(C_NEUTRAL, C_TEAL, Math.max(0, Math.min(1, (v - min) / (max - min))));
+}
+
+function htmlText(value: unknown): string {
+  return String(value ?? "N/A").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[char]!));
 }
 
 function fmtNum(v: number): string {
@@ -110,7 +113,6 @@ declare global {
   }
 }
 
-const IOH_RED = "#E13838";
 const IOH_TEAL = "#15A697";
 const IOH_MAGENTA = "#0A6A5F";
 
@@ -159,9 +161,12 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userMarkerRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userAccuracyRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const choroLayerRef = useRef<any>(null);
   const readyRef = useRef(false);
-  const [legend, setLegend] = useState<{ min: number; max: number; metric: string; mode: "sign" | "range" } | null>(null);
+  const choroGeneration = useRef(0);
+  const [legend, setLegend] = useState<{ min: number; max: number; metric: string; mode: "sign" | "range" | "favorable_sign" } | null>(null);
 
   // init map once
   useEffect(() => {
@@ -219,6 +224,12 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
     if (userMarkerRef.current) {
       mapRef.current.removeLayer(userMarkerRef.current);
       userMarkerRef.current = null;
+    }
+    if (userAccuracyRef.current) mapRef.current.removeLayer(userAccuracyRef.current);
+    if (userLoc.accuracy && Number.isFinite(userLoc.accuracy) && userLoc.accuracy > 0) {
+      userAccuracyRef.current = L.circle([userLoc.lat, userLoc.lon], {
+        radius: userLoc.accuracy, color: IOH_MAGENTA, fillOpacity: .1, weight: 1,
+      }).addTo(mapRef.current);
     }
     const icon = L.divIcon({
       className: "mq-user-marker",
@@ -352,8 +363,9 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
 
     const latlngs: [number, number][] = [];
     points.forEach((p, order) => {
+      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lon) || Math.abs(p.lat) > 90 || Math.abs(p.lon) > 180) return;
       latlngs.push([p.lat, p.lon]);
-      const color = p.color || (order === 0 ? IOH_RED : IOH_TEAL);
+      const color = p.color || IOH_TEAL;
       // Fix-mode sites render as plain dots (one marker = one physical site, no
       // ranking number / grouping). AI-mode keeps the numbered teardrop.
       const icon = p.fix
@@ -400,7 +412,7 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
       markersRef.current.push(marker);
     });
 
-    if (userLoc) latlngs.push([userLoc.lat, userLoc.lon]);
+    if (userLoc && points.some((point) => point.fix)) latlngs.push([userLoc.lat, userLoc.lon]);
     if (latlngs.length === 1) {
       mapRef.current.setView(latlngs[0], 15);
     } else if (latlngs.length > 1) {
@@ -409,6 +421,7 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
   }
 
   async function renderChoropleth() {
+    const generation = ++choroGeneration.current;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const L = window.L as any;
     if (!L || !mapRef.current) return;
@@ -420,14 +433,17 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
       setLegend(null);
       return;
     }
-    const vals = Object.values(choropleth.values).map((x) => x.value);
+    const vals = Object.values(choropleth.values).map((x) => x.value).filter(Number.isFinite);
     if (vals.length === 0) return;
     const min = Math.min(...vals);
     const max = Math.max(...vals);
-    const mode: "sign" | "range" = choropleth.coloring || "range";
+    const mode = choropleth.coloring || "range";
     const maxAbs = Math.max(Math.abs(min), Math.abs(max));
-    const colorOf = (v: number) => (mode === "sign" ? colorBySign(v, maxAbs) : colorByRange(v, min, max));
-    setLegend({ min, max, metric: choropleth.legend || choropleth.metricKey, mode });
+    const colorOf = (v: number, extra: Record<string, unknown>) => mode === "favorable_sign"
+      ? maxAbs > 0 && typeof extra.favorable === "boolean"
+        ? lerpColor(C_NEUTRAL, extra.favorable ? C_GREEN : C_RED, Math.min(1, Math.abs(v) / maxAbs))
+        : `rgb(${C_NEUTRAL.join(",")})`
+      : mode === "sign" ? colorBySign(v, maxAbs) : colorByRange(v, min, max);
 
     // Geometry: kabupaten polygons only when matching directly by kabkot_id;
     // otherwise always kecamatan polygons (dissolved by territory map for "name").
@@ -439,6 +455,8 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
     } catch {
       return;
     }
+    if (generation !== choroGeneration.current || !mapRef.current) return;
+    setLegend({ min: mode === "range" ? min : -maxAbs, max: mode === "range" ? max : maxAbs, metric: choropleth.legend || choropleth.metricKey, mode });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fc = gj as { features: any[] };
 
@@ -465,7 +483,7 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
       style: (feat: any) => {
         const entry = resolveEntry(feat);
         return {
-          fillColor: entry ? colorOf(entry.value) : "#999",
+          fillColor: entry ? colorOf(entry.value, entry.extra) : "#999",
           fillOpacity: 0.72,
           color: "#fff",
           weight: choropleth.dissolveBy === "name" ? 0.4 : 1,
@@ -477,15 +495,13 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
         if (!entry) return;
         const label = entry.label || feat.properties?.kabupaten || feat.properties?.kecamatan || "";
         const extraRows = Object.entries(entry.extra)
-          .filter(([k]) => !/_id$/i.test(k))
-          .slice(0, 6)
           .map(
             ([k, v]) =>
-              `<div style="display:flex;justify-content:space-between;gap:12px;padding:2px 0;"><span style="color:#5A6B68;font-size:11px;">${k}</span><span style="color:#0F1F1D;font-weight:700;font-size:12px;">${typeof v === "number" ? fmtNum(v) : String(v)}</span></div>`
+              `<div style="display:flex;justify-content:space-between;gap:12px;padding:2px 0;overflow-wrap:anywhere;"><span style="color:#5A6B68;font-size:11px;">${htmlText(k)}</span><span style="color:#0F1F1D;font-weight:700;font-size:12px;">${htmlText(typeof v === "number" ? fmtNum(v) : v)}</span></div>`
           )
           .join("");
         lyr.bindPopup(
-          `<div style="font-family:Prompt,sans-serif;min-width:170px;"><div style="font-family:Poppins,sans-serif;font-weight:700;font-size:13px;color:#15A697;margin-bottom:5px;border-bottom:1px solid #E1E9E7;padding-bottom:4px;">${label}</div>${extraRows}</div>`
+          `<div style="font-family:Prompt,sans-serif;min-width:170px;max-height:50vh;overflow:auto;"><div style="font-family:Poppins,sans-serif;font-weight:700;font-size:13px;color:#15A697;margin-bottom:5px;border-bottom:1px solid #E1E9E7;padding-bottom:4px;">${htmlText(label)}</div>${extraRows}</div>`
         );
         lyr.bindTooltip(`${label}: ${fmtNum(entry.value)}`, { sticky: true });
       },
@@ -532,15 +548,15 @@ export default function MapCanvas({ points, userLoc, choropleth }: Props) {
             className="mq-legend-bar"
             style={{
               background:
-                legend.mode === "sign"
-                  ? "linear-gradient(to right, rgb(237,28,36), rgb(245,245,247), rgb(34,168,90))"
-                  : "linear-gradient(to right, rgb(237,28,36), rgb(255,203,5), rgb(50,188,173))",
+                legend.mode !== "range"
+                  ? "linear-gradient(to right, rgb(225,56,56), rgb(236,243,241), rgb(47,168,79))"
+                  : "linear-gradient(to right, rgb(236,243,241), rgb(21,166,151))",
             }}
           />
           <div className="mq-legend-scale">
-            <span>{fmtNum(legend.min)}</span>
-            {legend.mode === "sign" ? <span>0</span> : <span>{fmtNum((legend.min + legend.max) / 2)}</span>}
-            <span>{fmtNum(legend.max)}</span>
+            <span>{legend.mode === "favorable_sign" ? "Tidak favorable" : fmtNum(legend.min)}</span>
+            {legend.mode === "sign" ? <span>0</span> : legend.mode === "range" ? <span>{fmtNum((legend.min + legend.max) / 2)}</span> : null}
+            <span>{legend.mode === "favorable_sign" ? "Favorable" : fmtNum(legend.max)}</span>
           </div>
           {legend.mode === "sign" && (
             <div className="mq-legend-hint">🟥 turun · 🟩 naik</div>

@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: table_grains"
 type: generated-knowledge
 data_fact: "table_grains"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `table_grains`
@@ -12,10 +12,10 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Flattened fact paths
 
-- **`table_grains.daily_tables`:** rham_site_wise_daily, rham_kpi_highlevel_dly, rham_5g_territory_daily - use dt_id
-- **`table_grains.monthly_tables`:** rham_site_wise_monthly, rham_kpi_highlevel_mth, rham_forecast_monthly_* - use month_id
-- **`table_grains.mtd_tables`:** rham_site_wise_mtd, rham_kpi_highlevel_mtd - use month_id + dt_id
-- **`table_grains.weekly_tables`:** rham_fb_network_*_wly* - use dt_id or wk_end_dt (Saturdays)
+- **`table_grains.daily_tables`:** rham_site_wise_daily, rham_mkt_kpi_highlevel_dly, rham_5g_territory_daily; use dt_id
+- **`table_grains.monthly_tables`:** rham_site_wise_monthly, rham_mkt_highlevel_mth, rham_kec_data_rev_*_mth; use month_id and the retrieved physical partition field. Forecast sources are retired, no verified successor.
+- **`table_grains.mtd_tables`:** rham_site_wise_mtd, rham_mkt_highlevel_mtd; use month_id + dt_id_snapshot
+- **`table_grains.weekly_tables`:** rham_fb_network_*_wly* ; use dt_id or wk_end_dt (Saturdays)
 
 ## Related
 

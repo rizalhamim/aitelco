@@ -2,7 +2,7 @@
 title: "Runtime KB domain: competitive"
 type: generated-knowledge
 domain: "competitive"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `competitive`
@@ -12,12 +12,15 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** Competitive Market Share
 - **Description:** FB-derived market share (MS), gross-add share (SOGA), and churn share per operator at EVERY territory level (national, island, circle, region, province, area, branch, cluster, micro_cluster, kabkota, kecamatan, partner, age, SEA, GTM focus, kiosk).
-- **Tables:** 28
+- **Tables:** 31
 - **Agent identifier:** `Competitive Market Share Analyst`
 
 ## Domain to table relationships
 
+- Domain `competitive` contains table `rham_fb_ms_5g_device`.
+- Domain `competitive` contains table `rham_fb_ms_5g_network`.
 - Domain `competitive` contains table `rham_fb_ms_age`.
+- Domain `competitive` contains table `rham_report_fb_device_5g`.
 - Domain `competitive` contains table `rham_report_fb_ms_age`.
 - Domain `competitive` contains table `rham_report_fb_ms_area`.
 - Domain `competitive` contains table `rham_report_fb_ms_branch_3id`.
@@ -25,7 +28,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Domain `competitive` contains table `rham_report_fb_ms_circle`.
 - Domain `competitive` contains table `rham_report_fb_ms_cluster_3id`.
 - Domain `competitive` contains table `rham_report_fb_ms_focus_gtm_bau`.
-- Domain `competitive` contains table `rham_report_fb_ms_focus_gtm_high_potential`.
 - Domain `competitive` contains table `rham_report_fb_ms_focus_gtm_must_win`.
 - Domain `competitive` contains table `rham_report_fb_ms_focus_gtm_super88`.
 - Domain `competitive` contains table `rham_report_fb_ms_island`.
@@ -45,8 +47,69 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Domain `competitive` contains table `rham_report_fb_ms_province`.
 - Domain `competitive` contains table `rham_report_fb_ms_region`.
 - Domain `competitive` contains table `rham_report_fb_ms_sea`.
+- Domain `competitive` contains table `rham_report_fb_network_5g`.
 
 ## Table schemas
+
+### `rham_fb_ms_5g_device`
+
+- Relationship: domain `competitive` contains table `rham_fb_ms_5g_device`.
+- Column count: 16.
+- Partition columns: none declared.
+- Source kind: `proxy`.
+- Grain: `week_x_kabkota`.
+- Period semantics: `weekly_snapshot`.
+- Aggregation rule: `latest_snapshot_then_recompute_share`.
+- Priority: `standard`.
+- Relative cost tier: `low`.
+- Metric families: `competitive`, `market share`, `5g device`.
+- Columns:
+  - `dt_id`: `DATE`
+  - `region`: `STRING`
+  - `circle`: `STRING`
+  - `kabkota`: `STRING`
+  - `device_5g_churn_ioh`: `FLOAT64`
+  - `device_5g_churn_tsel`: `FLOAT64`
+  - `device_5g_churn_xls`: `FLOAT64`
+  - `device_5g_churn_total_abs`: `FLOAT64`
+  - `device_5g_gross_adds_ioh`: `FLOAT64`
+  - `device_5g_gross_adds_tsel`: `FLOAT64`
+  - `device_5g_gross_adds_xls`: `FLOAT64`
+  - `device_5g_gross_adds_total_abs`: `FLOAT64`
+  - `device_5g_total_customers_ioh`: `FLOAT64`
+  - `device_5g_total_customers_tsel`: `FLOAT64`
+  - `device_5g_total_customers_xls`: `FLOAT64`
+  - `device_5g_total_customers_total_abs`: `FLOAT64`
+
+### `rham_fb_ms_5g_network`
+
+- Relationship: domain `competitive` contains table `rham_fb_ms_5g_network`.
+- Column count: 16.
+- Partition columns: none declared.
+- Source kind: `proxy`.
+- Grain: `week_x_kabkota`.
+- Period semantics: `weekly_snapshot`.
+- Aggregation rule: `latest_snapshot_then_recompute_share`.
+- Priority: `standard`.
+- Relative cost tier: `low`.
+- Metric families: `competitive`, `market share`, `5g network`.
+- Columns:
+  - `dt_id`: `DATE`
+  - `region`: `STRING`
+  - `circle`: `STRING`
+  - `kabkota`: `STRING`
+  - `network_5g_churn_ioh`: `FLOAT64`
+  - `network_5g_churn_tsel`: `FLOAT64`
+  - `network_5g_churn_xls`: `FLOAT64`
+  - `network_5g_churn_total_abs`: `FLOAT64`
+  - `network_5g_gross_adds_ioh`: `FLOAT64`
+  - `network_5g_gross_adds_tsel`: `FLOAT64`
+  - `network_5g_gross_adds_xls`: `FLOAT64`
+  - `network_5g_gross_adds_total_abs`: `FLOAT64`
+  - `network_5g_total_customers_ioh`: `FLOAT64`
+  - `network_5g_total_customers_tsel`: `FLOAT64`
+  - `network_5g_total_customers_xls`: `FLOAT64`
+  - `network_5g_total_customers_total_abs`: `FLOAT64`
 
 ### `rham_fb_ms_age`
 
@@ -94,6 +157,47 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `pop_xl`: `STRING`
   - `pop_tri`: `STRING`
   - `pop_tsel`: `STRING`
+
+### `rham_report_fb_device_5g`
+
+- Relationship: domain `competitive` contains table `rham_report_fb_device_5g`.
+- Column count: 27.
+- Partition columns: `dt_id`.
+- Source kind: `proxy`.
+- Grain: `date_x_location_type_x_location`.
+- Period semantics: `weekly_snapshot`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `standard`.
+- Relative cost tier: `low`.
+- Metric families: `market share`, `5g device`, `churn`, `acquisition`.
+- Columns:
+  - `dt_id`: `DATE` (partition)
+  - `month_id`: `STRING`
+  - `week`: `STRING`
+  - `location_type`: `STRING`
+  - `location`: `STRING`
+  - `ms_ioh`: `FLOAT64`
+  - `ms_tsel`: `FLOAT64`
+  - `ms_xls`: `FLOAT64`
+  - `ms_amount_ioh`: `FLOAT64`
+  - `ms_amount_tsel`: `FLOAT64`
+  - `ms_amount_xls`: `FLOAT64`
+  - `fb_ms_pop`: `FLOAT64`
+  - `soga_ioh`: `FLOAT64`
+  - `soga_tsel`: `FLOAT64`
+  - `soga_xls`: `FLOAT64`
+  - `ga_amount_ioh`: `FLOAT64`
+  - `ga_amount_tsel`: `FLOAT64`
+  - `ga_amount_xls`: `FLOAT64`
+  - `fb_ga_pop`: `FLOAT64`
+  - `churn_ioh`: `FLOAT64`
+  - `churn_tsel`: `FLOAT64`
+  - `churn_xls`: `FLOAT64`
+  - `churn_amount_ioh`: `FLOAT64`
+  - `churn_amount_tsel`: `FLOAT64`
+  - `churn_amount_xls`: `FLOAT64`
+  - `churn_pop`: `FLOAT64`
+  - `update_time`: `TIMESTAMP`
 
 ### `rham_report_fb_ms_age`
 
@@ -509,64 +613,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `churn_pop`: `INT64`
   - `update_time`: `TIMESTAMP`
 
-### `rham_report_fb_ms_focus_gtm_high_potential`
-
-- Relationship: domain `competitive` contains table `rham_report_fb_ms_focus_gtm_high_potential`.
-- Column count: 44.
-- Partition columns: none declared.
-- Source kind: `proxy`.
-- Grain: `declared_dimensions`.
-- Period semantics: `daily`.
-- Aggregation rule: `sum_additive_metrics`.
-- Priority: `standard`.
-- Relative cost tier: `low`.
-- Metric families: `churn`.
-- Columns:
-  - `dt_id`: `DATE`
-  - `month_id`: `STRING`
-  - `week`: `STRING`
-  - `kabkota`: `STRING`
-  - `ms_ioh`: `FLOAT64`
-  - `ms_im3`: `FLOAT64`
-  - `ms_3id`: `FLOAT64`
-  - `ms_tsel`: `FLOAT64`
-  - `ms_xl`: `FLOAT64`
-  - `ms_sf`: `FLOAT64`
-  - `ms_amount_ioh`: `INT64`
-  - `ms_amount_im3`: `INT64`
-  - `ms_amount_3id`: `INT64`
-  - `ms_amount_tsel`: `INT64`
-  - `ms_amount_xl`: `INT64`
-  - `ms_amount_sf`: `INT64`
-  - `fb_ms_pop`: `INT64`
-  - `soga_ioh`: `FLOAT64`
-  - `soga_im3`: `FLOAT64`
-  - `soga_3id`: `FLOAT64`
-  - `soga_tsel`: `FLOAT64`
-  - `soga_xl`: `FLOAT64`
-  - `soga_sf`: `FLOAT64`
-  - `ga_amount_ioh`: `INT64`
-  - `ga_amount_im3`: `INT64`
-  - `ga_amount_3id`: `INT64`
-  - `ga_amount_tsel`: `INT64`
-  - `ga_amount_xl`: `INT64`
-  - `ga_amount_sf`: `INT64`
-  - `fb_ga_pop`: `INT64`
-  - `churn_ioh`: `FLOAT64`
-  - `churn_im3`: `FLOAT64`
-  - `churn_3id`: `FLOAT64`
-  - `churn_tsel`: `FLOAT64`
-  - `churn_xl`: `FLOAT64`
-  - `churn_sf`: `FLOAT64`
-  - `churn_amount_ioh`: `INT64`
-  - `churn_amount_im3`: `INT64`
-  - `churn_amount_3id`: `INT64`
-  - `churn_amount_tsel`: `INT64`
-  - `churn_amount_xl`: `INT64`
-  - `churn_amount_sf`: `INT64`
-  - `churn_pop`: `INT64`
-  - `update_time`: `TIMESTAMP`
-
 ### `rham_report_fb_ms_focus_gtm_must_win`
 
 - Relationship: domain `competitive` contains table `rham_report_fb_ms_focus_gtm_must_win`.
@@ -811,7 +857,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Period semantics: `daily`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `standard`.
-- Relative cost tier: `low`.
+- Relative cost tier: `medium`.
 - Metric families: `churn`.
 - Columns:
   - `dt_id`: `DATE`
@@ -1401,7 +1447,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_report_fb_ms_partner_3id`
 
 - Relationship: domain `competitive` contains table `rham_report_fb_ms_partner_3id`.
-- Column count: 50.
+- Column count: 49.
 - Partition columns: none declared.
 - Source kind: `proxy`.
 - Grain: `declared_dimensions`.
@@ -1414,7 +1460,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `dt_id`: `DATE`
   - `month_id`: `STRING`
   - `week`: `STRING`
-  - `partner_id_3id`: `STRING`
   - `partner_3id`: `STRING`
   - `cluster_3id`: `STRING`
   - `branch_3id`: `STRING`
@@ -1702,6 +1747,47 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `churn_pop`: `INT64`
   - `update_time`: `TIMESTAMP`
 
+### `rham_report_fb_network_5g`
+
+- Relationship: domain `competitive` contains table `rham_report_fb_network_5g`.
+- Column count: 27.
+- Partition columns: `dt_id`.
+- Source kind: `proxy`.
+- Grain: `date_x_location_type_x_location`.
+- Period semantics: `weekly_snapshot`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `low`.
+- Metric families: `market share`, `5g network`, `churn`, `acquisition`.
+- Columns:
+  - `dt_id`: `DATE` (partition)
+  - `month_id`: `STRING`
+  - `week`: `STRING`
+  - `location_type`: `STRING`
+  - `location`: `STRING`
+  - `ms_ioh`: `FLOAT64`
+  - `ms_tsel`: `FLOAT64`
+  - `ms_xls`: `FLOAT64`
+  - `ms_amount_ioh`: `FLOAT64`
+  - `ms_amount_tsel`: `FLOAT64`
+  - `ms_amount_xls`: `FLOAT64`
+  - `fb_ms_pop`: `FLOAT64`
+  - `soga_ioh`: `FLOAT64`
+  - `soga_tsel`: `FLOAT64`
+  - `soga_xls`: `FLOAT64`
+  - `ga_amount_ioh`: `FLOAT64`
+  - `ga_amount_tsel`: `FLOAT64`
+  - `ga_amount_xls`: `FLOAT64`
+  - `fb_ga_pop`: `FLOAT64`
+  - `churn_ioh`: `FLOAT64`
+  - `churn_tsel`: `FLOAT64`
+  - `churn_xls`: `FLOAT64`
+  - `churn_amount_ioh`: `FLOAT64`
+  - `churn_amount_tsel`: `FLOAT64`
+  - `churn_amount_xls`: `FLOAT64`
+  - `churn_pop`: `FLOAT64`
+  - `update_time`: `TIMESTAMP`
+
 ## Approved agent key facts
 
 - 6 operators: ioh (IM3+3ID), im3, 3id, tsel, xl, sf.
@@ -1709,11 +1795,14 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - _amount_ columns = raw counts (subscriber/GA/churn); _pop = FB sample size.
 - Choose rham_report_fb_ms_<territory> matching the question's grain.
 - All figures are Facebook-derived estimates (industry proxy).
-- Partner structure - IM3: MPX(MPC=Mitra Pengelola Cluster, besar) + SDP(Mitra IM3, kecil). 3ID: MPX(MP3=Mitra Pengelola 3, besar) + SDP(3Kiosk, kecil). SEA = zonasi pricing: Zona1 Surge(termahal), Zona2 Elevate(sedang), Zona3 Ambush(termurah).
+- Partner structure ; IM3: MPX(MPC=Mitra Pengelola Cluster, besar) + SDP(Mitra IM3, kecil). 3ID: MPX(MP3=Mitra Pengelola 3, besar) + SDP(3Kiosk, kecil). SEA = zonasi pricing: Zona1 Surge(termahal), Zona2 Elevate(sedang), Zona3 Ambush(termurah).
 - For kecamatan-level MS/SOGA/churn with region breakdown, use rham_report_fb_ms_kecamatan (has kec_id, kecamatan, region, month_id). SOGA = soga_<op> columns (NOT 'sso' which is a distribution KPI). Market share = ms_<op>. Churn share = churn_<op>.
 - 'penurunan X vs bulan lalu breakdown per region': aggregate per kec_id+region for the 2 months from rham_report_fb_ms_kecamatan, self-join cur vs prev on kec_id, filter BOTH cur.soga_ioh<prev.soga_ioh AND cur.ms_ioh<prev.ms_ioh, then GROUP BY region with COUNT(DISTINCT kec_id).
 - rham_report_fb_ms_kecamatan columns: kec_id, kecamatan, kabkot (NOTE: 'kabkot' WITHOUT trailing 'a'), province, region, month_id, week, dt_id + ms_/soga_/churn_/ga_amount_/ms_amount_ per operator. It has region but NO 'branch' and NO 'circle' column. For a circle scope, filter region IN (...) per data_facts.circle_region_mapping (JAVA = CENTRAL JAVA, EAST JAVA, BALI NUSRA). To add branch, JOIN rham_report_fb_ms_branch_im3 (keys: branch, region) Use the approved branch-level rham_report_fb_ms_branch_im3 or rham_report_fb_ms_branch_3id source for branch analysis.
-- Column-name guardrail: in the rham_report_fb_ms_* monthly tables the kab/kota column is 'kabkot'. Never write 'kabkota' for these tables (causes Unrecognized name). 'kabkota' (with 'a') is used in the site/product tables (e.g. rham_site_data_rev_product_mth) and rham_ref_territory uses 'kabkot'. Always match the column name to the table.
+- Column-name guardrail: in the rham_report_fb_ms_* monthly tables the kab/kota column is 'kabkot'. Never write 'kabkota' for these tables (causes Unrecognized name). 'kabkota' (with 'a') is used in the site/product tables (e.g. rham_kec_data_rev_product_mth) and rham_ref_territory uses 'kabkot'. Always match the column name to the table.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
+- Approved GTM categories in zz_territory_kecamatan.super_gtm are 'MUST WIN 50', 'SUPER-88', 'REST'. Live audit on 2026-10-08 also finds residual 'HIGH POTENTIAL' and '0' values. Treat those as legacy/unclassified values, not aliases of REST; do not silently relabel or discard them. The separate high-potential report source was dropped and is not queryable.
 
 ## Related
 

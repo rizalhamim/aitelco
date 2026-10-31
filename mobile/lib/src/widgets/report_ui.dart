@@ -1263,12 +1263,12 @@ class _ReportAllDataTableState<T> extends State<ReportAllDataTable<T>> {
               label: 'Tabel dapat digeser horizontal',
               child: Container(
                 color: context.vPanel,
-                constraints: const BoxConstraints(minHeight: 36),
+                constraints: const BoxConstraints(minHeight: 28),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 child: Row(
                   children: [
-                    Icon(Icons.swipe_left, size: 18, color: context.vMute),
+                    Icon(Icons.swipe_left, size: 16, color: context.vMute),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1303,9 +1303,10 @@ class _ReportAllDataTableState<T> extends State<ReportAllDataTable<T>> {
     final scrollWidth =
         scrollWidths.fold<double>(0, (sum, value) => sum + value);
     final compact = widget.density == ReportTableDensity.compact;
-    final minHeaderHeight = compact ? 38.0 : 48.0;
+    final minHeaderHeight = compact ? 32.0 : 48.0;
+    // Tappable rows keep the 48 dp touch target; read-only rows stay dense.
     final minRowHeight =
-        widget.onFirstColumnTap == null ? (compact ? 42.0 : 48.0) : 48.0;
+        widget.onFirstColumnTap == null ? (compact ? 32.0 : 48.0) : 48.0;
     final headerHeight = _measuredRowHeight(
       context,
       [frozenColumn.label, ...scrollColumns.map((column) => column.label)],
@@ -1544,12 +1545,12 @@ class _ReportAllDataTableState<T> extends State<ReportAllDataTable<T>> {
                   'Kolom metrik tetap terlihat. Data dapat digeser horizontal',
               child: Container(
                 color: context.vPanel,
-                constraints: const BoxConstraints(minHeight: 36),
+                constraints: const BoxConstraints(minHeight: 28),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 child: Row(
                   children: [
-                    Icon(Icons.swipe_left, size: 18, color: context.vMute),
+                    Icon(Icons.swipe_left, size: 16, color: context.vMute),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1577,7 +1578,9 @@ class _ReportAllDataTableState<T> extends State<ReportAllDataTable<T>> {
     bool header = false,
   }) {
     final scaler = MediaQuery.textScalerOf(context);
-    final measurementSafety = scaler.scale(1) > 1 ? 2.4 : 1.15;
+    // A small additive margin absorbs rounding between measured and painted
+    // lines. Multiplying instead inflated every row, up to 2.4x at large text.
+    final measurementSafety = scaler.scale(1) > 1 ? 6.0 : 3.0;
     // The rendered cell inherits the ambient text style, which carries the app
     // font and its line height. Measuring against a bare TextStyle reports a
     // shorter line than the one actually painted, and the cell overflows.
@@ -1592,6 +1595,7 @@ class _ReportAllDataTableState<T> extends State<ReportAllDataTable<T>> {
         fontFamily: header ? 'Poppins' : null,
         fontSize: header ? 11 : 12,
         fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+        height: _cellLineHeight,
       ));
       final primary = TextPainter(
         text: TextSpan(text: primaryTexts[index], style: style),
@@ -1605,7 +1609,11 @@ class _ReportAllDataTableState<T> extends State<ReportAllDataTable<T>> {
           text: TextSpan(
             text: secondary,
             style: inherited.merge(
-              const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w500),
+              const TextStyle(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w500,
+                height: _cellLineHeight,
+              ),
             ),
           ),
           textDirection: TextDirection.ltr,
@@ -1613,8 +1621,9 @@ class _ReportAllDataTableState<T> extends State<ReportAllDataTable<T>> {
         )..layout(maxWidth: (widths[index] - 16).clamp(24.0, double.infinity));
         contentHeight += 2 + secondaryPainter.height;
       }
-      height =
-          math.max(height, contentHeight * measurementSafety + 12).toDouble();
+      height = math
+          .max(height, contentHeight + _cellVerticalPadding * 2 + measurementSafety)
+          .toDouble();
     }
     return height.ceilToDouble();
   }
@@ -1679,6 +1688,12 @@ class _TableEdgeFade extends StatelessWidget {
   }
 }
 
+const double _cellVerticalPadding = 4;
+
+// Prompt's natural line box is about 1.5 em; a fixed 1.2 keeps cells dense.
+// Measurement and painting must both use it or rows clip.
+const double _cellLineHeight = 1.2;
+
 class _TableCell extends StatelessWidget {
   final String text;
   final String? secondaryText;
@@ -1713,7 +1728,8 @@ class _TableCell extends StatelessWidget {
             ? BoxConstraints(minHeight: minHeight)
             : BoxConstraints.tightFor(height: exactHeight),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 8, vertical: _cellVerticalPadding),
           child: Align(
             alignment: numeric ? Alignment.centerRight : Alignment.centerLeft,
             child: Column(
@@ -1732,6 +1748,7 @@ class _TableCell extends StatelessWidget {
                     fontWeight: header || emphasized || comparison
                         ? FontWeight.w700
                         : FontWeight.w400,
+                    height: _cellLineHeight,
                     fontFeatures:
                         numeric ? const [FontFeature.tabularFigures()] : null,
                   ),
@@ -1746,6 +1763,7 @@ class _TableCell extends StatelessWidget {
                       color: context.vMute,
                       fontSize: 9.5,
                       fontWeight: FontWeight.w500,
+                      height: _cellLineHeight,
                       fontFeatures:
                           numeric ? const [FontFeature.tabularFigures()] : null,
                     ),
@@ -2276,8 +2294,8 @@ class ReportKeyValueRow extends StatelessWidget {
         padding: EdgeInsets.only(
           left: 8 + attribute.depth * 12,
           right: 8,
-          top: 9,
-          bottom: 9,
+          top: 6,
+          bottom: 6,
         ),
         child: content,
       ),

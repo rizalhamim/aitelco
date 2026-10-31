@@ -80,7 +80,7 @@ type MarketInsight = {
 const CIRCLES = ["JAVA", "KALISUMAPA", "JAKARTA RAYA", "SUMATERA"];
 const SCOPE_LEVELS = [
   { key: "region", label: "Region" }, { key: "area", label: "Area" },
-  { key: "branch", label: "Branch" }, { key: "microcluster", label: "Micro Cluster" },
+  { key: "district", label: "District" },
   { key: "kabkota", label: "Kab/Kota" }, { key: "kecamatan", label: "Kecamatan" },
 ];
 // FTTH uses its own territory vocabulary (region_25 / province / city / kecamatan),
@@ -90,23 +90,9 @@ const FTTH_SCOPE_LEVELS = [
   { key: "ftth_kabkota", label: "Kab/Kota" }, { key: "ftth_kecamatan", label: "Kecamatan" },
 ];
 
-const CHILD_LEVEL: Record<string, string> = { all: "region", circle: "region", region: "area", area: "branch", branch: "microcluster", microcluster: "kabkota", kabkota: "kecamatan" };
+const CHILD_LEVEL: Record<string, string> = { all: "region", circle: "region", region: "area", area: "district", district: "kecamatan", branch: "district", microcluster: "kecamatan", kabkota: "kecamatan" };
 const BAND_BG: Record<string, string> = { ioh: IOH.band_ioh, im3: IOH.band_im3, "3id": IOH.band_3id };
 const BAND_FG: Record<string, string> = { ioh: "#fff", im3: "#161616", "3id": "#fff" };
-const METRIC_LABELS: Record<string, string> = {
-  rev_prepaid: "Revenue Prepaid", rev_vsd: "Revenue VSD", rev_nonvsd: "Revenue Non-VSD",
-  rev_data: "Revenue Data", rev_voice: "Revenue Voice", rev_sms: "Revenue SMS",
-  rev_trade: "Revenue Trade", rev_organic: "Revenue Organic", rev_nontrade: "Revenue Non-Trade",
-  rev_acquisition_m0: "Revenue Acq M0", subs_rgu_90d: "RGU 90D", subs_rgu_30d: "RGU 30D",
-  subs_gross_add: "Gross Add", net_add_90d: "Net Add 90D", net_add_30d: "Net Add 30D",
-  gross_churn_90d: "Gross Churn 90D", gross_churn_30d: "Gross Churn 30D", churn_back_90d: "Churn Back 90D",
-  subs_net_churn_90d: "Net Churn 90D", subs_vlr_30d: "VLR 30D", subs_avg_vlr_daily: "VLR Daily",
-  datauu: "Data Users", datauu30d: "Data Users 30D", usg_data_gb: "Usage Data (GB)",
-  usg_og_voice_min: "Usage Voice (Min)", usg_og_sms_cnt: "Usage SMS",
-  ga_m1s: "GA M1S", ga_m2s: "GA M2S", ga_p1m: "GA P1M", ga_p2m: "GA P2M",
-  subs_hvc: "HVC Subs", subs_hvc_stay: "HVC Stay", subs_hvc_in: "HVC In", subs_hvc_out: "HVC Out",
-};
-const isRevMetric = (c: string) => c.startsWith("rev_") || c === "usg_data_gb";
 
 /* ─── helpers ─── */
 function fmtNum(v: number | null | undefined, divisor = 1, dec = 1): string {
@@ -128,13 +114,6 @@ function scaleUnit(peak: number, unit: string): { divisor: number; unit: string 
   if (peak >= 1e5) return { divisor: 1e3, unit: `K ${unit}` };
   return { divisor: 1, unit };
 }
-function fmtBy(kind: string, v: number | null | undefined): string {
-  if (v === null || v === undefined || isNaN(v as number)) return "—";
-  if (kind === "%") return fmtPct(v);
-  if (kind === "ratio") return (v as number).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  if (kind === "GB") return (v as number).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  return (v as number).toLocaleString("id-ID", { maximumFractionDigits: 0 });
-}
 
 /* ─── main page ─── */
 export default function ReportsPage() {
@@ -149,7 +128,7 @@ export default function ReportsPage() {
   const [circle, setCircle] = useState("JAVA");
   const [scopeType, setScopeType] = useState("all");
   const [scopeValue, setScopeValue] = useState("");
-  const [pdScope, setPdScope] = useState("total");
+  const pdScope = "total";
   const [scopeOptions, setScopeOptions] = useState<string[]>([]);
   const [breakdownOptions, setBreakdownOptions] = useState<string[]>([]);
   const [breakdownValue, setBreakdownValue] = useState("Total");
@@ -217,24 +196,9 @@ export default function ReportsPage() {
     return () => { ignore = true; };
   }, [circle, scopeType, scopeValue, breakdownValue, tab]);
 
-  const prefetchAll = useCallback((cir: string, sType: string, sValue: string) => {
-    // Delay prefetching to prioritize the main tab load
-    setTimeout(() => {
-      const sp = (sType !== "all" && sValue) ? `&filter_type=${sType}&filter_value=${encodeURIComponent(sValue)}` : "";
-      const c = encodeURIComponent(cir); const cache = cacheRef.current;
-      const warm = (key: string, url: string) => { if (cache.has(key)) return; authFetch(url).then((r) => r.json()).then((d) => { if (!d.error) cache.set(key, d); }).catch(() => {}); };
-      warm(`comp|${dataVer}|${cir}|${sp}`, `/api/reports/comprehensive?circle=${c}${sp}`);
-      warm(`drev|${dataVer}|${cir}|${sp}`, `/api/reports/data-revenue?circle=${c}&brand=${brand}${sp}`);
-      warm(`prod|${dataVer}|${cir}|${sp}`, `/api/reports/product-demand?circle=${c}&scope=total&brand=${brand}`);
-      warm(`bench|${dataVer}|${cir}|${sp}`, `/api/reports/network-benchmark?circle=${c}${sp}`);
-      warm(`ins|${dataVer}|${cir}|${sp}`, `/api/reports/market-insight?circle=${c}${sp}`);
-      warm(`ftth|${dataVer}|${cir}|${sp}`, `/api/reports/ftth?circle=${c}${sp}`);
-    }, 1500);
-  }, [dataVer, brand]);
-
   const pickLevel = useCallback((lv: { level: string; name: string; value?: string }) => {
-    const val = lv.value ?? lv.name; setMcPick(lv.level); setScopeType(lv.level); setScopeValue(val); setBreakdownValue("Total"); prefetchAll(circle, lv.level, val);
-  }, [prefetchAll, circle]);
+    const val = lv.value ?? lv.name; setMcPick(lv.level); setScopeType(lv.level); setScopeValue(val); setBreakdownValue("Total");
+  }, []);
 
   const locateMe = useCallback(() => {
     setGeoErr(""); setMcLevels(null);
@@ -251,7 +215,6 @@ export default function ReportsPage() {
           if (lvls[0]) { 
             const v0 = lvls[0].value ?? lvls[0].name; 
             setMcPick(lvls[0].level); setScopeType(lvls[0].level); setScopeValue(v0); setBreakdownValue("Total");
-            prefetchAll(d.circle || circle, lvls[0].level, v0); 
             // Do not call setLoading(false) here. The main useEffect will trigger and handle it.
           } else {
             setLoading(false);
@@ -259,7 +222,7 @@ export default function ReportsPage() {
         }
       } catch (e) { setGeoErr(String(e)); setLoading(false); }
     }, (e) => { setGeoErr("Gagal: " + e.message); setLoading(false); }, { enableHighAccuracy: true, timeout: 15000 });
-  }, [prefetchAll, circle]);
+  }, []);
 
   const [reloadKey, setReloadKey] = useState(0);
   const activeScopeType = breakdownValue !== "Total" ? CHILD_LEVEL[scopeType] : scopeType;
@@ -275,11 +238,11 @@ export default function ReportsPage() {
     const cache = cacheRef.current;
     const key = tab === "snapshot" ? `snap|${dataVer}|${circle}|${metric}|${scopeParams}`
       : tab === "comprehensive" ? `comp|${dataVer}|${circle}|${scopeParams}`
-      : tab === "datarev" ? `drev|${dataVer}|${circle}|${scopeParams}`
+      : tab === "datarev" ? `drev|${dataVer}|${circle}|${brand}|${scopeParams}`
       : tab === "benchmark" ? `bench|${dataVer}|${circle}|${scopeParams}`
       : tab === "insight" ? `ins|${dataVer}|${circle}|${scopeParams}`
       : tab === "ftth" ? `ftth|${dataVer}|${circle}|${scopeParams}`
-      : `prod|${dataVer}|${circle}|${pdScope}|${brand}`;
+      : `prod|${dataVer}|${circle}|${pdScope}|${brand}|${scopeParams}`;
 
     const setFromData = (d: unknown) => {
       if (tab === "snapshot") setData(d as Snapshot);
@@ -301,7 +264,7 @@ export default function ReportsPage() {
         else if (tab === "benchmark") url = `/api/reports/network-benchmark?circle=${encodeURIComponent(circle)}${scopeParams}`;
         else if (tab === "insight") url = `/api/reports/market-insight?circle=${encodeURIComponent(circle)}${scopeParams}`;
         else if (tab === "ftth") url = `/api/reports/ftth?circle=${encodeURIComponent(circle)}${scopeParams}`;
-        else url = `/api/reports/product-demand?circle=${encodeURIComponent(circle)}&scope=${pdScope}&brand=${brand}`;
+        else url = `/api/reports/product-demand?circle=${encodeURIComponent(circle)}&scope=${pdScope}&brand=${brand}${scopeParams}`;
         const r = await authFetch(url); const d = await r.json();
         if (ignore) return;
         if (d.error) setErr(d.error); else { cache.set(key, d); setFromData(d); }
@@ -440,8 +403,8 @@ export default function ReportsPage() {
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-            <Chip label="Best Branch" name={data.best?.name} v={data.best?.var} pct={data.best?.pct} divisor={disp.divisor} good />
-            <Chip label="Worst Branch" name={data.worst?.name} v={data.worst?.var} pct={data.worst?.pct} divisor={disp.divisor} />
+            <Chip label="Best Area" name={data.best?.name} v={data.best?.var} pct={data.best?.pct} divisor={disp.divisor} good />
+            <Chip label="Worst Area" name={data.worst?.name} v={data.worst?.var} pct={data.worst?.pct} divisor={disp.divisor} />
           </div>
           <Panel title={`Kecamatan Health Distribution · ${data.slabs.kecamatan.total} kecamatan`}><SlabBars s={data.slabs.kecamatan} /></Panel>
           {data.deck && <SnapshotDeck deck={data.deck} divisor={disp.divisor} />}
@@ -543,7 +506,7 @@ function BrandTable({ rows, divisor }: { rows: Row[]; divisor: number }) {
   );
 }
 function SnapshotDeck({ deck, divisor }: { deck: SnapDeck; divisor: number }) {
-  const sections: [string, string][] = [["circle", "Circle"], ["region", "Region"], ["branch", "Branch"], ["microcluster", "Micro Cluster"], ["kabkota", "Kab/Kota"], ["kecamatan", "Kecamatan"]];
+  const sections: [string, string][] = [["circle", "Circle"], ["region", "Region"], ["branch", "Area"], ["microcluster", "District"], ["kabkota", "Kab/Kota"], ["kecamatan", "Kecamatan"]];
   const FULL = ["circle", "region", "branch"];
   const [sub, setSub] = useState("circle");
   const count = deck.counts[sub] ?? 0;

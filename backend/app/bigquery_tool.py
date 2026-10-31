@@ -129,7 +129,35 @@ def validate_table_policy(
                 "Regenerate SQL using only the retrieved schema."
             )
         used.add(table)
+    _reject_sensitive_columns(sql, used)
     return used
+
+def _reject_sensitive_columns(sql: str, used: set[str]) -> None:
+    """Block identity columns (KB sensitive_dimensions) of any queried table.
+
+    Name match is conservative: a same-named column of a joined table is also
+    refused, and SELECT * is refused because it would expose them implicitly.
+    """
+    from . import knowledge
+    import sqlglot
+    from sqlglot import exp
+
+    index = knowledge.table_index()
+    sensitive = {c.lower() for t in used for c in index.get(t, {}).get("sensitive_dimensions") or []}
+    if not sensitive:
+        return
+    try:
+        tree = sqlglot.parse_one(sql, read="bigquery")
+    except sqlglot.errors.SqlglotError as exc:
+        raise QueryError(f"Invalid BigQuery SQL: {exc}") from exc
+    # A bare table alias (SELECT o, TO_JSON_STRING(o)) serialises the whole row.
+    aliases = {t.alias_or_name.lower() for t in tree.find_all(exp.Table)}
+    names = {c.name.lower() for c in tree.find_all(exp.Column) if not isinstance(c.this, exp.Star)}
+    hit = sorted(names & (sensitive | aliases))
+    if hit:
+        raise QueryError(f"Columns {', '.join(hit)} are personal or sales identity data and cannot be queried. Aggregate by territory, status or vendor instead.")
+    if any(isinstance(s.parent, (exp.Select, exp.Column)) for s in tree.find_all(exp.Star)):
+        raise QueryError("SELECT * is not allowed on tables with personal data. List the aggregate columns you need.")
 
 
 def validate_sql(
@@ -260,17 +288,21 @@ def run_query(
     had_outer_limit = bool(re.search(r"\blimit\s+\d+\s*$", clean, re.IGNORECASE))
     clean = _ensure_limit(clean, limit)
 
+    from .query_cost import prepare_query
+    clean, cost_notes = prepare_query(clean, get_client())
+    budget = min(config.MAX_BYTES_BILLED, config.QUERY_SCAN_BUDGET_BYTES)
+
     # Cost estimate
     est_bytes = dry_run(clean)
-    if est_bytes > config.MAX_BYTES_BILLED:
+    if est_bytes > budget:
         raise QueryError(
             f"Query would scan {est_bytes/1024**3:.1f} GB, exceeding the "
-            f"{config.MAX_BYTES_BILLED/1024**3:.0f} GB safety cap. "
+            f"{budget/1024**3:.1f} GB scan budget. "
             f"Add a tighter dt_id/month_id filter or narrower columns."
         )
 
     cfg = bigquery.QueryJobConfig(
-        maximum_bytes_billed=config.MAX_BYTES_BILLED,
+        maximum_bytes_billed=budget,
         use_query_cache=True,
     )
     job = client = get_client().query(clean, job_config=cfg)
@@ -291,6 +323,9 @@ def run_query(
         "row_count": len(rows),
         "bytes_processed": int(job.total_bytes_processed or 0),
         "bytes_billed": int(job.total_bytes_billed or 0),
+        "estimated_bytes": est_bytes,
+        "scan_budget_bytes": budget,
+        "cost_optimizations": cost_notes,
         "cache_hit": bool(job.cache_hit),
         "est_bytes": est_bytes,
         "limit_applied": not had_outer_limit,

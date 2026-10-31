@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: table_routing_constraints"
 type: generated-knowledge
 data_fact: "table_routing_constraints"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `table_routing_constraints`
@@ -12,11 +12,11 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Flattened fact paths
 
-- **`table_routing_constraints.fb_ms_table_restriction`:** For ALL questions about Facebook market share (fb_ms), SOGA (fb_soga/gross add share), or churn share: NEVER use rham_fb_ms_kabkota_v2 or rham_fb_ms_kecamatan_v2 - these are BANNED. Instead use rham_report_fb_ms_* tables (27 tables at different territory levels) in the competitive domain. If the question is at kecamatan level, use rham_report_fb_ms_kecamatan. If kabkota level, use rham_report_fb_ms_kabkota. If region/branch/national, use the corresponding rham_report_fb_ms_<level> table. Alternatively, for simple fb_ms aggregates, the marketing tables (rham_mkt_highlevel_mtd/mth) also have fb_ms_*, fb_soga_*, fb_churn_* columns per operator.
+- **`table_routing_constraints.fb_ms_table_restriction`:** For ALL questions about Facebook market share (fb_ms), SOGA (fb_soga/gross add share), or churn share: NEVER use rham_fb_ms_kabkota_v2 or rham_fb_ms_kecamatan_v2 ; these are BANNED. Instead use rham_report_fb_ms_* tables (27 tables at different territory levels) in the competitive domain. If the question is at kecamatan level, use rham_report_fb_ms_kecamatan. If kabkota level, use rham_report_fb_ms_kabkota. If region/branch/national, use the corresponding rham_report_fb_ms_<level> table. Alternatively, for simple fb_ms aggregates, the marketing tables (rham_mkt_highlevel_mtd/mth) also have fb_ms_*, fb_soga_*, fb_churn_* columns per operator.
 - **`table_routing_constraints.preferred_general_tables.daily`:** rham_mkt_kpi_highlevel_dly (grain: dt_id × brand × kecamatan, ~9.9M rows)
 - **`table_routing_constraints.preferred_general_tables.monthly`:** rham_mkt_highlevel_mth (grain: month_id × brand × kecamatan, ~329K rows)
 - **`table_routing_constraints.preferred_general_tables.mtd`:** rham_mkt_highlevel_mtd (grain: month_id × brand × kecamatan, ~329K rows)
-- **`table_routing_constraints.site_tables_restriction`:** NEVER query site-level tables (rham_site_data_rev_channel_daily, rham_site_data_rev_channel_mtd, rham_site_data_rev_channel_mth, rham_site_wise_daily, rham_site_wise_mtd, rham_site_wise_mth, etc.) UNLESS the user explicitly asks about 'site', 'site performance', 'per site', or 'site-level'. For general KPI questions (revenue, subscriber, usage, churn, gross add, market share), ALWAYS prefer rham_mkt_kpi_highlevel_dly (daily), rham_mkt_highlevel_mtd (MTD), rham_mkt_highlevel_mth (monthly) as the PRIMARY tables. These marketing tables contain all key metrics at kecamatan × brand grain and are much smaller/faster.
+- **`table_routing_constraints.site_tables_restriction`:** Use site_wise tables for explicitly per-site infrastructure/performance. General headline KPIs use market highlevel at Kecamatan x brand grain. Channel/product/price-slab breakdown uses rham_kec_data_rev_* at Kecamatan grain, never site_id; this family is valid for general commercial breakdowns.
 
 ## Related
 

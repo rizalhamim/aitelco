@@ -7,9 +7,9 @@ import uuid
 from fastapi import FastAPI, Query, Depends, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from . import knowledge, orchestrator, llm, memory, config
+from . import knowledge, orchestrator, llm, lessons, memory, config
 from .bigquery_tool import run_query, QueryError
 from .result_profiler import profile_result, empty_result_hint
 from .chart_spec import build_chart_spec
@@ -197,8 +197,8 @@ def health():
 
 
 class GeoLocateReq(BaseModel):
-    lat: float
-    lon: float
+    lat: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    lon: float = Field(ge=-180, le=180, allow_inf_nan=False)
 
 
 @app.post("/api/geo/locate")
@@ -373,6 +373,18 @@ def get_session_analytics(session_id: str):
 @app.get("/api/learnings")
 def get_learnings(category: str | None = None, limit: int = 50):
     return {"learnings": memory.get_learnings(category, limit)}
+
+@app.get("/api/lessons/{domain_key}")
+def get_domain_lessons(domain_key: str):
+    """What the closed-loop learner is currently injecting for one domain."""
+    return {
+        "domain": domain_key,
+        "enabled": config.LESSONS_ENABLED,
+        "window_days": config.LESSON_DAYS,
+        "min_count": config.LESSON_MIN_COUNT,
+        "buckets": dict(lessons.failure_buckets(domain_key)),
+        "injected": lessons.domain_lessons(domain_key),
+    }
 
 
 @app.get("/api/knowledge/status")

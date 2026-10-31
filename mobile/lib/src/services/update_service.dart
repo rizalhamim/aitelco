@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -29,43 +30,92 @@ class UpdateInfo {
   });
 }
 
+class UpdateCheckException implements Exception {
+  final String message;
+  const UpdateCheckException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 /// In-app APK updater. Checks the backend's /api/app/version, and if the
 /// server build number is higher than this build, downloads the APK and
 /// launches the Android package installer.
 class UpdateService {
-  /// Returns an [UpdateInfo] when a newer build is available, else null.
+  /// Null means no newer build, never a failed network/version check.
   static Future<UpdateInfo?> check() async {
     if (!Platform.isAndroid) return null;
+    final info = await PackageInfo.fromPlatform();
+    final currentCode = int.tryParse(info.buildNumber);
+    if (currentCode == null) {
+      throw const UpdateCheckException(
+          'Versi aplikasi terpasang tidak terbaca.');
+    }
+    return checkVersion(currentCode: currentCode);
+  }
+
+  static Future<UpdateInfo?> checkVersion({
+    required int currentCode,
+    http.Client? client,
+    Uri? baseUri,
+  }) async {
+    final base = baseUri ?? Uri.parse(AppConfig.apiBase);
+    final transport = client ?? http.Client();
     try {
-      final info = await PackageInfo.fromPlatform();
-      final currentCode = int.tryParse(info.buildNumber) ?? 0;
-
-      final res = await http
-          .get(Uri.parse('${AppConfig.apiBase}/api/app/version'))
-          .timeout(const Duration(seconds: 10));
-      if (res.statusCode != 200) return null;
-      final m = jsonDecode(res.body) as Map<String, dynamic>;
-
-      final serverCode = (m['version_code'] as num?)?.toInt() ?? 0;
-      final available = m['available'] == true;
-      if (!available || serverCode <= currentCode) return null;
+      final res =
+          await transport.get(base.resolve('/api/app/version'), headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache',
+      }).timeout(const Duration(seconds: 10));
+      if (res.statusCode != 200) {
+        throw UpdateCheckException(
+            'Server pembaruan belum tersedia (HTTP ${res.statusCode}).');
+      }
+      final decoded = jsonDecode(res.body);
+      if (decoded is! Map<String, dynamic> ||
+          decoded['version_code'] is! num ||
+          (decoded['version_code'] as num) <= 0 ||
+          (decoded['version_code'] as num).toInt() != decoded['version_code'] ||
+          decoded['available'] is! bool) {
+        throw const UpdateCheckException(
+            'Informasi versi dari server tidak valid.');
+      }
+      final m = decoded;
+      final serverCode = (m['version_code'] as num).toInt();
+      if (serverCode <= currentCode) return null;
+      if (m['available'] != true) {
+        throw const UpdateCheckException(
+            'Versi baru terdeteksi, tetapi file pembaruan belum tersedia.');
+      }
 
       final rawUrl = (m['download_url'] as String?) ?? '/api/app/download';
-      final url = rawUrl.startsWith('http')
-          ? rawUrl
-          : '${AppConfig.apiBase}$rawUrl';
+      final url = base.resolve(rawUrl);
+      if (!['http', 'https'].contains(url.scheme) || url.host.isEmpty) {
+        throw const UpdateCheckException(
+            'Alamat unduhan pembaruan tidak valid.');
+      }
 
       return UpdateInfo(
         versionName: (m['version_name'] as String?) ?? '',
         versionCode: serverCode,
         notes: (m['notes'] as String?) ?? '',
         mandatory: m['mandatory'] == true,
-        downloadUrl: url,
+        downloadUrl: url.toString(),
         sizeBytes: (m['size_bytes'] as num?)?.toInt() ?? 0,
       );
+    } on UpdateCheckException {
+      rethrow;
+    } on FormatException {
+      throw const UpdateCheckException('Respons server pembaruan tidak valid.');
+    } on TimeoutException {
+      throw const UpdateCheckException(
+          'Pengecekan pembaruan terlalu lama. Periksa koneksi dan coba lagi.');
     } catch (e) {
       debugPrint('UpdateService.check failed: $e');
-      return null;
+      throw const UpdateCheckException(
+          'Tidak dapat memeriksa pembaruan. Periksa koneksi internet dan coba lagi.');
+    } finally {
+      if (client == null) transport.close();
     }
   }
 
@@ -86,7 +136,8 @@ class UpdateService {
 
       final dir = await getExternalStorageDirectory() ??
           await getApplicationDocumentsDirectory();
-      final file = File('${dir.path}/Bizplan-Java-Agent-${info.versionCode}.apk');
+      final file =
+          File('${dir.path}/Bizplan-Java-Agent-${info.versionCode}.apk');
       if (await file.exists()) {
         await file.delete();
       }

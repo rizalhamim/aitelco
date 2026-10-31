@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from . import config
+from . import config, knowledge
 from .bigquery_tool import run_query
 from .report_metric_catalog import FWA_METRICS
 
@@ -86,8 +86,11 @@ def _brand_clause(brand: str) -> str:
     return ""
 
 
-def _select(columns: Iterable[str] = _PHYSICAL) -> str:
-    return ", ".join(f"SUM({column}) AS {column}" for column in columns)
+def _select(columns: Iterable[str] = _PHYSICAL, table: str = _MTD) -> str:
+    name = table.strip('`').split('.')[-1]
+    available = {c['name'] for c in knowledge.table_index()[name]['columns']}
+    return ", ".join(f"SUM({column}) AS {column}" if column in available
+                     else f"CAST(NULL AS FLOAT64) AS {column}" for column in columns)
 
 
 def build_site_fwa(site_id: str, brand: str = "ioh", months: int = 6) -> dict[str, Any]:
@@ -95,8 +98,7 @@ def build_site_fwa(site_id: str, brand: str = "ioh", months: int = 6) -> dict[st
     sid = (site_id or "").replace("'", "")
     clause = _brand_clause(brand)
     latest_rows = run_query(
-        f"SELECT CAST(MAX(month_id) AS STRING) AS month_id FROM {_MTD} "
-        f"WHERE site_id='{sid}'{clause}",
+        f"SELECT CAST(MAX(month_id) AS STRING) AS month_id FROM {_MTD}",
         row_limit=2,
     )["rows"]
     current_month = str(latest_rows[0].get("month_id") or "") if latest_rows else ""
@@ -125,9 +127,10 @@ def build_site_fwa(site_id: str, brand: str = "ioh", months: int = 6) -> dict[st
     )["rows"]
     by_month = {str(row["month_id"]): _derive(row) for row in mtd_rows}
 
+    history_months = ",".join(f"'{_month_shift(current_month, -i)}'" for i in range(1, max(1, min(int(months), 24)) + 1))
     history_rows = run_query(
-        f"SELECT CAST(month_id AS STRING) AS month_id, {_select()} FROM {_MTH} "
-        f"WHERE site_id='{sid}'{clause} AND CAST(month_id AS INT64) < {int(current_month)} "
+        f"SELECT CAST(month_id AS STRING) AS month_id, {_select(table=_MTH)} FROM {_MTH} "
+        f"WHERE site_id='{sid}'{clause} AND CAST(month_id AS STRING) IN ({history_months}) "
         "GROUP BY month_id ORDER BY month_id DESC "
         f"LIMIT {max(1, min(int(months), 24))}",
         row_limit=30,
@@ -185,5 +188,6 @@ def build_site_fwa(site_id: str, brand: str = "ioh", months: int = 6) -> dict[st
             "period": "MTD comparisons use the cutoff-capped MTD table. History uses closed months from MTH.",
             "ioh": "IOH sums IM3 and 3ID source values before recalculating ratios.",
             "traffic_share": "5G traffic divided by 4G plus 5G traffic.",
+            "unavailable": "Legacy acquisition breakdown columns absent from the current source remain N/A, never zero or a fabricated split.",
         },
     }

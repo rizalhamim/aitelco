@@ -1,0 +1,68 @@
+{
+  "review_id": "new-objects-2026-10-08",
+  "reviewed_at": "2026-10-08",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Govern objects discovered after the 2026-10-07 upstream reload.",
+  "decisions": {
+    "rham_congestion_4g_site_weekly": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Weekly 4G site congestion (54 cols). New 2026-10-07; semantic and business-value review pending, not runtime yet.",
+      "evidence": "Live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_congestion_5g_site_weekly": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Weekly 5G site congestion (71 cols). New 2026-10-07; semantic and business-value review pending, not runtime yet.",
+      "evidence": "Live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_dse_tracker_dly": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Daily DSE (direct sales executive) tracker (48 cols). New 2026-10-07; semantic and business-value review pending, not runtime yet.",
+      "evidence": "Live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_ref_snd_metric": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "SND mapping reference (brand, parameter, metric) behind rham_snd_kpi_highlevel_* since 2026-10-07. New 2026-10-07; semantic and business-value review pending, not runtime yet.",
+      "evidence": "Live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_site_wise_addr_java_bak_territory_20261007_213214": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Backup or staging copy from the 2026-10-07 upstream reload. Never a runtime source.",
+      "evidence": "Name pattern _bak_/_stage/zz_bak_; live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_site_wise_addr_java_bak_upload_20261007_213159": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Backup or staging copy from the 2026-10-07 upstream reload. Never a runtime source.",
+      "evidence": "Name pattern _bak_/_stage/zz_bak_; live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_site_wise_addr_java_bak_upload_20261007_213437": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Backup or staging copy from the 2026-10-07 upstream reload. Never a runtime source.",
+      "evidence": "Name pattern _bak_/_stage/zz_bak_; live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_site_wise_addr_java_stage": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Backup or staging copy from the 2026-10-07 upstream reload. Never a runtime source.",
+      "evidence": "Name pattern _bak_/_stage/zz_bak_; live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "rham_site_wise_addr_java_stage_territory": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Backup or staging copy from the 2026-10-07 upstream reload. Never a runtime source.",
+      "evidence": "Name pattern _bak_/_stage/zz_bak_; live INFORMATION_SCHEMA 2026-10-08."
+    },
+    "zz_bak_snd_kpi_highlevel_dly_20261007": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Backup or staging copy from the 2026-10-07 upstream reload. Never a runtime source.",
+      "evidence": "Name pattern _bak_/_stage/zz_bak_; live INFORMATION_SCHEMA 2026-10-08."
+    }
+  }
+}

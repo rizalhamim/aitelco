@@ -1,7 +1,7 @@
 ---
 title: Agent protocol — token-saving recall
 type: meta
-updated: 2026-08-18
+updated: 2026-10-08
 ---
 
 # Agent protocol (read this to save tokens)
@@ -23,8 +23,9 @@ How an agent should use this vault so it spends ~2KB instead of ~50KB per lookup
 
 ## Don't
 
-- Don't read `AGENTS.md`, `FTTH_KNOWLEDGE_BASE.txt`, or `session-ses_16ca.md` to answer a
-  question a node already covers. That defeats the vault's purpose.
+- Don't read `FTTH_KNOWLEDGE_BASE.txt` or `session-ses_16ca.md` to answer a question a node
+  already covers. That defeats the vault's purpose. `AGENTS.md` is the short operating
+  guide, not a fact store.
 - Don't duplicate a decision's rationale into other nodes — link to the ADR instead.
 
 ## Division of labor (four workflows)
@@ -43,4 +44,5 @@ Graphify is development-only. It must not be imported by the production backend 
 the web/mobile clients. The full boundary and refresh lanes are in [[graphify-development-index]].
 
 The whole point: one node or one query, never "load the codebase". Looking around is the
-expensive path. See also [[vault-conventions]] and the "Token budget" block in `../../CLAUDE.md`.
+expensive path. See also [[vault-conventions]], [[model-roster]], and the operating loop in
+`../../AGENTS.md`.

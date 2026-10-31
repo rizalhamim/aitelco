@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: month_id_casting"
 type: generated-knowledge
 data_fact: "month_id_casting"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `month_id_casting`
@@ -12,7 +12,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Flattened fact paths
 
-- **`month_id_casting`:** CRITICAL: month_id type varies: INT64 in forecast/kpi/marketing/sales/reporting tables, STRING in site/fb tables. ALWAYS use CAST(month_id AS STRING) before PARSE_DATE or string comparison. Example: PARSE_DATE('%Y%m', CAST(month_id AS STRING)). For INT64 month_id, NEVER pass it directly to PARSE_DATE - it WILL fail with 'No matching signature'.
+- **`month_id_casting`:** CRITICAL: month_id type varies: INT64 in forecast/kpi/marketing/sales/reporting tables, STRING in site/fb tables. ALWAYS use CAST(month_id AS STRING) before PARSE_DATE or string comparison. Example: PARSE_DATE('%Y%m', CAST(month_id AS STRING)). For INT64 month_id, NEVER pass it directly to PARSE_DATE ; it WILL fail with 'No matching signature'.
 
 ## Related
 

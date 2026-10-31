@@ -1,14 +1,13 @@
 ---
 title: telco-ai Knowledge Vault
 type: index
-updated: 2026-08-18
+updated: 2026-10-08
 ---
 
 # telco-ai Knowledge Vault — INDEX
 
 Entry point. Read this first, then jump to ONE node via wikilink. Do not read the big
-source docs (`FTTH_KNOWLEDGE_BASE.txt`, `session-ses_16ca.md`, `AGENTS.md`) unless a node
-tells you to. Vault = distilled why/what. graphify = where/how in code (`graphify query`).
+source docs (`FTTH_KNOWLEDGE_BASE.txt`, `session-ses_16ca.md`) unless a node tells you to. Vault = distilled why/what. graphify = where/how in code (`graphify query`).
 
 ## Route by intent
 
@@ -32,8 +31,8 @@ tells you to. Vault = distilled why/what. graphify = where/how in code (`graphif
 | gzip / Accept-Encoding quirk | [[gzip-accept-encoding]] |
 | Why edit knowledge_base.json | [[knowledge-base-single-source]] |
 | LLM per-role models | [[llm-model-roles]] |
-| Why opus not fable (cost policy) | [[opus-cost-policy]] |
-| Operating loop + verify gates | [[workflow-operating-loop]] |
+| Coding models (Opus/Fable/GPT/Astra) + escalation | [[model-roster]] |
+| Operating loop + verify gates | `AGENTS.md` (repo root) |
 | Agent answer-quality rules | [[agent-quality-gates]] |
 | Why charts are built in the backend | [[chart-spec-backend-owned]] |
 | Agent quality improvement plan | `docs/agent-improvement-plan.md` |

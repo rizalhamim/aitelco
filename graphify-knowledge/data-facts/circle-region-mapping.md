@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: circle_region_mapping"
 type: generated-knowledge
 data_fact: "circle_region_mapping"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `circle_region_mapping`
@@ -16,7 +16,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - **`circle_region_mapping.JAVA`:** CENTRAL JAVA, EAST JAVA, BALI NUSRA
 - **`circle_region_mapping.KALISUMAPA`:** KALIMANTAN, SULAWESI, MAPA
 - **`circle_region_mapping.SUMATERA`:** NORTH SUMATERA, CENTRAL SUMATERA, SOUTH SUMATERA
-- **`circle_region_mapping.note`:** Some tables carry an explicit circle column (e.g. rham_report_fb_ms_circle, rham_fb_ms_kecamatan_v2, rham_site_data_rev_product_mth, rham_ref_territory). When a circle column exists, filter on it directly; otherwise filter region IN (...) per the mapping above. FTTH tables are different: they use coded sales_region/region_25 like '04. Central Java','05. East Java' - see ftth_tables.
+- **`circle_region_mapping.note`:** Some tables carry an explicit circle column (e.g. rham_report_fb_ms_circle, rham_fb_ms_kecamatan_v2, rham_kec_data_rev_product_mth, rham_ref_territory). When a circle column exists, filter on it directly; otherwise filter region IN (...) per the mapping above. FTTH tables are different: they use coded sales_region/region_25 like '04. Central Java','05. East Java' ; see ftth_tables.
 - **`circle_region_mapping.rule`:** A 'circle' expands to a fixed set of REGION values. When a user scopes a question to a circle, filter region IN (...) using this mapping (region values are UPPERCASE in the competitive/territory tables). Do NOT invent region names.
 
 ## Related

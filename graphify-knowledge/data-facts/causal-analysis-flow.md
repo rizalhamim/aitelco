@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: causal_analysis_flow"
 type: generated-knowledge
 data_fact: "causal_analysis_flow"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `causal_analysis_flow`
@@ -12,7 +12,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Flattened fact paths
 
-- **`causal_analysis_flow.flow_sequence`:** 1. AKUISISI (Acquisition): gross_add (subs_gross_add in daily) - new subscriber intake, 2. SUBSCRIBER BASE: avg_vlr_daily, rgu_90d, rgu_30d, pack_subs (pack_subs), data_uu_daily, data_uu_30, 3. USAGE: usg_data_gb (data traffic), yield = rev_data / usg_data_gb, usage_per_subs = usg_data_gb / data_uu_30, 4. REVENUE PREPAID: rev_prepaid - the final output metric
+- **`causal_analysis_flow.flow_sequence`:** 1. AKUISISI (Acquisition): gross_add (subs_gross_add in daily) ; new subscriber intake, 2. SUBSCRIBER BASE: avg_vlr_daily, rgu_90d, rgu_30d, pack_subs (pack_subs), data_uu_daily, data_uu_30, 3. USAGE: usg_data_gb (data traffic), yield = rev_data / usg_data_gb, usage_per_subs = usg_data_gb / data_uu_30, 4. REVENUE PREPAID: rev_prepaid ; the final output metric
 - **`causal_analysis_flow.formulas.rev_data`:** rev_data_organic + rev_data_mobo_non_trade + rev_data_mobo_trade
 - **`causal_analysis_flow.formulas.rev_nonvsd`:** rev_prepaid - rev_vsd
 - **`causal_analysis_flow.formulas.rev_prepaid`:** rev_base + rev_acquisition_m0

@@ -10,9 +10,7 @@ import '../widgets/pipeline_view.dart';
 import '../widgets/data_table_view.dart';
 import '../widgets/chart_panel.dart';
 import '../widgets/collapsible.dart';
-import '../services/update_service.dart';
 import '../services/keep_alive_service.dart';
-import '../widgets/update_dialog.dart';
 import 'location_sheet.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -49,16 +47,6 @@ class ChatScreenState extends State<ChatScreen> {
     await p.setString('session::$uname', _sessionId);
     if (mounted) setState(() {});
     _loadHistory();
-    _checkForUpdate();
-  }
-
-  Future<void> _checkForUpdate() async {
-    try {
-      final info = await UpdateService.check();
-      if (info != null && mounted) {
-        await showUpdateDialog(context, info);
-      }
-    } catch (_) {}
   }
 
   String _newId() => 'm_${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond}';

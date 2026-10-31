@@ -2,7 +2,7 @@
 title: "Runtime KB domain: customer_demand"
 type: generated-knowledge
 domain: "customer_demand"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `customer_demand`
@@ -12,7 +12,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** Customer Demand & Digital Behavior
 - **Description:** Aggregate origin-destination demand, product and channel migration, gaming, SSD, voucher cohorts, digicommerce, and subscriber traffic segments.
-- **Tables:** 13
+- **Tables:** 10
 - **Agent identifier:** `Customer Demand Analyst`
 
 ## Domain to table relationships
@@ -27,9 +27,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Domain `customer_demand` contains table `rham_game_mth`.
 - Domain `customer_demand` contains table `rham_ssd_details_mtd`.
 - Domain `customer_demand` contains table `rham_ssd_details_mth`.
-- Domain `customer_demand` contains table `rham_subs_traffic_agg_geo_mtd_lmtd`.
-- Domain `customer_demand` contains table `rham_subs_traffic_agg_migration_matrix_monthly`.
-- Domain `customer_demand` contains table `rham_subs_traffic_agg_segment_mtd_lmtd`.
 
 ## Table schemas
 
@@ -157,7 +154,7 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_game_daily`
 
 - Relationship: domain `customer_demand` contains table `rham_game_daily`.
-- Column count: 10.
+- Column count: 9.
 - Partition columns: `dt_id`.
 - Source kind: `observed`.
 - Grain: `declared_dimensions`.
@@ -169,19 +166,18 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Columns:
   - `dt_id`: `DATE` (partition)
   - `brand`: `STRING`
-  - `product_flag`: `STRING`
-  - `cp_name`: `STRING`
-  - `mc`: `STRING`
-  - `hos`: `STRING`
-  - `hor`: `STRING`
+  - `kec_id`: `STRING`
+  - `region`: `STRING`
   - `circle`: `STRING`
-  - `sum_revenue`: `BIGNUMERIC`
-  - `sum_hit`: `INT64`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `revenue`: `FLOAT64`
+  - `hits`: `INT64`
 
 ### `rham_game_mtd`
 
 - Relationship: domain `customer_demand` contains table `rham_game_mtd`.
-- Column count: 11.
+- Column count: 10.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `declared_dimensions`.
@@ -194,19 +190,18 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `month_id`: `STRING`
   - `mth_dt`: `DATE` (partition)
   - `brand`: `STRING`
-  - `product_flag`: `STRING`
-  - `cp_name`: `STRING`
-  - `mc`: `STRING`
-  - `hos`: `STRING`
-  - `hor`: `STRING`
+  - `kec_id`: `STRING`
+  - `region`: `STRING`
   - `circle`: `STRING`
-  - `sum_revenue`: `BIGNUMERIC`
-  - `sum_hit`: `INT64`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `revenue`: `FLOAT64`
+  - `hits`: `INT64`
 
 ### `rham_game_mth`
 
 - Relationship: domain `customer_demand` contains table `rham_game_mth`.
-- Column count: 11.
+- Column count: 10.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
 - Grain: `declared_dimensions`.
@@ -219,14 +214,13 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `month_id`: `STRING`
   - `mth_dt`: `DATE` (partition)
   - `brand`: `STRING`
-  - `product_flag`: `STRING`
-  - `cp_name`: `STRING`
-  - `mc`: `STRING`
-  - `hos`: `STRING`
-  - `hor`: `STRING`
+  - `kec_id`: `STRING`
+  - `region`: `STRING`
   - `circle`: `STRING`
-  - `sum_revenue`: `BIGNUMERIC`
-  - `sum_hit`: `INT64`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `revenue`: `FLOAT64`
+  - `hits`: `INT64`
 
 ### `rham_ssd_details_mtd`
 
@@ -284,142 +278,6 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `hit`: `FLOAT64`
   - `net_revenue`: `FLOAT64`
 
-### `rham_subs_traffic_agg_geo_mtd_lmtd`
-
-- Relationship: domain `customer_demand` contains table `rham_subs_traffic_agg_geo_mtd_lmtd`.
-- Column count: 23.
-- Partition columns: `as_of_date`.
-- Source kind: `observed`.
-- Grain: `declared_dimensions`.
-- Period semantics: `mtd_cutoff_aligned`.
-- Aggregation rule: `sum_components_then_recompute_ratio`.
-- Priority: `high`.
-- Relative cost tier: `low`.
-- Metric families: `revenue`, `subscriber segment`, `traffic`.
-- Columns:
-  - `as_of_date`: `DATE` (partition)
-  - `dom_purchase_site_id`: `STRING`
-  - `segment_pack_bucket`: `STRING`
-  - `segment_atl_btl`: `STRING`
-  - `subs_cnt`: `INT64`
-  - `subs_active_mtd`: `INT64`
-  - `subs_active_lmtd`: `INT64`
-  - `traffic_mb_mtd`: `FLOAT64`
-  - `traffic_mb_lmtd`: `FLOAT64`
-  - `trx_cnt_mtd`: `INT64`
-  - `trx_cnt_lmtd`: `INT64`
-  - `rev_gross_idr_mtd`: `FLOAT64`
-  - `rev_gross_idr_lmtd`: `FLOAT64`
-  - `quota_mb_bought_mtd`: `FLOAT64`
-  - `quota_mb_bought_lmtd`: `FLOAT64`
-  - `traffic_gb_mtd`: `FLOAT64`
-  - `traffic_gb_lmtd`: `FLOAT64`
-  - `traffic_gb_delta`: `FLOAT64`
-  - `rev_mtd`: `FLOAT64`
-  - `rev_lmtd`: `FLOAT64`
-  - `rev_delta`: `FLOAT64`
-  - `pct_of_total_traffic_delta`: `FLOAT64`
-  - `growth_index`: `FLOAT64`
-
-### `rham_subs_traffic_agg_migration_matrix_monthly`
-
-- Relationship: domain `customer_demand` contains table `rham_subs_traffic_agg_migration_matrix_monthly`.
-- Column count: 20.
-- Partition columns: `month_id`.
-- Source kind: `observed`.
-- Grain: `pack_channel_migration`.
-- Period semantics: `monthly`.
-- Aggregation rule: `sum_components_then_recompute_ratio`.
-- Priority: `high`.
-- Relative cost tier: `low`.
-- Metric families: `revenue`, `subscriber segment`, `traffic`.
-- Columns:
-  - `month_id`: `DATE` (partition)
-  - `from_bucket`: `STRING`
-  - `to_bucket`: `STRING`
-  - `pack_movement`: `STRING`
-  - `from_channel`: `STRING`
-  - `to_channel`: `STRING`
-  - `atl_btl_switch`: `BOOL`
-  - `subs`: `INT64`
-  - `traffic_mb_prev`: `FLOAT64`
-  - `traffic_mb_curr`: `FLOAT64`
-  - `traffic_mb_delta`: `FLOAT64`
-  - `rev_prev`: `FLOAT64`
-  - `rev_curr`: `FLOAT64`
-  - `rev_delta`: `FLOAT64`
-  - `avg_quota_added_mb`: `FLOAT64`
-  - `avg_traffic_gained_mb`: `FLOAT64`
-  - `elasticity`: `FLOAT64`
-  - `avg_quota_utilization`: `FLOAT64`
-  - `pct_fully_burning`: `FLOAT64`
-  - `pct_of_total_traffic_delta`: `FLOAT64`
-
-### `rham_subs_traffic_agg_segment_mtd_lmtd`
-
-- Relationship: domain `customer_demand` contains table `rham_subs_traffic_agg_segment_mtd_lmtd`.
-- Column count: 51.
-- Partition columns: `as_of_date`.
-- Source kind: `observed`.
-- Grain: `subscriber_segment`.
-- Period semantics: `mtd_cutoff_aligned`.
-- Aggregation rule: `sum_components_then_recompute_ratio`.
-- Priority: `high`.
-- Relative cost tier: `low`.
-- Metric families: `5g experience`, `revenue`, `subscriber segment`, `traffic`.
-- Columns:
-  - `as_of_date`: `DATE` (partition)
-  - `segment_pack_bucket`: `STRING`
-  - `segment_spend_bucket`: `STRING`
-  - `segment_traffic_bucket`: `STRING`
-  - `segment_channel_group`: `STRING`
-  - `segment_atl_btl`: `STRING`
-  - `segment_cohort_flag`: `STRING`
-  - `segment_life_stage`: `STRING`
-  - `subs_cnt`: `INT64`
-  - `subs_active_mtd`: `INT64`
-  - `subs_active_lmtd`: `INT64`
-  - `subs_new`: `INT64`
-  - `subs_lost`: `INT64`
-  - `traffic_mb_mtd`: `FLOAT64`
-  - `traffic_mb_lmtd`: `FLOAT64`
-  - `traffic_mb_lm_full`: `FLOAT64`
-  - `traffic_mb_lytd`: `FLOAT64`
-  - `traffic_mb_4g_mtd`: `FLOAT64`
-  - `traffic_mb_4g_lmtd`: `FLOAT64`
-  - `traffic_mb_4g_lm_full`: `FLOAT64`
-  - `traffic_mb_4g_lytd`: `FLOAT64`
-  - `traffic_mb_5g_mtd`: `FLOAT64`
-  - `traffic_mb_5g_lmtd`: `FLOAT64`
-  - `traffic_mb_5g_lm_full`: `FLOAT64`
-  - `traffic_mb_5g_lytd`: `FLOAT64`
-  - `active_days_mtd`: `FLOAT64`
-  - `active_days_lmtd`: `FLOAT64`
-  - `active_days_lm_full`: `FLOAT64`
-  - `active_days_lytd`: `FLOAT64`
-  - `trx_cnt_mtd`: `INT64`
-  - `trx_cnt_lmtd`: `INT64`
-  - `trx_cnt_lm_full`: `INT64`
-  - `trx_cnt_lytd`: `INT64`
-  - `rev_gross_idr_mtd`: `FLOAT64`
-  - `rev_gross_idr_lmtd`: `FLOAT64`
-  - `rev_gross_idr_lm_full`: `FLOAT64`
-  - `rev_gross_idr_lytd`: `FLOAT64`
-  - `quota_mb_bought_mtd`: `FLOAT64`
-  - `quota_mb_bought_lmtd`: `FLOAT64`
-  - `quota_mb_bought_lm_full`: `FLOAT64`
-  - `quota_mb_bought_lytd`: `FLOAT64`
-  - `traffic_mb_delta_mom`: `FLOAT64`
-  - `rev_delta_mom`: `FLOAT64`
-  - `pct_of_total_traffic_mtd`: `FLOAT64`
-  - `pct_of_total_traffic_delta`: `FLOAT64`
-  - `pp_contribution_to_growth`: `FLOAT64`
-  - `traffic_mb_per_sub_mtd`: `FLOAT64`
-  - `traffic_mb_per_sub_lmtd`: `FLOAT64`
-  - `arpu_mtd`: `FLOAT64`
-  - `arpu_lmtd`: `FLOAT64`
-  - `avg_quota_utilization`: `FLOAT64`
-
 ## Approved agent key facts
 
 - Use only aggregate tables in this domain. Customer or MSISDN-level sources are blocked.
@@ -427,6 +285,9 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Migration matrices describe movement between pack or channel buckets, not customer causality.
 - For MTD comparisons use the aligned MTD and LMTD columns already supplied by aggregate tables.
 - Revenue, traffic, transaction, subscriber, and quota metrics have different units and must not be mixed.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
+- Game voucher (rham_game_daily/mtd/mth, rebuilt 2026-10-29 from ioh_rev): revenue and hits of game voucher B2B Reseller only (IM3 Nuon reseller codes, 3ID PAYU_VAS / PT Metrane at reseller price), not Organic or B2C store. Grain brand x kec_id with region, circle, branch (Area) and micro_cluster (District). History starts 2024-12-01; content provider and product_flag no longer exist, so 'top game per provider' cannot be answered. IM3 2024-12 is ~15% below the old dashboard; 3ID 2026-08 includes PT Metrane from 08-28. SND highlevel rev_game is a separate upstream metric (bi_snd) and will not equal these tables.
 
 ## Related
 

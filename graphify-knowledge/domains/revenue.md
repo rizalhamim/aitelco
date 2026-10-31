@@ -2,7 +2,7 @@
 title: "Runtime KB domain: revenue"
 type: generated-knowledge
 domain: "revenue"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `revenue`
@@ -17,31 +17,30 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Domain to table relationships
 
-- Domain `revenue` contains table `rham_site_data_rev_channel_daily`.
-- Domain `revenue` contains table `rham_site_data_rev_channel_mtd`.
-- Domain `revenue` contains table `rham_site_data_rev_channel_mth`.
-- Domain `revenue` contains table `rham_site_data_rev_price_slab_daily`.
-- Domain `revenue` contains table `rham_site_data_rev_price_slab_mtd`.
-- Domain `revenue` contains table `rham_site_data_rev_price_slab_mth`.
+- Domain `revenue` contains table `rham_kec_data_rev_channel_daily`.
+- Domain `revenue` contains table `rham_kec_data_rev_channel_mtd`.
+- Domain `revenue` contains table `rham_kec_data_rev_channel_mth`.
+- Domain `revenue` contains table `rham_kec_data_rev_price_slab_daily`.
+- Domain `revenue` contains table `rham_kec_data_rev_price_slab_mtd`.
+- Domain `revenue` contains table `rham_kec_data_rev_price_slab_mth`.
 
 ## Table schemas
 
-### `rham_site_data_rev_channel_daily`
+### `rham_kec_data_rev_channel_daily`
 
-- Relationship: domain `revenue` contains table `rham_site_data_rev_channel_daily`.
-- Column count: 15.
+- Relationship: domain `revenue` contains table `rham_kec_data_rev_channel_daily`.
+- Column count: 14.
 - Partition columns: `dt_id`.
 - Source kind: `observed`.
-- Grain: `site`.
+- Grain: `date_x_kecamatan_x_brand_x_product_dimensions`.
 - Period semantics: `daily`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `standard`.
-- Relative cost tier: `very_high`.
+- Relative cost tier: `high`.
 - Metric families: `revenue`.
 - Columns:
   - `dt_id`: `DATE` (partition)
   - `brand`: `STRING`
-  - `site_id`: `STRING`
   - `circle`: `STRING`
   - `kabkota`: `STRING`
   - `kecamatan`: `STRING`
@@ -55,24 +54,23 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `revenue`: `FLOAT64`
   - `hit`: `FLOAT64`
 
-### `rham_site_data_rev_channel_mtd`
+### `rham_kec_data_rev_channel_mtd`
 
-- Relationship: domain `revenue` contains table `rham_site_data_rev_channel_mtd`.
-- Column count: 17.
+- Relationship: domain `revenue` contains table `rham_kec_data_rev_channel_mtd`.
+- Column count: 16.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
-- Grain: `site`.
+- Grain: `date_x_kecamatan_x_brand_x_product_dimensions`.
 - Period semantics: `mtd_cutoff_aligned`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `high`.
-- Relative cost tier: `high`.
+- Relative cost tier: `medium`.
 - Metric families: `revenue`.
 - Columns:
   - `month_id`: `STRING`
   - `mth_dt`: `DATE` (partition)
   - `as_of_dt`: `DATE`
   - `brand`: `STRING`
-  - `site_id`: `STRING`
   - `circle`: `STRING`
   - `kabkota`: `STRING`
   - `kecamatan`: `STRING`
@@ -86,24 +84,23 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `revenue`: `FLOAT64`
   - `hit`: `FLOAT64`
 
-### `rham_site_data_rev_channel_mth`
+### `rham_kec_data_rev_channel_mth`
 
-- Relationship: domain `revenue` contains table `rham_site_data_rev_channel_mth`.
-- Column count: 17.
+- Relationship: domain `revenue` contains table `rham_kec_data_rev_channel_mth`.
+- Column count: 16.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
-- Grain: `site`.
+- Grain: `date_x_kecamatan_x_brand_x_product_dimensions`.
 - Period semantics: `monthly`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `high`.
-- Relative cost tier: `high`.
+- Relative cost tier: `medium`.
 - Metric families: `revenue`.
 - Columns:
   - `month_id`: `STRING`
   - `mth_dt`: `DATE` (partition)
   - `as_of_dt`: `DATE`
   - `brand`: `STRING`
-  - `site_id`: `STRING`
   - `circle`: `STRING`
   - `kabkota`: `STRING`
   - `kecamatan`: `STRING`
@@ -117,22 +114,21 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `revenue`: `FLOAT64`
   - `hit`: `FLOAT64`
 
-### `rham_site_data_rev_price_slab_daily`
+### `rham_kec_data_rev_price_slab_daily`
 
-- Relationship: domain `revenue` contains table `rham_site_data_rev_price_slab_daily`.
-- Column count: 13.
+- Relationship: domain `revenue` contains table `rham_kec_data_rev_price_slab_daily`.
+- Column count: 12.
 - Partition columns: `dt_id`.
 - Source kind: `observed`.
-- Grain: `site`.
+- Grain: `date_x_kecamatan_x_brand_x_product_dimensions`.
 - Period semantics: `daily`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `standard`.
-- Relative cost tier: `very_high`.
+- Relative cost tier: `high`.
 - Metric families: `revenue`.
 - Columns:
   - `dt_id`: `DATE` (partition)
   - `brand`: `STRING`
-  - `site_id`: `STRING`
   - `circle`: `STRING`
   - `kabkota`: `STRING`
   - `kecamatan`: `STRING`
@@ -144,24 +140,23 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `revenue`: `FLOAT64`
   - `hit`: `INT64`
 
-### `rham_site_data_rev_price_slab_mtd`
+### `rham_kec_data_rev_price_slab_mtd`
 
-- Relationship: domain `revenue` contains table `rham_site_data_rev_price_slab_mtd`.
-- Column count: 15.
+- Relationship: domain `revenue` contains table `rham_kec_data_rev_price_slab_mtd`.
+- Column count: 14.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
-- Grain: `site`.
+- Grain: `date_x_kecamatan_x_brand_x_product_dimensions`.
 - Period semantics: `mtd_cutoff_aligned`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `high`.
-- Relative cost tier: `high`.
+- Relative cost tier: `medium`.
 - Metric families: `revenue`.
 - Columns:
   - `month_id`: `STRING`
   - `mth_dt`: `DATE` (partition)
   - `as_of_dt`: `DATE`
   - `brand`: `STRING`
-  - `site_id`: `STRING`
   - `circle`: `STRING`
   - `kabkota`: `STRING`
   - `kecamatan`: `STRING`
@@ -173,24 +168,23 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `revenue`: `FLOAT64`
   - `hit`: `INT64`
 
-### `rham_site_data_rev_price_slab_mth`
+### `rham_kec_data_rev_price_slab_mth`
 
-- Relationship: domain `revenue` contains table `rham_site_data_rev_price_slab_mth`.
-- Column count: 15.
+- Relationship: domain `revenue` contains table `rham_kec_data_rev_price_slab_mth`.
+- Column count: 14.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
-- Grain: `site`.
+- Grain: `date_x_kecamatan_x_brand_x_product_dimensions`.
 - Period semantics: `monthly`.
 - Aggregation rule: `sum_additive_metrics`.
 - Priority: `high`.
-- Relative cost tier: `high`.
+- Relative cost tier: `medium`.
 - Metric families: `revenue`.
 - Columns:
   - `month_id`: `STRING`
   - `mth_dt`: `DATE` (partition)
   - `as_of_dt`: `DATE`
   - `brand`: `STRING`
-  - `site_id`: `STRING`
   - `circle`: `STRING`
   - `kabkota`: `STRING`
   - `kecamatan`: `STRING`
@@ -204,14 +198,16 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 ## Approved agent key facts
 
-- revenue (FLOAT64, Rupiah) is the single metric - always SUM it.
+- revenue (FLOAT64, Rupiah) is the single metric ; always SUM it.
 - atl_btl: ATL=Above The Line, BTL=Below The Line.
 - channel_group: ORGANIC, DIGITAL DISTRIBUTION, MOBO TRADE (NULL=unclassified).
 - kpi_group: REVENUE DATA, REVENUE NON DATA, REVENUE PPU DATA.
-- price_slab tables also have 'hit' (transaction count) - use for avg rev/transaction.
+- price_slab tables also have 'hit' (transaction count) ; use for avg rev/transaction.
 - brand only IM3 or 3ID. Grains: _daily (dt_id), _mtd (month_id), _mth (month_id).
-- SCAN-CAP RULE for rham_site_data_rev_channel_daily / rham_site_data_rev_price_slab_daily (site-grain, very wide): a multi-week or multi-month DAILY range blows the 50 GB cap. For a weekly or monthly trend, aggregate from the MONTHLY table (_mth, exact month_id values via IN, never a LIKE or an open range) or from _mtd for the current month. Use _daily ONLY for a short explicit date window (roughly <= 10 days) AND always pin dt_id with an exact BETWEEN plus a territory filter, selecting only the needed columns.
-- PARTITION PRUNING: BigQuery can only prune partitions on a LITERAL filter value. Writing the latest period as `month_id = (SELECT MAX(month_id) ...)` or as a JOIN to a MAX() CTE defeats pruning and scans EVERY month (measured on rham_site_data_rev_product_mth: 45.0 GB dynamic vs 1.6 GB literal, so the dynamic form trips the 50 GB cap). Use a literal, e.g. month_id = '202608' (or an IN list of exact months for MoM/YoY). The current month_id is in the domain facts; never compute it inside the same query you are filtering.
+- SCAN-CAP RULE for rham_kec_data_rev_channel_daily / rham_kec_data_rev_price_slab_daily (site-grain, very wide): a multi-week or multi-month DAILY range blows the 50 GB cap. For a weekly or monthly trend, aggregate from the MONTHLY table (_mth, exact month_id values via IN, never a LIKE or an open range) or from _mtd for the current month. Use _daily ONLY for a short explicit date window (roughly <= 10 days) AND always pin dt_id with an exact BETWEEN plus a territory filter, selecting only the needed columns.
+- PARTITION PRUNING: BigQuery can only prune partitions on a LITERAL filter value. Writing the latest period as `month_id = (SELECT MAX(month_id) ...)` or as a JOIN to a MAX() CTE defeats pruning and scans EVERY month (measured on rham_kec_data_rev_product_mth: 45.0 GB dynamic vs 1.6 GB literal, so the dynamic form trips the 50 GB cap). Use a literal, e.g. month_id = '202608' (or an IN list of exact months for MoM/YoY). The current month_id is in the domain facts; never compute it inside the same query you are filtering.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
 
 ## Related
 

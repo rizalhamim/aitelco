@@ -2,7 +2,7 @@
 title: "Runtime KB domain: ftth"
 type: generated-knowledge
 domain: "ftth"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `ftth`
@@ -12,11 +12,12 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** FTTH / HBB Home Broadband
 - **Description:** FTTH / Home Broadband (HBB) business: Provisioning Activity (PA), Sales Activity (SA), Service Order (SO) detail (transaksi/funnel per pelanggan), PLUS snapshot bulanan per-site (rham_ftth_sitewise_monthly) untuk data SUBSCRIBER FTTH, homepass, net add, gross add & Take-Up Rate (TUR).
-- **Tables:** 10
+- **Tables:** 12
 - **Agent identifier:** `FTTH / HBB Analyst`
 
 ## Domain to table relationships
 
+- Domain `ftth` contains table `rham_ftth_install_orders`.
 - Domain `ftth` contains table `rham_ftth_kec_wise_daily`.
 - Domain `ftth` contains table `rham_ftth_kec_wise_mtd`.
 - Domain `ftth` contains table `rham_ftth_kec_wise_mth`.
@@ -27,8 +28,46 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Domain `ftth` contains table `rham_ftth_site_wise_mth`.
 - Domain `ftth` contains table `rham_ftth_sitewise_monthly`.
 - Domain `ftth` contains table `rham_ftth_so_detail`.
+- Domain `ftth` contains table `rham_ftth_tt_mttr`.
 
 ## Table schemas
+
+### `rham_ftth_install_orders`
+
+- Relationship: domain `ftth` contains table `rham_ftth_install_orders`.
+- Column count: 23.
+- Partition columns: none declared.
+- Source kind: `observed`.
+- Grain: `order`.
+- Period semantics: `latest_snapshot`.
+- Aggregation rule: `count_rows`.
+- Priority: `standard`.
+- Relative cost tier: `low`.
+- Metric families: `ftth`, `install pipeline`.
+- Columns:
+  - `bill_acc`: `INT64`
+  - `customer_id`: `STRING`
+  - `customer_name`: `STRING`
+  - `region`: `STRING`
+  - `circle`: `STRING`
+  - `province`: `STRING`
+  - `city`: `STRING`
+  - `vendor`: `STRING`
+  - `date_so`: `DATE`
+  - `date_sa`: `DATE`
+  - `date_pa`: `DATE`
+  - `plan_date`: `DATE`
+  - `schedule_date`: `DATE`
+  - `aging_days`: `INT64`
+  - `duration_bucket`: `STRING`
+  - `status`: `STRING`
+  - `remark`: `STRING`
+  - `sales_code`: `STRING`
+  - `sales_name`: `STRING`
+  - `manager`: `STRING`
+  - `rm`: `STRING`
+  - `source_file`: `STRING`
+  - `loaded_at`: `DATETIME`
 
 ### `rham_ftth_kec_wise_daily`
 
@@ -443,6 +482,30 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `shp_kecamatan`: `STRING`
   - `shp_desa`: `STRING`
 
+### `rham_ftth_tt_mttr`
+
+- Relationship: domain `ftth` contains table `rham_ftth_tt_mttr`.
+- Column count: 10.
+- Partition columns: none declared.
+- Source kind: `observed`.
+- Grain: `period_x_mttr_bucket`.
+- Period semantics: `mixed_weekly_and_monthly`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `standard`.
+- Relative cost tier: `low`.
+- Metric families: `ftth`, `trouble ticket`, `restoration time`.
+- Columns:
+  - `bucket`: `STRING`
+  - `tt_count`: `INT64`
+  - `mttr_hours`: `FLOAT64`
+  - `source_file`: `STRING`
+  - `source_scope`: `STRING`
+  - `vendor_folder`: `STRING`
+  - `period_type`: `STRING`
+  - `period_id`: `STRING`
+  - `month_id`: `STRING`
+  - `loaded_at`: `DATETIME`
+
 ## Approved agent key facts
 
 - Funnel grain: SO (rham_ftth_so_detail) -> SA (rham_ftth_sa_detail) -> PA (rham_ftth_pa_detail). Count on each event date; count DISTINCT bill_acc.
@@ -451,9 +514,11 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Take-Up Rate (TUR) % = SUM(pa) / SUM(homepass) * 100. Net Add = SUM(pa_net_latest). Available % = available_hp/homepass*100.
 - Total subscriber FTTH = SUM(pa) pada MAX(month_id); jangan SUM antar bulan (itu snapshot, bukan flow). Filter month_id = (SELECT MAX(month_id) ...).
 - Footprint dari project_awal: 'mplay'=ORBIT; 'seahawk'/'spartan'=NON-ORBIT; 'iforte'=IFORTE. Kolom brand = 'Orbit'/'Non Orbit' (BUKAN brand seluler IM3/3ID).
-- Region FTTH = region_25 / sales_region (mis. '04. Central Java','05. East Java') - vokabuler khas FTTH, beda dari region IM3 di rham_ref_territory. Kecamatan di sitewise berupa nama saja (tanpa suffix kabkota).
+- Region FTTH = region_25 / sales_region (mis. '04. Central Java','05. East Java') ; vokabuler khas FTTH, beda dari region IM3 di rham_ref_territory. Kecamatan di sitewise berupa nama saja (tanpa suffix kabkota).
 - product = HiFi packages (Lite 20Mbps ... Turbo 300Mbps). site_market: Landed/HRB/SOHO.
 - sales_region / region_25 adalah vokabuler SALES, bukan geografi. '05. East Java' juga memuat BALI dan sedikit baris luar Jawa (Aceh, Sumut, Jabar, Banten). Kalau user minta per PROVINSI atau menyebut 'di Jawa Timur', filter kolom province (province = 'JAWA TIMUR'), JANGAN sales_region. Gunakan sales_region hanya bila user memang menyebut region sales FTTH.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
 
 ## Related
 

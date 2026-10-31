@@ -17,6 +17,7 @@ from typing import Any
 
 from . import config
 from .bigquery_tool import run_query
+from .territory import normalize_level, scope_column
 
 CONTRACT_VERSION = "network-report.v1"
 _CATALOG_PATH = Path(__file__).resolve().parents[1] / "data" / "network_report_catalog.json"
@@ -180,6 +181,14 @@ def _scope_clause(
         },
     }
     dimensions = aliases[source]
+    normalized_level = normalize_level(filter_type)
+    if normalized_level in ("area", "district") and filter_value:
+        # Administrative source rows cannot be allocated to an operational
+        # scope. The caller chooses the Kecamatan source for these filters.
+        column = scope_column(normalized_level, "t")
+        return (f"kec_id IN (SELECT t.kec_id FROM `{_PROJECT}.{_DATASET}.rham_ref_territory` t "
+                f"WHERE {column} = '{_safe_text(filter_value)}'"
+                + (f" AND t.circle = '{_safe_text(circle)}'" if circle and circle.upper() != "ALL" else "") + ")")
     normalized = {"kabkot": "kabkota", "all": "all", "": "all"}.get(
         filter_type or "all", filter_type
     )
@@ -644,7 +653,7 @@ def build_internal(
     """
     catalog = load_network_report_catalog()
     source_page = catalog["pages"]["internal"]
-    grain = "kecamatan" if filter_type == "kecamatan" else "kabkota"
+    grain = "kecamatan" if normalize_level(filter_type) in ("kecamatan", "area", "district") else "kabkota"
     source = "rham_network_internal_kec" if grain == "kecamatan" else "rham_network_internal"
     page = {
         **source_page,

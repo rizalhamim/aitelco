@@ -233,6 +233,29 @@ FWA_METRICS = (
 )
 
 
+# The HVC source rebuild (2026-09) recovered subs_hvc and hvc_rev_total only.
+# The channel split and stay/in/out flow are wrong from 202609, so reports show
+# them as N/A instead of a misleading number.
+HVC_UNRELIABLE_FROM = 202609
+HVC_UNRELIABLE_FIELDS = frozenset({
+    "hvc_rev_organic", "hvc_rev_mobo_trade", "hvc_rev_digital",
+    "subs_hvc_stay", "subs_hvc_in", "subs_hvc_out",
+})
+HVC_UNRELIABLE_NOTE = (
+    "HVC split (organic/trade/digital) and flow (stay/in/out) from 202609 are N/A: "
+    "the source only recovered HVC subscribers and HVC total revenue."
+)
+
+HVC_MTD_MIXED_NOTE = (
+    "HVC revenue is N/A where the MTD source holds a full-month value "
+    "(HVC revenue above prepaid revenue for the same period)."
+)
+
+def hvc_unreliable(field: str, month_id) -> bool:
+    """True when this HVC field has no trustworthy value for the month."""
+    return field in HVC_UNRELIABLE_FIELDS and month_id is not None and int(month_id) >= HVC_UNRELIABLE_FROM
+
+
 PREPAID_METRICS = (
     raw("revenue_prepaid", "Revenue Prepaid", "Revenue", "B Rp", source="rev_prepaid", format="num2", scale=1e-9),
     raw("revenue_vsd", "Revenue VSD", "Revenue", "B Rp", source="rev_vsd", format="num2", scale=1e-9),

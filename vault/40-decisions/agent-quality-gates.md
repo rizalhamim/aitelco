@@ -201,4 +201,4 @@ KB schema before they are trusted: five correlation expectations were themselves
 
 ## Related
 
-- [[workflow-operating-loop]] · [[knowledge-base-json]] · [[chat-pipeline]] · [[ftth]]
+- [[model-roster]] · [[knowledge-base-json]] · [[chat-pipeline]] · [[ftth]]

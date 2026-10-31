@@ -127,8 +127,14 @@ def ask(msg: str, sid: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
             "clarify": clarify, "done": done}
 
 
-def classify(r: dict) -> tuple[str, str]:
-    """Return (status, failure_class). A silent empty result is a FAIL, not an OK."""
+def classify(r: dict, expected: str = "") -> tuple[str, str]:
+    """Return (status, failure_class). A silent empty result is a FAIL, not an OK.
+
+    `expected` is compared against the routed domain. The corpus has always
+    carried an expected domain per line, but nothing ever checked it, so a
+    question answered from the WRONG domain still scored OK as long as rows came
+    back. That is the failure this benchmark exists to catch.
+    """
     if r["route"] == "TIMEOUT":
         return "FAIL", "timeout"
     if r["route"] is None:
@@ -163,6 +169,12 @@ def classify(r: dict) -> tuple[str, str]:
         return "FAIL", "empty_result"
     if r["rows"] is None:
         return "FAIL", "no_result_event"
+    # Route check runs LAST: an answer that is wrong for a different reason keeps
+    # its more specific failure class, which is the one worth acting on.
+    # `multi` means the question legitimately fans out (PROFILE/CORRELATE), so any
+    # route is acceptable for it.
+    if expected and expected not in {"multi", "any"} and r["route"] != expected:
+        return "FAIL", "wrong_route"
     return "OK", ""
 
 
@@ -216,7 +228,7 @@ def main() -> int:
         if args.limit and len(results) >= args.limit:
             break
         r = ask(question, f"hq{tag}_{i}", timeout=timeout_for(question))
-        status, fail_class = classify(r)
+        status, fail_class = classify(r, expected)
         row = {"n": i, "exp": expected, "got": r["route"], "rows": r["rows"],
                "err": r["err"], "status": status, "fail_class": fail_class,
                "sql": r["sql"], "clarify": r.get("clarify", ""),

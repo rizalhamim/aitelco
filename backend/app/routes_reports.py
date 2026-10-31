@@ -35,12 +35,15 @@ from . import reports_ftth
 from . import reports_ftth_summary
 from . import reports_city_profile as reports_profile_analysis
 from . import reports_cache
+from . import territory
+from .report_metric_catalog import HVC_MTD_MIXED_NOTE, HVC_UNRELIABLE_NOTE, hvc_unreliable
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
 _PROJECT = config.BQ_PROJECT
 _DATASET = config.BQ_DATASET
-_MTD = f"`{_PROJECT}.{_DATASET}.rham_mkt_highlevel_mtd`"
+# HVC serving view: same rows/columns as rham_mkt_highlevel_mtd, HVC recovered.
+_MTD = f"`{_PROJECT}.{_DATASET}.rham_hvc_highlevel_mtd_serving`"
 _TERR = f"`{_PROJECT}.{_DATASET}.rham_ref_territory`"
 
 CIRCLES = ["JAVA", "KALISUMAPA", "JAKARTA RAYA", "SUMATERA"]
@@ -104,11 +107,12 @@ _METRIC_BY_CODE = {m["code"]: m for m in METRICS}
 LEVELS: dict[str, dict] = {
     "circle": {"col": "t.circle", "label": "circle", "parent": None},
     "region": {"col": "t.region", "label": "region", "parent": "t.circle"},
-    "area": {"col": "t.area_im3", "label": "area", "parent": "t.region"},
-    "branch": {"col": "t.branch_im3", "label": "branch", "parent": "t.area_im3"},
+    "area": {"col": "t.branch_im3", "label": "area", "parent": "t.region"},
+    "district": {"col": "t.micro_cluster_im3", "label": "district", "parent": "t.branch_im3"},
+    "branch": {"col": "t.branch_im3", "label": "area", "parent": "t.region"},
     "kabkota": {"col": "t.kabkot", "label": "kabkota", "parent": "t.branch_im3"},
     "kecamatan": {"col": "t.kec_id", "label": "kecamatan", "parent": "t.kabkot"},
-    "microcluster": {"col": "t.micro_cluster_im3", "label": "microcluster", "parent": "t.branch_im3"},
+    "microcluster": {"col": "t.micro_cluster_im3", "label": "district", "parent": "t.branch_im3"},
     "supergtm": {"col": "t.super_gtm", "label": "supergtm", "parent": "t.region"},
 }
 
@@ -116,7 +120,8 @@ LEVELS: dict[str, dict] = {
 DRILL_PARENT_COL = {
     "region": "t.circle",
     "area": "t.region",
-    "branch": "t.area_im3",
+    "branch": "t.region",
+    "district": "t.branch_im3",
     "kabkota": "t.branch_im3",
     "kecamatan": "t.kabkot",
 }
@@ -162,19 +167,28 @@ def _territory_filter(filter_type: str, filter_value: str) -> str:
     """Optional scope filter clause (ANDed)."""
     if not filter_value:
         return ""
-    col = {
-        "region": "t.region",
-        "area": "t.area_im3",
-        "branch": "t.branch_im3",
-        "kabkota": "t.kabkot",
-        "microcluster": "t.micro_cluster_im3",
-        "supergtm": "t.super_gtm",
-        "island": "t.island",
-    }.get(filter_type)
+    col = territory.scope_column(filter_type)
     if not col:
         return ""
     return f" AND {col} = '{_esc(filter_value)}'"
 
+
+def _hvc_na(metric: dict, month_id: int) -> Optional[dict]:
+    """N/A payload when this HVC metric has no valid value for the month or its LMTD."""
+    field = metric["expr"].removeprefix("x.")
+    if hvc_unreliable(field, month_id) or hvc_unreliable(field, _shift_month(month_id, -1)):
+        return {"error": HVC_UNRELIABLE_NOTE, "kind": "not_available", "metric": metric["code"], "month_id": month_id}
+    if field.startswith("hvc_rev_"):
+        # Some MTD months hold the full-month HVC value; HVC above prepaid exposes it.
+        # _level_summary also shows LLMTD, so check month-2 too.
+        ids = (month_id, _shift_month(month_id, -1), _shift_month(month_id, -2))
+        months = ",".join(str(m) for m in ids)
+        mths = ",".join(f"DATE '{str(m)[:4]}-{str(m)[4:]}-01'" for m in ids)
+        rows = run_query(f"""SELECT month_id FROM {_MTD} WHERE month_id IN ({months}) AND mth_dt IN ({mths})
+GROUP BY month_id HAVING SUM(hvc_rev_total) > SUM(rev_prepaid)""", row_limit=5)["rows"]
+        if rows:
+            return {"error": HVC_MTD_MIXED_NOTE, "kind": "not_available", "metric": metric["code"], "month_id": month_id}
+    return None
 
 def _level_summary(metric: dict, level: str, circle: str, month_id: int,
                    filter_clause: str, order: str = "var",
@@ -318,14 +332,14 @@ def latest_month():
 
 @router.get("/territory-tree")
 def territory_tree(circle: str = "JAVA"):
-    """Region → Area → Branch tree for the scope picker."""
+    """Region > Area > District tree for the scope picker."""
     try:
         sql = f"""
-SELECT t.region, t.area_im3 AS area, t.branch_im3 AS branch
+SELECT t.region, t.branch_im3 AS area, t.micro_cluster_im3 AS district
 FROM {_TERR} t
 WHERE {_circle_clause(circle)} AND t.region IS NOT NULL
-GROUP BY t.region, t.area_im3, t.branch_im3
-ORDER BY t.region, area, branch
+GROUP BY t.region, t.branch_im3, t.micro_cluster_im3
+ORDER BY t.region, area, district
 """
         res = run_query(sql, row_limit=5000)
     except QueryError as e:
@@ -337,16 +351,17 @@ ORDER BY t.region, area, branch
     for r in res["rows"]:
         reg = r.get("region") or "N/A"
         area = r.get("area") or "N/A"
-        br = r.get("branch")
+        br = r.get("district")
         tree.setdefault(reg, {})
         tree[reg].setdefault(area, [])
         if br and br not in tree[reg][area]:
             tree[reg][area].append(br)
     return {
         "circle": circle,
+        "hierarchy_version": territory.HIERARCHY_VERSION,
         "tree": [
             {"region": reg,
-             "areas": [{"area": a, "branches": brs} for a, brs in areas.items()]}
+             "areas": [{"area": a, "districts": brs} for a, brs in areas.items()]}
             for reg, areas in tree.items()
         ],
     }
@@ -354,9 +369,9 @@ ORDER BY t.region, area, branch
 
 # Map an api filter level to its territory column.
 _SCOPE_COL = {
-    "region": "t.region", "area": "t.area_im3", "branch": "t.branch_im3",
+    "region": "t.region", "area": "t.branch_im3", "branch": "t.branch_im3",
     "kabkota": "t.kabkot", "kecamatan": "t.kec_id",
-    "microcluster": "t.micro_cluster_im3", "supergtm": "t.super_gtm",
+    "district": "t.micro_cluster_im3", "microcluster": "t.micro_cluster_im3", "supergtm": "t.super_gtm",
 }
 
 
@@ -457,6 +472,8 @@ def map_explore(
 
     try:
         mid = int(month_id) if month_id else _latest_month()
+        if na := _hvc_na(selected_metric, mid):
+            return na
         result = _level_summary(
             selected_metric,
             level,
@@ -572,7 +589,7 @@ def map_explore(
         "meta": {
             "complete_grain": True,
             "bytes_processed": result.get("bytes_processed", 0),
-            "source": "rham_mkt_highlevel_mtd",
+            "source": "rham_hvc_highlevel_mtd_serving",
         },
     }
 
@@ -582,6 +599,8 @@ def _snapshot_build(metric, circle, filter_type, filter_value, month_id):
     fc = _territory_filter(filter_type, filter_value)
     try:
         mid = int(month_id) if month_id else _latest_month()
+        if na := _hvc_na(m, mid):
+            return na
 
         # 1. circle-level rows. When circle=ALL this returns one row per circle;
         #    KPI totals below sum across them.
@@ -739,15 +758,17 @@ def product_demand(
     month_id: Optional[int] = Query(None),
     scope: str = Query("total", description="total|organic|digital|trade"),
     brand: str = Query("ioh", description="ioh|im3|3id"),
+    filter_type: str = Query("all"),
+    filter_value: str = Query(""),
     refresh: bool = Query(False),
 ):
     """Product Demand (cached, auto-refreshed on as_of_dt change)."""
     if not _is_all(circle) and circle not in CIRCLES:
         return {"error": f"unknown circle '{circle}'", "kind": "validation"}
-    key = f"{circle}|{scope}|{brand}|{month_id}"
+    key = f"{circle}|{scope}|{brand}|{month_id}|{filter_type}|{filter_value}"
     return reports_cache.get_or_build(
         "product-demand", key,
-        lambda: _guarded(lambda: reports_data.build_product_demand(circle, month_id, scope, brand)),
+        lambda: _guarded(lambda: reports_data.build_product_demand(circle, month_id, scope, brand, filter_type, filter_value)),
         force=refresh)
 
 
@@ -774,9 +795,8 @@ def locate(lat: float = Query(...), lon: float = Query(...)):
         "levels": [
             {"level": "kecamatan", "label": "Kecamatan", "name": t.get("kecamatan"), "value": kid},
             {"level": "kabkota", "label": "Kab/Kota", "name": t.get("kabkot"), "value": t.get("kabkot")},
-            {"level": "microcluster", "label": "Micro Cluster", "name": t.get("micro_cluster_im3"), "value": t.get("micro_cluster_im3")},
-            {"level": "branch", "label": "Branch", "name": t.get("branch_im3"), "value": t.get("branch_im3")},
-            {"level": "area", "label": "Area", "name": t.get("area_im3"), "value": t.get("area_im3")},
+            {"level": "district", "label": "District", "name": t.get("micro_cluster_im3"), "value": t.get("micro_cluster_im3")},
+            {"level": "area", "label": "Area", "name": t.get("branch_im3"), "value": t.get("branch_im3")},
             {"level": "region", "label": "Region", "name": t.get("region"), "value": t.get("region")},
         ],
     }
@@ -816,9 +836,8 @@ def my_coordinate(
     levels = [
         ("kecamatan", "Kecamatan", t.get("kecamatan"), kid),
         ("kabkota", "Kab/Kota", t.get("kabkot"), t.get("kabkot")),
-        ("microcluster", "Micro Cluster", t.get("micro_cluster_im3"), t.get("micro_cluster_im3")),
-        ("branch", "Branch", t.get("branch_im3"), t.get("branch_im3")),
-        ("area", "Area", t.get("area_im3"), t.get("area_im3")),
+        ("district", "District", t.get("micro_cluster_im3"), t.get("micro_cluster_im3")),
+        ("area", "Area", t.get("branch_im3"), t.get("branch_im3")),
         ("region", "Region", t.get("region"), t.get("region")),
     ]
 
@@ -837,7 +856,7 @@ def my_coordinate(
     return {
         "located": {"kec_id": kid, "kecamatan": t.get("kecamatan"), "kabkota": t.get("kabkot"),
                     "microcluster": t.get("micro_cluster_im3"), "branch": t.get("branch_im3"),
-                    "area": t.get("area_im3"), "region": t.get("region"), "circle": circle,
+                    "area": t.get("branch_im3"), "district": t.get("micro_cluster_im3"), "region": t.get("region"), "circle": circle,
                     "lat": lat, "lon": lon},
         "levels": out_levels,
     }

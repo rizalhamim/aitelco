@@ -11,7 +11,7 @@ Self-correction: if SQL fails, the error is fed back to the agent once to retry.
 import json
 import re
 
-from . import llm, knowledge, knowledge_graph, memory
+from . import llm, knowledge, knowledge_graph, lessons, memory
 from .bigquery_tool import run_query, QueryError, dry_run, validate_sql, _ensure_limit
 from .result_profiler import profile_result
 from . import config
@@ -110,10 +110,10 @@ Routing rules (IMPORTANT - follow this priority). There are 16 data domains:
 8. 5g — 5G PERFORMANCE: 5G coverage, 5G traffic, 5G device/user, 5G funnel at site/branch/territory grain.
 9. network_benchmark — COMPETITOR network experience benchmark (OpenSignal video/voice/games/livevideo; FB network insight per operator IOH/IM3/3ID vs Tsel/XL/SF).
 10. competitive — MARKET SHARE: FB-derived market share (MS), gross-add share (SOGA), churn share per operator at ANY territory level (national...kecamatan, partner, age, SEA, GTM focus, kiosk). Keywords: "market share", "ms_", "penetrasi", "share", "SOGA", "churn share".
-11. customer_hvc — HVC (high value customer) subscriber & revenue per kecamatan/site.
+11. customer_hvc — HVC (high value customer) subscriber & revenue per kecamatan/site. Source of truth: rham_hvc_highlevel_mtd_serving / _mth_serving (subs_hvc, hvc_rev_total). HVC split (organic/trade/digital) and stay/in/out from 202609 are N/A.
 12. sales_distribution — sales, outlet, NBS, SND, distribution, dealer, AND all SND distribution KPIs: URO (Unique Recharge Outlet), QURO, SSO (SIM Selling Outlet), QSSO, QSC (Quality Subscriber), OSA (Outlet Sell-in Amount), ONO (Open New Outlet), M1S/M2S survival, CVM, RITA app, iSimpel app, primary/secondary/tertiary sales, trade supply/demand. Keywords: "URO","QURO","SSO","QSSO","QSC","OSA","ONO","outlet recharge","outlet jual SIM","primary/secondary/tertiary","trade supply","trade demand","M1S","M2S".
 13. territory_reference — master territory reference (kec_id, kecamatan, kabkota, province, region, circle, branch, micro_cluster mappings). Use to validate/enrich territory names.
-14. product - PRODUCT REVENUE: site-level revenue broken down by PRODUCT. Dimensions kpi_group (REVENUE DATA / NON DATA / PPU DATA), kpi (stream: MOBO/DATA ORGANIC/EWALLET/EVC/VOUCHER/VAS/RITA/LOAN/VOICE/SMS), service_type (BROADBAND/VOICE+VIDEO/SMS+MMS/VAS+LOAN), family_group (product family: FREEDOM INTERNET, HAPPY, CVM PACK, PAYU, RAMADAN, VAS), product_group (specific SKU/package), plus validity/quota & channel & brand. Metric revenue (IDR) + hit (transactions, ARPT). Tables rham_site_data_rev_product_daily/_mtd/_mth. USE FOR: revenue by product/package/family, product MIX/CONTRIBUTION/SHARE, product TREND/growth (MoM/MTD), data vs non-data, top/bottom packages or families, package-size & channel mix, ARPT, e-wallet/voucher/VAS/loan revenue. (For headline TOTAL revenue use kpi_summary/revenue; product = per-product composition.)
+14. product - PRODUCT REVENUE: Kecamatan-grain revenue broken down by PRODUCT. Use only retrieved schema columns. Dimensions kpi_group (REVENUE DATA / NON DATA / PPU DATA), kpi (stream), family_group (product family: FREEDOM INTERNET, HAPPY, CVM PACK, PAYU, RAMADAN, VAS), product_group (specific SKU/package), plus validity/quota & channel & brand. Metric revenue (IDR) + hit (transactions, ARPT). Tables rham_kec_data_rev_product_daily/_mtd/_mth. USE FOR: revenue by product/package/family, product MIX/CONTRIBUTION/SHARE, product TREND/growth (MoM/MTD), data vs non-data, top/bottom packages or families, package-size & channel mix, ARPT, e-wallet/voucher/VAS/loan revenue. (For headline TOTAL revenue use kpi_summary/revenue; product = per-product composition.)
 15. forecast — FORECAST / PREDIKSI REVENUE: hasil model prediksi revenue di grain branch / kabupaten / micro-cluster. Keywords: "forecast", "prediksi", "ramalan", "proyeksi", "outlook revenue ke depan", "bulan depan", "kuartal depan". Tabel _v3 = model terbaru (prefer); _output = hasil prediksi; _source = input/features. JANGAN pakai forecast domain untuk pertanyaan TREND historis (itu kpi_summary) — forecast khusus untuk pertanyaan tentang masa depan / prediksi.
 16. customer_demand - CUSTOMER DEMAND AND DIGITAL BEHAVIOR: origin-destination demand, subscriber traffic segments, migration between packs/channels, gaming, SSD/product demand, voucher cohorts, and digicommerce. Use aggregate tables only. Keywords: "inner outer", "asal tujuan", "demand flow", "migration matrix", "traffic segment", "game", "gaming", "digicommerce", "cohort voucher", "SSD".
 
@@ -212,6 +212,9 @@ def contrast_domain_hint(question: str, top_n: int = 2, min_conf: float = 0.55) 
 def route(question: str, history: list | None = None,
           avoid_domains: list | None = None) -> dict:
     sys = ROUTER_SYS.format(domains=knowledge.domain_overview_text(question))
+    hierarchy = knowledge.load_kb().get("data_facts", {}).get("territory_hierarchy", "")
+    if hierarchy:
+        sys += "\n\nRuntime territory contract:\n" + hierarchy
     if config.ROUTER_CONTRAST_HINT:
         sys += contrast_domain_hint(question)
     if avoid_domains:
@@ -228,7 +231,10 @@ def route(question: str, history: list | None = None,
             msgs.append(h)
     msgs.append({"role": "user", "content": _strip_map_hints(question)})
     try:
-        return llm.chat_json(msgs, model=config.LLM_MODEL_FAST, max_tokens=600)
+        from .territory import preserve_requested_grain
+        result = llm.chat_json(msgs, model=config.LLM_MODEL_FAST, max_tokens=600)
+        result["rephrased"] = preserve_requested_grain(question, result.get("rephrased", ""))
+        return result
     except Exception as e:
         return {"domain": "none", "reason": f"router_error: {e}", "language": "id",
                 "rephrased": question}
@@ -402,7 +408,7 @@ Hard rules:
   * Use the _mth (FULL MONTH) table when: (a) looking at a SINGLE historical/complete month, (b) a pure historical trend NOT including the current partial month, or (c) the user explicitly says "full month"/"bulan penuh".
   * Use the _mtd (MONTH-TO-DATE) table when: ANY comparison or growth (MoM, YoY, QoQ, "tumbuh", "turun", "vs bulan lalu", "vs tahun lalu", "pertumbuhan") that INCLUDES the latest/current month — because the current month is INCOMPLETE (data only through ~day 28) and comparing a partial full-month vs a complete prior month understates it. MTD keeps both periods day-aligned (apples-to-apples). Always LABEL such output as "MTD".
   * Rule of thumb: if the current month appears on BOTH sides of a comparison context, choose MTD. Single completed period -> MTH.
-  * MTD tables: rham_mkt_highlevel_mtd, rham_site_data_rev_channel_mtd, rham_site_data_rev_price_slab_mtd, rham_site_wise_mtd, rham_hvc_kec_mtd, rham_hvc_site_mtd, rham_snd_kecwise_mtd. (5G uses monthly — its MTD lacks history; 5G device counts are stock-like so partial-month distortion is minimal.)
+  * MTD tables: rham_mkt_highlevel_mtd, rham_kec_data_rev_channel_mtd, rham_kec_data_rev_price_slab_mtd, rham_site_wise_mtd, rham_hvc_highlevel_mtd_serving (HVC), rham_snd_kecwise_mtd. (5G uses monthly — its MTD lacks history; 5G device counts are stock-like so partial-month distortion is minimal.)
   * When using an MTD table, use ONLY month_id for period logic — never dt_id_snapshot/DATE_TRUNC snapshot math.
 - For "MoM" (month-over-month) comparisons, join current month with previous month using month_id.
 - NEVER use string date literals like 'Sep-25', 'Jan-26', '2026-05'. Always compute dates from MAX(dt_id) or MAX(month_id) using DATE_SUB/FORMAT_DATE.
@@ -425,7 +431,7 @@ Hard rules:
 - For "bulan lalu" / "last month", use: WHERE month_id = (SELECT FORMAT_DATE('%Y-%m', DATE_SUB(PARSE_DATE('%Y-%m', MAX(month_id)), INTERVAL 1 MONTH)) FROM table).
 
 TABLE SELECTION CONSTRAINTS (MANDATORY):
-- NEVER query site-level tables (rham_site_data_rev_channel_daily/mtd/mth, rham_site_wise_daily/mtd/mth) UNLESS the user explicitly mentions 'site', 'per site', or 'site-level'. For general KPI questions, ALWAYS prefer rham_mkt_kpi_highlevel_dly (daily), rham_mkt_highlevel_mtd (MTD), rham_mkt_highlevel_mth (monthly).
+- NEVER query site-level tables (rham_site_wise_daily/mtd/monthly) UNLESS the user explicitly mentions 'site', 'per site', or 'site-level'. For general KPI questions, ALWAYS prefer rham_mkt_kpi_highlevel_dly (daily), rham_mkt_highlevel_mtd (MTD), rham_mkt_highlevel_mth (monthly).
 - For Facebook market share (fb_ms), SOGA (fb_soga), or churn share (fb_churn) questions: NEVER use rham_fb_ms_kabkota_v2 or rham_fb_ms_kecamatan_v2 — these are BANNED/DEPRECATED. Use rham_report_fb_ms_* tables instead, matched to the territory level asked: _national, _region, _circle, _province, _kabkota, _kecamatan, _branch_im3, _branch_3id, _cluster_3id, _micro_cluster, _partner_territory, etc. Alternatively, for simple aggregates the rham_mkt_highlevel_mtd/mth tables also have fb_ms_*, fb_soga_*, fb_churn_* columns.
 
 SITE kec_id MAPPING:
@@ -477,7 +483,7 @@ SITE REFERENCE TABLE (MANDATORY for any coordinate/map question):
   * Revenue/subs/usage (monthly): `{project}.{dataset}.rham_site_wise_monthly` (rev_prepaid, rev_vsd, rev_data, rev_voice, rev_sms, subs_rgu_90d, subs_rgu_30d, usg_data_gb, net_add, gross_add) filtered by month_id = its own MAX(month_id).
   * Revenue/subs/usage (daily): `{project}.{dataset}.rham_site_wise_daily` (rev_prepaid, etc.) filtered by dt_id = its own MAX(dt_id).
   * 5G traffic/coverage: `{project}.{dataset}.rham_5g_site_monthly` (traffic_*, data_uu30_*, dev5g_*) on site_id + mth_id.
-  * FWA: `{project}.{dataset}.rham_site_fwa_daily` (rev_fwa_total, fwa_rgu90) on site_id + dt_id.
+  * FWA: `{project}.{dataset}.rham_fwa_site_wise_daily` (fwa_rev_total, fwa_rgu90) on site_id + dt_id.
   * Availability: `{project}.{dataset}.rham_avail_stat_site_monthly` (avg_avail_pct_4g, avg_avail_pct_5g) on site_id + month_id.
 
 HAVERSINE DISTANCE (for "terdekat"/"nearest"/"radius" questions):
@@ -573,7 +579,7 @@ OUTPUT FORMAT (STRICT — no exceptions):
 - Before you output, mentally verify the SQL has BALANCED parentheses, every string literal is closed with a matching quote, and every CTE in the WITH clause is closed with a `)` — unbalanced parens/quotes are the #1 syntax error.
 - Start your response with the character {{ and end with }}.
 - NEVER explore the schema with INFORMATION_SCHEMA.COLUMNS or any system table — the full schema is already provided above.
-- NEVER invent table names. Only use tables literally listed in the schema above (e.g. rham_site_wise_addr_java, rham_site_wise_monthly, rham_site_wise_daily, rham_5g_site_monthly, rham_site_fwa_daily, rham_avail_stat_site_monthly). There is NO table named rham_site_revenue_java or similar — revenue lives in rham_site_wise_monthly/daily.
+- NEVER invent table names. Only use tables literally listed in the schema above (e.g. rham_site_wise_addr_java, rham_site_wise_monthly, rham_site_wise_daily, rham_5g_site_monthly, rham_fwa_site_wise_daily, rham_avail_stat_site_monthly). There is NO table named rham_site_revenue_java or similar — revenue lives in rham_site_wise_monthly/daily.
 - The JSON must be exactly: {{"sql": "<the query>", "explanation": "<1-2 sentences>"}}
 
 Respond ONLY as compact JSON:
@@ -678,7 +684,7 @@ def _analytical_directive(question: str, map_context: bool = False) -> str:
             "DIRECTIVE — USE MTD FOR FAIR COMPARISON: This compares the latest (likely PARTIAL) "
             "month against a prior month on a FLOW metric. Use the corresponding _mtd table so both "
             "periods cover the same day-of-month (apples-to-apples): rham_mkt_highlevel_mtd for "
-            "general KPI, rham_site_data_rev_channel_mtd / rham_site_data_rev_price_slab_mtd for "
+            "general KPI, rham_kec_data_rev_channel_mtd / rham_kec_data_rev_price_slab_mtd for "
             "channel/slab revenue, rham_site_wise_mtd for per-site, rham_hvc_*_mtd, "
             "rham_snd_kecwise_mtd. "
             "KEEP IT SIMPLE: MTD rows are ALREADY day-aligned per month. NEVER use dt_id_snapshot, "
@@ -734,38 +740,17 @@ def _domain_directive(domain_key: str, question: str) -> str:
     parts = []
     if domain_key == "product":
         parts.append(
-            "DIRECTIVE — PRODUCT COST GUARD: the product tables are HUGE "
-            "(rham_site_data_rev_product_daily ~4B rows, _mth ~837M). To avoid the 50GB scan cap you MUST: "
-            "(1) ALWAYS filter month_id to specific value(s) via a JOIN to a CTE selecting the exact month_id(s) "
-            "needed — for a single month use only MAX(month_id); for MoM use ONLY the two latest month_id values "
-            "(IN those two), never a range/all months; (2) rham_site_data_rev_product_daily is so large that even a "
-            "FEW days across product dimensions exceeds the 50GB cap. Do NOT use the _daily table for any window "
-            "beyond ~3-5 days — for a 'daily trend over N days/weeks' where N is more than a few days, use the "
-            "MONTHLY rham_site_data_rev_product_mth (or _mtd) and present a monthly/MTD trend instead, even if the "
-            "user said 'daily'. If a genuinely short daily window is required, select the MINIMUM columns (dt_id + "
-            "the ONE measure + at most one dimension) and pre-aggregate (SUM); (3) SELECT only the columns you need "
-            "(product dims + revenue/hit + the territory col), never SELECT *. Prefer _mtd for MoM (day-aligned). "
-            "Apply the month_id/dt_id filter DIRECTLY in the WHERE of the scan, not only via a JOIN, so BigQuery "
-            "can prune partitions."
+            "COST POLICY: " + str(knowledge.load_kb().get("data_facts", {}).get("query_cost_policy", ""))
         )
     if domain_key == "revenue":
         import re as _re
         if _re.search(r"price[\s_]*slab|slab\b", question or "", _re.IGNORECASE):
             parts.append(
-                "DIRECTIVE — PRICE-SLAB COST GUARD (HARD): rham_site_data_rev_price_slab_daily is site-grain and so "
-                "large that even ~7-8 days scans tens of GB; ANY window beyond ~7 days WILL exceed the 50GB cap even "
-                "with a single-kota filter (the table is partitioned by date only, not territory). THEREFORE: for ANY "
-                "trend longer than ~1 week — including a 'mingguan/weekly' trend over several weeks or months — you "
-                "MUST use the MONTHLY table rham_site_data_rev_price_slab_mth (grain = month_id, GROUP BY month_id, "
-                "price_slab) and present it as a MONTHLY trend, even if the user said 'mingguan'/'weekly'/'daily'. "
-                "Only use the _daily table when the user asks for a window of at most ~7 days, and then filter dt_id "
-                "to that tight window and SELECT only dt_id, price_slab, the revenue measure. ALWAYS keep price_slab "
-                "in GROUP BY and output so the answer shows which slab grows. Never silently drop price_slab by "
-                "falling back to a highlevel table."
+                "COST POLICY: " + str(knowledge.load_kb().get("data_facts", {}).get("query_cost_policy", ""))
             )
         if _re.search(r"\b(atl|btl|renewal|perpanjang|gift|ori\b|purchas|channel[\s_]*wise|channel\s*detail)\b", question or "", _re.IGNORECASE):
             parts.append(
-                "DIRECTIVE — CHANNEL/ATL-BTL DETAIL: the rham_site_data_rev_channel_daily/_mtd/_mth tables carry "
+                "DIRECTIVE — CHANNEL/ATL-BTL DETAIL: the rham_kec_data_rev_channel_daily/_mtd/_mth tables carry "
                 "atl_btl ('ATL'/'BTL') AND atl_btl_details with values 'ATL ORI' (purchasing/akuisisi pack baru), "
                 "'ATL RENEWAL' (perpanjangan/renewal pack), 'ATL GIFT' (pack di-gift), and 'BTL'. For "
                 "renewal/perpanjangan vs purchasing/ori vs gift questions, GROUP BY atl_btl_details (do NOT just use "
@@ -986,6 +971,9 @@ def write_sql(domain_key: str, question: str, prior_error: str | None = None,
         facts=knowledge.data_facts_text(domain_key, question),
         project=kb["project"], dataset=kb["dataset"],
     )
+    # Closed-loop learning: failure classes that keep recurring in THIS domain become a
+    # short curated reminder, so the writer stops rediscovering the same mistake.
+    sys += lessons.lessons_text(domain_key)
     msgs = [{"role": "system", "content": sys}]
     # inject "what we showed last turn" so follow-ups like
     # "tolong breakdown per region" know what to breakdown.

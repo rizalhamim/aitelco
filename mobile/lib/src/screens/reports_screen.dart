@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../api/api_client.dart';
 import '../format/report_format.dart';
@@ -81,8 +80,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       _dataVer = await ApiClient.reportDataVersion();
       ReportCacheService.I.invalidateIfVersionChanged(_dataVer);
     } catch (_) {}
-    // Warm every tab on first load so later tab switches never spin.
-    _prefetchAll();
+    // Load only the selected report. Unopened tabs must not incur scans.
+    _loadActiveReport();
   }
 
   // Re-check the server data marker; if it changed, drop the cache so the next
@@ -141,7 +140,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
     if (tab == 'insight') return 'ins|$_dataVer|$_circle|$ft|$fv';
     if (tab == 'ftth') return 'ftth|$_dataVer|$_circle|$ft|$fv';
-    return 'prod|$_dataVer|$_circle|$_pdScope|$_brand';
+    return 'prod|$_dataVer|$_circle|$_pdScope|$_brand|$ft|$fv';
   }
 
   /// Builds the request for [tab] under the current scope.
@@ -176,7 +175,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
             circle: _circle, filterType: ft, filterValue: fv);
       default:
         return ApiClient.reportProductDemand(
-            circle: _circle, scope: _pdScope, brand: _brand);
+            circle: _circle,
+            scope: _pdScope,
+            brand: _brand,
+            filterType: ft,
+            filterValue: fv);
     }
   }
 
@@ -198,8 +201,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final requestedTab = _tab;
     final requestEpoch = ++_requestEpoch;
 
-    // A warm key paints immediately. This is what makes tab switches instant
-    // once the first load has finished warming every tab.
+    // Previously visited tabs paint immediately from their scoped cache.
     final cached = _cache.peek(key);
     if (cached != null) {
       setState(() {
@@ -214,8 +216,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       _error = null;
     });
     try {
-      // fetch joins an in-flight request for the same key rather than issuing
-      // a duplicate one, so racing a background prefetch is free.
+      // Join an in-flight request for this scoped key rather than duplicating it.
       final d = await _cache.fetch(key, () => _requestFor(requestedTab));
       if (!mounted ||
           requestEpoch != _requestEpoch ||
@@ -273,7 +274,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: IOH.teal500))
                 : const Icon(Icons.refresh),
-            onPressed: _loading ? null : () => _prefetchAll(force: true),
+            onPressed: _loading ? null : () => _loadActiveReport(force: true),
           ),
         ],
       ),
@@ -281,7 +282,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         Expanded(
           child: RefreshIndicator(
             color: IOH.teal500,
-            onRefresh: () => _prefetchAll(force: true),
+            onRefresh: () => _loadActiveReport(force: true),
             child: CustomScrollView(
               key: PageStorageKey<String>('reports:$_mode:$_tab'),
               slivers: [
@@ -420,9 +421,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
       out.add(_kpiTile(totals, up));
       out.add(const SizedBox(height: 12));
       out.add(Row(children: [
-        Expanded(child: _chip('Best Branch', _data!['best'], good: true)),
+        Expanded(child: _chip('Best Area', _data!['best'], good: true)),
         const SizedBox(width: 10),
-        Expanded(child: _chip('Worst Branch', _data!['worst'], good: false)),
+        Expanded(child: _chip('Worst Area', _data!['worst'], good: false)),
       ]));
       out.add(const SizedBox(height: 12));
       final buckets = _snapshotBuckets(
@@ -455,7 +456,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
       out.add(const SizedBox(height: 12));
       out.add(_sectionToolbar());
       out.add(const SizedBox(height: 12));
-      if (_tab == 'comprehensive') out.addAll(_comprehensiveSections());
+      if (_tab == 'comprehensive') {
+        for (final note in (_comp?['notes'] as List?) ?? const []) {
+          out.add(Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text('Catatan: $note',
+                  style: TextStyle(fontSize: 11, color: context.vMute))));
+        }
+        out.addAll(_comprehensiveSections());
+      }
       if (_tab == 'datarev') out.addAll(_dataRevSections());
       if (_tab == 'product') out.addAll(_productSections());
       if (_tab == 'benchmark') out.addAll(_benchmarkSections());
@@ -698,11 +707,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
   _SummaryMetric? _fbMarketShareMetric(List<Map<String, dynamic>> sections) {
     for (final section in sections) {
       if (section['layout'] != 'flat') continue;
-      if (!(section['title']?.toString().toLowerCase().contains('market share') ??
+      if (!(section['title']
+              ?.toString()
+              .toLowerCase()
+              .contains('market share') ??
           false)) {
         continue;
       }
-      final rows = (section['rows'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final rows =
+          (section['rows'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       for (final row in rows) {
         if (row['actor']?.toString().toUpperCase() != 'IOH') continue;
         final cells = (row['cells'] as List?) ?? [row['value']];
@@ -748,7 +761,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       }
       // Comprehensive shows FB Market Share as its fourth card, so it needs
       // only three catalog metrics. FTTH has no market share and keeps four.
-      final marketShare = _tab == 'ftth' ? null : _fbMarketShareMetric(sections);
+      final marketShare =
+          _tab == 'ftth' ? null : _fbMarketShareMetric(sections);
       final slots = marketShare == null ? 4 : 3;
       final preferred = _tab == 'ftth'
           ? ['ftth_hp', 'ftth_pa_cum', 'ftth_tur', 'ftth_netadd']
@@ -880,8 +894,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         final isPct = panel['kind']?.toString().startsWith('pct') == true;
         result.add(_SummaryMetric(
           code: panel['kind']?.toString() ?? 'insight',
-          label:
-              '${panel['title'] ?? 'Insight'} (${actor?['actor'] ?? 'N/A'})',
+          label: '${panel['title'] ?? 'Insight'} (${actor?['actor'] ?? 'N/A'})',
           value: _summaryNumber(latest['value'], isPct ? '%' : ''),
           delta: (latest['growth'] as num?)?.toDouble(),
           deltaUnit: isPct ? 'pp' : '%',
@@ -1212,7 +1225,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 _scopeValue =
                                     (lv['value'] ?? lv['name']).toString();
                               });
-                              _prefetchAll();
+                              _loadActiveReport();
                             }
                           : null,
                       child: Container(
@@ -1246,7 +1259,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _selectMode(String key) {
     if (_mode == key) return;
     setState(() => _mode = key);
-    _prefetchAll();
+    _loadActiveReport();
   }
 
   Widget _tabs() {
@@ -1305,7 +1318,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       }
     });
     // Cache hits paint instantly; this also re-warms after a scope repair.
-    _prefetchAll();
+    _loadActiveReport();
   }
 
   bool _supportsScope(String tab, String scope) {
@@ -1357,7 +1370,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             onChanged: (brand) {
               setState(() => _brand = brand);
               // Brand is part of the cache key for several tabs, so re-warm.
-              _prefetchAll();
+              _loadActiveReport();
             },
             items: [
               for (final brand in const [Brands.ioh, Brands.im3, Brands.tri])
@@ -1409,8 +1422,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
           }
         });
         if (lvls.isNotEmpty) {
-          // Load active tab data, then background-prefetch the rest
-          await _prefetchAll();
+          // Load only the active tab; cached tabs remain available.
+          await _loadActiveReport();
         } else {
           if (mounted) setState(() => _loading = false);
         }
@@ -1425,60 +1438,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
   }
 
-  // Fetch the active report first, then warm the remaining cache with at most
-  // two concurrent requests. The active query remains authoritative.
-  /// Every tab that a warm cache can serve. Snapshot and My Coordinate depend
-  /// on a picked metric or a located level, so they stay out.
-  static const List<String> _warmableTabs = [
-    'comprehensive',
-    'fwa',
-    'ftth',
-    'datarev',
-    'product',
-    'benchmark',
-    'internal',
-    'insight',
-  ];
-
-  Future<void> _prefetchAll({bool force = false}) async {
+  // Fetch on demand so navigating one report never scans all other reports.
+  Future<void> _loadActiveReport({bool force = false}) async {
     // My Coordinate has nothing to fetch until a level is picked.
     if (_mode == 'mycoord' && _scopeValue.isEmpty) {
       if (mounted) setState(() => _loading = false);
       return;
     }
 
-    // The active tab is awaited so its spinner means something. Everything
-    // else warms in the background.
     await _load(force: force);
-
-    unawaited(Future<void>.delayed(const Duration(milliseconds: 500), () async {
-      if (!mounted) return;
-      final pending = [
-        for (final tab in _warmableTabs)
-          if (tab != _tab && _supportsScope(tab, _scopeType)) tab,
-      ];
-      // Two at a time: enough to fill the cache within a few seconds without
-      // firing eight BigQuery-backed requests at once.
-      for (var i = 0; i < pending.length; i += 2) {
-        if (!mounted) return;
-        await Future.wait(
-          pending.skip(i).take(2).map(_warmTab),
-        );
-      }
-    }));
-  }
-
-  /// Fetches one tab into the cache, and paints it if it is still the one on
-  /// screen. Errors stay silent: this is speculative work.
-  Future<void> _warmTab(String tab) async {
-    final key = _cacheKeyForTab(tab);
-    try {
-      final d = await _cache.fetch(key, () => _requestFor(tab));
-      if (d['error'] != null) return;
-      if (mounted && tab == _tab && key == _cacheKeyForTab(tab)) {
-        setState(() {});
-      }
-    } catch (_) {}
   }
 
   int _activeFilterCount() {
@@ -1509,7 +1477,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         scopeTitle: () => _scopeLabel(_scopeType),
         onScopePick: (value) {
           setState(() => _scopeValue = value);
-          _prefetchAll();
+          _loadActiveReport();
         },
       ),
     );
@@ -1549,7 +1517,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           setState(() => _circle = v);
           onRefresh?.call();
           _loadScopeOptions(onUpdated: onRefresh);
-          _prefetchAll();
+          _loadActiveReport();
         }),
         if (_tab == 'snapshot' ||
             _tab == 'comprehensive' ||
@@ -1564,7 +1532,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             });
             onRefresh?.call();
             _loadScopeOptions(onUpdated: onRefresh);
-            if (v == 'all') _prefetchAll();
+            if (v == 'all') _loadActiveReport();
           }),
         if (_tab == 'ftth')
           _drop('View', _scopeType, const {
@@ -1580,7 +1548,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             });
             onRefresh?.call();
             _loadScopeOptions(onUpdated: onRefresh);
-            if (v == 'all') _prefetchAll();
+            if (v == 'all') _loadActiveReport();
           }),
         if ((_tab == 'snapshot' ||
                 _tab == 'comprehensive' ||
@@ -1633,8 +1601,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
       const {
         'region': 'Region',
         'area': 'Area',
-        'branch': 'Branch',
-        'microcluster': 'Micro Cluster',
+        'branch': 'Area',
+        'microcluster': 'District',
+        'district': 'District',
         'kabkota': 'Kab/Kota',
         'kecamatan': 'Kecamatan',
         'ftth_region': 'Region',
@@ -1649,6 +1618,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       return const {
         'all': 'Circle (all)',
         'region': 'Region',
+        'area': 'Area',
+        'district': 'District',
         'kabkota': 'Kab/Kota',
         'kecamatan': 'Kecamatan',
       };
@@ -1657,8 +1628,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       'all': 'Circle (all)',
       'region': 'Region',
       'area': 'Area',
-      'branch': 'Branch',
-      'microcluster': 'Micro Cluster',
+      'district': 'District',
       'kabkota': 'Kab/Kota',
       'kecamatan': 'Kecamatan',
     };
@@ -1766,7 +1736,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         onPick: (v) {
           Navigator.pop(ctx);
           setState(() => _scopeValue = v);
-          _prefetchAll();
+          _loadActiveReport();
         },
       ),
     );
@@ -2007,8 +1977,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     const sections = [
       ['circle', 'Circle'],
       ['region', 'Region'],
-      ['branch', 'Branch'],
-      ['microcluster', 'Micro Cluster'],
+      ['branch', 'Area'],
+      ['microcluster', 'District'],
       ['kabkota', 'Kab/Kota'],
       ['kecamatan', 'Kecamatan'],
     ];
@@ -2209,7 +2179,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     final rows = <ReportPeriodRow>[];
     for (final metric in metrics) {
-      final values = (metric[activeBrand] as Map?)?.cast<String, dynamic>() ?? {};
+      final values =
+          (metric[activeBrand] as Map?)?.cast<String, dynamic>() ?? {};
       final unit = (metric['unit'] ?? '').toString();
       final isComputed = metric['computed'] == true;
 
@@ -2710,8 +2681,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final qLabels = (_prod!['quota_labels'] as List?)?.cast<String>() ?? [];
     final vLabels = (_prod!['validity_labels'] as List?)?.cast<String>() ?? [];
     final rev = (_prod!['revenue_matrix'] as List?)
-            ?.map((r) =>
-                (r as List).map((x) => (x as num?)?.toDouble() ?? 0).toList())
+            ?.map(
+                (r) => (r as List).map((x) => (x as num?)?.toDouble()).toList())
             .toList() ??
         [];
     final growth = (_prod!['growth_matrix'] as List?)
@@ -2724,7 +2695,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     double flatMax = 1;
     for (final r in rev) {
       for (final x in r) {
-        if (x > flatMax) flatMax = x;
+        if (x != null && x.abs() > flatMax) flatMax = x.abs();
       }
     }
     double gMax = 1;
@@ -2765,7 +2736,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     color: _rankBg[r - 1],
                     borderRadius: BorderRadius.circular(8)),
                 child: Text(
-                    '#$r ${t['quota']} x ${t['validity']} | ${_mn(t['value'])} Mn',
+                    '#$r ${t['quota']} x ${t['validity']} | ${_mn(t['value'])}',
                     style: TextStyle(
                         color: _rankFg[r - 1],
                         fontSize: 11.5,
@@ -2780,7 +2751,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     Widget heatCell(int ri, int ci) {
       final val = rev[ri][ci];
       final rank = rankOf(qLabels[ri], vLabels[ci]);
-      final alpha = 0.1 + 0.8 * (val / flatMax);
+      final alpha =
+          val == null ? 0.0 : 0.1 + 0.8 * (val.abs() / flatMax).clamp(0.0, 1.0);
       final bg =
           rank >= 0 ? _rankBg[rank] : Color.fromRGBO(21, 166, 151, alpha);
       final fg =
@@ -2790,7 +2762,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 4),
         alignment: Alignment.center,
         color: bg,
-        child: Text(val > 0 ? _mn(val) : 'N/A',
+        child: Text(val == null ? kReportNotAvailable : _mn(val),
             style: TextStyle(
                 fontSize: 10,
                 color: fg,
@@ -2995,10 +2967,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         color: bg,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Text(
-            v == null
-                ? 'N/A'
-                : reportNumber(v, decimals: 1),
+        child: Text(v == null ? 'N/A' : reportNumber(v, decimals: 1),
             style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: bold ? FontWeight.w700 : FontWeight.w400,

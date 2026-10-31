@@ -1,7 +1,7 @@
 name: bizplan_java_agent
 description: "Bizplan Java Agent - IOH Java telco analytics AI (Android client)."
 publish_to: 'none'
-version: 1.47.0+62
+version: 1.48.3+66
 
 environment:
   sdk: ^3.6.0

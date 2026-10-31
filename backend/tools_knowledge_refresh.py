@@ -160,9 +160,9 @@ DESCRIPTIONS = {
     "rham_demand_inner_outer": "Daily aggregate origin-destination demand flow by kecamatan and category.",
     "rham_demand_inner_outer_mtd": "MTD aggregate origin-destination demand flow by kecamatan and category.",
     "rham_demand_inner_outer_mth": "Monthly aggregate origin-destination demand flow by kecamatan and category.",
-    "rham_game_daily": "Daily aggregate gaming revenue and transactions by content provider and territory.",
-    "rham_game_mtd": "MTD aggregate gaming revenue and transactions by content provider and territory.",
-    "rham_game_mth": "Monthly aggregate gaming revenue and transactions by content provider and territory.",
+    "rham_game_daily": "Daily game voucher revenue and hits by brand and kecamatan territory (source ioh_rev).",
+    "rham_game_mtd": "MTD game voucher revenue and hits by brand and kecamatan territory (source ioh_rev).",
+    "rham_game_mth": "Monthly game voucher revenue and hits by brand and kecamatan territory (source ioh_rev).",
     "rham_ssd_details_mtd": "MTD SSD product demand, hits, and net revenue at kecamatan grain.",
     "rham_ssd_details_mth": "Monthly SSD product demand, hits, and net revenue at kecamatan grain.",
     "rham_subs_traffic_agg_geo_mtd_lmtd": "Aggregate MTD versus LMTD subscriber traffic and revenue by serving geography segment.",
@@ -180,6 +180,43 @@ DESCRIPTIONS = {
     "rham_snd_kpi_highlevel_mth": "Monthly SND distribution KPI aggregate at kecamatan and brand grain.",
     "rham_sellin_ga_location": "Aggregate sell-in to gross-add location relationship by month and territory.",
     "rham_site_acquisition_rev": "Daily site acquisition revenue and hits by product and channel.",
+    # java-precalc-review-2026-09-17
+    "rham_ga_new_imei_mtd": "MTD gross adds split by new versus old device IMEI, including 5G devices, at site and brand grain.",
+    "rham_ga_new_imei_mth": "Closed-month gross adds split by new versus old device IMEI, including 5G devices, at site and brand grain.",
+    "rham_outlet_ga_quality": "Outlet acquisition QUALITY by acquisition date, channel and device: gross adds, eSIM and 5G uptake, M1 to M3 survival, and acquisition revenue.",
+    "rham_outlet_ga_quality_dtu": "Outlet acquisition quality split by DTU versus NON-DTU source, with outlet mapping status.",
+    "rham_outlet_ga_quality_mtd": "Cutoff-aligned MTD outlet acquisition quality: gross adds, device mix, M1 to M3 survival, revenue and usage thresholds.",
+    "rham_outlet_ga_quality_mth": "Closed-month outlet acquisition quality: gross adds, device mix, M1 to M3 survival, revenue and usage thresholds.",
+    "rham_outlet_low_stock": "Outlet stock availability by KPI, with MTD, LMTD, LLMTD and W-0 to W-6 comparison columns.",
+    "rham_outlet_secondary_daily": "Daily outlet secondary sales value and transactions by price point and transaction type.",
+    "rham_outlet_secondary_mtd": "Cutoff-aligned MTD outlet secondary sales value and transactions by price point and transaction type.",
+    "rham_outlet_secondary_mth": "Closed-month outlet secondary sales value and transactions by price point and transaction type.",
+    "rham_postpaid_ga_daily": "Daily POSTPAID gross adds, acquisition revenue and guaranteed revenue by store, channel, order type and package.",
+    "rham_report_fb_device_5g": "Facebook-derived market share, gross-add share and churn among owners of a 5G-CAPABLE DEVICE, per operator and territory level.",
+    "rham_report_fb_network_5g": "Facebook-derived market share, gross-add share and churn among subscribers USING THE 5G NETWORK, per operator and territory level.",
+    "rham_site_ga_quality_daily": "Daily site acquisition quality: gross adds, device mix, quality-subscriber thresholds and survival.",
+    "rham_site_ga_quality_mtd": "Cutoff-aligned MTD site acquisition quality: gross adds, device and eSIM mix, QSC thresholds, M1 to M3 survival.",
+    "rham_site_ga_quality_mth": "Closed-month site acquisition quality: gross adds, device and eSIM mix, QSC thresholds, M1 to M3 survival.",
+    "rham_site_traffic_usage_mtd": "MTD traffic and revenue by site and commercial segment, with LMTD comparison, daily run rate and full-month projection.",
+    "rham_site_traffic_usage_mth": "Closed-month traffic, revenue, transactions, quota utilisation and burning behaviour by site and commercial segment.",
+    "rham_kec_wise_tnr_mtd": "MTD kecamatan KPI cube by brand and TENURE GROUP: revenue, traffic, RGU, churn, gross adds, VLR and PAU.",
+    "rham_kec_wise_tnr_mth": "Closed-month kecamatan KPI cube by brand and TENURE GROUP: revenue, traffic, RGU, churn, gross adds, VLR and PAU.",
+    "rham_ftth_tt_mttr": "FTTH trouble-ticket restoration time: ticket counts and mean time to repair per duration bucket, weekly and monthly.",
+    "rham_mkt_kpi_highlevel_dly": "DAILY kecamatan KPI by brand (dt_id): revenue, data/voice/SMS usage, RGU, gross adds, churn, net adds and VLR. Use for day-by-day trends.",
+    # additional-sources-2026-10-04
+    "rham_hvc_highlevel_mth_serving": "Closed-month kecamatan KPI view with RECOVERED HVC revenue and HVC subscribers. Authoritative HVC source.",
+    "rham_hvc_highlevel_mtd_serving": "Cutoff-aligned MTD kecamatan KPI view with RECOVERED HVC revenue and HVC subscribers.",
+    "rham_outlet_ga_5g_mtd": "MTD outlet gross adds on 5G-capable devices (has_5g), with 5G traffic uptake and M1 to M3 survival.",
+    "rham_outlet_ga_5g_mth": "Closed-month outlet gross adds on 5G-capable devices (has_5g), with 5G traffic uptake and M1 to M3 survival.",
+    "rham_outlet_ga_fwa_mtd": "MTD outlet FWA gross adds with first-7-day usage, M1 to M3 survival and outlet mapping status.",
+    "rham_outlet_ga_fwa_mth": "Closed-month outlet FWA gross adds with first-7-day usage, M1 to M3 survival and outlet mapping status.",
+    "rham_outlet_ga_fwa_5g_mtd": "MTD outlet FWA 5G gross adds with first-7-day usage and survival.",
+    "rham_outlet_ga_fwa_5g_mth": "Closed-month outlet FWA 5G gross adds with first-7-day usage and survival.",
+    "rham_outlet_ga_ex_dtu": "MTD outlet gross adds EXCLUDING DTU-sourced acquisitions.",
+    "rham_outlet_ga_mth_ex_dtu": "Closed-month outlet gross adds EXCLUDING DTU-sourced acquisitions.",
+    "rham_ftth_install_orders": "FTTH install order pipeline, one row per order: SO/SA/PA dates, plan and schedule dates, aging, status and vendor.",
+    "rham_fb_ms_5g_device": "Weekly Facebook-derived 5G DEVICE owner base, gross adds and churn per operator (IOH, TSEL, XLS) by kabkota, absolute counts.",
+    "rham_fb_ms_5g_network": "Weekly Facebook-derived 5G NETWORK user base, gross adds and churn per operator (IOH, TSEL, XLS) by kabkota, absolute counts.",
 }
 
 ALIASES = {
@@ -197,11 +234,567 @@ ALIASES = {
 }
 
 
+# Semantic fields a human reviewed. A metadata refresh must never overwrite these
+# with the name-based heuristics in `_contract`.
+PRESERVED_CONTRACT_FIELDS = (
+    "source_kind",
+    "grain",
+    "period_semantics",
+    "aggregation_rule",
+    "territory_vocabulary",
+    "priority",
+    "metric_families",
+    "use_constraints",
+    "warning_columns",
+    "sensitive_dimensions",
+    "aliases",
+)
+
+# Reviewed contracts for tables whose semantics the heuristics get wrong. Every
+# entry here is backed by a profiling run recorded in
+# governance/review_2026_09_17.json. See vault/30-data/bigquery-tables.md.
+CONTRACT_OVERRIDES: dict[str, dict[str, Any]] = {
+    # Name-based guess said grain=kabkota; unik_kec is the kecamatan key.
+    "rham_mkt_kpi_highlevel_dly": {
+        "grain": "day_x_kecamatan_x_brand",
+        "period_semantics": "daily",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["acquisition", "churn", "revenue", "traffic"],
+        "aliases": ["kpi harian", "revenue harian", "gross add harian", "tren harian kecamatan"],
+        "use_constraints": [
+            "Filter dt_id to a bounded literal date range. Kecamatan key is unik_kec.",
+            "Stock columns (RGU, VLR, PAU) are daily snapshots: never SUM them across days.",
+        ],
+    },
+    "rham_hvc_highlevel_mth_serving": {
+        "grain": "kecamatan",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["revenue", "hvc", "subscriber"],
+        "aliases": ["hvc", "high value customer", "pelanggan hvc", "revenue hvc", "subs hvc"],
+        "use_constraints": [
+            "View without partition: ALWAYS filter mth_dt = DATE literal (and month_id INT64 = YYYYMM) so the base partition is pruned.",
+            "Use this view, not rham_mkt_highlevel_mth, for hvc_rev_total and subs_hvc.",
+            "From 202609 the split columns hvc_rev_organic, hvc_rev_mobo_trade, hvc_rev_digital "
+            "and the flow columns subs_hvc_stay, subs_hvc_in, subs_hvc_out are NOT reliable (frozen or NULL). "
+            "Report them as N/A for 202609 onward; only hvc_rev_total and subs_hvc are valid.",
+        ],
+    },
+    "rham_hvc_highlevel_mtd_serving": {
+        "grain": "kecamatan",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["revenue", "hvc", "subscriber"],
+        "aliases": ["hvc mtd", "revenue hvc mtd", "subs hvc mtd"],
+        "use_constraints": [
+            "View without partition: ALWAYS filter mth_dt = DATE literal (and month_id INT64 = YYYYMM).",
+            "Use this view, not rham_mkt_highlevel_mtd, for hvc_rev_total and subs_hvc.",
+            "From 202609 the split columns hvc_rev_organic, hvc_rev_mobo_trade, hvc_rev_digital "
+            "and the flow columns subs_hvc_stay, subs_hvc_in, subs_hvc_out are NOT reliable (frozen or NULL). "
+            "Report them as N/A for 202609 onward; only hvc_rev_total and subs_hvc are valid.",
+        ],
+    },
+    "rham_outlet_ga_5g_mtd": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "5g device"],
+        "aliases": ["ga 5g outlet", "outlet ga 5g", "akuisisi 5g outlet"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "Every row is a 5G-capable GA (has_5g). Do not add it to rham_outlet_ga_mtd; it is a subset."
+        ],
+    },
+    "rham_outlet_ga_5g_mth": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "5g device"],
+        "aliases": ["ga 5g outlet bulanan", "outlet ga 5g monthly"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "Every row is a 5G-capable GA (has_5g). Subset of rham_outlet_ga_mth, never additive."
+        ],
+    },
+    "rham_outlet_ga_fwa_mtd": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "fwa"],
+        "aliases": ["ga fwa outlet", "outlet fwa", "akuisisi fwa outlet"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "FWA population only. Exclude outlet_mapping_status = 'UNKNOWN' when ranking outlets; keep it for totals."
+        ],
+    },
+    "rham_outlet_ga_fwa_mth": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "fwa"],
+        "aliases": ["ga fwa outlet bulanan", "outlet fwa monthly"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "FWA population only. Exclude outlet_mapping_status = 'UNKNOWN' when ranking outlets; keep it for totals."
+        ],
+    },
+    "rham_outlet_ga_fwa_5g_mtd": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "fwa"],
+        "aliases": ["ga fwa 5g outlet", "outlet fwa 5g"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "FWA 5G subset of the outlet FWA GA tables, never additive to them."
+        ],
+    },
+    "rham_outlet_ga_fwa_5g_mth": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "fwa"],
+        "aliases": ["ga fwa 5g outlet bulanan"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "FWA 5G subset of the outlet FWA GA tables, never additive to them."
+        ],
+    },
+    "rham_outlet_ga_ex_dtu": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "device mix", "revenue"],
+        "aliases": ["ga non dtu", "outlet ga ex dtu", "tanpa dtu"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "DTU-sourced acquisitions are excluded. For the full population use rham_outlet_ga_mtd/_mth."
+        ],
+    },
+    "rham_outlet_ga_mth_ex_dtu": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention", "device mix", "revenue"],
+        "aliases": ["ga non dtu bulanan", "outlet ga mth ex dtu"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "month_id is STRING ('YYYYMM'); filter mth_dt with a literal date for pruning.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "Validate outlet_latitude/outlet_longitude (Java bounds) before mapping; some rows are corrupt.",
+            "DTU-sourced acquisitions are excluded. For the full population use rham_outlet_ga_mtd/_mth."
+        ],
+    },
+    "rham_ftth_install_orders": {
+        "grain": "order",
+        "period_semantics": "latest_snapshot",
+        "aggregation_rule": "count_rows",
+        "territory_vocabulary": "ftth_native",
+        "metric_families": ["ftth", "install pipeline"],
+        "aliases": ["install order ftth", "order instalasi ftth", "backlog instalasi", "aging instalasi",
+                    "so sa pa", "pipeline instalasi"],
+        "sensitive_dimensions": ["bill_acc", "customer_id", "customer_name", "sales_code",
+                                 "sales_name", "manager", "rm"],
+        "use_constraints": [
+            "One row per order (latest snapshot). Count orders with COUNT(*), group by region, circle, city, vendor, status or duration_bucket.",
+            "Customer and sales identity columns (bill_acc, customer_id, customer_name, sales_code, sales_name, manager, rm) are blocked; the query is rejected if it references them or uses SELECT *.",
+            "No partition; the table is small. Filter date_so/date_pa for a period.",
+        ],
+    },
+    "rham_fb_ms_5g_device": {
+        "grain": "week_x_kabkota",
+        "period_semantics": "weekly_snapshot",
+        "aggregation_rule": "latest_snapshot_then_recompute_share",
+        "metric_families": ["competitive", "market share", "5g device"],
+        "aliases": ["ms 5g device kabkota", "market share device 5g mingguan", "fb 5g device kabkota"],
+        "use_constraints": [
+            "dt_id is a WEEKLY snapshot. Filter ONE dt_id (latest = MAX(dt_id)); never sum across dt_id.",
+            "Values are absolute counts. Share = device_5g_total_customers_ioh / device_5g_total_customers_total_abs, recomputed after SUM over kabkota.",
+            "Different population from rham_report_fb_device_5g; do not mix the two in one ratio.",
+        ],
+    },
+    "rham_fb_ms_5g_network": {
+        "grain": "week_x_kabkota",
+        "period_semantics": "weekly_snapshot",
+        "aggregation_rule": "latest_snapshot_then_recompute_share",
+        "metric_families": ["competitive", "market share", "5g network"],
+        "aliases": ["ms 5g network kabkota", "market share jaringan 5g mingguan", "fb 5g network kabkota"],
+        "use_constraints": [
+            "dt_id is a WEEKLY snapshot. Filter ONE dt_id (latest = MAX(dt_id)); never sum across dt_id.",
+            "Values are absolute counts. Share = network_5g_total_customers_ioh / network_5g_total_customers_total_abs, recomputed after SUM over kabkota.",
+            "Different population from rham_report_fb_network_5g; do not mix the two in one ratio.",
+        ],
+    },
+    "rham_ga_new_imei_mtd": {
+        "grain": "monthly_cutoff_x_brand_x_site",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["acquisition", "device mix", "5g device"],
+        "aliases": ["imei baru", "device baru", "new device ga", "ga imei",
+                    "gross add device baru"],
+        "use_constraints": [
+            "dt_id holds ONE cutoff date per month, not a daily series. Filter it "
+            "to a single literal date (or join MAX(dt_id) for the wanted month); "
+            "summing across dt_id values double counts the same month.",
+            "ga_all = ga_old_imei + ga_new_imei + remainder. The _5g columns are a "
+            "SUBSET of their old/new counterparts, never add them on top.",
+        ],
+    },
+    "rham_ga_new_imei_mth": {
+        "grain": "monthly_cutoff_x_brand_x_site",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["acquisition", "device mix", "5g device"],
+        "aliases": ["imei baru bulanan", "device baru bulanan", "new device ga monthly"],
+        "use_constraints": [
+            "dt_id holds ONE snapshot date per month. Filter to a single literal "
+            "date per month; never sum across dt_id.",
+        ],
+    },
+    "rham_outlet_ga_quality_mtd": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention",
+                            "device mix", "revenue"],
+        "aliases": ["kualitas ga outlet", "outlet ga quality", "survival outlet",
+                    "kualitas akuisisi outlet"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "cutoff_dd is a constant 14, so this month and last month are already "
+            "day-aligned. Use this table for any MTD or month-on-month comparison.",
+            "m1s/m2s/m3s are SURVIVING subscriber counts, not rates. Compute a "
+            "survival rate as SUM(m1s)/SUM(rgu_ga), never as AVG of a ratio.",
+            "outlet_latitude and outlet_longitude contain corrupt values (observed "
+            "-620 and 946). Do not use them for distance or mapping.",
+        ],
+    },
+    "rham_outlet_ga_quality_mth": {
+        "grain": "month_x_brand_x_outlet",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention",
+                            "device mix", "revenue"],
+        "aliases": ["kualitas ga outlet bulanan", "outlet ga quality monthly"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "outlet_latitude and outlet_longitude contain corrupt values. Do not "
+            "use them for distance or mapping.",
+        ],
+    },
+    "rham_outlet_ga_quality": {
+        "grain": "ga_date_x_brand_x_outlet_x_channel",
+        "period_semantics": "daily_within_month_partition",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention",
+                            "device mix", "revenue"],
+        "aliases": ["kualitas ga outlet harian", "outlet ga quality detail",
+                    "ga outlet per channel"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "Use this only when the question needs the channel or acquisition-date "
+            "detail. For a period total prefer the _mtd or _mth table.",
+            "m1s/m2s/m3s are surviving counts. Rate = SUM(m1s)/SUM(rgu_ga).",
+            "outlet_latitude and outlet_longitude contain corrupt values. Do not "
+            "use them for distance or mapping.",
+        ],
+    },
+    "rham_outlet_ga_quality_dtu": {
+        "grain": "ga_date_x_brand_x_outlet_x_channel_x_sp_source",
+        "period_semantics": "daily_within_month_partition",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "outlet distribution", "retention"],
+        "aliases": ["dtu", "non dtu", "outlet dtu", "sp source"],
+        "warning_columns": ["outlet_latitude", "outlet_longitude"],
+        "use_constraints": [
+            "sp_source splits DTU from NON-DTU. Filter it for one population, or "
+            "GROUP BY it to compare. For a plain NON-DTU total the reviewed "
+            "rham_outlet_ga_ex_dtu / rham_outlet_ga_mth_ex_dtu tables are cheaper.",
+        ],
+    },
+    "rham_outlet_low_stock": {
+        "grain": "date_x_brand_x_outlet_x_kpi",
+        "period_semantics": "daily",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["outlet distribution", "stock availability"],
+        # "stoknya" is how the question is actually asked; the tokenizer does not
+        # strip Indonesian suffixes, so the bare stem has to be an alias too.
+        "aliases": ["low stock", "stok rendah", "stoknya", "stok", "kehabisan stok",
+                    "stock outlet", "ketersediaan stok", "stock availability"],
+        "use_constraints": [
+            "One row per KPI: ALWAYS filter `kpi` to the metric you mean, otherwise "
+            "unrelated KPIs are summed together.",
+            "mtd/lmtd/llmtd and W-0..W-6 are period columns, not stock levels. A "
+            "NULL means that period is unavailable, it does not mean zero.",
+            "35 GB table: a literal dt_id filter is mandatory, never a MAX() "
+            "subquery or an open range.",
+        ],
+    },
+    "rham_outlet_secondary_mtd": {
+        "grain": "month_x_brand_x_outlet_x_price_point",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["secondary sales", "outlet distribution", "revenue"],
+        "aliases": ["secondary sales", "penjualan sekunder", "sellin saldo",
+                    "transaksi outlet"],
+        "use_constraints": [
+            "NOT unique on month_id+brand+outlet_id+main_price (measured 1163942 "
+            "rows against 1150707 distinct keys). Always SUM with a GROUP BY; never "
+            "assume one row per outlet.",
+            "amount and hit are separate units. ARPT = SUM(amount)/SUM(hit).",
+        ],
+    },
+    "rham_outlet_secondary_mth": {
+        "grain": "month_x_brand_x_outlet_x_price_point",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["secondary sales", "outlet distribution", "revenue"],
+        "aliases": ["secondary sales bulanan", "penjualan sekunder bulanan"],
+        "use_constraints": [
+            "Always SUM with a GROUP BY. amount and hit are separate units.",
+        ],
+    },
+    "rham_outlet_secondary_daily": {
+        "grain": "date_x_brand_x_outlet_x_price_point",
+        "period_semantics": "daily",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["secondary sales", "outlet distribution", "revenue"],
+        "aliases": ["secondary sales harian", "transaksi outlet harian"],
+        "use_constraints": [
+            "14.7 GB: a literal dt_id range is mandatory. Prefer the _mtd or _mth "
+            "table for any period total.",
+        ],
+    },
+    "rham_postpaid_ga_daily": {
+        "grain": "activation_date_x_store_x_channel_x_order_x_package",
+        "period_semantics": "daily",
+        "aggregation_rule": "sum_additive_metrics",
+        "metric_families": ["acquisition", "postpaid", "revenue"],
+        "aliases": ["postpaid", "pascabayar", "ga postpaid", "gross add postpaid"],
+        "use_constraints": [
+            "Partition column is activation_date, not dt_id.",
+            "acq_revenue_mio and guaranteed_revenue_mio are already in MILLIONS of "
+            "rupiah. Do not divide by 1e6 again.",
+        ],
+    },
+    "rham_report_fb_device_5g": {
+        "source_kind": "proxy",
+        "grain": "date_x_location_type_x_location",
+        "period_semantics": "weekly_snapshot",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["market share", "5g device", "churn", "acquisition"],
+        "aliases": ["market share 5g device", "pangsa pasar device 5g",
+                    "5g device share", "ms device 5g"],
+        "use_constraints": [
+            "Population is subscribers OWNING a 5G-capable device. Never mix it "
+            "with rham_report_fb_network_5g, which counts 5G network USERS.",
+            "ms_* and soga_* are FRACTIONS between 0 and 1 (observed max 0.745). "
+            "Multiply by 100 for a percentage; never sum them across rows.",
+            "location_type holds several territory levels in one column. ALWAYS "
+            "filter to exactly one location_type or levels are double counted.",
+            "ga_amount_* is populated on only about 79 percent of rows.",
+        ],
+    },
+    "rham_report_fb_network_5g": {
+        "source_kind": "proxy",
+        "grain": "date_x_location_type_x_location",
+        "period_semantics": "weekly_snapshot",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["market share", "5g network", "churn", "acquisition"],
+        "aliases": ["market share pengguna 5g", "5g network share",
+                    "pangsa pengguna jaringan 5g"],
+        "use_constraints": [
+            "Population is subscribers USING the 5G network. Never mix it with "
+            "rham_report_fb_device_5g, which counts 5G device owners.",
+            "ms_* and soga_* are FRACTIONS between 0 and 1, not percentages.",
+            "ALWAYS filter to exactly one location_type.",
+            "ga_amount_* is populated on only about 26 percent of rows, so a "
+            "gross-add answer from this table must state that coverage.",
+        ],
+    },
+    "rham_site_ga_quality_mtd": {
+        "grain": "month_x_site_x_brand",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "retention", "device mix", "revenue"],
+        "aliases": ["kualitas ga site", "site ga quality", "qsc", "survival site"],
+        "use_constraints": [
+            "dt_id is a within-month cutoff. Filter to one literal dt_id per month; "
+            "summing across dt_id double counts.",
+            "ga_qsc_* and m1s/m2s/m3s are COUNTS. A rate is SUM(part)/SUM(rgu_ga).",
+        ],
+    },
+    "rham_site_ga_quality_mth": {
+        "grain": "month_x_site_x_brand",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "retention", "device mix", "revenue"],
+        "aliases": ["kualitas ga site bulanan", "site ga quality monthly"],
+        "use_constraints": [
+            "dt_id is a within-month cutoff. Filter to one literal dt_id per month.",
+            "ga_qsc_* and m1s/m2s/m3s are COUNTS, not rates.",
+        ],
+    },
+    "rham_site_ga_quality_daily": {
+        "grain": "date_x_site_x_brand",
+        "period_semantics": "daily",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["acquisition", "retention", "device mix"],
+        "aliases": ["kualitas ga site harian"],
+        "use_constraints": [
+            "12 GB: literal dt_id range mandatory. Prefer _mtd or _mth for period "
+            "totals.",
+        ],
+    },
+    "rham_site_traffic_usage_mtd": {
+        "grain": "as_of_date_x_site_x_pack_channel_segment",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["traffic", "revenue", "product demand"],
+        "aliases": ["traffic usage", "pemakaian traffic", "run rate traffic",
+                    "proyeksi traffic"],
+        "use_constraints": [
+            "Partition column is as_of_date. LMTD columns are already day-aligned, "
+            "so never build a second MTD comparison by hand.",
+            "g_*_pct, vs_lm_full_pct, growth_index and pp_contribution_to_growth "
+            "are ratios. Recompute them from the MTD and LMTD components when "
+            "aggregating; never average them.",
+        ],
+    },
+    "rham_site_traffic_usage_mth": {
+        "grain": "month_x_site_x_pack_channel_segment",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["traffic", "revenue", "product demand"],
+        "aliases": ["traffic usage bulanan", "quota utilization", "fully burning"],
+        "use_constraints": [
+            "57 GB and 334M rows. month_id is a DATE (for example DATE '2026-07-01'), "
+            "NOT a 'YYYYMM' string. Filter it to a LITERAL date; a MAX() subquery or "
+            "a join to a MAX() CTE scans every partition.",
+            "avg_quota_utilization, pct_fully_burning and btl_rev_share are ratios. "
+            "Weight them by subs_cnt or recompute from components.",
+        ],
+    },
+    "rham_kec_wise_tnr_mtd": {
+        "grain": "month_x_kecamatan_x_brand_x_tenure_group",
+        "period_semantics": "mtd_cutoff_aligned",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["revenue", "traffic", "churn", "acquisition",
+                            "subscriber segment"],
+        "aliases": ["tenure", "tnr", "kecamatan tenure", "tenure group",
+                    "kpi kecamatan tenure"],
+        "warning_columns": [
+            "acq_ga_inject", "acq_ga_inject_hv", "acq_ga_inject_lv",
+            "acq_ga_inject_mv", "acq_qsc_m0", "acq_sc_m0", "data_uu_istimewa_30d",
+            "hits_rebuy_lrs_site", "hits_sp_lrs_site", "rev_acq_qsc_m0",
+            "rev_data_atl_mtd", "rev_data_btl_mtd", "rev_ewallet",
+            "rev_ewallet_site", "rev_fdv", "rev_fdv_data_site", "rev_fdv_site",
+            "rev_fdv_sms_site", "rev_fdv_voice_site", "rev_mobo_data_site",
+            "rev_mobo_sms_site", "rev_mobo_voice_site", "rev_mobosp",
+            "rev_mobosp_site", "rev_nondata_others",
+        ],
+        "use_constraints": [
+            "dt_id is a within-month CUTOFF, not a daily series: the latest dt_id "
+            "carries the whole month. Filter month_id to one literal value and take "
+            "the MAX(dt_id) inside it; summing across dt_id double counts.",
+            "68 of the 184 numeric columns are entirely EMPTY (see warning_columns). "
+            "Ranking on one of them returns nothing and looks like missing data.",
+            "Columns mix daily, rolling-30-day and MTD semantics. Match the suffix "
+            "to the question: _daily, _30d and _mtd are not interchangeable.",
+        ],
+    },
+    "rham_kec_wise_tnr_mth": {
+        "grain": "month_x_kecamatan_x_brand_x_tenure_group",
+        "period_semantics": "monthly_closed",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "metric_families": ["revenue", "traffic", "churn", "acquisition",
+                            "subscriber segment"],
+        "aliases": ["tenure bulanan", "tnr monthly", "kecamatan tenure bulanan"],
+        "warning_columns": [
+            "hits_rebuy_lrs_site", "hits_sp_lrs_site", "rev_fdv_sms_site",
+            "rev_fdv_voice_site", "rev_mobo_sms_site", "rev_mobo_voice_site",
+            "rev_org_sms_alloc_site", "rev_org_voice_alloc_site",
+            "rev_rebuy_lrs_site", "rev_sms_voucher_site", "rev_sp_lrs_site",
+            "rev_vas_net_dcb", "rev_vas_net_dcb_mtd", "rev_vchori_sms_site",
+            "rev_vchori_voice_site", "rev_voucher_games_site",
+            "rgu90_gross_add_lrs_non_ol_site", "rgu90_gross_add_lrs_ol_site",
+        ],
+        "use_constraints": [
+            "Filter month_id to one literal value and take MAX(dt_id) inside it.",
+            "18 numeric columns are entirely EMPTY (see warning_columns).",
+            "Columns mix daily, rolling-30-day and MTD semantics.",
+        ],
+    },
+    "rham_ftth_tt_mttr": {
+        "grain": "period_x_mttr_bucket",
+        "period_semantics": "mixed_weekly_and_monthly",
+        "aggregation_rule": "sum_components_then_recompute_ratio",
+        "territory_vocabulary": "not_territorial",
+        "metric_families": ["ftth", "trouble ticket", "restoration time"],
+        "aliases": ["mttr", "trouble ticket", "gangguan ftth", "waktu perbaikan",
+                    "restorasi ftth"],
+        "use_constraints": [
+            "ALWAYS filter period_type to either 'MONTHLY' or 'WEEKLY'. The table "
+            "holds both, and mixing them double counts every ticket.",
+            "The bucket column contains a 'Grand Total' row alongside the real "
+            "buckets. Exclude it when summing, or use it directly as the total.",
+            "mttr_hours is an AVERAGE per bucket. Weight it by tt_count; never "
+            "average it across buckets.",
+            "source_scope is VENDOR only, so this covers vendor-handled tickets.",
+        ],
+    },
+}
+
+
 def _atomic_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(path.suffix + ".tmp")
     temp.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     temp.replace(path)
+
+
+# Upstream SND contract reviewed on 2026-10-08. These aliases identify actual
+# unified metrics, not the retired brand-specific raw parameters.
+for _snd_period in ("dly", "mtd", "mth"):
+    CONTRACT_OVERRIDES[f"rham_snd_kpi_highlevel_{_snd_period}"] = {
+        "grain": "kecamatan_x_brand",
+        "priority": "primary",
+        "aliases": ["total outlet", "outlet total", "ono", "osa", "sso", "uro",
+                    "quro", "qsso", "trade supply", "trade demand", "tertiary b",
+                    "outlet per region", "outlet bulan lalu"],
+        "metric_families": ["outlet distribution", "acquisition", "retention",
+                            "trade supply", "trade demand", "gaming", "fwa"],
+        "use_constraints": [
+            "Use only the unified metric columns in the live schema; raw "
+            "IM3/3ID parameters without a mapped metric are not loaded.",
+            "kec_unik joins to rham_ref_territory.kec_id. Use outlet_total for "
+            "total outlet, quro for QURO and qsso_m0 for QSSO. Quote `primary`.",
+            "RGU/VLR/prepaid revenue belong to the approved Marketing highlevel "
+            "sources, not these reduced SND tables.",
+        ],
+    }
 
 
 def _schema_hash(item: dict[str, Any]) -> str:
@@ -211,6 +804,29 @@ def _schema_hash(item: dict[str, Any]) -> str:
     ]
     return hashlib.sha256(
         json.dumps(fields, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _physical_hash(item: dict[str, Any]) -> str:
+    """Hash the physical contract the SQL writer depends on.
+
+    Kept SEPARATE from `_schema_hash` on purpose: folding partitioning into the
+    column hash would mark all 238 reviewed records drifted at once, which would
+    force a blind mass re-review and destroy the signal. A partition or
+    clustering change is still a review trigger, because a query written against
+    the old partition column silently scans the whole table.
+    """
+    return hashlib.sha256(
+        json.dumps(
+            {
+                "object_type": item.get("type", "TABLE"),
+                "partition_field": item.get("partition_field"),
+                "partition_type": item.get("partition_type"),
+                "clustering_fields": item.get("clustering_fields") or [],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
     ).hexdigest()
 
 
@@ -290,6 +906,30 @@ def _decision_for(
     }
 
 
+def _inventory_columns(client: Any, table: Any) -> list[dict[str, Any]]:
+    schema = table.schema
+    if table.table_id in {
+        "rham_hvc_highlevel_mtd_serving", "rham_hvc_highlevel_mth_serving",
+    }:
+        # SELECT * views can retain obsolete names in their stored metadata.
+        # Resolve their output without executing or scanning the backing tables.
+        from google.cloud import bigquery
+
+        probe = client.query(
+            f"SELECT * FROM `{table.full_table_id.replace(':', '.')}` WHERE FALSE",
+            job_config=bigquery.QueryJobConfig(dry_run=True, use_query_cache=False),
+            location=config.BQ_LOCATION,
+        )
+        schema = probe.schema
+        if not schema:
+            raise ValueError(f"Could not resolve live view schema: {table.table_id}")
+    return [
+        {"name": field.name, "type": field.field_type, "mode": field.mode,
+         "description": field.description}
+        for field in schema
+    ]
+
+
 def _live_inventory() -> dict[str, Any]:
     from app.bigquery_tool import get_client
 
@@ -308,15 +948,7 @@ def _live_inventory() -> dict[str, Any]:
             "partition_type": str(getattr(table.time_partitioning, "type_", "")) or None,
             "clustering_fields": table.clustering_fields or [],
             "description": table.description,
-            "columns": [
-                {
-                    "name": field.name,
-                    "type": field.field_type,
-                    "mode": field.mode,
-                    "description": field.description,
-                }
-                for field in table.schema
-            ],
+            "columns": _inventory_columns(client, table),
         })
     return {"project": config.BQ_PROJECT, "dataset": config.BQ_DATASET, "tables": tables}
 
@@ -378,9 +1010,13 @@ def merge_catalog(
 ) -> dict[str, Any]:
     governed = governance.get("objects", {})
     tables = []
+    new_objects: list[str] = []
+    schema_drift: list[dict[str, Any]] = []
+    partition_drift: list[dict[str, Any]] = []
     for item in sorted(inventory.get("tables", []), key=lambda row: row["name"]):
         decision = governed.get(item["name"])
         if decision is None:
+            new_objects.append(item["name"])
             decision = {
                 "lifecycle": "candidate",
                 "object_class": _object_class(item["name"], item),
@@ -390,9 +1026,35 @@ def merge_catalog(
                 "review_id": None,
                 "schema_hash": _schema_hash(item),
             }
+        else:
+            live_schema = _schema_hash(item)
+            if decision.get("schema_hash") != live_schema:
+                schema_drift.append({
+                    "name": item["name"],
+                    "lifecycle": decision.get("lifecycle"),
+                    "reviewed": decision.get("schema_hash"),
+                    "live": live_schema,
+                })
+            # Absent on records written before physical hashing existed. Treat the
+            # missing value as "not yet reviewed" rather than as drift, so the
+            # first run does not flag every pre-existing record.
+            reviewed_physical = decision.get("physical_hash")
+            live_physical = _physical_hash(item)
+            if reviewed_physical is not None and reviewed_physical != live_physical:
+                partition_drift.append({
+                    "name": item["name"],
+                    "lifecycle": decision.get("lifecycle"),
+                    "reviewed": reviewed_physical,
+                    "live": live_physical,
+                    "partition_field": item.get("partition_field"),
+                })
         tables.append({**item, "governance": decision})
     live_names = {item["name"] for item in inventory.get("tables", [])}
     missing = sorted(set(governed) - live_names)
+    missing_approved = sorted(
+        name for name in missing
+        if governed.get(name, {}).get("lifecycle") == "approved"
+    )
     return {
         "schema_version": 1,
         "tool_version": TOOL_VERSION,
@@ -401,14 +1063,50 @@ def merge_catalog(
         "audited_at": datetime.now(timezone.utc).isoformat(),
         "tables": tables,
         "missing_governed_objects": missing,
+        "delta": {
+            "new_objects": new_objects,
+            "missing_governed_objects": missing,
+            "missing_approved_objects": missing_approved,
+            "schema_drift": schema_drift,
+            "partition_drift": partition_drift,
+        },
         "summary": {
             "live_objects": len(tables),
             "approved": sum(t["governance"]["lifecycle"] == "approved" for t in tables),
             "candidate": sum(t["governance"]["lifecycle"] == "candidate" for t in tables),
             "quarantined": sum(t["governance"]["lifecycle"] == "quarantined" for t in tables),
             "rejected": sum(t["governance"]["lifecycle"] == "rejected" for t in tables),
+            "superseded": sum(t["governance"]["lifecycle"] == "superseded" for t in tables),
+            "new_objects": len(new_objects),
+            "missing_governed": len(missing),
+            "missing_approved": len(missing_approved),
+            "schema_drift": len(schema_drift),
+            "partition_drift": len(partition_drift),
         },
     }
+
+
+def validate_catalog(catalog: dict[str, Any]) -> list[str]:
+    """Discovery-level gate. An unreviewed change must fail `--check` loudly.
+
+    Without this, a new table, a dropped approved table, or a changed schema all
+    exited zero, so a daily audit reported success while the runtime KB silently
+    described a warehouse that no longer existed.
+    """
+    delta = catalog.get("delta") or {}
+    errors: list[str] = []
+    for name in delta.get("new_objects", []):
+        errors.append(f"ungoverned new object: {name}")
+    for name in delta.get("missing_approved_objects", []):
+        errors.append(f"approved object is missing from the live dataset: {name}")
+    for entry in delta.get("schema_drift", []):
+        if entry.get("lifecycle") == "approved":
+            errors.append(f"approved object has unreviewed schema drift: {entry['name']}")
+    for entry in delta.get("partition_drift", []):
+        if entry.get("lifecycle") == "approved":
+            errors.append(
+                f"approved object has unreviewed partition drift: {entry['name']}")
+    return errors
 
 
 def _normalize_type(value: str) -> str:
@@ -419,7 +1117,7 @@ def _normalize_type(value: str) -> str:
     }.get(value, value)
 
 
-def _column_description(name: str) -> str:
+def _column_description(name: str, ctype: str = "") -> str:
     lower = name.lower()
     exact = {
         "dt_id": "Tanggal data.",
@@ -432,9 +1130,26 @@ def _column_description(name: str) -> str:
         "brand": "Brand atau operator pada baris.",
         "revenue": "Revenue dalam rupiah.",
         "hit": "Jumlah transaksi.",
+        "bill_acc": "Nomor billing account pelanggan (data pribadi, diblokir).",
+        "customer_id": "ID pelanggan (data pribadi, diblokir).",
+        "customer_name": "Nama pelanggan (data pribadi, diblokir).",
+        "sales_code": "Kode sales (identitas sales, diblokir).",
+        "sales_name": "Nama sales (identitas sales, diblokir).",
+        "manager": "Nama manager sales (identitas, diblokir).",
+        "rm": "Nama regional manager (identitas, diblokir).",
+        "remark": "Catatan bebas status order.",
+        "age": "Umur atau kelompok umur pelanggan.",
+        "location": "Nama lokasi.",
+        "dati_ii": "Daerah tingkat II (kabupaten/kota).",
+        "twr_owner": "Pemilik tower (TowerCo).",
+        "scope_of_work": "Lingkup pekerjaan proyek site.",
+        "update_time": "Waktu update data.",
+        "morphology": "Morfologi area (urban, suburban, rural).",
     }
     if lower in exact:
         return exact[lower]
+    if re.fullmatch(r"addfield\d+", lower):
+        return "Field tambahan generik dari sumber; isi tidak terdokumentasi, jangan dipakai sebagai metrik."
     if "revenue" in lower or lower.startswith("rev_"):
         return "Metrik revenue. Jaga unit rupiah dan grain table."
     if "traffic" in lower:
@@ -445,7 +1160,130 @@ def _column_description(name: str) -> str:
         return "Jumlah sampel untuk pembobotan atau validasi coverage."
     if lower.startswith("sum_") or lower.startswith("total_"):
         return "Metrik agregat pada grain table."
-    return ""
+    def term(token: str) -> str | None:
+        unit = re.fullmatch(r"(\d+)(mb|gb|k|mn|m|d|mbps)", token)
+        if unit:
+            return f"{unit.group(1)} {COLUMN_UNITS[unit.group(2)]}"
+        if re.fullmatch(r"w-?\d", token):
+            return f"minggu ke-{token[-1]} sebelumnya"
+        return COLUMN_TERMS.get(token)
+    tokens = [lower] if re.fullmatch(r"w-\d", lower) else re.split(r"[_\-]+", lower)
+    terms = list(dict.fromkeys(filter(None, map(term, tokens))))
+    # ponytail: token glossary, not per-column curation. Curated desc in the KB
+    # always wins (promote keeps it); refine a column there when wording matters.
+    if not terms:
+        return ("Atribut " if ctype == "STRING" else "Kolom ") + f"{name} pada grain table."
+    kind = "Atribut" if ctype in ("STRING", "BOOL", "BOOLEAN") else (
+        "Tanggal" if ctype in ("DATE", "DATETIME", "TIMESTAMP") else "Metrik")
+    return f"{kind}: {', '.join(terms)}."
+
+
+COLUMN_UNITS = {"mb": "MB", "gb": "GB", "k": "ribu", "mn": "juta", "m": "meter", "d": "hari", "mbps": "Mbps"}
+
+# Telco vocabulary used to describe columns nobody curated. Keys are lowercase
+# name tokens split on "_" or "-".
+COLUMN_TERMS = {
+    "fwa": "FWA", "ftth": "FTTH", "5g": "5G", "4g": "4G", "2g": "2G", "lte": "LTE", "volte": "VoLTE",
+    "ga": "gross add", "grossadd": "gross add", "gaq": "kualitas gross add", "qga": "kualitas gross add",
+    "rev": "revenue (Rp)", "revenue": "revenue (Rp)", "arpu": "ARPU", "amt": "nilai (Rp)", "amount": "nilai (Rp)",
+    "rgu": "RGU", "rgu90": "RGU 90 hari", "rgu30": "RGU 30 hari", "rgu90d": "RGU 90 hari", "rgu30d": "RGU 30 hari",
+    "rguga": "RGU gross add", "subs": "pelanggan", "subscriber": "pelanggan", "customers": "pelanggan",
+    "customer": "pelanggan", "msisdn": "MSISDN", "vlr": "VLR", "pau": "pelanggan aktif unik",
+    "uu": "unique user", "datauu": "data unique user", "datauu30d": "data unique user 30 hari",
+    "churn": "churn", "churn90": "churn 90 hari", "churn90d": "churn 90 hari", "churn30": "churn 30 hari",
+    "grosschurn90": "gross churn 90 hari", "churnback90": "churn back 90 hari",
+    "churnback90d": "churn back 90 hari", "churnback30": "churn back 30 hari", "back": "kembali",
+    "cb90": "churn back 90 hari", "gc90": "gross churn 90 hari", "gross": "gross", "net": "net",
+    "nett": "net", "add": "add", "adds": "add", "netadd": "net add", "closing": "closing", "opening": "opening",
+    "qsc": "quality subscriber (QSC)", "sso": "SSO", "qsso": "quality SSO", "uro": "URO", "quro": "quality URO",
+    "m0": "bulan akuisisi M0", "m1": "bulan M1", "m2": "bulan M2", "m3": "bulan M3",
+    "m1s": "survivor M1", "m2s": "survivor M2", "m3s": "survivor M3", "surv": "survival",
+    "p1m": "pack 1 bulan", "p2m": "pack 2 bulan",
+    "data": "data", "voice": "voice", "sms": "SMS", "usg": "usage", "usage": "usage", "trfc": "traffic",
+    "datavol": "volume data", "vol": "volume", "gb": "GB", "mb": "MB", "min": "menit", "hit": "transaksi",
+    "hits": "transaksi", "trx": "transaksi", "cnt": "jumlah", "count": "jumlah", "num": "jumlah",
+    "numerator": "numerator", "den": "denominator", "denum": "denominator", "eutnum": "numerator EUT",
+    "eutdenum": "denominator EUT", "prbnum": "numerator PRB", "prbdenum": "denominator PRB",
+    "pack": "pack", "packs": "pack", "packsubs": "pelanggan pack", "sp": "starter pack", "vou": "voucher",
+    "voucher": "voucher", "mobo": "MOBO", "trade": "trade", "trad": "traditional", "traditional": "traditional",
+    "nontrade": "non-trade", "organic": "organic", "digital": "digital", "online": "online",
+    "hvc": "high value customer", "mvc": "medium value customer", "lvc": "low value customer",
+    "hv": "high value", "mv": "medium value", "lv": "low value", "postpaid": "postpaid", "prepaid": "prepaid",
+    "acq": "akuisisi", "inject": "inject", "inj": "inject", "noinj": "tanpa inject", "rebuy": "rebuy",
+    "recharge": "isi ulang", "reload": "isi ulang", "sellin": "sell-in", "secondary": "secondary sales",
+    "tertiary": "tertiary sales", "primary": "primary", "saldo": "saldo", "cashback": "cashback",
+    "koin": "koin", "redeem": "redeem", "rdm": "redeem",
+    "site": "site", "cell": "cell", "outlet": "outlet", "outlets": "outlet", "outletcnt": "jumlah outlet",
+    "gerai": "gerai", "store": "store", "retailer": "retailer", "pjp": "PJP", "atl": "ATL", "sachet": "sachet",
+    "addr": "addressable site", "addressable": "addressable", "base": "base", "new": "baru", "old": "lama",
+    "imei": "IMEI", "device": "device", "dev": "device", "esim": "eSIM", "sim": "SIM", "os": "OS",
+    "circle": "circle", "region": "region", "area": "area", "branch": "branch", "cluster": "cluster",
+    "micro": "micro", "mc": "micro cluster", "kecamatan": "kecamatan", "kec": "kecamatan",
+    "kabkota": "kabupaten/kota", "kabkot": "kabupaten/kota", "province": "provinsi", "city": "kota",
+    "territory": "territory", "partner": "partner", "java": "Jawa", "nonjava": "luar Jawa",
+    "urban": "urban", "rural": "rural", "latitude": "latitude", "longitude": "longitude",
+    "lat": "latitude", "lon": "longitude", "coord": "koordinat", "geog": "geografi",
+    "dt": "tanggal", "date": "tanggal", "month": "bulan", "mth": "bulan", "week": "minggu",
+    "weekly": "mingguan", "daily": "harian", "dly": "harian", "daiy": "harian", "monthly": "bulanan",
+    "day": "hari", "days": "hari", "year": "tahun", "period": "periode", "snapshot": "snapshot",
+    "mtd": "MTD", "lmtd": "LMTD", "llmtd": "LLMTD", "llm": "LLM", "ytd": "YTD", "lytd": "LYTD", "yoy": "YoY",
+    "30d": "30 hari", "90d": "90 hari", "180d": "180 hari", "7d": "7 hari", "91d": "91 hari",
+    "4week": "4 minggu", "avg4week": "rata-rata 4 minggu", "cons4wk": "4 minggu berturut",
+    "avg": "rata-rata", "mean": "rata-rata", "median": "median", "p10": "persentil 10",
+    "p90": "persentil 90", "p995": "persentil 99.5", "p999": "persentil 99.9", "total": "total",
+    "tot": "total", "abs": "absolut", "pct": "persen", "percentage": "persen", "percent": "persen",
+    "perc": "persen", "ratio": "rasio", "share": "share", "ms": "market share", "soga": "share of gross add",
+    "score": "skor", "flag": "flag", "is": "flag", "has": "flag", "status": "status", "type": "tipe",
+    "category": "kategori", "class": "kelas", "classification": "klasifikasi", "segment": "segmen",
+    "seg": "segmen", "group": "grup", "tier": "tier", "grade": "grade", "bucket": "bucket",
+    "name": "nama", "nm": "nama", "id": "ID", "code": "kode", "desc": "deskripsi",
+    "ioh": "IOH", "im3": "IM3", "3id": "3ID", "tsel": "Telkomsel", "xl": "XL", "xls": "XLSmart",
+    "sf": "Smartfren", "industry": "industri", "fb": "Facebook benchmark", "ookla": "Ookla benchmark",
+    "speed": "kecepatan", "download": "download", "downloadspeed": "kecepatan download",
+    "upload": "upload", "uploadspeed": "kecepatan upload", "dl": "downlink", "ul": "uplink",
+    "tput": "throughput", "thp": "throughput", "throughput": "throughput", "mbps": "Mbps",
+    "latency": "latency", "jitter": "jitter", "rtt": "round-trip time", "delay": "delay",
+    "video": "video", "vid": "video", "streaming": "streaming", "strm": "streaming", "stall": "stall",
+    "youtube": "YouTube", "tiktok": "TikTok", "facebook": "Facebook", "instagram": "Instagram",
+    "whatsapp": "WhatsApp", "web": "web", "browsing": "browsing", "game": "game",
+    "gamesexperience": "game experience", "videoexperience": "video experience",
+    "livevideoexperience": "live video experience", "voiceappexperience": "voice app experience",
+    "coverageexperience": "coverage experience", "experience": "experience", "qoe": "QoE",
+    "avail": "availability", "availability": "availability", "avail2g": "availability 2G",
+    "avail4g": "availability 4G", "avail5g": "availability 5G", "2gavail": "availability 2G",
+    "4gavail": "availability 4G", "losshour": "jam hilang", "lowsite": "site availability rendah",
+    "lowsite99": "site availability <99%", "lowsite80": "site availability <80%",
+    "lowsite70": "site availability <70%", "rsrp": "RSRP", "rsrq": "RSRQ", "cqi": "CQI", "cssr": "CSSR",
+    "dcr": "drop call rate", "ho": "handover", "hosr": "handover success rate", "cdr": "call drop rate",
+    "prb": "PRB", "eutprb": "utilisasi PRB", "eut": "utilisasi E-UTRAN", "utilization": "utilisasi",
+    "util": "utilisasi", "load": "load", "bh": "busy hour", "congest": "kongesti", "rb": "resource block",
+    "mw": "microwave", "rf": "RF", "signal": "sinyal", "strength": "kekuatan", "peak": "puncak",
+    "capacity": "kapasitas", "band": "band", "nr": "NR", "nr2600": "NR2600", "2600": "band 2600",
+    "700": "band 700", "900": "band 900", "1800": "band 1800", "2100": "band 2100",
+    "rollout": "rollout", "rfs": "ready for service", "rfi": "ready for installation", "caf": "CAF",
+    "permit": "izin", "po": "purchase order", "vendor": "vendor", "program": "program", "project": "proyek",
+    "projects": "proyek", "homepass": "homepass", "install": "instalasi", "order": "order", "so": "service order",
+    "sa": "service activation", "pa": "permanent active", "aging": "aging", "mttr": "MTTR", "tt": "trouble ticket",
+    "ticket": "tiket", "complaint": "komplain", "leads": "lead", "lead": "lead", "demand": "demand",
+    "inner": "inner (dalam kecamatan)", "outer": "outer (luar kecamatan)", "source": "asal", "dest": "tujuan",
+    "pop": "populasi", "population": "populasi", "density": "kepadatan", "road": "jalan",
+    "junction": "persimpangan", "junctions": "persimpangan", "distance": "jarak", "dist": "jarak",
+    "nearest": "terdekat", "spacing": "jarak antar", "tenure": "tenure", "aon90d": "AON 90 hari",
+    "cohort": "kohort", "retention": "retensi", "productivity": "produktivitas", "quality": "kualitas",
+    "forecast": "forecast", "target": "target", "actual": "aktual", "growth": "pertumbuhan",
+    "degrowth": "penurunan", "gap": "gap", "upgrade": "upgrade", "downgrade": "downgrade",
+    "migration": "migrasi", "channel": "channel", "chan": "channel", "product": "produk",
+    "package": "paket", "price": "harga", "denom": "denominasi", "kpi": "KPI", "metric": "metrik",
+    "value": "nilai", "sales": "sales", "selling": "penjualan", "sold": "terjual", "stock": "stok",
+    "refreshed": "waktu refresh", "loaded": "waktu load", "built": "waktu build", "at": "waktu",
+    "asof": "per tanggal", "cutoff": "cutoff", "w": "minggu", "wd": "hari kerja",
+    "non": "non", "no": "tanpa", "plus": "ke atas", "above": "di atas", "upto": "sampai",
+    "less": "kurang dari", "below": "di bawah", "low": "rendah", "high": "tinggi", "first": "pertama",
+    "last": "terakhir", "overall": "keseluruhan", "connectivity": "konektivitas", "ori": "original",
+    "rete": "rasio", "rate": "rasio", "stream": "streaming", "user": "user", "users": "user",
+    "active": "aktif", "unik": "unik", "unknown": "tidak diketahui", "others": "lainnya",
+    "all": "semua", "mapping": "pemetaan", "lrs": "LRS", "dse": "DSE", "kam": "KAM",
+}
 
 
 def _infer_grain(name: str, columns: list[dict[str, Any]]) -> str:
@@ -541,7 +1379,7 @@ def _contract(name: str, item: dict[str, Any]) -> dict[str, Any]:
     priority = "high" if any(token in name for token in (
         "_mtd", "_mth", "monthly", "internal", "network_comp", "fb_network_5g"
     )) else "standard"
-    return {
+    contract = {
         "status": "approved",
         "source_kind": source_kind,
         "grain": _infer_grain(name, columns),
@@ -559,8 +1397,20 @@ def _contract(name: str, item: dict[str, Any]) -> dict[str, Any]:
         "sensitive_dimensions": [],
         "aliases": ALIASES.get(name, []),
         "schema_hash": _schema_hash(item),
+        "physical_hash": _physical_hash(item),
         "object_type": item.get("type", "TABLE"),
     }
+    # A reviewed override beats every heuristic above. `_infer_grain` picks the
+    # first recognised column and `_infer_period` reads the table-name suffix, so
+    # on a table like rham_kec_wise_tnr_mth (which carries daily, rolling-30 and
+    # MTD columns at once) the guess is simply wrong.
+    override = CONTRACT_OVERRIDES.get(name)
+    if override:
+        merged_constraints = list(dict.fromkeys(
+            constraints + list(override.get("use_constraints", []))))
+        contract.update(override)
+        contract["use_constraints"] = merged_constraints
+    return contract
 
 
 def _kb_table(item: dict[str, Any]) -> dict[str, Any]:
@@ -568,11 +1418,15 @@ def _kb_table(item: dict[str, Any]) -> dict[str, Any]:
     table = {
         "rows": int(item.get("rows") or 0),
         "bytes": int(item.get("bytes") or 0),
-        "description": item.get("description") or DESCRIPTIONS.get(item["name"], ""),
+        # A reviewed description wins over the BigQuery one: the warehouse
+        # description is frequently empty or an internal build note.
+        "description": DESCRIPTIONS.get(item["name"])
+                       or item.get("description")
+                       or "",
         "columns": [],
     }
     for column in item.get("columns", []):
-        description = column.get("description") or _column_description(column["name"])
+        description = column.get("description") or _column_description(column["name"], _normalize_type(column["type"]))
         output = {
             "name": column["name"],
             "type": _normalize_type(column["type"]),
@@ -620,6 +1474,89 @@ def _clean_rejected_references(value: Any) -> Any:
     return text
 
 
+def _refresh_distribution_guidance(kb: dict[str, Any]) -> None:
+    """Apply the reviewed SND metric contract, without editing generated JSON."""
+    snd = kb.get("domains", {}).get("sales_distribution", {}).get("agent", {})
+    persona = snd.get("persona", "")
+    snd["persona"] = persona.replace(
+        "SND KPIs: rham_snd_kpi_highlevel_dly (165 cols daily) + rham_snd_kecwise_mtd/mth.",
+        "SND KPIs: rham_snd_kpi_highlevel_dly/_mtd/_mth expose 54 unified metrics "
+        "at kecamatan x brand grain. Raw brand parameters without a metric are no longer loaded.",
+    )
+    facts = snd.get("key_facts", [])
+    for index, fact in enumerate(facts):
+        if not isinstance(fact, str):
+            continue
+        if fact.startswith("M1S/M2S/M3 (=surv_m1/m2/m3)"):
+            facts[index] = (
+                "SND highlevel survival: ga_m1/ga_m2 are the acquisition cohorts; "
+                "ga_m1s/ga_m2s are survivors after month 1/2. No month-3 survival "
+                "metric exists in this SND highlevel contract."
+            )
+        elif fact.startswith("QSSO / QURO GRAIN:"):
+            facts[index] = (
+                "QSSO / QURO GRAIN: SND highlevel uses qsso_m0 and quro at kecamatan "
+                "x brand grain. rham_snd_kecwise_mtd/_mth retain their own live schema. "
+                "rham_outlet_wise_mtd has neither metric. Never substitute an outlet "
+                "transaction proxy and present it as QSSO/QURO."
+            )
+    gtm_fact = (
+        "Approved GTM categories in zz_territory_kecamatan.super_gtm are "
+        "'MUST WIN 50', 'SUPER-88', 'REST'. Live audit on 2026-10-08 also finds "
+        "residual 'HIGH POTENTIAL' and '0' values. Treat those as legacy/unclassified "
+        "values, not aliases of REST; do not silently relabel or discard them. "
+        "The separate high-potential report source was dropped and is not queryable."
+    )
+    guidance = {
+        "sales_distribution": (
+            "SND highlevel metric contract (2026-10-08): use outlet_total, ono, osa, "
+            "sso, uro, quro, qsso_m0, site_3qsso, site_5quro, site_addr, rgu_ga_fwa, "
+            "rev_game, rgu_ga_trade, rgu_ga_trad_no_inj, tertiary_b and ga_m1/ga_m1s/ga_m2/ga_m2s. "
+            "Use SUM(`primary`) for the primary metric. Monthly uses _mth, MTD uses "
+            "_mtd, daily uses _dly, with literal bounded partition filters. Join "
+            "kec_unik to rham_ref_territory.kec_id for Circle/Region/Area/District. "
+            "Mapping authority is rham_ref_snd_metric (brand, parameter, metric), "
+            "currently candidate, not an approved runtime SQL source. RGU/VLR/prepaid "
+            "revenue must come from approved Marketing sources, not SND highlevel. "
+            "For other removed raw parameters, use another approved source only "
+            "if its live KB schema actually contains the requested metric; "
+            "otherwise state that it is unavailable. Preserve NULL when a brand has "
+            "no mapped/populated metric; do not turn missing primary into an "
+            "observed zero with COALESCE."
+        ),
+        "kpi_summary": (
+            "Marketing highlevel SND columns (2026-10-08): use ono, osa, `primary`, "
+            "secondary, sso, uro, quro, qsso_m0, site_3qsso, site_5quro, rguga_digital, "
+            "rguga_digital_modern, rguga_digital_ola, rguga_digital_online and "
+            "rgu_ga_trad_no_inj. sso/uro now contain real SND data. Since 2026-10-08 "
+            "all 54 SND metrics are also loaded here under their metric names "
+            "(outlet_total, tertiary_b*, trade_supply, trade_demand, rgu_ga, sellin_fwa, "
+            "acq_rev, rev_game ...); SND survival is snd_ga_m1s/snd_ga_m2s because "
+            "ga_m1s/ga_m2s here are the Marketing metrics. The always-zero placeholders "
+            "q_uro, q_sso, qsc, vlr_postpaid, site_3/5_uro, site_3/5_quro, site_3/5_sso, "
+            "site_3/5_qsso and site_20/40_qsc were dropped and do not exist. "
+            "Revenue/RGU/VLR columns remain valid in Marketing highlevel."
+        ),
+        "territory_reference": gtm_fact,
+        "competitive": gtm_fact,
+    }
+    for domain, fact in guidance.items():
+        agent = kb.get("domains", {}).get(domain, {}).get("agent")
+        if agent is None:
+            continue
+        facts = agent.setdefault("key_facts", [])
+        # Replace earlier versions of the same managed fact instead of stacking them.
+        prefixes = {
+            "sales_distribution": ("SND highlevel metric contract (2026-10-08):",),
+            "kpi_summary": ("Marketing highlevel SND columns (2026-10-08):",),
+        }.get(domain, ("Current zz_territory_kecamatan.super_gtm labels are exactly ",
+                       "Approved GTM categories in zz_territory_kecamatan.super_gtm"))
+        facts[:] = [f for f in facts if f == fact or not (
+            isinstance(f, str) and f.startswith(prefixes))]
+        if fact not in facts:
+            facts.append(fact)
+
+
 def promote(kb: dict[str, Any], catalog: dict[str, Any]) -> dict[str, Any]:
     items = _catalog_items(catalog)
     decisions = {
@@ -631,11 +1568,15 @@ def promote(kb: dict[str, Any], catalog: dict[str, Any]) -> dict[str, Any]:
     for domain_key, metadata in DOMAIN_METADATA.items():
         kb["domains"].setdefault(domain_key, {**metadata, "tables": {}, "table_count": 0})
 
-    # Remove sources that are now explicitly rejected or quarantined.
+    # Remove sources that are now explicitly rejected or quarantined, AND sources
+    # that have disappeared from BigQuery. The second case used to slip through:
+    # a dropped table is absent from the catalog, so `decisions.get(name)` was
+    # None and the table stayed in the KB, leaving the agent with the schema of a
+    # table that no longer exists and a query that always fails at execution.
     for domain in kb.get("domains", {}).values():
         for name in list(domain.get("tables", {})):
             decision = decisions.get(name)
-            if decision and decision.get("lifecycle") != "approved":
+            if decision is None or decision.get("lifecycle") != "approved":
                 del domain["tables"][name]
 
     for name, decision in decisions.items():
@@ -645,6 +1586,17 @@ def promote(kb: dict[str, Any], catalog: dict[str, Any]) -> dict[str, Any]:
         item = items[name]
         if not domain_key or domain_key not in kb["domains"]:
             raise ValueError(f"Approved table {name} has no valid domain")
+        # Refreshing physical metadata from a schema nobody reviewed would put new
+        # or renamed columns in front of the SQL writer with no reviewed contract.
+        if decision.get("schema_hash") != _schema_hash(item):
+            raise ValueError(
+                f"Approved table {name} has unreviewed schema drift. Review the "
+                f"columns, update the contract, then update schema_hash.")
+        reviewed_physical = decision.get("physical_hash")
+        if reviewed_physical is not None and reviewed_physical != _physical_hash(item):
+            raise ValueError(
+                f"Approved table {name} has unreviewed partition or clustering "
+                f"drift. A stale partition rule silently scans the whole table.")
         # Ensure one owner if a reviewed decision moves a table.
         for other_key, other_domain in kb["domains"].items():
             if other_key != domain_key:
@@ -662,10 +1614,20 @@ def promote(kb: dict[str, Any], catalog: dict[str, Any]) -> dict[str, Any]:
                     column["desc"] = existing_column["desc"]
             if current.get("description"):
                 refreshed["description"] = current["description"]
+            # Physical metadata is refreshed from BigQuery; reviewed SEMANTICS are
+            # not. Without this, every promotion overwrote hand-reviewed grain,
+            # period, aggregation and alias values with name-based guesses, so a
+            # routine metadata refresh quietly undid the review.
+            if name not in CONTRACT_OVERRIDES:
+                for field in PRESERVED_CONTRACT_FIELDS:
+                    if current.get(field) not in (None, "", [], {}):
+                        refreshed[field] = current[field]
         kb["domains"][domain_key]["tables"][name] = refreshed
 
     for domain in kb["domains"].values():
         domain["table_count"] = len(domain.get("tables", {}))
+
+    _refresh_distribution_guidance(kb)
 
     facts = _clean_rejected_references(kb.get("data_facts", {}))
     facts["banned_tables"] = {
@@ -692,6 +1654,14 @@ def promote(kb: dict[str, Any], catalog: dict[str, Any]) -> dict[str, Any]:
         "retrieval": "Normally 4 tables, bounded expansion to 6 for complex domains.",
         "learning": "Successful approved queries create candidate term-to-table evidence. Three unique successes activate only an existing edge.",
         "prohibited_learning": "User text cannot create facts, tables, columns, joins, or formulas.",
+    }
+    facts["hvc_source_status"] = {
+        "authority": "rham_hvc_highlevel_mtd_serving / rham_hvc_highlevel_mth_serving (review additional-sources-2026-10-04).",
+        "reliable": "subs_hvc and hvc_rev_total, all months, kecamatan grain.",
+        "not_reliable_from_202609": "hvc_rev_organic, hvc_rev_mobo_trade, hvc_rev_digital, subs_hvc_stay, subs_hvc_in, subs_hvc_out. Report N/A, never a number.",
+        "stale_tables": "rham_hvc_kec_* and rham_hvc_site_* stop at month 202609; rham_mkt_highlevel_* HVC columns are NULL/stale from 202609.",
+        "site_grain": "rham_site_wise_monthly subs_hvc* is 0 for unpopulated months (only 202608 filled). Treat 0 as N/A.",
+        "mtd_mixed_months": "Some MTD months (202504, 202510-202602, 202608) hold FULL-MONTH hvc_rev_total, 7-8x prepaid MTD. HVC revenue above rev_prepaid for the same rows is N/A. For closed months use rham_hvc_highlevel_mth_serving.",
     }
     facts["customer_demand_tables"] = {
         "flow": [
@@ -735,7 +1705,27 @@ def validate_state(kb: dict[str, Any], governance: dict[str, Any]) -> list[str]:
             last = history[-1]
             if not (last.get("override") is True and last.get("reviewer") and last.get("evidence")):
                 errors.append(f"{name}: blocked lifecycle reversal lacks reviewed override evidence")
+        lifecycle = decision.get("lifecycle")
+        if lifecycle == "approved":
+            if decision.get("policy") != "runtime_allowed":
+                errors.append(f"{name}: approved lifecycle must use runtime_allowed policy")
+            if not decision.get("domain"):
+                errors.append(f"{name}: approved lifecycle requires a domain owner")
+            if not decision.get("reason"):
+                errors.append(f"{name}: approved lifecycle requires a reason")
+            if not decision.get("review_id"):
+                errors.append(f"{name}: approved lifecycle requires a review_id")
+        if lifecycle == "candidate" and decision.get("policy") != "not_runtime_allowed":
+            errors.append(f"{name}: candidate lifecycle must use not_runtime_allowed policy")
+        if lifecycle == "superseded":
+            if decision.get("policy") != "hard_block":
+                errors.append(f"{name}: superseded lifecycle must use hard_block policy")
+            if not decision.get("replacement_table"):
+                errors.append(f"{name}: superseded lifecycle requires a replacement_table")
     kb_tables = _existing_table_domains(kb)
+    for name in kb_tables:
+        if name not in objects:
+            errors.append(f"KB table has no governance decision: {name}")
     for name in PREVIOUSLY_REJECTED:
         if name in kb_tables:
             errors.append(f"Rejected table remains in KB: {name}")
@@ -777,6 +1767,12 @@ def main() -> int:
     if args.write_catalog or args.promote_reviewed:
         _atomic_json(config.TABLE_CATALOG_PATH, catalog)
 
+    catalog_errors = validate_catalog(catalog)
+    if args.promote_reviewed and catalog_errors:
+        raise SystemExit(
+            "Discovery validation failed. Review these objects before promoting:\n- "
+            + "\n- ".join(catalog_errors))
+
     if args.promote_reviewed:
         backup = config.KB_PATH.with_name(
             config.KB_PATH.name + ".bak" + datetime.now().strftime("%Y%m%d%H%M%S")
@@ -792,10 +1788,11 @@ def main() -> int:
     if args.compile_graph or args.promote_reviewed:
         write_graph_atomic(kb)
 
-    errors = validate_state(kb, governance)
+    errors = validate_state(kb, governance) + validate_catalog(catalog)
     summary = catalog["summary"]
     print(json.dumps({
         "summary": summary,
+        "delta": catalog["delta"],
         "kb_tables": len(_existing_table_domains(kb)),
         "governance_objects": len(governance.get("objects", {})),
         "errors": errors,

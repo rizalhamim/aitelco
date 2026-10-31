@@ -2,7 +2,7 @@
 title: "Runtime KB data fact: date_ranges"
 type: generated-knowledge
 data_fact: "date_ranges"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB data fact: `date_ranges`
@@ -14,8 +14,8 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **`date_ranges.rham_fb_network_insight_wly`:** 2026-01-04 .. 2026-04-12, uses wk_end_dt not dt_id
 - **`date_ranges.rham_forecast_*`:** Forecast tables: month_id is INT64. flag column: actual vs forecast. Use MAX(month_id) WHERE flag=actual for latest actual, flag=forecast for projections.
-- **`date_ranges.rham_kpi_highlevel_dly`:** 2022-12-01 .. 2025-11-30
-- **`date_ranges.rham_kpi_highlevel_mth`:** month_id 202212..202602 (INT64)
+- **`date_ranges.rham_mkt_highlevel_mth`:** month_id 202401..202609 (INT64)
+- **`date_ranges.rham_mkt_kpi_highlevel_dly`:** 2024-01-01 .. 2026-09-19
 - **`date_ranges.rham_report_fb_ms_national month_id`:** 202212 .. 202605
 - **`date_ranges.rham_site_wise_daily`:** latest ~2026-05-26 (rolling)
 

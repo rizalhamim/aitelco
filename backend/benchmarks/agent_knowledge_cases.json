@@ -3,80 +3,373 @@
     "name": "5g_nr2600_rollout",
     "domain": "5g",
     "question": "Status rollout NR2600 5G per site dan vendor",
-    "required_any": ["rham_5g_nr2600"]
+    "required_any": [
+      "rham_5g_nr2600"
+    ]
   },
   {
     "name": "competitive_5g_experience",
     "domain": "network_benchmark",
     "question": "Bandingkan speed dan latency 5G IOH vs TSEL per kabkota",
-    "required_any": ["rham_network_comp", "rham_fb_network_5g"]
+    "required_any": [
+      "rham_network_comp",
+      "rham_fb_network_5g"
+    ]
   },
   {
     "name": "internal_driver_tree",
     "domain": "network",
     "question": "Internal performance availability, complaint, dan revenue per kabkota",
-    "required_any": ["rham_network_internal", "rham_network_internal_kec"]
+    "required_any": [
+      "rham_network_internal",
+      "rham_network_internal_kec"
+    ]
   },
   {
     "name": "ftth_kecamatan_mtd",
     "domain": "ftth",
     "question": "FTTH TUR homepass dan subscriber MTD per kecamatan",
-    "required_any": ["rham_ftth_kec_wise_mtd"]
+    "required_any": [
+      "rham_ftth_kec_wise_mtd"
+    ]
   },
   {
     "name": "fwa_retention",
     "domain": "fwa",
     "question": "FWA retention D90 dan gross adds per area bulan ini",
-    "required_any": ["rham_fwa_monthly_kpi"]
+    "required_any": [
+      "rham_fwa_monthly_kpi"
+    ]
   },
   {
     "name": "demand_origin_destination",
     "domain": "customer_demand",
     "question": "Demand inner outer dari source kecamatan ke destination MTD",
-    "required_any": ["rham_demand_inner_outer_mtd"]
+    "required_any": [
+      "rham_demand_inner_outer_mtd"
+    ]
   },
   {
     "name": "daily_demand_origin_destination",
     "domain": "customer_demand",
     "question": "Demand inner outer harian dari kecamatan asal ke tujuan",
-    "required_any": ["rham_demand_inner_outer"]
+    "required_any": [
+      "rham_demand_inner_outer"
+    ]
   },
   {
-    "name": "subscriber_migration",
+    "name": "subscriber_migration_source_is_gone",
     "domain": "customer_demand",
     "question": "Migration matrix pack dan channel subscriber bulan terbaru",
-    "required_any": ["rham_subs_traffic_agg_migration_matrix_monthly"]
+    "comment": "rham_subs_traffic_agg_migration_matrix_monthly was DELETED from BigQuery (review 2026-09-17). Its successor rham_migration_matrix_monthly holds a single month, so it is still a candidate. Until it is promoted, the only correct behaviour is to NOT retrieve the dead table.",
+    "forbidden": [
+      "rham_subs_traffic_agg_migration_matrix_monthly",
+      "rham_subs_traffic_agg_segment_mtd_lmtd",
+      "rham_subs_traffic_agg_geo_mtd_lmtd"
+    ]
   },
   {
     "name": "gaming_demand",
     "domain": "customer_demand",
     "question": "Top game berdasarkan revenue dan hit MTD",
-    "required_any": ["rham_game_mtd"]
+    "required_any": [
+      "rham_game_mtd"
+    ]
   },
   {
     "name": "outlet_spacing",
     "domain": "sales_distribution",
     "question": "Outlet spacing dan kepadatan dalam radius 500 meter",
-    "required_any": ["rham_outlet_spacing_java"]
+    "required_any": [
+      "rham_outlet_spacing_java"
+    ]
   },
   {
     "name": "sellin_ga_location",
     "domain": "acquisition",
     "question": "Hubungan sellin dan gross add location per branch",
-    "required_any": ["rham_sellin_ga_location"]
+    "required_any": [
+      "rham_sellin_ga_location"
+    ]
   },
   {
     "name": "market_share_kecamatan",
     "domain": "competitive",
     "question": "Market share IOH per kecamatan bulan terbaru",
-    "required_any": ["rham_report_fb_ms_kecamatan"],
-    "forbidden": ["rham_fb_ms_kecamatan_v2", "rham_fb_ms_kabkota_v2"]
+    "required_any": [
+      "rham_report_fb_ms_kecamatan"
+    ],
+    "forbidden": [
+      "rham_fb_ms_kecamatan_v2",
+      "rham_fb_ms_kabkota_v2"
+    ]
   },
   {
     "name": "fwa_no_customer_level",
     "domain": "fwa",
     "question": "Ringkas performa FWA per kecamatan",
-    "required_any": ["rham_fwa_kec_wise_mtd", "rham_fwa_kec_wise_mth"],
-    "forbidden": ["rham_fwa_subscriber_base", "rham_fwa_lead_scores"]
+    "required_any": [
+      "rham_fwa_kec_wise_mtd",
+      "rham_fwa_kec_wise_mth"
+    ],
+    "forbidden": [
+      "rham_fwa_subscriber_base",
+      "rham_fwa_lead_scores"
+    ]
+  },
+  {
+    "name": "new_device_gross_add",
+    "domain": "kpi_summary",
+    "question": "Berapa gross add dengan IMEI device baru per kecamatan MTD?",
+    "required_any": [
+      "rham_mkt_highlevel_mtd",
+      "rham_mkt_highlevel_mth"
+    ],
+    "forbidden": [
+      "rham_ga_quality_tracker",
+      "rham_ref_msisdn_dtu_check"
+    ]
+  },
+  {
+    "name": "postpaid_gross_add_has_no_employee_source",
+    "domain": "acquisition",
+    "question": "Gross add postpaid per channel dan store minggu ini",
+    "required_any": [
+      "rham_postpaid_ga_daily"
+    ],
+    "forbidden": [
+      "rham_postpaid_ga_daily_direct_sales",
+      "rham_postpaid_ga_daily_gerai"
+    ]
+  },
+  {
+    "name": "outlet_ga_quality_mtd",
+    "domain": "sales_distribution",
+    "question": "Outlet mana yang survival M1 gross add-nya paling rendah MTD?",
+    "required_any": [
+      "rham_outlet_ga_mtd",
+      "rham_outlet_ga_mth"
+    ],
+    "forbidden": [
+      "rham_outlet_ga_quality_ex_dtu",
+      "rham_outlet_ga_quality_mth_ex_dtu",
+      "rham_ga_quality_tracker"
+    ]
+  },
+  {
+    "name": "outlet_low_stock",
+    "domain": "sales_distribution",
+    "question": "Outlet mana yang stoknya rendah minggu ini?",
+    "required_any": [
+      "rham_outlet_low_stock"
+    ]
+  },
+  {
+    "name": "outlet_secondary_sales",
+    "domain": "sales_distribution",
+    "question": "Secondary sales per outlet MTD berapa dan berapa transaksinya?",
+    "required_any": [
+      "rham_outlet_secondary_mtd",
+      "rham_outlet_secondary_mth"
+    ]
+  },
+  {
+    "name": "market_share_5g_device",
+    "domain": "competitive",
+    "question": "Market share pengguna device 5G IOH vs Telkomsel per kabkota",
+    "required_any": [
+      "rham_report_fb_device_5g"
+    ],
+    "forbidden": [
+      "rham_fb_ms_kecamatan_v2",
+      "rham_fb_ms_kabkota_v2"
+    ]
+  },
+  {
+    "name": "market_share_5g_network",
+    "domain": "competitive",
+    "question": "Pangsa pasar pengguna jaringan 5G per operator",
+    "required_any": [
+      "rham_report_fb_network_5g",
+      "rham_report_fb_device_5g"
+    ]
+  },
+  {
+    "name": "site_ga_quality",
+    "domain": "site_performance",
+    "question": "Kualitas gross add per site: QSC dan survival M1 MTD",
+    "required_any": [
+      "rham_site_ga_quality_mtd",
+      "rham_site_ga_quality_mth"
+    ],
+    "forbidden": [
+      "rham_site_wise_daily_snap_20260828",
+      "rham_ga_quality_tracker"
+    ]
+  },
+  {
+    "name": "site_traffic_usage",
+    "domain": "site_performance",
+    "question": "Traffic usage data per site MTD",
+    "required_any": [
+      "rham_site_wise_mtd",
+      "rham_site_wise_monthly"
+    ],
+    "forbidden": [
+      "rham_site_traffic_usage_mtd",
+      "rham_site_traffic_usage_mth"
+    ]
+  },
+  {
+    "name": "kecamatan_tenure_kpi",
+    "domain": "kpi_summary",
+    "question": "Revenue dan churn per tenure group di kecamatan MTD",
+    "required_any": [
+      "rham_kec_wise_tnr_mtd",
+      "rham_kec_wise_tnr_mth"
+    ],
+    "forbidden": [
+      "rham_kec_wise_tnr"
+    ]
+  },
+  {
+    "name": "daily_kpi_uses_marketing_source",
+    "domain": "kpi_summary",
+    "question": "Tren harian revenue dan gross add per kecamatan selama 14 hari terakhir",
+    "required_any": [
+      "rham_mkt_kpi_highlevel_dly"
+    ],
+    "forbidden": [
+      "rham_kpi_highlevel_dly",
+      "rham_kpi_highlevel_mtd",
+      "rham_kpi_highlevel_mth"
+    ]
+  },
+  {
+    "name": "district_territory_reference",
+    "domain": "territory_reference",
+    "question": "Daftar District dan Area beserta kecamatan di Region East Java",
+    "required_any": [
+      "rham_ref_territory",
+      "zz_territory_kecamatan"
+    ]
+  },
+  {
+    "name": "kecamatan_product_successor",
+    "domain": "product",
+    "question": "Revenue product group per kecamatan MTD",
+    "required_any": [
+      "rham_kec_data_rev_product_mtd"
+    ],
+    "forbidden": [
+      "rham_site_data_rev_product_mtd",
+      "rham_site_data_rev_product_mth"
+    ]
+  },
+  {
+    "name": "kecamatan_channel_successor",
+    "domain": "revenue",
+    "question": "Revenue ATL BTL channel detail per kecamatan MTD",
+    "required_any": [
+      "rham_kec_data_rev_channel_mtd"
+    ],
+    "forbidden": [
+      "rham_site_data_rev_channel_mtd",
+      "rham_site_data_rev_channel_mth"
+    ]
+  },
+  {
+    "name": "ftth_mttr",
+    "domain": "ftth",
+    "question": "Berapa MTTR trouble ticket FTTH bulan ini per bucket?",
+    "required_any": [
+      "rham_ftth_tt_mttr"
+    ],
+    "forbidden": [
+      "rham_ftth_tt_single_detail",
+      "rham_ftth_tt_mo_impacted",
+      "rham_ftth_tt_mo_detail"
+    ]
+  },
+  {
+    "name": "hvc_serving_total",
+    "domain": "customer_hvc",
+    "question": "Berapa subscriber HVC dan revenue HVC total per circle bulan ini?",
+    "required_any": [
+      "rham_hvc_highlevel_mtd_serving",
+      "rham_hvc_highlevel_mth_serving"
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "ftth_install_orders",
+    "domain": "ftth",
+    "question": "Berapa jumlah order instalasi FTTH per status dan vendor?",
+    "required_any": [
+      "rham_ftth_install_orders"
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "outlet_ga_5g",
+    "domain": "sales_distribution",
+    "question": "Outlet mana dengan GA 5G tertinggi bulan ini?",
+    "required_any": [
+      "rham_outlet_ga_5g_mtd",
+      "rham_outlet_ga_5g_mth"
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "fb_ms_5g_device",
+    "domain": "competitive",
+    "question": "Berapa market share 5G device Facebook IOH per kabupaten minggu terakhir?",
+    "required_any": [
+      "rham_fb_ms_5g_device"
+    ],
+    "forbidden": [
+      "rham_fb_ms_kabkota_v2"
+    ]
+  },
+  {
+    "name": "snd_unified_trade_metrics",
+    "domain": "sales_distribution",
+    "question": "Trade supply, trade demand, primary, secondary, tertiary B Circle Java bulan September 2026 per brand",
+    "required_any": [
+      "rham_snd_kpi_highlevel_mth",
+      "rham_snd_kpi_highlevel_mtd"
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "snd_quality_outlets_mtd",
+    "domain": "sales_distribution",
+    "question": "SSO, URO, QURO, QSSO Circle Java MTD Oktober 2026",
+    "required_any": [
+      "rham_snd_kpi_highlevel_mtd",
+      "rham_snd_kecwise_mtd"
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "snd_outlet_total_ono_osa",
+    "domain": "sales_distribution",
+    "question": "Total outlet dan ONO/OSA per region Java bulan lalu",
+    "required_any": [
+      "rham_snd_kpi_highlevel_mth",
+      "rham_snd_kpi_highlevel_mtd"
+    ],
+    "forbidden": []
+  },
+  {
+    "name": "gtm_current_labels_no_high_potential_source",
+    "domain": "territory_reference",
+    "question": "Kecamatan Circle Java dengan super_gtm SUPER-88, REST, MUST WIN 50",
+    "required_any": [
+      "zz_territory_kecamatan"
+    ],
+    "forbidden": [
+      "rham_report_fb_ms_focus_gtm_high_potential"
+    ]
   }
 ]

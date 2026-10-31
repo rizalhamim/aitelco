@@ -19,8 +19,8 @@ _SHP_PATH = os.environ.get(
 _PROJECT = config.BQ_PROJECT
 _DATASET = config.BQ_DATASET
 
-_CHANNEL_MTD = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_channel_mtd`"
-_CHANNEL_MTH = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_channel_mth`"
+_CHANNEL_MTD = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_channel_mtd`"
+_CHANNEL_MTH = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_channel_mth`"
 
 
 @lru_cache(maxsize=1)
@@ -57,32 +57,19 @@ def locate_kecamatan(lat: float, lon: float) -> dict | None:
         log.error(f"shapely missing: {e}")
         return None
     pt = Point(lon, lat)  # shapely uses (x=lon, y=lat)
-    nearest = None
-    nearest_d = None
     for bbox, geom, rec in _shp_index():
         if not (bbox[0] <= lon <= bbox[2] and bbox[1] <= lat <= bbox[3]):
-            # track nearest centroid as a fallback (point just outside borders)
-            try:
-                c = geom.centroid
-                d = (c.x - lon) ** 2 + (c.y - lat) ** 2
-                if nearest_d is None or d < nearest_d:
-                    nearest_d, nearest = d, rec
-            except Exception:
-                pass
             continue
-        if geom.contains(pt):
-            return rec
-    # not strictly inside any polygon -> use nearest centroid if close (<~5km)
-    if nearest is not None and nearest_d is not None and nearest_d < 0.0025:
-        return nearest
+        if geom.covers(pt):
+            return {**rec, "location_method": "polygon", "boundary": geom.boundary.covers(pt)}
     return None
 
 
 def _haversine_sql(col_lat: str, col_lon: str, lat: float, lon: float) -> str:
     return (
-        f"(6371 * ACOS(LEAST(1.0, COS({lat}*ACOS(-1)/180) * "
+        f"(6371 * ACOS(GREATEST(-1.0, LEAST(1.0, COS({lat}*ACOS(-1)/180) * "
         f"COS({col_lat}*ACOS(-1)/180) * COS({col_lon}*ACOS(-1)/180 - {lon}*ACOS(-1)/180) + "
-        f"SIN({lat}*ACOS(-1)/180) * SIN({col_lat}*ACOS(-1)/180)))) "
+        f"SIN({lat}*ACOS(-1)/180) * SIN({col_lat}*ACOS(-1)/180))))) "
     )
 
 
@@ -98,8 +85,8 @@ WITH addr AS (
          kecamatan, kabupaten, site_type, category, profitability_status_m1
   FROM {t}.rham_site_wise_addr_java`
   WHERE month_id = (SELECT MAX(month_id) FROM {t}.rham_site_wise_addr_java`)
-    AND SAFE_CAST(latitude AS FLOAT64) IS NOT NULL
-    AND SAFE_CAST(longitude AS FLOAT64) IS NOT NULL
+    AND SAFE_CAST(latitude AS FLOAT64) BETWEEN -90 AND 90
+    AND SAFE_CAST(longitude AS FLOAT64) BETWEEN -180 AND 180
 ),
 perf AS (
   SELECT site_id, SUM(rev_prepaid) AS revenue, SUM(subs_rgu_90d) AS subs_rgu_90d
@@ -131,14 +118,15 @@ def nearest_sites_perf(lat: float, lon: float, n: int = 100, months: int = 12) -
 SELECT site_id, site_name,
        SAFE_CAST(latitude AS FLOAT64) AS latitude,
        SAFE_CAST(longitude AS FLOAT64) AS longitude,
-       circle, region, area, branch, micro_cluster, kecamatan, kabupaten, provinsi,
+       circle, region, branch AS area, branch, micro_cluster AS district, micro_cluster,
+       kecamatan_unik AS kec_id, kecamatan, kabupaten, provinsi,
        site_type, category, addressable, profitability_status_m1,
        rgs_category, traffic_category, project_new_site,
        ROUND({dist}, 2) AS distance_km
 FROM {t}.rham_site_wise_addr_java`
 WHERE month_id = (SELECT MAX(month_id) FROM {t}.rham_site_wise_addr_java`)
-  AND SAFE_CAST(latitude AS FLOAT64) IS NOT NULL
-  AND SAFE_CAST(longitude AS FLOAT64) IS NOT NULL
+  AND SAFE_CAST(latitude AS FLOAT64) BETWEEN -90 AND 90
+  AND SAFE_CAST(longitude AS FLOAT64) BETWEEN -180 AND 180
 ORDER BY distance_km ASC
 LIMIT {int(n)}
 """.strip()
@@ -172,7 +160,7 @@ LIMIT {int(n)}
   SUM(rev_vsd) AS rev_vsd,
   SUM(subs_rgu_90d) AS rgu_90d, SUM(subs_rgu_30d) AS rgu_30d,
   SUM(subs_gross_add) AS gross_add, SUM(net_add_90d) AS net_add_90d,
-  SUM(gross_churn_90d) AS gross_churn_90d, SUM(subs_hvc) AS subs_hvc,
+  SUM(gross_churn_90d) AS gross_churn_90d, NULLIF(SUM(subs_hvc), 0) AS subs_hvc,
   SUM(usg_data_gb) AS usg_data_gb, SUM(avg_subs_vlr_daily) AS vlr_daily""".strip()
 
     def _perf_for(table: str, month_filter: str) -> dict:
@@ -264,17 +252,18 @@ ORDER BY site_id, month_id
     def _chan_sum(table: str, month_filter: str) -> dict:
         """{(site_id, channel_group, channel_detail): revenue} for a month set."""
         sql = f"""
-SELECT site_id, channel_group, channel_detail, COALESCE(SUM(revenue),0) AS revenue
+SELECT kec_id, channel_group, channel_detail, COALESCE(SUM(revenue),0) AS revenue
 FROM {table}
-WHERE site_id IN ({id_list}) AND kpi_group='REVENUE DATA' AND {month_filter}
-GROUP BY site_id, channel_group, channel_detail
+WHERE kec_id IN ({kec_list}) AND kpi_group='REVENUE DATA' AND {month_filter}
+GROUP BY kec_id, channel_group, channel_detail
 """.strip()
         out: dict = {}
         for r in run_query(sql, row_limit=int(n) * 60)["rows"]:
-            key = (r.get("site_id"), r.get("channel_group"), r.get("channel_detail"))
+            key = (r.get("kec_id"), r.get("channel_group"), r.get("channel_detail"))
             out[key] = float(r.get("revenue") or 0)
         return out
 
+    kec_list = ",".join("'" + str(r.get("kec_id", "")).replace("'", "") + "'" for r in rows) or "''"
     ch_full = _chan_sum(_CHANNEL_MTH, f"month_id = '{cur_m}'")          # current full month
     ch_mtd = _chan_sum(_CHANNEL_MTD, f"month_id = '{cur_m}'")           # MTD this year
     ch_lmtd = _chan_sum(_CHANNEL_MTD, f"month_id = '{prev_m}'")         # LMTD
@@ -407,7 +396,9 @@ GROUP BY site_id, channel_group, channel_detail
             "yoy": yoy,
             "metrics": metrics,
             "channels": channels,
-            "channel_groups": _channel_block(sid),
+            "channel_groups": _channel_block(r.get("kec_id")),
+            "channel_grain": "kecamatan",
+            "channel_scope": r.get("kec_id"),
             "history": hist.get(sid, []),
         })
     return {"sites": sites, "month_id": mm, "prev_month_id": str(prev_m),
@@ -428,8 +419,8 @@ SELECT outlet_id, outlet_name, site_id,
        ROUND({dist}, 2) AS distance_km
 FROM {t}.rham_outlet_nbs`
 WHERE month_id = (SELECT MAX(month_id) FROM {t}.rham_outlet_nbs`)
-  AND SAFE_CAST(outlet_latitude AS FLOAT64) IS NOT NULL
-  AND SAFE_CAST(outlet_longitude AS FLOAT64) IS NOT NULL
+  AND SAFE_CAST(outlet_latitude AS FLOAT64) BETWEEN -90 AND 90
+  AND SAFE_CAST(outlet_longitude AS FLOAT64) BETWEEN -180 AND 180
 ORDER BY distance_km ASC
 LIMIT {n}
 """.strip()
@@ -441,7 +432,7 @@ def kec_profile(kec_id: str) -> dict:
     t = f"`{_PROJECT}.{_DATASET}"
     safe = kec_id.replace("'", "")
     sql = f"""
-WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_mkt_highlevel_mtd`)
+WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_hvc_highlevel_mtd_serving`)
 SELECT
   ANY_VALUE(kecamatan) AS kecamatan,
   ANY_VALUE(kabkot) AS kabkota,
@@ -455,7 +446,7 @@ SELECT
   SUM(net_add_90d) AS net_add_90d,
   SUM(pack_subs) AS pack_subs,
   SUM(subs_hvc) AS subs_hvc
-FROM {t}.rham_mkt_highlevel_mtd`, mx
+FROM {t}.rham_hvc_highlevel_mtd_serving`, mx
 WHERE kec_id = '{safe}' AND month_id = mx.m
 GROUP BY month_id
 """.strip()

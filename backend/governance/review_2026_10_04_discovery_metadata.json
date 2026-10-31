@@ -1,0 +1,26 @@
+{
+  "review_id": "territory-discovery-metadata-2026-10-04",
+  "reviewed_at": "2026-10-04",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Acknowledge live physical drift only, with no runtime approval or data migration.",
+  "decisions": {
+    "rham_fb_ms_5g_device": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Retain candidate status. Physical schema drift acknowledged, semantic onboarding remains pending.",
+      "evidence": "Live October catalog shows a changed schema. Existing approved FB device sources remain authoritative."
+    },
+    "rham_fb_ms_5g_network": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Retain candidate status. Physical schema drift acknowledged, semantic onboarding remains pending.",
+      "evidence": "Live October catalog shows a changed schema. Existing approved FB network sources remain authoritative."
+    },
+    "rham_ga_quality_tracker": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Retain hard block on tracker telemetry. Acknowledge schema and partition drift without granting query access.",
+      "evidence": "Live catalog 2026-10-04 has partition dt_id and changed physical metadata. Tracker remains unsuitable for aggregate KPI queries."
+    }
+  }
+}

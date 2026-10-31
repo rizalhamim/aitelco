@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Optional
 from . import config
 from .bigquery_tool import run_query
+from .territory import scope_column
 
 _P = config.BQ_PROJECT
 _D = config.BQ_DATASET
@@ -34,10 +35,7 @@ def _circle_clause(circle: str) -> str:
 def _terr_filter(filter_type: str, filter_value: str) -> str:
     if not filter_value:
         return ""
-    col = {"region": "t.region", "area": "t.area_im3", "branch": "t.branch_im3",
-           "kabkota": "t.kabkot", "kecamatan": "t.kec_id",
-           "microcluster": "t.micro_cluster_im3",
-           "supergtm": "t.super_gtm", "island": "t.island"}.get(filter_type)
+    col = scope_column(filter_type)
     return f" AND {col} = '{_esc(filter_value)}'" if col else ""
 
 

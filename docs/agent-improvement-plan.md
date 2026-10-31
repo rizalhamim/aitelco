@@ -1,8 +1,8 @@
 # Bizplan Java agent: improvement plan and execution journey
 
 Owner doc for making the chat agent (routing, SQL, knowledge, synthesis) more precise, fluid,
-and natural. Written 2026-08-21. Executable by Claude opus (or codex) following the operating
-protocol in `AGENTS.md`. Never use em-dashes in any change this plan produces.
+and natural. Written 2026-08-21. Executable by any coding model (Opus 5.5, Fable 5.1, GPT 6.1 Sol,
+Astra 6.1) following the operating loop in `AGENTS.md`. Never use em-dashes in any change this plan produces.
 
 ## Ground rules for every phase
 
@@ -12,8 +12,8 @@ protocol in `AGENTS.md`. Never use em-dashes in any change this plan produces.
 - Knowledge fixes go in `backend/data/knowledge_base.json` only (then backend restart,
   `tools_graphify_kb.py`). Never patch an agent prompt with a table-specific fact.
 - Gates that must stay green after every phase:
-  `venv/bin/python -m pytest tests/ -q` (34 pass) and
-  `venv/bin/python tools_agent_knowledge_benchmark.py` (13/13).
+  `venv/bin/python -m pytest tests/ -q` (all pass; 394 on 2026-10-08) and
+  `venv/bin/python tools_agent_knowledge_benchmark.py` (full pass; 32/32 on 2026-10-08).
 - Full measurement protocol: restart backend, then run
   `backend/data/training/run_hard_questions.py` (hard-30) and
   `run_correlation_questions.py` (correlation-30). Results overwrite `*_results_latest.json`;

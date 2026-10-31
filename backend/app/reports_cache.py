@@ -25,7 +25,7 @@ from .bigquery_tool import run_query
 _PROJECT = config.BQ_PROJECT
 _DATASET = config.BQ_DATASET
 _MTD = f"`{_PROJECT}.{_DATASET}.rham_mkt_highlevel_mtd`"
-_CHANNEL = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_channel_mtd`"
+_CHANNEL = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_channel_mtd`"
 
 _FB_NET = f"`{_PROJECT}.{_DATASET}.rham_fb_network_territory_wly_wide`"
 _FWA_MTD = f"`{_PROJECT}.{_DATASET}.rham_fwa_kec_wise_mtd`"

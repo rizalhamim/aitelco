@@ -1,0 +1,44 @@
+{
+  "review_id": "schema-drift-2026-10-08",
+  "reviewed_at": "2026-10-08",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Re-approve highlevel KPI sources after the 2026-10-07 live schema change so the runtime KB stops describing dropped columns.",
+  "decisions": {
+    "rham_mkt_highlevel_mtd": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Columns renamed upstream: primary_all to primary, secondary_nat to secondary, *_nat outlet and GA channel columns to unsuffixed names; tertiary_a_nat dropped.",
+      "evidence": "Live 2026-10-07: 278 columns. SUM(primary) 202609 = 91.58B and SUM(secondary) = 152.55B, identical through rham_hvc_highlevel_mtd_serving. Comprehensive report returned BigQuery 400 'Name primary_all not found' until repointed."
+    },
+    "rham_mkt_highlevel_mth": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Same upstream rename as the MTD table.",
+      "evidence": "Live 2026-10-07: mth 202608 primary 662.90B, secondary 1,080.56B, equal to the serving view."
+    },
+    "rham_snd_kpi_highlevel_dly": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Upstream reduced the S&D KPI contract from 165 to 58 columns (acq_rev*, ga_m1s/m2s, outlet_total, tertiary_b inner/outer by product, sellin_fwa, site_addr).",
+      "evidence": "Live 2026-10-07 INFORMATION_SCHEMA. No backend or client code reads a removed column."
+    },
+    "rham_snd_kpi_highlevel_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Same reduced S&D contract as the daily table, MTD grain.",
+      "evidence": "Live 2026-10-07: 59 columns."
+    },
+    "rham_snd_kpi_highlevel_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Same reduced S&D contract, monthly grain.",
+      "evidence": "Live 2026-10-07: 59 columns."
+    },
+    "rham_report_fb_ms_focus_gtm_high_potential": {
+      "lifecycle": "rejected",
+      "domain": "competitive",
+      "reason": "Table dropped upstream 2026-10-07 and HIGH POTENTIAL AREA label removed from super_gtm. No replacement exists, so superseded is invalid; rejected removes it from the runtime KB.",
+      "evidence": "fbms-gtm-cleanup-2026-10-07 decision; table absent from live INFORMATION_SCHEMA 2026-10-07."
+    }
+  }
+}

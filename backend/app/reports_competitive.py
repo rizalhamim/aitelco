@@ -173,7 +173,7 @@ def build_competitive(
     """
     catalog = load_network_report_catalog()
     source_page = catalog["pages"]["competitive"]
-    grain = "kecamatan" if filter_type == "kecamatan" else "kabkota"
+    grain = "kecamatan" if filter_type in ("kecamatan", "area", "district", "branch", "microcluster") else "kabkota"
     page = _served_page(source_page, grain)
     values: dict[tuple[str, str, str], float | None] = {}
     data_as_of: dict[str, str | None] = {}
@@ -251,4 +251,3 @@ def build_competitive(
         "data_as_of": data_as_of,
         "sections": _sections_payload(page, values, periods, basis, _BRANDS),
     }
-

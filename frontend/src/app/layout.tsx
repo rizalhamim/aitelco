@@ -27,7 +27,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Bizplan Java Agent",
-  description: "Multi-agent BigQuery analyst for Indosat (IOH) Java precalc mart",
+  description: "Multi-agent analytics assistant for Indosat (IOH) Java",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

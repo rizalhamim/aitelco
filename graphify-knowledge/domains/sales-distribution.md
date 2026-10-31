@@ -2,7 +2,7 @@
 title: "Runtime KB domain: sales_distribution"
 type: generated-knowledge
 domain: "sales_distribution"
-source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107"
+source_sha256: "7990d490f3283b38ba0f5c31e9a3c19661eecce250e2dfca6d9050d3eb6380c5"
 ---
 
 # Runtime KB domain: `sales_distribution`
@@ -12,15 +12,31 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 
 - **Label:** Sales & Distribution
 - **Description:** Kecamatan-wise sales KPIs, outlet (NBS) data, SND high-level daily. Sales, outlet, NBS, SND, distribution, dealer.
-- **Tables:** 14
+- **Tables:** 30
 - **Agent identifier:** `Sales & Distribution Analyst`
 
 ## Domain to table relationships
 
+- Domain `sales_distribution` contains table `rham_outlet_ga`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_5g_mtd`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_5g_mth`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_dtu`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_ex_dtu`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_fwa_5g_mtd`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_fwa_5g_mth`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_fwa_mtd`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_fwa_mth`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_mtd`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_mth`.
+- Domain `sales_distribution` contains table `rham_outlet_ga_mth_ex_dtu`.
 - Domain `sales_distribution` contains table `rham_outlet_junction_java`.
+- Domain `sales_distribution` contains table `rham_outlet_low_stock`.
 - Domain `sales_distribution` contains table `rham_outlet_nbs`.
 - Domain `sales_distribution` contains table `rham_outlet_population_java`.
 - Domain `sales_distribution` contains table `rham_outlet_road_java`.
+- Domain `sales_distribution` contains table `rham_outlet_secondary_daily`.
+- Domain `sales_distribution` contains table `rham_outlet_secondary_mtd`.
+- Domain `sales_distribution` contains table `rham_outlet_secondary_mth`.
 - Domain `sales_distribution` contains table `rham_outlet_spacing_java`.
 - Domain `sales_distribution` contains table `rham_outlet_transaction_java`.
 - Domain `sales_distribution` contains table `rham_outlet_wise_mtd`.
@@ -33,6 +49,702 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - Domain `sales_distribution` contains table `rham_snd_kpi_highlevel_mth`.
 
 ## Table schemas
+
+### `rham_outlet_ga`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga`.
+- Column count: 47.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `daily_within_month_partition`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `standard`.
+- Relative cost tier: `high`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `device mix`, `revenue`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `ga_dt`: `DATE`
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `channel`: `STRING`
+  - `device_5g`: `STRING`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `with_traffic_5g`: `INT64`
+  - `with_traffic_5g_500mb`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+  - `cohort_ga_dt`: `DATE`
+  - `metric_month_offset`: `INT64`
+
+### `rham_outlet_ga_5g_mtd`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_5g_mtd`.
+- Column count: 44.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `mtd_cutoff_aligned`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `low`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `5g device`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `cutoff_dd`: `INT64`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `with_traffic_5g`: `INT64`
+  - `with_traffic_5g_500mb`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_5g_mth`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_5g_mth`.
+- Column count: 43.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `medium`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `5g device`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `with_traffic_5g`: `INT64`
+  - `with_traffic_5g_500mb`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_dtu`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_dtu`.
+- Column count: 47.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `daily_within_month_partition`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `standard`.
+- Relative cost tier: `high`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `ga_dt`: `DATE`
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `channel`: `STRING`
+  - `device_5g`: `STRING`
+  - `outlet_mapping_status`: `STRING`
+  - `sp_source`: `STRING`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+  - `cohort_ga_dt`: `DATE`
+  - `metric_month_offset`: `INT64`
+
+### `rham_outlet_ga_ex_dtu`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_ex_dtu`.
+- Column count: 45.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `mtd_cutoff_aligned`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `standard`.
+- Relative cost tier: `high`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `device mix`, `revenue`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `ga_dt`: `DATE`
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `channel`: `STRING`
+  - `device_5g`: `STRING`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+  - `cohort_ga_dt`: `DATE`
+  - `metric_month_offset`: `INT64`
+
+### `rham_outlet_ga_fwa_5g_mtd`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_fwa_5g_mtd`.
+- Column count: 45.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `mtd_cutoff_aligned`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `low`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `fwa`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `outlet_mapping_status`: `STRING`
+  - `cutoff_dd`: `INT64`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `first_7d_mb`: `FLOAT64`
+  - `first_7d_vlr`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_fwa_5g_mth`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_fwa_5g_mth`.
+- Column count: 44.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `low`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `fwa`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `outlet_mapping_status`: `STRING`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `first_7d_mb`: `FLOAT64`
+  - `first_7d_vlr`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_fwa_mtd`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_fwa_mtd`.
+- Column count: 45.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `mtd_cutoff_aligned`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `low`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `fwa`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `outlet_mapping_status`: `STRING`
+  - `cutoff_dd`: `INT64`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `first_7d_mb`: `FLOAT64`
+  - `first_7d_vlr`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_fwa_mth`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_fwa_mth`.
+- Column count: 44.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `low`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `fwa`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `outlet_mapping_status`: `STRING`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `first_7d_mb`: `FLOAT64`
+  - `first_7d_vlr`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_mtd`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_mtd`.
+- Column count: 42.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `mtd_cutoff_aligned`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `low`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `device mix`, `revenue`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `cutoff_dd`: `INT64`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_mth`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_mth`.
+- Column count: 41.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `medium`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `device mix`, `revenue`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_ga_mth_ex_dtu`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_ga_mth_ex_dtu`.
+- Column count: 41.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_components_then_recompute_ratio`.
+- Priority: `high`.
+- Relative cost tier: `medium`.
+- Metric families: `acquisition`, `outlet distribution`, `retention`, `device mix`, `revenue`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `ga_days`: `INT64`
+  - `rgu_ga`: `INT64`
+  - `has_5g`: `INT64`
+  - `ga_new_imei`: `INT64`
+  - `ga_old_imei`: `INT64`
+  - `ga_imei_others`: `INT64`
+  - `acq_rev_m0`: `FLOAT64`
+  - `traffic_m0`: `FLOAT64`
+  - `ga_100mb`: `INT64`
+  - `ga_500mb`: `INT64`
+  - `m1s`: `INT64`
+  - `rev_m1`: `FLOAT64`
+  - `traffic_m1`: `FLOAT64`
+  - `traffic_m1_100mb`: `INT64`
+  - `traffic_m1_500mb`: `INT64`
+  - `m2s`: `INT64`
+  - `rev_m2`: `FLOAT64`
+  - `traffic_m2`: `FLOAT64`
+  - `traffic_m2_100mb`: `INT64`
+  - `traffic_m2_500mb`: `INT64`
+  - `m3s`: `INT64`
+  - `rev_m3`: `FLOAT64`
+  - `traffic_m3`: `FLOAT64`
+  - `traffic_m3_100mb`: `INT64`
+  - `traffic_m3_500mb`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
 
 ### `rham_outlet_junction_java`
 
@@ -52,6 +764,57 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `junction_dist_m`: `FLOAT64`
   - `junction_degree`: `INT64`
   - `n_junctions_150m`: `INT64`
+
+### `rham_outlet_low_stock`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_low_stock`.
+- Column count: 37.
+- Partition columns: `dt_id`.
+- Source kind: `observed`.
+- Grain: `date_x_brand_x_outlet_x_kpi`.
+- Period semantics: `daily`.
+- Aggregation rule: `sum_additive_metrics`.
+- Priority: `standard`.
+- Relative cost tier: `high`.
+- Metric families: `outlet distribution`, `stock availability`.
+- Columns:
+  - `dt_id`: `DATE` (partition)
+  - `mth_dt`: `DATE`
+  - `month_id`: `STRING`
+  - `brand`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `mpc_short_code`: `STRING`
+  - `mpc_name`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `site_id`: `STRING`
+  - `dse_kam_id`: `STRING`
+  - `kecamatan`: `STRING`
+  - `kabkota`: `STRING`
+  - `kec_id`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `site_latitude`: `FLOAT64`
+  - `site_longitude`: `FLOAT64`
+  - `distance_m`: `FLOAT64`
+  - `kpi`: `STRING`
+  - `mtd`: `NUMERIC`
+  - `lmtd`: `NUMERIC`
+  - `llmtd`: `NUMERIC`
+  - `W-0`: `NUMERIC`
+  - `W-1`: `NUMERIC`
+  - `W-2`: `NUMERIC`
+  - `W-3`: `NUMERIC`
+  - `W-4`: `NUMERIC`
+  - `W-5`: `NUMERIC`
+  - `W-6`: `NUMERIC`
 
 ### `rham_outlet_nbs`
 
@@ -135,6 +898,223 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
   - `nearest_road_class`: `STRING`
   - `nearest_road_dist_m`: `FLOAT64`
   - `n_major_roads_50m`: `INT64`
+
+### `rham_outlet_secondary_daily`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_secondary_daily`.
+- Column count: 58.
+- Partition columns: `dt_id`.
+- Source kind: `observed`.
+- Grain: `date_x_brand_x_outlet_x_price_point`.
+- Period semantics: `daily`.
+- Aggregation rule: `sum_additive_metrics`.
+- Priority: `standard`.
+- Relative cost tier: `high`.
+- Metric families: `secondary sales`, `outlet distribution`, `revenue`.
+- Columns:
+  - `dt_id`: `DATE` (partition)
+  - `mth_dt`: `DATE`
+  - `month_id`: `STRING`
+  - `brand`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `mpc_short_code`: `STRING`
+  - `mpc_name`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `site_id`: `STRING`
+  - `dse_kam_id`: `STRING`
+  - `kecamatan`: `STRING`
+  - `kabkota`: `STRING`
+  - `kec_id`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `site_latitude`: `FLOAT64`
+  - `site_longitude`: `FLOAT64`
+  - `distance_m`: `FLOAT64`
+  - `main_price`: `FLOAT64`
+  - `amount`: `FLOAT64`
+  - `hit`: `INT64`
+  - `amt_sellin_saldo`: `FLOAT64`
+  - `hit_sellin_saldo`: `INT64`
+  - `amt_vou_ori`: `FLOAT64`
+  - `hit_vou_ori`: `INT64`
+  - `amt_vou_ori_alloc`: `FLOAT64`
+  - `hit_vou_ori_alloc`: `INT64`
+  - `amt_vou_zero`: `FLOAT64`
+  - `hit_vou_zero`: `INT64`
+  - `amt_sp_data`: `FLOAT64`
+  - `hit_sp_data`: `INT64`
+  - `amt_sp_data_alloc`: `FLOAT64`
+  - `hit_sp_data_alloc`: `INT64`
+  - `amt_sp_zero`: `FLOAT64`
+  - `hit_sp_zero`: `INT64`
+  - `amt_sp_zero_alloc`: `FLOAT64`
+  - `hit_sp_zero_alloc`: `INT64`
+  - `amt_cashback`: `FLOAT64`
+  - `hit_cashback`: `INT64`
+  - `amt_cashback_new`: `FLOAT64`
+  - `hit_cashback_new`: `INT64`
+  - `amt_online_purchase`: `FLOAT64`
+  - `hit_online_purchase`: `INT64`
+  - `amt_adjustment`: `FLOAT64`
+  - `hit_adjustment`: `INT64`
+  - `amt_koin_redeem`: `FLOAT64`
+  - `hit_koin_redeem`: `INT64`
+  - `amt_others`: `FLOAT64`
+  - `hit_others`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_secondary_mtd`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_secondary_mtd`.
+- Column count: 59.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet_x_price_point`.
+- Period semantics: `mtd_cutoff_aligned`.
+- Aggregation rule: `sum_additive_metrics`.
+- Priority: `high`.
+- Relative cost tier: `medium`.
+- Metric families: `secondary sales`, `outlet distribution`, `revenue`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `mpc_short_code`: `STRING`
+  - `mpc_name`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `site_id`: `STRING`
+  - `dse_kam_id`: `STRING`
+  - `kecamatan`: `STRING`
+  - `kabkota`: `STRING`
+  - `kec_id`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `site_latitude`: `FLOAT64`
+  - `site_longitude`: `FLOAT64`
+  - `distance_m`: `FLOAT64`
+  - `main_price`: `FLOAT64`
+  - `cutoff_dd`: `INT64`
+  - `trx_days`: `INT64`
+  - `amount`: `FLOAT64`
+  - `hit`: `INT64`
+  - `amt_sellin_saldo`: `FLOAT64`
+  - `hit_sellin_saldo`: `INT64`
+  - `amt_vou_ori`: `FLOAT64`
+  - `hit_vou_ori`: `INT64`
+  - `amt_vou_ori_alloc`: `FLOAT64`
+  - `hit_vou_ori_alloc`: `INT64`
+  - `amt_vou_zero`: `FLOAT64`
+  - `hit_vou_zero`: `INT64`
+  - `amt_sp_data`: `FLOAT64`
+  - `hit_sp_data`: `INT64`
+  - `amt_sp_data_alloc`: `FLOAT64`
+  - `hit_sp_data_alloc`: `INT64`
+  - `amt_sp_zero`: `FLOAT64`
+  - `hit_sp_zero`: `INT64`
+  - `amt_sp_zero_alloc`: `FLOAT64`
+  - `hit_sp_zero_alloc`: `INT64`
+  - `amt_cashback`: `FLOAT64`
+  - `hit_cashback`: `INT64`
+  - `amt_cashback_new`: `FLOAT64`
+  - `hit_cashback_new`: `INT64`
+  - `amt_online_purchase`: `FLOAT64`
+  - `hit_online_purchase`: `INT64`
+  - `amt_adjustment`: `FLOAT64`
+  - `hit_adjustment`: `INT64`
+  - `amt_koin_redeem`: `FLOAT64`
+  - `hit_koin_redeem`: `INT64`
+  - `amt_others`: `FLOAT64`
+  - `hit_others`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
+
+### `rham_outlet_secondary_mth`
+
+- Relationship: domain `sales_distribution` contains table `rham_outlet_secondary_mth`.
+- Column count: 58.
+- Partition columns: `mth_dt`.
+- Source kind: `observed`.
+- Grain: `month_x_brand_x_outlet_x_price_point`.
+- Period semantics: `monthly_closed`.
+- Aggregation rule: `sum_additive_metrics`.
+- Priority: `high`.
+- Relative cost tier: `high`.
+- Metric families: `secondary sales`, `outlet distribution`, `revenue`.
+- Columns:
+  - `month_id`: `STRING`
+  - `mth_dt`: `DATE` (partition)
+  - `brand`: `STRING`
+  - `circle`: `STRING`
+  - `region`: `STRING`
+  - `area`: `STRING`
+  - `branch`: `STRING`
+  - `micro_cluster`: `STRING`
+  - `partner_territory`: `STRING`
+  - `mpc_short_code`: `STRING`
+  - `mpc_name`: `STRING`
+  - `outlet_id`: `STRING`
+  - `outlet_name`: `STRING`
+  - `outlet_category`: `STRING`
+  - `pjp_category`: `STRING`
+  - `site_id`: `STRING`
+  - `dse_kam_id`: `STRING`
+  - `kecamatan`: `STRING`
+  - `kabkota`: `STRING`
+  - `kec_id`: `STRING`
+  - `outlet_latitude`: `FLOAT64`
+  - `outlet_longitude`: `FLOAT64`
+  - `site_latitude`: `FLOAT64`
+  - `site_longitude`: `FLOAT64`
+  - `distance_m`: `FLOAT64`
+  - `main_price`: `FLOAT64`
+  - `trx_days`: `INT64`
+  - `amount`: `FLOAT64`
+  - `hit`: `INT64`
+  - `amt_sellin_saldo`: `FLOAT64`
+  - `hit_sellin_saldo`: `INT64`
+  - `amt_vou_ori`: `FLOAT64`
+  - `hit_vou_ori`: `INT64`
+  - `amt_vou_ori_alloc`: `FLOAT64`
+  - `hit_vou_ori_alloc`: `INT64`
+  - `amt_vou_zero`: `FLOAT64`
+  - `hit_vou_zero`: `INT64`
+  - `amt_sp_data`: `FLOAT64`
+  - `hit_sp_data`: `INT64`
+  - `amt_sp_data_alloc`: `FLOAT64`
+  - `hit_sp_data_alloc`: `INT64`
+  - `amt_sp_zero`: `FLOAT64`
+  - `hit_sp_zero`: `INT64`
+  - `amt_sp_zero_alloc`: `FLOAT64`
+  - `hit_sp_zero_alloc`: `INT64`
+  - `amt_cashback`: `FLOAT64`
+  - `hit_cashback`: `INT64`
+  - `amt_cashback_new`: `FLOAT64`
+  - `hit_cashback_new`: `INT64`
+  - `amt_online_purchase`: `FLOAT64`
+  - `hit_online_purchase`: `INT64`
+  - `amt_adjustment`: `FLOAT64`
+  - `hit_adjustment`: `INT64`
+  - `amt_koin_redeem`: `FLOAT64`
+  - `hit_koin_redeem`: `INT64`
+  - `amt_others`: `FLOAT64`
+  - `hit_others`: `INT64`
+  - `refreshed_at`: `TIMESTAMP`
 
 ### `rham_outlet_spacing_java`
 
@@ -420,541 +1400,220 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 ### `rham_snd_kpi_highlevel_dly`
 
 - Relationship: domain `sales_distribution` contains table `rham_snd_kpi_highlevel_dly`.
-- Column count: 165.
-- Partition columns: none declared.
+- Column count: 58.
+- Partition columns: `dt_id`.
 - Source kind: `observed`.
-- Grain: `declared_dimensions`.
+- Grain: `kecamatan_x_brand`.
 - Period semantics: `daily`.
 - Aggregation rule: `sum_additive_metrics`.
-- Priority: `standard`.
+- Priority: `primary`.
 - Relative cost tier: `medium`.
-- Metric families: `acquisition`, `fwa`, `gaming`, `outlet distribution`, `product demand`, `retention`, `revenue`, `traffic`.
+- Metric families: `outlet distribution`, `acquisition`, `retention`, `trade supply`, `trade demand`, `gaming`, `fwa`.
 - Columns:
-  - `dt_id`: `DATE`
+  - `dt_id`: `DATE` (partition)
   - `month_id`: `STRING`
   - `kec_unik`: `STRING`
   - `brand`: `STRING`
-  - `ono`: `NUMERIC`
-  - `acq_rev_rguga_trad`: `NUMERIC`
-  - `acq_rev_rguga_trad_data`: `NUMERIC`
-  - `acq_rev_rguga_trad_fwa`: `NUMERIC`
-  - `acq_rev_rguga_trad_hvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_lvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_mvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_noinj`: `NUMERIC`
-  - `acq_rev_rguga_trad_non_data`: `NUMERIC`
-  - `acq_rev_rguga_trad_sp3gb`: `NUMERIC`
-  - `acq_rev_rguga_trad_sp6gb`: `NUMERIC`
-  - `acq_rev_rguga_trad_spdemo`: `NUMERIC`
-  - `acquisition_revenue`: `NUMERIC`
-  - `addressable_site`: `NUMERIC`
-  - `atl_outlet`: `NUMERIC`
-  - `atl_revenue`: `NUMERIC`
-  - `atl_sachet_outlet`: `NUMERIC`
-  - `atl_sachet_revenue`: `NUMERIC`
-  - `cvm_outlet`: `NUMERIC`
-  - `cvm_revenue`: `NUMERIC`
-  - `cvm_sachet_outlet`: `NUMERIC`
-  - `cvm_sachet_revenue`: `NUMERIC`
-  - `data_rev`: `NUMERIC`
-  - `data_traffic_gb`: `NUMERIC`
-  - `data_traffic`: `NUMERIC`
+  - `acq_rev`: `NUMERIC`
+  - `acq_rev_ga_trad`: `NUMERIC`
+  - `acq_rev_rgu_ga_trad_data`: `NUMERIC`
   - `ga_m1`: `NUMERIC`
+  - `ga_m1s`: `NUMERIC`
   - `ga_m2`: `NUMERIC`
-  - `ga_m3`: `NUMERIC`
-  - `isimpel_rev`: `NUMERIC`
-  - `isimple_login_user`: `NUMERIC`
-  - `isimple_trx_user`: `NUMERIC`
-  - `m1s_ga_mtd`: `NUMERIC`
-  - `m1s_mtd`: `NUMERIC`
-  - `m2_recharge`: `NUMERIC`
-  - `m2_revenue`: `NUMERIC`
-  - `m2s_ga_mtd`: `NUMERIC`
-  - `m2s_mtd`: `NUMERIC`
-  - `mobo_rev`: `NUMERIC`
-  - `mobo_rev_modern`: `NUMERIC`
-  - `mobo_rev_trad`: `NUMERIC`
-  - `netadd_90`: `NUMERIC`
-  - `organic_rev`: `NUMERIC`
+  - `ga_m2s`: `NUMERIC`
+  - `ono`: `NUMERIC`
   - `osa`: `NUMERIC`
-  - `outlet_0_rguga_trad`: `NUMERIC`
   - `outlet_demand`: `NUMERIC`
+  - `outlet_no_ga`: `NUMERIC`
   - `outlet_pjp`: `NUMERIC`
-  - `outlet_productivity`: `NUMERIC`
-  - `outlet_supply`: `NUMERIC`
-  - `outlet_rgu_ga`: `NUMERIC`
-  - `prepaid_revenue`: `NUMERIC`
+  - `outlet_total`: `NUMERIC`
   - `primary`: `NUMERIC`
-  - `primary_primary`: `NUMERIC`
-  - `primary_cuanweb`: `NUMERIC`
-  - `primary_opt`: `NUMERIC`
-  - `primary_retailer_cashback`: `NUMERIC`
-  - `primary_sp0`: `NUMERIC`
-  - `primary_spv0`: `NUMERIC`
-  - `q_uro`: `NUMERIC`
   - `qsso_m0`: `NUMERIC`
-  - `rev_acq_scm0`: `NUMERIC`
-  - `rev_game_vou`: `NUMERIC`
+  - `quro`: `NUMERIC`
+  - `rev_game`: `NUMERIC`
   - `rev_gift`: `NUMERIC`
-  - `rgu_90d`: `NUMERIC`
+  - `rev_m2s`: `NUMERIC`
   - `rgu_ga`: `NUMERIC`
-  - `rguga_lvc`: `NUMERIC`
-  - `rguga_mvc_new`: `NUMERIC`
-  - `rguga_no_inj`: `NUMERIC`
-  - `rguga_digital_modern`: `NUMERIC`
-  - `rguga_digital_ola`: `NUMERIC`
-  - `rguga_digital_online`: `NUMERIC`
-  - `rguga_fwa`: `NUMERIC`
-  - `rguga_hvc_new`: `NUMERIC`
-  - `rguga_trad`: `NUMERIC`
-  - `rguga_trad_hvc_new`: `NUMERIC`
-  - `rguga_trad_lvc`: `NUMERIC`
-  - `rguga_trad_mvc_new`: `NUMERIC`
-  - `rguga_trad_no_inj`: `NUMERIC`
-  - `rguga_trad_dsf`: `NUMERIC`
-  - `rguga_trad_outlet`: `NUMERIC`
-  - `rguga_trad_sp3gb`: `NUMERIC`
-  - `rguga_trad_sp6gb`: `NUMERIC`
-  - `rguga_trad_compliance`: `NUMERIC`
-  - `rgu_30d`: `NUMERIC`
-  - `rgu_90d_m1`: `NUMERIC`
-  - `rgu90_net_add`: `NUMERIC`
-  - `rgu_ga_new_hvc`: `NUMERIC`
-  - `rgu_ga_new_lvc`: `NUMERIC`
-  - `rgu_ga_new_mvc`: `NUMERIC`
-  - `rgu_ga_new_noinj`: `NUMERIC`
-  - `rgu_ga_new_sp_happy`: `NUMERIC`
+  - `rgu_ga_100mb`: `NUMERIC`
+  - `rgu_ga_fwa`: `NUMERIC`
+  - `rgu_ga_no_inj`: `NUMERIC`
   - `rgu_ga_trad_hvc`: `NUMERIC`
   - `rgu_ga_trad_lvc`: `NUMERIC`
   - `rgu_ga_trad_mvc`: `NUMERIC`
-  - `rgu_ga_trad_noinj`: `NUMERIC`
-  - `rgu_ga_trad_sp3gb`: `NUMERIC`
-  - `rgu_ga_trad_spdemo`: `NUMERIC`
-  - `rita_login_user`: `NUMERIC`
-  - `rita_rev`: `NUMERIC`
-  - `rita_trx_user`: `NUMERIC`
+  - `rgu_ga_trad_no_inj`: `NUMERIC`
+  - `rgu_ga_trade`: `NUMERIC`
+  - `rguga_digital_modern`: `NUMERIC`
+  - `rguga_digital_ola`: `NUMERIC`
+  - `rguga_digital_online`: `NUMERIC`
   - `secondary`: `NUMERIC`
-  - `secondary_rev_others`: `NUMERIC`
-  - `secondary_rev_reload`: `NUMERIC`
-  - `secondary_rev_sp`: `NUMERIC`
-  - `secondary_rev_vou`: `NUMERIC`
-  - `secondary_150k_outletcnt`: `NUMERIC`
-  - `secondary_200k_outletcnt`: `NUMERIC`
-  - `site_3_qsso_m0`: `NUMERIC`
-  - `site_30_rguga_trad`: `NUMERIC`
-  - `site_5_quro`: `NUMERIC`
-  - `site_qsso_m0`: `NUMERIC`
-  - `site_0_rguga_trad`: `NUMERIC`
-  - `site_30_rguga`: `NUMERIC`
-  - `site_3qsso_new`: `NUMERIC`
+  - `sellin_fwa`: `NUMERIC`
+  - `sellin_sp_3gb`: `NUMERIC`
+  - `site_3qsso`: `NUMERIC`
   - `site_5quro`: `NUMERIC`
-  - `site_trade_supply`: `NUMERIC`
+  - `site_addr`: `NUMERIC`
   - `sso`: `NUMERIC`
-  - `sso_daily`: `NUMERIC`
-  - `sso_any_dly_new`: `NUMERIC`
-  - `surv_m1`: `NUMERIC`
-  - `surv_m1_recharge`: `NUMERIC`
-  - `surv_m1_rev`: `NUMERIC`
-  - `surv_m2`: `NUMERIC`
-  - `surv_m2_recharge`: `NUMERIC`
-  - `surv_m2_rev`: `NUMERIC`
-  - `surv_m3`: `NUMERIC`
-  - `surv_m3_rev`: `NUMERIC`
-  - `tertiary_a`: `NUMERIC`
-  - `tertiary`: `NUMERIC`
   - `tertiary_b`: `NUMERIC`
+  - `tertiary_b_datapack_inner`: `NUMERIC`
+  - `tertiary_b_datapack_outer`: `NUMERIC`
   - `tertiary_b_inner`: `NUMERIC`
-  - `tertiary_b_inner_data_pack`: `NUMERIC`
-  - `tertiary_b_inner_reload`: `NUMERIC`
-  - `tertiary_b_inner_sp_usage`: `NUMERIC`
-  - `tertiary_b_inner_vou_rdm`: `NUMERIC`
   - `tertiary_b_outer`: `NUMERIC`
-  - `tertiary_b_outer_data_pack`: `NUMERIC`
-  - `tertiary_b_outer_reload`: `NUMERIC`
-  - `tertiary_b_outer_sp_usage`: `NUMERIC`
-  - `tertiary_b_outer_vou_rdm`: `NUMERIC`
-  - `tertiary_b_redeem`: `NUMERIC`
-  - `tertiary_b_reload`: `NUMERIC`
-  - `tertiary_b_sp_data`: `NUMERIC`
-  - `tertiary_b_sp_mobo`: `NUMERIC`
-  - `tertiary_b_sp_zero`: `NUMERIC`
-  - `tertiary_b_vou_ori`: `NUMERIC`
-  - `tertiary_nontrade`: `NUMERIC`
-  - `tertiary_inner_new`: `NUMERIC`
-  - `tertiary_new`: `NUMERIC`
-  - `tertiary_outer_new`: `NUMERIC`
-  - `tertiary_saldo`: `NUMERIC`
-  - `tot_rev`: `NUMERIC`
-  - `total_outlet`: `NUMERIC`
-  - `trade_supply`: `NUMERIC`
+  - `tertiary_b_reload_inner`: `NUMERIC`
+  - `tertiary_b_reload_outer`: `NUMERIC`
+  - `tertiary_b_sp_inner`: `NUMERIC`
+  - `tertiary_b_sp_outer`: `NUMERIC`
+  - `tertiary_b_voucher_inner`: `NUMERIC`
+  - `tertiary_b_voucher_outer`: `NUMERIC`
   - `trade_demand`: `NUMERIC`
   - `trade_demand_inner`: `NUMERIC`
   - `trade_demand_outer`: `NUMERIC`
-  - `trade_demand_rita`: `NUMERIC`
-  - `trade_demand_sim`: `NUMERIC`
-  - `trade_demand_spv`: `NUMERIC`
+  - `trade_supply`: `NUMERIC`
   - `uro`: `NUMERIC`
-  - `vlr_subs`: `NUMERIC`
 
 ### `rham_snd_kpi_highlevel_mtd`
 
 - Relationship: domain `sales_distribution` contains table `rham_snd_kpi_highlevel_mtd`.
-- Column count: 166.
+- Column count: 59.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
-- Grain: `declared_dimensions`.
+- Grain: `kecamatan_x_brand`.
 - Period semantics: `mtd_cutoff_aligned`.
 - Aggregation rule: `sum_additive_metrics`.
-- Priority: `high`.
+- Priority: `primary`.
 - Relative cost tier: `low`.
-- Metric families: `acquisition`, `fwa`, `gaming`, `outlet distribution`, `product demand`, `retention`, `revenue`, `traffic`.
+- Metric families: `outlet distribution`, `acquisition`, `retention`, `trade supply`, `trade demand`, `gaming`, `fwa`.
 - Columns:
   - `mth_dt`: `DATE` (partition)
   - `dt_id`: `DATE`
   - `month_id`: `STRING`
   - `kec_unik`: `STRING`
   - `brand`: `STRING`
-  - `ono`: `NUMERIC`
-  - `acq_rev_rguga_trad`: `NUMERIC`
-  - `acq_rev_rguga_trad_data`: `NUMERIC`
-  - `acq_rev_rguga_trad_fwa`: `NUMERIC`
-  - `acq_rev_rguga_trad_hvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_lvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_mvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_noinj`: `NUMERIC`
-  - `acq_rev_rguga_trad_non_data`: `NUMERIC`
-  - `acq_rev_rguga_trad_sp3gb`: `NUMERIC`
-  - `acq_rev_rguga_trad_sp6gb`: `NUMERIC`
-  - `acq_rev_rguga_trad_spdemo`: `NUMERIC`
-  - `acquisition_revenue`: `NUMERIC`
-  - `addressable_site`: `NUMERIC`
-  - `atl_outlet`: `NUMERIC`
-  - `atl_revenue`: `NUMERIC`
-  - `atl_sachet_outlet`: `NUMERIC`
-  - `atl_sachet_revenue`: `NUMERIC`
-  - `cvm_outlet`: `NUMERIC`
-  - `cvm_revenue`: `NUMERIC`
-  - `cvm_sachet_outlet`: `NUMERIC`
-  - `cvm_sachet_revenue`: `NUMERIC`
-  - `data_rev`: `NUMERIC`
-  - `data_traffic_gb`: `NUMERIC`
-  - `data_traffic`: `NUMERIC`
+  - `acq_rev`: `NUMERIC`
+  - `acq_rev_ga_trad`: `NUMERIC`
+  - `acq_rev_rgu_ga_trad_data`: `NUMERIC`
   - `ga_m1`: `NUMERIC`
+  - `ga_m1s`: `NUMERIC`
   - `ga_m2`: `NUMERIC`
-  - `ga_m3`: `NUMERIC`
-  - `isimpel_rev`: `NUMERIC`
-  - `isimple_login_user`: `NUMERIC`
-  - `isimple_trx_user`: `NUMERIC`
-  - `m1s_ga_mtd`: `NUMERIC`
-  - `m1s_mtd`: `NUMERIC`
-  - `m2_recharge`: `NUMERIC`
-  - `m2_revenue`: `NUMERIC`
-  - `m2s_ga_mtd`: `NUMERIC`
-  - `m2s_mtd`: `NUMERIC`
-  - `mobo_rev`: `NUMERIC`
-  - `mobo_rev_modern`: `NUMERIC`
-  - `mobo_rev_trad`: `NUMERIC`
-  - `netadd_90`: `NUMERIC`
-  - `organic_rev`: `NUMERIC`
+  - `ga_m2s`: `NUMERIC`
+  - `ono`: `NUMERIC`
   - `osa`: `NUMERIC`
-  - `outlet_0_rguga_trad`: `NUMERIC`
   - `outlet_demand`: `NUMERIC`
+  - `outlet_no_ga`: `NUMERIC`
   - `outlet_pjp`: `NUMERIC`
-  - `outlet_productivity`: `NUMERIC`
-  - `outlet_supply`: `NUMERIC`
-  - `outlet_rgu_ga`: `NUMERIC`
-  - `prepaid_revenue`: `NUMERIC`
+  - `outlet_total`: `NUMERIC`
   - `primary`: `NUMERIC`
-  - `primary_primary`: `NUMERIC`
-  - `primary_cuanweb`: `NUMERIC`
-  - `primary_opt`: `NUMERIC`
-  - `primary_retailer_cashback`: `NUMERIC`
-  - `primary_sp0`: `NUMERIC`
-  - `primary_spv0`: `NUMERIC`
-  - `q_uro`: `NUMERIC`
   - `qsso_m0`: `NUMERIC`
-  - `rev_acq_scm0`: `NUMERIC`
-  - `rev_game_vou`: `NUMERIC`
+  - `quro`: `NUMERIC`
+  - `rev_game`: `NUMERIC`
   - `rev_gift`: `NUMERIC`
-  - `rgu_90d`: `NUMERIC`
+  - `rev_m2s`: `NUMERIC`
   - `rgu_ga`: `NUMERIC`
-  - `rguga_lvc`: `NUMERIC`
-  - `rguga_mvc_new`: `NUMERIC`
-  - `rguga_no_inj`: `NUMERIC`
-  - `rguga_digital_modern`: `NUMERIC`
-  - `rguga_digital_ola`: `NUMERIC`
-  - `rguga_digital_online`: `NUMERIC`
-  - `rguga_fwa`: `NUMERIC`
-  - `rguga_hvc_new`: `NUMERIC`
-  - `rguga_trad`: `NUMERIC`
-  - `rguga_trad_hvc_new`: `NUMERIC`
-  - `rguga_trad_lvc`: `NUMERIC`
-  - `rguga_trad_mvc_new`: `NUMERIC`
-  - `rguga_trad_no_inj`: `NUMERIC`
-  - `rguga_trad_dsf`: `NUMERIC`
-  - `rguga_trad_outlet`: `NUMERIC`
-  - `rguga_trad_sp3gb`: `NUMERIC`
-  - `rguga_trad_sp6gb`: `NUMERIC`
-  - `rguga_trad_compliance`: `NUMERIC`
-  - `rgu_30d`: `NUMERIC`
-  - `rgu_90d_m1`: `NUMERIC`
-  - `rgu90_net_add`: `NUMERIC`
-  - `rgu_ga_new_hvc`: `NUMERIC`
-  - `rgu_ga_new_lvc`: `NUMERIC`
-  - `rgu_ga_new_mvc`: `NUMERIC`
-  - `rgu_ga_new_noinj`: `NUMERIC`
-  - `rgu_ga_new_sp_happy`: `NUMERIC`
+  - `rgu_ga_100mb`: `NUMERIC`
+  - `rgu_ga_fwa`: `NUMERIC`
+  - `rgu_ga_no_inj`: `NUMERIC`
   - `rgu_ga_trad_hvc`: `NUMERIC`
   - `rgu_ga_trad_lvc`: `NUMERIC`
   - `rgu_ga_trad_mvc`: `NUMERIC`
-  - `rgu_ga_trad_noinj`: `NUMERIC`
-  - `rgu_ga_trad_sp3gb`: `NUMERIC`
-  - `rgu_ga_trad_spdemo`: `NUMERIC`
-  - `rita_login_user`: `NUMERIC`
-  - `rita_rev`: `NUMERIC`
-  - `rita_trx_user`: `NUMERIC`
+  - `rgu_ga_trad_no_inj`: `NUMERIC`
+  - `rgu_ga_trade`: `NUMERIC`
+  - `rguga_digital_modern`: `NUMERIC`
+  - `rguga_digital_ola`: `NUMERIC`
+  - `rguga_digital_online`: `NUMERIC`
   - `secondary`: `NUMERIC`
-  - `secondary_rev_others`: `NUMERIC`
-  - `secondary_rev_reload`: `NUMERIC`
-  - `secondary_rev_sp`: `NUMERIC`
-  - `secondary_rev_vou`: `NUMERIC`
-  - `secondary_150k_outletcnt`: `NUMERIC`
-  - `secondary_200k_outletcnt`: `NUMERIC`
-  - `site_3_qsso_m0`: `NUMERIC`
-  - `site_30_rguga_trad`: `NUMERIC`
-  - `site_5_quro`: `NUMERIC`
-  - `site_qsso_m0`: `NUMERIC`
-  - `site_0_rguga_trad`: `NUMERIC`
-  - `site_30_rguga`: `NUMERIC`
-  - `site_3qsso_new`: `NUMERIC`
+  - `sellin_fwa`: `NUMERIC`
+  - `sellin_sp_3gb`: `NUMERIC`
+  - `site_3qsso`: `NUMERIC`
   - `site_5quro`: `NUMERIC`
-  - `site_trade_supply`: `NUMERIC`
+  - `site_addr`: `NUMERIC`
   - `sso`: `NUMERIC`
-  - `sso_daily`: `NUMERIC`
-  - `sso_any_dly_new`: `NUMERIC`
-  - `surv_m1`: `NUMERIC`
-  - `surv_m1_recharge`: `NUMERIC`
-  - `surv_m1_rev`: `NUMERIC`
-  - `surv_m2`: `NUMERIC`
-  - `surv_m2_recharge`: `NUMERIC`
-  - `surv_m2_rev`: `NUMERIC`
-  - `surv_m3`: `NUMERIC`
-  - `surv_m3_rev`: `NUMERIC`
-  - `tertiary_a`: `NUMERIC`
-  - `tertiary`: `NUMERIC`
   - `tertiary_b`: `NUMERIC`
+  - `tertiary_b_datapack_inner`: `NUMERIC`
+  - `tertiary_b_datapack_outer`: `NUMERIC`
   - `tertiary_b_inner`: `NUMERIC`
-  - `tertiary_b_inner_data_pack`: `NUMERIC`
-  - `tertiary_b_inner_reload`: `NUMERIC`
-  - `tertiary_b_inner_sp_usage`: `NUMERIC`
-  - `tertiary_b_inner_vou_rdm`: `NUMERIC`
   - `tertiary_b_outer`: `NUMERIC`
-  - `tertiary_b_outer_data_pack`: `NUMERIC`
-  - `tertiary_b_outer_reload`: `NUMERIC`
-  - `tertiary_b_outer_sp_usage`: `NUMERIC`
-  - `tertiary_b_outer_vou_rdm`: `NUMERIC`
-  - `tertiary_b_redeem`: `NUMERIC`
-  - `tertiary_b_reload`: `NUMERIC`
-  - `tertiary_b_sp_data`: `NUMERIC`
-  - `tertiary_b_sp_mobo`: `NUMERIC`
-  - `tertiary_b_sp_zero`: `NUMERIC`
-  - `tertiary_b_vou_ori`: `NUMERIC`
-  - `tertiary_nontrade`: `NUMERIC`
-  - `tertiary_inner_new`: `NUMERIC`
-  - `tertiary_new`: `NUMERIC`
-  - `tertiary_outer_new`: `NUMERIC`
-  - `tertiary_saldo`: `NUMERIC`
-  - `tot_rev`: `NUMERIC`
-  - `total_outlet`: `NUMERIC`
-  - `trade_supply`: `NUMERIC`
+  - `tertiary_b_reload_inner`: `NUMERIC`
+  - `tertiary_b_reload_outer`: `NUMERIC`
+  - `tertiary_b_sp_inner`: `NUMERIC`
+  - `tertiary_b_sp_outer`: `NUMERIC`
+  - `tertiary_b_voucher_inner`: `NUMERIC`
+  - `tertiary_b_voucher_outer`: `NUMERIC`
   - `trade_demand`: `NUMERIC`
   - `trade_demand_inner`: `NUMERIC`
   - `trade_demand_outer`: `NUMERIC`
-  - `trade_demand_rita`: `NUMERIC`
-  - `trade_demand_sim`: `NUMERIC`
-  - `trade_demand_spv`: `NUMERIC`
+  - `trade_supply`: `NUMERIC`
   - `uro`: `NUMERIC`
-  - `vlr_subs`: `NUMERIC`
 
 ### `rham_snd_kpi_highlevel_mth`
 
 - Relationship: domain `sales_distribution` contains table `rham_snd_kpi_highlevel_mth`.
-- Column count: 166.
+- Column count: 59.
 - Partition columns: `mth_dt`.
 - Source kind: `observed`.
-- Grain: `declared_dimensions`.
+- Grain: `kecamatan_x_brand`.
 - Period semantics: `monthly`.
 - Aggregation rule: `sum_additive_metrics`.
-- Priority: `high`.
+- Priority: `primary`.
 - Relative cost tier: `low`.
-- Metric families: `acquisition`, `fwa`, `gaming`, `outlet distribution`, `product demand`, `retention`, `revenue`, `traffic`.
+- Metric families: `outlet distribution`, `acquisition`, `retention`, `trade supply`, `trade demand`, `gaming`, `fwa`.
 - Columns:
   - `mth_dt`: `DATE` (partition)
   - `dt_id`: `DATE`
   - `month_id`: `STRING`
   - `kec_unik`: `STRING`
   - `brand`: `STRING`
-  - `ono`: `NUMERIC`
-  - `acq_rev_rguga_trad`: `NUMERIC`
-  - `acq_rev_rguga_trad_data`: `NUMERIC`
-  - `acq_rev_rguga_trad_fwa`: `NUMERIC`
-  - `acq_rev_rguga_trad_hvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_lvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_mvc`: `NUMERIC`
-  - `acq_rev_rguga_trad_noinj`: `NUMERIC`
-  - `acq_rev_rguga_trad_non_data`: `NUMERIC`
-  - `acq_rev_rguga_trad_sp3gb`: `NUMERIC`
-  - `acq_rev_rguga_trad_sp6gb`: `NUMERIC`
-  - `acq_rev_rguga_trad_spdemo`: `NUMERIC`
-  - `acquisition_revenue`: `NUMERIC`
-  - `addressable_site`: `NUMERIC`
-  - `atl_outlet`: `NUMERIC`
-  - `atl_revenue`: `NUMERIC`
-  - `atl_sachet_outlet`: `NUMERIC`
-  - `atl_sachet_revenue`: `NUMERIC`
-  - `cvm_outlet`: `NUMERIC`
-  - `cvm_revenue`: `NUMERIC`
-  - `cvm_sachet_outlet`: `NUMERIC`
-  - `cvm_sachet_revenue`: `NUMERIC`
-  - `data_rev`: `NUMERIC`
-  - `data_traffic_gb`: `NUMERIC`
-  - `data_traffic`: `NUMERIC`
+  - `acq_rev`: `NUMERIC`
+  - `acq_rev_ga_trad`: `NUMERIC`
+  - `acq_rev_rgu_ga_trad_data`: `NUMERIC`
   - `ga_m1`: `NUMERIC`
+  - `ga_m1s`: `NUMERIC`
   - `ga_m2`: `NUMERIC`
-  - `ga_m3`: `NUMERIC`
-  - `isimpel_rev`: `NUMERIC`
-  - `isimple_login_user`: `NUMERIC`
-  - `isimple_trx_user`: `NUMERIC`
-  - `m1s_ga_mtd`: `NUMERIC`
-  - `m1s_mtd`: `NUMERIC`
-  - `m2_recharge`: `NUMERIC`
-  - `m2_revenue`: `NUMERIC`
-  - `m2s_ga_mtd`: `NUMERIC`
-  - `m2s_mtd`: `NUMERIC`
-  - `mobo_rev`: `NUMERIC`
-  - `mobo_rev_modern`: `NUMERIC`
-  - `mobo_rev_trad`: `NUMERIC`
-  - `netadd_90`: `NUMERIC`
-  - `organic_rev`: `NUMERIC`
+  - `ga_m2s`: `NUMERIC`
+  - `ono`: `NUMERIC`
   - `osa`: `NUMERIC`
-  - `outlet_0_rguga_trad`: `NUMERIC`
   - `outlet_demand`: `NUMERIC`
+  - `outlet_no_ga`: `NUMERIC`
   - `outlet_pjp`: `NUMERIC`
-  - `outlet_productivity`: `NUMERIC`
-  - `outlet_supply`: `NUMERIC`
-  - `outlet_rgu_ga`: `NUMERIC`
-  - `prepaid_revenue`: `NUMERIC`
+  - `outlet_total`: `NUMERIC`
   - `primary`: `NUMERIC`
-  - `primary_primary`: `NUMERIC`
-  - `primary_cuanweb`: `NUMERIC`
-  - `primary_opt`: `NUMERIC`
-  - `primary_retailer_cashback`: `NUMERIC`
-  - `primary_sp0`: `NUMERIC`
-  - `primary_spv0`: `NUMERIC`
-  - `q_uro`: `NUMERIC`
   - `qsso_m0`: `NUMERIC`
-  - `rev_acq_scm0`: `NUMERIC`
-  - `rev_game_vou`: `NUMERIC`
+  - `quro`: `NUMERIC`
+  - `rev_game`: `NUMERIC`
   - `rev_gift`: `NUMERIC`
-  - `rgu_90d`: `NUMERIC`
+  - `rev_m2s`: `NUMERIC`
   - `rgu_ga`: `NUMERIC`
-  - `rguga_lvc`: `NUMERIC`
-  - `rguga_mvc_new`: `NUMERIC`
-  - `rguga_no_inj`: `NUMERIC`
-  - `rguga_digital_modern`: `NUMERIC`
-  - `rguga_digital_ola`: `NUMERIC`
-  - `rguga_digital_online`: `NUMERIC`
-  - `rguga_fwa`: `NUMERIC`
-  - `rguga_hvc_new`: `NUMERIC`
-  - `rguga_trad`: `NUMERIC`
-  - `rguga_trad_hvc_new`: `NUMERIC`
-  - `rguga_trad_lvc`: `NUMERIC`
-  - `rguga_trad_mvc_new`: `NUMERIC`
-  - `rguga_trad_no_inj`: `NUMERIC`
-  - `rguga_trad_dsf`: `NUMERIC`
-  - `rguga_trad_outlet`: `NUMERIC`
-  - `rguga_trad_sp3gb`: `NUMERIC`
-  - `rguga_trad_sp6gb`: `NUMERIC`
-  - `rguga_trad_compliance`: `NUMERIC`
-  - `rgu_30d`: `NUMERIC`
-  - `rgu_90d_m1`: `NUMERIC`
-  - `rgu90_net_add`: `NUMERIC`
-  - `rgu_ga_new_hvc`: `NUMERIC`
-  - `rgu_ga_new_lvc`: `NUMERIC`
-  - `rgu_ga_new_mvc`: `NUMERIC`
-  - `rgu_ga_new_noinj`: `NUMERIC`
-  - `rgu_ga_new_sp_happy`: `NUMERIC`
+  - `rgu_ga_100mb`: `NUMERIC`
+  - `rgu_ga_fwa`: `NUMERIC`
+  - `rgu_ga_no_inj`: `NUMERIC`
   - `rgu_ga_trad_hvc`: `NUMERIC`
   - `rgu_ga_trad_lvc`: `NUMERIC`
   - `rgu_ga_trad_mvc`: `NUMERIC`
-  - `rgu_ga_trad_noinj`: `NUMERIC`
-  - `rgu_ga_trad_sp3gb`: `NUMERIC`
-  - `rgu_ga_trad_spdemo`: `NUMERIC`
-  - `rita_login_user`: `NUMERIC`
-  - `rita_rev`: `NUMERIC`
-  - `rita_trx_user`: `NUMERIC`
+  - `rgu_ga_trad_no_inj`: `NUMERIC`
+  - `rgu_ga_trade`: `NUMERIC`
+  - `rguga_digital_modern`: `NUMERIC`
+  - `rguga_digital_ola`: `NUMERIC`
+  - `rguga_digital_online`: `NUMERIC`
   - `secondary`: `NUMERIC`
-  - `secondary_rev_others`: `NUMERIC`
-  - `secondary_rev_reload`: `NUMERIC`
-  - `secondary_rev_sp`: `NUMERIC`
-  - `secondary_rev_vou`: `NUMERIC`
-  - `secondary_150k_outletcnt`: `NUMERIC`
-  - `secondary_200k_outletcnt`: `NUMERIC`
-  - `site_3_qsso_m0`: `NUMERIC`
-  - `site_30_rguga_trad`: `NUMERIC`
-  - `site_5_quro`: `NUMERIC`
-  - `site_qsso_m0`: `NUMERIC`
-  - `site_0_rguga_trad`: `NUMERIC`
-  - `site_30_rguga`: `NUMERIC`
-  - `site_3qsso_new`: `NUMERIC`
+  - `sellin_fwa`: `NUMERIC`
+  - `sellin_sp_3gb`: `NUMERIC`
+  - `site_3qsso`: `NUMERIC`
   - `site_5quro`: `NUMERIC`
-  - `site_trade_supply`: `NUMERIC`
+  - `site_addr`: `NUMERIC`
   - `sso`: `NUMERIC`
-  - `sso_daily`: `NUMERIC`
-  - `sso_any_dly_new`: `NUMERIC`
-  - `surv_m1`: `NUMERIC`
-  - `surv_m1_recharge`: `NUMERIC`
-  - `surv_m1_rev`: `NUMERIC`
-  - `surv_m2`: `NUMERIC`
-  - `surv_m2_recharge`: `NUMERIC`
-  - `surv_m2_rev`: `NUMERIC`
-  - `surv_m3`: `NUMERIC`
-  - `surv_m3_rev`: `NUMERIC`
-  - `tertiary_a`: `NUMERIC`
-  - `tertiary`: `NUMERIC`
   - `tertiary_b`: `NUMERIC`
+  - `tertiary_b_datapack_inner`: `NUMERIC`
+  - `tertiary_b_datapack_outer`: `NUMERIC`
   - `tertiary_b_inner`: `NUMERIC`
-  - `tertiary_b_inner_data_pack`: `NUMERIC`
-  - `tertiary_b_inner_reload`: `NUMERIC`
-  - `tertiary_b_inner_sp_usage`: `NUMERIC`
-  - `tertiary_b_inner_vou_rdm`: `NUMERIC`
   - `tertiary_b_outer`: `NUMERIC`
-  - `tertiary_b_outer_data_pack`: `NUMERIC`
-  - `tertiary_b_outer_reload`: `NUMERIC`
-  - `tertiary_b_outer_sp_usage`: `NUMERIC`
-  - `tertiary_b_outer_vou_rdm`: `NUMERIC`
-  - `tertiary_b_redeem`: `NUMERIC`
-  - `tertiary_b_reload`: `NUMERIC`
-  - `tertiary_b_sp_data`: `NUMERIC`
-  - `tertiary_b_sp_mobo`: `NUMERIC`
-  - `tertiary_b_sp_zero`: `NUMERIC`
-  - `tertiary_b_vou_ori`: `NUMERIC`
-  - `tertiary_nontrade`: `NUMERIC`
-  - `tertiary_inner_new`: `NUMERIC`
-  - `tertiary_new`: `NUMERIC`
-  - `tertiary_outer_new`: `NUMERIC`
-  - `tertiary_saldo`: `NUMERIC`
-  - `tot_rev`: `NUMERIC`
-  - `total_outlet`: `NUMERIC`
-  - `trade_supply`: `NUMERIC`
+  - `tertiary_b_reload_inner`: `NUMERIC`
+  - `tertiary_b_reload_outer`: `NUMERIC`
+  - `tertiary_b_sp_inner`: `NUMERIC`
+  - `tertiary_b_sp_outer`: `NUMERIC`
+  - `tertiary_b_voucher_inner`: `NUMERIC`
+  - `tertiary_b_voucher_outer`: `NUMERIC`
   - `trade_demand`: `NUMERIC`
   - `trade_demand_inner`: `NUMERIC`
   - `trade_demand_outer`: `NUMERIC`
-  - `trade_demand_rita`: `NUMERIC`
-  - `trade_demand_sim`: `NUMERIC`
-  - `trade_demand_spv`: `NUMERIC`
+  - `trade_supply`: `NUMERIC`
   - `uro`: `NUMERIC`
-  - `vlr_subs`: `NUMERIC`
 
 ## Approved agent key facts
 
@@ -962,13 +1621,16 @@ source_sha256: "54e09a90974c30bf5ab15374bd53de39ec06b0e02e1c010667cd923fc8963107
 - SSO=SIM Selling Outlet (outlet produksi SIM); QSSO=Quality SSO (jual SIM >=3 pcs).
 - QSC=Quality Subscriber (qsc_100mb/150mb/500mb = usage tier).
 - OSA=Outlet Sell-in Amount (rupiah sell-in ke outlet); ONO=Open New Outlet (penambahan outlet).
-- M1S/M2S/M3 (=surv_m1/m2/m3)=gross add yang bertahan jadi pelanggan di bulan ke-1/2/3.
+- SND highlevel survival: ga_m1/ga_m2 are the acquisition cohorts; ga_m1s/ga_m2s are survivors after month 1/2. No month-3 survival metric exists in this SND highlevel contract.
 - CVM=Customer Value Model (transaksi berbasis nilai pelanggan).
 - RITA=app transaksi milik 3ID/Tri; iSimpel=app transaksi milik IM3.
 - Tertiary=transaksi outlet->pelanggan; INNER=transaksi di area yg sama, OUTER=di luar area (pelanggan dari luar).
 - Funnel: primary(IOH->distributor) -> secondary(distributor->retailer) -> tertiary(retailer->pelanggan).
 - Value segment GA: HVC=harga >35K, MVC=10K-35K, LVC=<10K; no_inj=perdana tanpa injeksi; sp3gb/sp6gb=perdana SP 3GB/6GB.
-- QSSO / QURO GRAIN: the real qsso and quro columns exist ONLY at kecamatan/branch grain (rham_snd_kecwise_mtd/_mth, rham_snd_kpi_highlevel_*), where they are fully populated. rham_outlet_wise_mtd (grain=outlet) does NOT have them. So a per-OUTLET QSSO or QURO question cannot be answered: either answer at kecamatan grain and say so, or state that the metric is not available per outlet. NEVER silently substitute a proxy such as sellin_sp_hits_mtd for QSSO or rebuy_hit for URO and present it under the user's original label; if you use a proxy, name it explicitly as a proxy.
+- QSSO / QURO GRAIN: SND highlevel uses qsso_m0 and quro at kecamatan x brand grain. rham_snd_kecwise_mtd/_mth retain their own live schema. rham_outlet_wise_mtd has neither metric. Never substitute an outlet transaction proxy and present it as QSSO/QURO.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary.
+- Operational hierarchy from 2026-10: Circle > Region > Area > District. The former Area is abolished and its area/area_im3 column is NULL. New Area uses rham_ref_territory.branch_im3 or zz_territory_kecamatan.branch; new District uses micro_cluster_im3 or im3_mc. Alias branch AS area and micro_cluster_im3/im3_mc AS district in result columns. Legacy branch means current Area; MC/microcluster means District. Kab/Kota and Kecamatan are administrative geographic views. Never filter the old area column. FTTH retains its native sales_region/province/city/kecamatan vocabulary. Routing and rephrasing must preserve the requested aggregation grain. Per District means GROUP BY the reference MC field AS district, not one row per Kecamatan. Per Area means GROUP BY the reference branch field AS area.
+- SND highlevel metric contract (2026-10-08): use outlet_total, ono, osa, sso, uro, quro, qsso_m0, site_3qsso, site_5quro, site_addr, rgu_ga_fwa, rev_game, rgu_ga_trade, rgu_ga_trad_no_inj, tertiary_b and ga_m1/ga_m1s/ga_m2/ga_m2s. Use SUM(`primary`) for the primary metric. Monthly uses _mth, MTD uses _mtd, daily uses _dly, with literal bounded partition filters. Join kec_unik to rham_ref_territory.kec_id for Circle/Region/Area/District. Mapping authority is rham_ref_snd_metric (brand, parameter, metric), currently candidate, not an approved runtime SQL source. RGU/VLR/prepaid revenue must come from approved Marketing sources, not SND highlevel. For other removed raw parameters, use another approved source only if its live KB schema actually contains the requested metric; otherwise state that it is unavailable. Preserve NULL when a brand has no mapped/populated metric; do not turn missing primary into an observed zero with COALESCE.
 
 ## Related
 
