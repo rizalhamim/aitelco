@@ -1,0 +1,408 @@
+<title>Agent Java Login Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Prompt:wght@400;500&display=swap">
+<style>
+/* Layout: review chrome (header, tabs, notes) around a scaled, pixel-true mockup stage */
+:root {
+  /* review chrome */
+  --page: #EEF4F2; --panel: #FFFFFF; --ink: #0F1F1D; --ink-2: #3D4C49; --mute: #5A6B68; --rule: #DCE6E3;
+  --chip: #E6F7F5; --chip-ink: #0A6A5F;
+  /* Agent Java palette v2: teal core + fresh accents */
+  --teal-900: #04332E; --teal-700: #0A6A5F; --teal-600: #0E8579; --teal-500: #15A697; --teal-50: #E6F7F5;
+  --lagoon-500: #22B8C9; --lagoon-600: #1597A8; --lagoon-50: #E3F7FA;
+  --lime-400: #C7F25E; --lime-700: #5E8A12; --lime-50: #F4FCE3;
+  --mint-300: #7EE8A2;
+  --coral-500: #FF7A59; --coral-600: #E85D3C; --coral-50: #FFEDE7;
+  --amber-500: #F5A623;
+  --f-display: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Prompt", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--page); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 18px }
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; justify-content: space-between }
+.brandline { display: flex; align-items: center; gap: 12px; min-width: 0 }
+.brandline svg { width: 44px; height: 44px; flex: none; border-radius: 11px }
+.brandline h1 { font-family: var(--f-display); font-size: 20px; line-height: 1.2; margin: 0; font-weight: 700; text-wrap: balance }
+.brandline p { margin: 0; color: var(--mute); font-size: 13px }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--chip); color: var(--chip-ink);
+  font: 600 12px/1 var(--f-display); letter-spacing: .02em }
+.chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--amber-500) }
+.steps { display: flex; gap: 6px; flex-wrap: wrap; font: 500 12px/1 var(--f-display); color: var(--mute) }
+.steps span { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--rule) }
+.steps span.on { background: var(--teal-600); border-color: var(--teal-600); color: #fff }
+.tabs { display: inline-flex; padding: 4px; gap: 4px; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; flex-wrap: wrap }
+.tabs button { font: 600 13px/1 var(--f-display); border: 0; background: transparent; color: var(--ink-2); padding: 10px 14px; border-radius: 9px; cursor: pointer }
+.tabs button[aria-selected="true"] { background: var(--teal-600); color: #fff }
+.tabs button:focus-visible { outline: 2px solid var(--lagoon-500); outline-offset: 2px }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start }
+@media (max-width: 980px) { .main { grid-template-columns: minmax(0, 1fr) } }
+.stage { background: repeating-conic-gradient(var(--rule) 0 25%, transparent 0 50%) 0 0/22px 22px, var(--panel); border: 1px solid var(--rule);
+  border-radius: 16px; padding: 18px; min-width: 0; overflow: hidden }
+.stage-label { display: flex; justify-content: space-between; gap: 10px; font: 500 12px/1.3 var(--f-display); color: var(--mute); margin-bottom: 10px; flex-wrap: wrap }
+.fit { position: relative; width: 100%; margin: 0 auto }
+.fit > .frame { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: 0 20px 60px rgba(4,51,46,.28) }
+aside.notes { background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; padding: 18px; display: grid; gap: 14px; min-width: 0 }
+aside.notes h2 { font: 700 14px/1.3 var(--f-display); margin: 0; letter-spacing: .01em }
+aside.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 13.5px }
+aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 13.5px; color: var(--ink-2) }
+.panel { display: none } .panel.on { display: block }
+
+/* ───────────── Mockup frames (fixed design pixels, not theme-aware on purpose) ───────────── */
+.frame { overflow: hidden; color: #fff; font-family: var(--f-body); isolation: isolate }
+.frame video, .frame .poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -3 }
+.frame .shade { position: absolute; inset: 0; z-index: -2 }
+.wlogo { display: flex; align-items: center; gap: 12px }
+.wlogo svg { border-radius: 24%; box-shadow: 0 8px 24px rgba(0,0,0,.25) }
+.wlogo b { font: 700 22px/1 var(--f-display); letter-spacing: -.01em }
+.wlogo b em { font-style: normal; color: var(--lime-400) }
+.tagline { font: 800 104px/.98 var(--f-display); letter-spacing: -.03em; margin: 0 }
+.tagline span { background: linear-gradient(90deg, var(--lime-400), var(--mint-300) 55%, var(--lagoon-500)); -webkit-background-clip: text; background-clip: text; color: transparent }
+.sec-bar { height: 4px; border-radius: 4px; background: rgba(255,255,255,.18); overflow: hidden }
+.sec-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--lime-400), var(--lagoon-500)); border-radius: 4px }
+.vctl { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.28); background: rgba(4,51,46,.35); backdrop-filter: blur(8px);
+  color: #fff; border-radius: 999px; padding: 8px 14px 8px 10px; font: 500 12px/1 var(--f-display); cursor: pointer }
+.vctl:focus-visible { outline: 2px solid var(--lime-400); outline-offset: 2px }
+.vctl svg { width: 16px; height: 16px }
+
+.card { background: rgba(255,255,255,.94); backdrop-filter: blur(18px) saturate(1.2); color: #0F1F1D; border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(4,51,46,.35), inset 0 1px 0 rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.6) }
+.card h3 { font: 700 26px/1.2 var(--f-display); margin: 0 }
+.card .sub { margin: 4px 0 0; color: #5A6B68; font-size: 14px }
+.fld { display: grid; gap: 7px }
+.fld label { font: 600 13px/1 var(--f-display); color: #3D4C49 }
+.inp { display: flex; align-items: center; gap: 10px; height: 54px; border-radius: 16px; background: #fff; border: 1.5px solid #DCE6E3; padding: 0 14px;
+  transition: border-color .18s, box-shadow .18s }
+.inp:focus-within { border-color: var(--teal-500); box-shadow: 0 0 0 4px rgba(34,184,201,.18) }
+.inp svg { width: 19px; height: 19px; color: #5A6B68; flex: none }
+.inp input { border: 0; outline: 0; flex: 1; min-width: 0; font: 400 15px/1 var(--f-body); color: #0F1F1D; background: transparent }
+.inp input::placeholder { color: #8A9A97 }
+.inp button { border: 0; background: transparent; padding: 6px; margin-right: -6px; border-radius: 8px; color: #5A6B68; cursor: pointer; display: grid }
+.inp button:focus-visible { outline: 2px solid var(--teal-500) }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px }
+.remember { display: inline-flex; align-items: center; gap: 9px; font: 500 13px/1 var(--f-display); color: #3D4C49; cursor: pointer }
+.sw { width: 36px; height: 21px; border-radius: 99px; background: #D5DFDC; position: relative; transition: background .2s; flex: none }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s }
+.remember input { position: absolute; opacity: 0; width: 1px; height: 1px }
+.remember input:checked + .sw { background: var(--teal-600) }
+.remember input:checked + .sw::after { transform: translateX(15px) }
+.remember input:focus-visible + .sw { outline: 2px solid var(--lagoon-500); outline-offset: 2px }
+.link { font: 600 13px/1 var(--f-display); color: var(--teal-700); text-decoration: none; background: none; border: 0; cursor: pointer; padding: 0 }
+.cta { height: 56px; border: 0; border-radius: 16px; width: 100%; cursor: pointer; color: #fff; font: 600 16px/1 var(--f-display);
+  background: linear-gradient(100deg, var(--teal-600), var(--teal-500) 50%, var(--lagoon-600)); box-shadow: 0 12px 26px rgba(14,133,121,.35);
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; transition: transform .15s, box-shadow .2s, filter .2s; position: relative; overflow: hidden }
+.cta:hover { filter: brightness(1.06); box-shadow: 0 16px 34px rgba(14,133,121,.42) }
+.cta:active { transform: scale(.985) }
+.cta:focus-visible { outline: 3px solid var(--lime-400); outline-offset: 3px }
+.cta svg { width: 19px; height: 19px; transition: transform .2s }
+.cta:hover svg { transform: translateX(3px) }
+.cta .spin { width: 20px; height: 20px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; animation: sp .8s linear infinite; display: none }
+.cta.busy .spin { display: block } .cta.busy .lbl, .cta.busy svg { display: none }
+@keyframes sp { to { transform: rotate(360deg) } }
+.msg { min-height: 20px; font: 500 13px/1.4 var(--f-display); color: var(--teal-700) }
+.msg.err { color: #C42B2B }
+.foot { font: 500 12px/1.4 var(--f-display); color: rgba(255,255,255,.72) }
+
+/* Web 1440 x 900 */
+#webFrame { width: 1440px; height: 900px; border-radius: 6px }
+#webFrame .shade { background:
+  linear-gradient(90deg, rgba(4,51,46,.94) 0%, rgba(4,51,46,.72) 42%, rgba(4,51,46,.18) 72%, rgba(4,51,46,.35) 100%),
+  linear-gradient(180deg, rgba(4,51,46,0) 55%, rgba(4,51,46,.85) 100%) }
+#webFrame .glow { position: absolute; z-index: -1; width: 760px; height: 760px; left: -220px; top: 330px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(199,242,94,.16), rgba(199,242,94,0) 65%) }
+#webFrame .top { position: absolute; left: 112px; top: 64px }
+#webFrame .hero { position: absolute; left: 112px; top: 300px; width: 700px; display: grid; gap: 28px }
+#webFrame .hero .sec-bar { width: 220px }
+#webFrame .card { position: absolute; right: 112px; top: 200px; width: 452px; padding: 40px; display: grid; gap: 20px }
+#webFrame .bottom { position: absolute; left: 112px; right: 112px; bottom: 40px; display: flex; justify-content: space-between; align-items: center }
+
+/* Android 390 x 844 */
+#droidFrame { width: 390px; height: 844px; border-radius: 44px; border: 10px solid #0B1312; background: #04332E }
+#droidFrame video, #droidFrame .poster { height: 62% }
+#droidFrame .shade { background: linear-gradient(180deg, rgba(4,51,46,.55) 0%, rgba(4,51,46,.15) 28%, rgba(4,51,46,.55) 50%, rgba(4,51,46,1) 64%) }
+#droidFrame .status { position: absolute; top: 0; left: 0; right: 0; height: 36px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px;
+  font: 600 13px/1 var(--f-display) }
+#droidFrame .status .cam { width: 12px; height: 12px; border-radius: 50%; background: #0B1312; position: absolute; left: 50%; top: 11px; transform: translateX(-50%) }
+#droidFrame .top { position: absolute; left: 24px; top: 56px }
+#droidFrame .top b { font-size: 18px }
+#droidFrame .hero { position: absolute; left: 24px; right: 24px; top: 200px; display: grid; gap: 14px }
+#droidFrame .tagline { font-size: 44px; line-height: 1 }
+#droidFrame .hero .sec-bar { width: 120px }
+#droidFrame .vctl { position: absolute; right: 18px; top: 52px; padding: 8px }
+#droidFrame .vctl span { display: none }
+#droidFrame .card { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; padding: 14px 22px 26px; display: grid; gap: 14px; background: #fff; backdrop-filter: none }
+#droidFrame .grab { width: 40px; height: 4px; border-radius: 4px; background: #DCE6E3; margin: 0 auto 2px }
+#droidFrame .card h3 { font-size: 22px }
+#droidFrame .inp { height: 52px }
+#droidFrame .nav { height: 4px; width: 120px; border-radius: 4px; background: #0F1F1D; opacity: .8; margin: 4px auto 0 }
+
+/* Brand board 1200 x 760 */
+#brandFrame { width: 1200px; height: 760px; background: #F5F9F8; color: #0F1F1D; border-radius: 6px; padding: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px }
+#brandFrame h4 { font: 700 13px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; margin: 0 0 16px }
+.logos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px }
+.lg { background: #fff; border: 1px solid #E1E9E7; border-radius: 20px; padding: 22px; display: grid; gap: 14px; justify-items: start }
+.lg.rec { border: 2px solid var(--teal-600) }
+.lg .big { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 14px 30px rgba(4,51,46,.22) }
+.lg .sizes { display: flex; gap: 10px; align-items: end }
+.lg .sizes svg { border-radius: 24% }
+.lg b { font: 700 16px/1.2 var(--f-display) } .lg p { margin: 0; font-size: 13px; color: #3D4C49 }
+.lg .tag { font: 600 11px/1 var(--f-display); padding: 5px 9px; border-radius: 99px; background: var(--teal-50); color: var(--teal-700) }
+.sw-grid { display: grid; gap: 12px }
+.sw-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center }
+.sw-row > span { font: 600 13px/1.2 var(--f-display) } .sw-row small { display: block; font: 400 11px/1.3 var(--f-body); color: #5A6B68 }
+.ramp { display: flex; border-radius: 12px; overflow: hidden; height: 54px }
+.ramp i { flex: 1; display: grid; place-items: end start; padding: 6px; font: 500 10px/1 var(--f-display); font-style: normal }
+.pair { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap }
+.pair div { padding: 10px 14px; border-radius: 12px; font: 600 12px/1.3 var(--f-display) }
+@media (prefers-reduced-motion: reduce) { .cta, .cta svg, .sw::after { transition: none } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo-elang" viewBox="0 0 1024 1024">{{ELANG}}</symbol>
+  <symbol id="logo-chat" viewBox="0 0 1024 1024">{{CHAT}}</symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g></symbol>
+  <symbol id="i-eyeoff" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/></g></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></g></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><g fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></g></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.7L9.5 4.6A1 1 0 0 0 8 5.5z"/></symbol>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brandline">
+      <svg viewBox="0 0 1024 1024" aria-hidden="true"><use href="#logo-elang"/></svg>
+      <div><h1>Agent Java · Redesign v2</h1><p>Review halaman satu per satu. Ini halaman pertama.</p></div>
+    </div>
+    <div class="steps" aria-label="Urutan review">
+      <span class="on">01 Login</span><span>02 Tanya Agent</span><span>03 Dashboard</span><span>04 Performance</span><span>05 Peta Agent</span><span>06 Laporan</span><span>07 Alert</span><span>08 Profil</span>
+    </div>
+  </header>
+
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+    <div class="tabs" role="tablist" aria-label="Pilih frame">
+      <button role="tab" id="t-web" aria-selected="true" data-p="web">Web · 1440</button>
+      <button role="tab" id="t-droid" aria-selected="false" data-p="droid">Android · 390</button>
+      <button role="tab" id="t-brand" aria-selected="false" data-p="brand">Logo dan warna</button>
+    </div>
+    <span class="chip"><i></i> Menunggu review Rizal</span>
+  </div>
+
+  <div class="main">
+    <section class="stage" aria-label="Mockup">
+      <!-- WEB -->
+      <div class="panel on" id="p-web">
+        <div class="stage-label"><span>Web · Login · 1440 × 900</span><span>Coba ketik, klik ikon mata, lalu Masuk</span></div>
+        <div class="fit" data-w="1440" data-h="900">
+          <div class="frame" id="webFrame">
+            <img class="poster" src="{{POSTER}}" alt="">
+            <video class="bgv" autoplay muted loop playsinline preload="auto" poster="{{POSTER}}" src="media/login.mp4"></video>
+            <div class="shade"></div><div class="glow"></div>
+            <div class="top wlogo"><svg width="52" height="52" viewBox="0 0 1024 1024" aria-hidden="true"><use href="#logo-elang"/></svg><b>Agent <em>Java</em></b></div>
+            <div class="hero">
+              <h2 class="tagline">Winning<br>Every <span>Second</span></h2>
+              <div class="sec-bar" aria-hidden="true"><i></i></div>
+            </div>
+            <form class="card" novalidate>
+              <div><h3>Masuk</h3><p class="sub">Selamat datang kembali.</p></div>
+              <div class="fld"><label for="w-user">Username</label>
+                <div class="inp"><svg aria-hidden="true"><use href="#i-user"/></svg><input id="w-user" autocomplete="username" placeholder="nama.pengguna"></div></div>
+              <div class="fld"><label for="w-pass">Password</label>
+                <div class="inp"><svg aria-hidden="true"><use href="#i-lock"/></svg><input id="w-pass" type="password" autocomplete="current-password" placeholder="••••••••••">
+                  <button type="button" class="eye" aria-label="Tampilkan password"><svg width="19" height="19"><use href="#i-eye"/></svg></button></div></div>
+              <div class="row">
+                <label class="remember"><input type="checkbox" id="w-rem" checked><span class="sw"></span>Ingat saya</label>
+                <button type="button" class="link">Lupa password?</button>
+              </div>
+              <button class="cta" type="submit"><span class="lbl">Masuk</span><svg><use href="#i-arrow"/></svg><span class="spin"></span></button>
+              <div class="msg" role="status" aria-live="polite"></div>
+            </form>
+            <div class="bottom">
+              <button type="button" class="vctl" aria-label="Jeda video"><svg><use href="#i-pause"/></svg><span>Jeda video</span></button>
+              <span class="foot">© 2026 Agent Java</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ANDROID -->
+      <div class="panel" id="p-droid">
+        <div class="stage-label"><span>Android · Login · 390 × 844</span><span>Video di atas, kartu login naik dari bawah</span></div>
+        <div class="fit" data-w="390" data-h="844" data-max="1">
+          <div class="frame" id="droidFrame">
+            <img class="poster" src="{{POSTER}}" alt="">
+            <video class="bgv" autoplay muted loop playsinline preload="auto" poster="{{POSTER}}" src="media/login.mp4"></video>
+            <div class="shade"></div>
+            <div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮▮▮ 86%</span></div>
+            <div class="top wlogo"><svg width="40" height="40" viewBox="0 0 1024 1024" aria-hidden="true"><use href="#logo-elang"/></svg><b>Agent <em>Java</em></b></div>
+            <button type="button" class="vctl" aria-label="Jeda video"><svg><use href="#i-pause"/></svg><span>Jeda</span></button>
+            <div class="hero">
+              <h2 class="tagline">Winning<br>Every <span>Second</span></h2>
+              <div class="sec-bar" aria-hidden="true"><i></i></div>
+            </div>
+            <form class="card" novalidate>
+              <div class="grab"></div>
+              <div><h3>Masuk</h3><p class="sub">Selamat datang kembali.</p></div>
+              <div class="fld"><label for="d-user">Username</label>
+                <div class="inp"><svg aria-hidden="true"><use href="#i-user"/></svg><input id="d-user" autocomplete="username" placeholder="nama.pengguna"></div></div>
+              <div class="fld"><label for="d-pass">Password</label>
+                <div class="inp"><svg aria-hidden="true"><use href="#i-lock"/></svg><input id="d-pass" type="password" autocomplete="current-password" placeholder="••••••••••">
+                  <button type="button" class="eye" aria-label="Tampilkan password"><svg width="19" height="19"><use href="#i-eye"/></svg></button></div></div>
+              <div class="row">
+                <label class="remember"><input type="checkbox" id="d-rem" checked><span class="sw"></span>Ingat saya</label>
+                <button type="button" class="link">Lupa password?</button>
+              </div>
+              <button class="cta" type="submit"><span class="lbl">Masuk</span><svg><use href="#i-arrow"/></svg><span class="spin"></span></button>
+              <div class="msg" role="status" aria-live="polite"></div>
+              <div class="nav"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- BRAND -->
+      <div class="panel" id="p-brand">
+        <div class="stage-label"><span>Logo app dan palet warna fresh</span><span>Pilih satu logo</span></div>
+        <div class="fit" data-w="1200" data-h="760">
+          <div class="frame" id="brandFrame">
+            <div>
+              <h4>Logo Agent Java</h4>
+              <div class="logos">
+                <div class="lg rec">
+                  <span class="tag">Rekomendasi · A</span>
+                  <svg class="big" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg>
+                  <b>Elang Java</b>
+                  <p>Elang Jawa dari video login. Jambulnya tiga batang naik seperti grafik tumbuh, bintang koral = AI agent.</p>
+                  <div class="sizes"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg><svg width="40" height="40" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg><svg width="24" height="24" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg></div>
+                </div>
+                <div class="lg">
+                  <span class="tag">Alternatif · B</span>
+                  <svg class="big" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg>
+                  <b>Chat Insight</b>
+                  <p>Bubble chat berisi garis performa yang naik. Lebih generik, tapi langsung terbaca "agent yang menjawab data".</p>
+                  <div class="sizes"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg><svg width="40" height="40" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg><svg width="24" height="24" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4>Palet v2: teal tetap inti, tambah 3 aksen fresh</h4>
+              <div class="sw-grid">
+                <div class="sw-row"><span>Teal<small>inti, tombol, nav</small></span><div class="ramp">
+                  <i style="background:#E6F7F5;color:#0A6A5F">50</i><i style="background:#8FDFD7;color:#04332E">200</i><i style="background:#15A697;color:#fff">500</i><i style="background:#0E8579;color:#fff">600</i><i style="background:#0A6A5F;color:#fff">700</i><i style="background:#04332E;color:#fff">900</i></div></div>
+                <div class="sw-row"><span>Lagoon<small>baru · link, fokus, data seri 2</small></span><div class="ramp">
+                  <i style="background:#E3F7FA;color:#0E6F7C">50</i><i style="background:#9FE3EC;color:#0B4A53">200</i><i style="background:#22B8C9;color:#04332E">500</i><i style="background:#1597A8;color:#fff">600</i><i style="background:#0E6F7C;color:#fff">700</i></div></div>
+                <div class="sw-row"><span>Lime<small>baru · highlight, aktif, naik</small></span><div class="ramp">
+                  <i style="background:#F4FCE3;color:#5E8A12">50</i><i style="background:#E2F9A8;color:#3F5E0A">200</i><i style="background:#C7F25E;color:#1F2E05">400</i><i style="background:#A8DB3C;color:#1F2E05">500</i><i style="background:#5E8A12;color:#fff">700</i></div></div>
+                <div class="sw-row"><span>Coral<small>baru · AI spark, CTA kedua</small></span><div class="ramp">
+                  <i style="background:#FFEDE7;color:#B5401F">50</i><i style="background:#FFC2AF;color:#6E2410">200</i><i style="background:#FF7A59;color:#2A0D05">500</i><i style="background:#E85D3C;color:#fff">600</i><i style="background:#B5401F;color:#fff">700</i></div></div>
+                <div class="sw-row"><span>Status<small>tetap seperti v1</small></span><div class="ramp">
+                  <i style="background:#1F7A3A;color:#fff">baik</i><i style="background:#F5A623;color:#2A1A00">waspada</i><i style="background:#C42B2B;color:#fff">kritis</i></div></div>
+              </div>
+              <div class="pair">
+                <div style="background:#04332E;color:#C7F25E">Lime di atas teal-900</div>
+                <div style="background:#0E8579;color:#fff">Putih di atas teal-600</div>
+                <div style="background:#FFEDE7;color:#B5401F">Coral-700 di atas coral-50</div>
+                <div style="background:#E3F7FA;color:#0E6F7C">Lagoon-700 di atas lagoon-50</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="notes">
+      <div>
+        <h2>Yang baru di Login v2</h2>
+        <ul>
+          <li>Nama jadi <b>Agent Java</b> dengan logo baru (pilih A atau B di tab Logo dan warna).</li>
+          <li>Tidak ada logo atau teks Indosat Ooredoo Hutchison.</li>
+          <li>Video latar diputar otomatis. Video yang sekarang live berformat HEVC, sehingga tidak jalan di Firefox dan di banyak laptop Chrome. Di v2 diubah ke H.264 (28,6 MB jadi 7,8 MB di 1080p). Login Android juga dapat video yang sama.</li>
+          <li>Garis lime di bawah tagline berjalan mengikuti detik video, cocok dengan "Every Second".</li>
+          <li>Tombol jeda video untuk aksesibilitas; mode hemat gerak hanya menampilkan poster.</li>
+          <li>Tambahan "Ingat saya". Tagline tetap, tanpa statistik atau teks fitur.</li>
+        </ul>
+      </div>
+      <div class="q"><b>Yang perlu kamu putuskan:</b> logo A atau B, aksen lime/lagoon/coral oke atau mau diganti, dan apakah layout ini disetujui sebelum lanjut ke halaman 02 Tanya Agent.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  // scale each frame to its stage width
+  const fits = [...document.querySelectorAll('.fit')];
+  function layout() {
+    fits.forEach(f => {
+      if (!f.offsetParent) return;
+      const w = +f.dataset.w, h = +f.dataset.h, avail = f.parentElement.clientWidth;
+      const s = Math.min(f.dataset.max ? 1 : 9, avail / w);
+      f.style.height = (h * s) + 'px'; f.style.width = (w * s) + 'px';
+      f.firstElementChild.style.transform = 'scale(' + s + ')';
+    });
+  }
+  new ResizeObserver(layout).observe(document.querySelector('.stage'));
+  layout();
+
+  // tabs
+  const tabs = document.querySelectorAll('[role=tab]');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p));
+    try { localStorage.setItem('aj-tab', t.dataset.p) } catch (e) {}
+    layout(); syncVideos();
+  }));
+  try { const s = localStorage.getItem('aj-tab'); if (s) document.querySelector('[data-p="' + s + '"]')?.click() } catch (e) {}
+
+  // video: autoplay, pause control, progress bar, reduced motion
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let paused = reduce;
+  const vids = [...document.querySelectorAll('video.bgv')];
+  function syncVideos() {
+    vids.forEach(v => {
+      const visible = !!v.offsetParent;
+      if (visible && !paused) { v.play().catch(() => {}); } else { v.pause(); }
+    });
+    document.querySelectorAll('.vctl').forEach(b => {
+      b.setAttribute('aria-label', paused ? 'Putar video' : 'Jeda video');
+      b.querySelector('use').setAttribute('href', paused ? '#i-play' : '#i-pause');
+      const sp = b.querySelector('span'); if (sp) sp.textContent = paused ? 'Putar video' : 'Jeda video';
+    });
+  }
+  vids.forEach(v => {
+    v.addEventListener('playing', () => { v.previousElementSibling.style.opacity = 0 });
+    v.addEventListener('timeupdate', () => {
+      const bar = v.parentElement.querySelector('.sec-bar i');
+      if (bar && v.duration) bar.style.width = (100 * v.currentTime / v.duration) + '%';
+    });
+  });
+  document.querySelectorAll('.vctl').forEach(b => b.addEventListener('click', () => { paused = !paused; syncVideos() }));
+  syncVideos();
+
+  // form behaviour (demo only)
+  document.querySelectorAll('.eye').forEach(b => b.addEventListener('click', () => {
+    const inp = b.parentElement.querySelector('input'); const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    b.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+    b.querySelector('use').setAttribute('href', show ? '#i-eyeoff' : '#i-eye');
+  }));
+  document.querySelectorAll('form.card').forEach(f => {
+    const msg = f.querySelector('.msg'), cta = f.querySelector('.cta');
+    f.querySelectorAll('.link').forEach(l => l.addEventListener('click', () => { msg.className = 'msg'; msg.textContent = 'Link reset password dikirim ke email terdaftar (demo).' }));
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const [u, p] = f.querySelectorAll('input:not([type=checkbox])');
+      if (!u.value.trim() || !p.value) { msg.className = 'msg err'; msg.textContent = 'Isi username dan password dulu.'; (u.value.trim() ? p : u).focus(); return; }
+      cta.classList.add('busy'); cta.disabled = true; msg.className = 'msg'; msg.textContent = '';
+      setTimeout(() => { cta.classList.remove('busy'); cta.disabled = false; msg.textContent = 'Berhasil masuk. Lanjut ke verifikasi OTP (demo).' }, 1300);
+    });
+  });
+})();
+</script>

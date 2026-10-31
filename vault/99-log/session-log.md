@@ -489,3 +489,8 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - ReportAllDataTable frozen layout inflated rows: measured height x1.15 (x2.4 at large text) + 12, cell padding 6, Prompt line box ~1.5 em, min row 42. Now: fixed line height 1.2 in both measurement and paint, padding 4, additive 3 dp (6 dp at large text) margin, min row/header 32. Tappable rows keep 48 dp target. Two-line Performance Outlook row 70 to 52 dp; 200 percent text 310 to 120 dp, no clipping.
 - Scroll hint strip and ReportKeyValueRow padding tightened. Guard: mobile/test/report_table_density_test.dart.
 - APK 1.48.3+66 sha256 f001ff83..., signer 038aa1bf... verified; /api/app/version serves 66, public download hash matches. Previous APK at /tmp/Bizplan-Java-Agent-1.48.2+65.apk.
+
+## 2026-10-31 (Redesign v2 brief, Login mockup)
+- Rizal asked for Redesign v2: rename to Agent Java with a new logo, drop IOH branding on web, chat-style map (coordinates + SHP), Performance back in nav, Performance dump to Parquet, Android profile reachable from every tab, Flutter rework. Review is per page, Login first.
+- Found: live web login video is HEVC (28.6 MB), not playable in Firefox and many Chrome installs; H.264 1080p re-encode is 7.8 MB. /map/query (map chat) exists but is not in nav; /site performance page dropped from web nav; Android profile only via Dashboard avatar.
+- design/mockup-v2/: Login v2 (web + Android + logo/palette), .figcraft generated from HTML via design/mockup-v2/tools (extract.js + build.py). Accents: lagoon #22B8C9, lime #C7F25E, coral #FF7A59.
