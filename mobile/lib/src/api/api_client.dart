@@ -113,6 +113,23 @@ class ApiClient {
   /// access token expires after 8h; without this, after expiry the history API
   /// returns 401 (empty history) and new chats get saved with no owner. Returns
   /// true if a new access token was obtained.
+  /// Called once when the stored session can no longer be renewed (the refresh
+  /// token was rejected). main.dart routes to the login screen from here, so an
+  /// expired session asks the user to sign in again instead of failing every call.
+  static void Function()? onSessionExpired;
+  static bool _expiring = false;
+
+  static Future<void> _expireSession() async {
+    if (_expiring) return;
+    _expiring = true;
+    try {
+      await AuthState.clear();
+      onSessionExpired?.call();
+    } finally {
+      _expiring = false;
+    }
+  }
+
   static Future<bool> refreshAccessToken() async {
     final rt = AuthState.refreshToken;
     if (rt == null || rt.isEmpty) return false;
@@ -120,6 +137,10 @@ class ApiClient {
       final res = await http.post(Uri.parse('$base/api/auth/refresh'),
           headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
           body: jsonEncode({'refresh_token': rt}));
+      if (res.statusCode == 401) {
+        await _expireSession();
+        return false;
+      }
       if (res.statusCode != 200) return false;
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final at = data['access_token'] as String?;

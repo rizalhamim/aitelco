@@ -37,6 +37,8 @@ class _BizplanAppState extends State<BizplanApp> {
   void initState() {
     super.initState();
     AppState.I.addListener(() => setState(() {}));
+    ApiClient.onSessionExpired = () => _navigatorKey.currentState
+        ?.pushNamedAndRemoveUntil('/login', (_) => false);
   }
 
   @override
