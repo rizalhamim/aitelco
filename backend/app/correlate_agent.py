@@ -31,10 +31,10 @@ Available domains and what they hold:
 
 Your job: split the question into EXACTLY TWO sub-queries (A and B). Rules:
 - Each sub-query targets ONE domain and asks for that domain's metric AGGREGATED
-  PER TERRITORY at the SAME grain (default: per kabkota; use kecamatan/branch/region
+  PER TERRITORY at the SAME grain (default: per kabkota; use kecamatan/area/district/region
   only if the user said so). Both A and B MUST use the SAME grain and the SAME
   join key name.
-- Choose `join_key`: 'kabkota' (default), or 'kec_id' for kecamatan, or 'region'/'branch'.
+- Choose `join_key`: 'kabkota' (default), 'kec_id' for kecamatan, or 'region'/'area'/'district'.
 - Each sub-query's `question` MUST instruct the SQL agent to output: the join key
   column (named exactly = join_key), plus the metric column(s) for that domain, for
   the latest period (and a prior period if the user asked YoY/MoM/trend), filtered
@@ -50,8 +50,8 @@ Your job: split the question into EXACTLY TWO sub-queries (A and B). Rules:
 
 Output ONLY compact JSON with this FLAT schema (no nested objects). All 8 keys are REQUIRED:
 {{
- "territory_grain": "kabkota|kecamatan|region|branch",
- "join_key": "kabkota|kec_id|region|branch",
+ "territory_grain": "kabkota|kecamatan|region|area|district",
+ "join_key": "kabkota|kec_id|region|area|district",
  "relation_hint": "<short phrase>",
  "language": "id|en",
  "domain_a": "<domain key for metric A>",
@@ -64,18 +64,10 @@ Output ONLY compact JSON with this FLAT schema (no nested objects). All 8 keys a
 """
 
 
-def plan_correlation(question: str, history: list | None = None) -> dict:
-    sys = PLANNER_SYS.format(domains=knowledge.domain_overview_text())
-    msgs = [{"role": "system", "content": sys}]
-    if history:
-        for h in history[-4:]:
-            msgs.append(h)
-    msgs.append({"role": "user", "content": question})
-    # ANALYST model is more reliable for this structured 2-domain split than FAST.
-    out = llm.chat_json(msgs, model=config.LLM_MODEL_ANALYST, max_tokens=900)
+def _normalise_plan(out: dict) -> dict:
+    """Normalise the FLAT planner schema into the nested shape the caller expects."""
     if not isinstance(out, dict):
         return {}
-    # Normalise FLAT schema -> the nested shape the caller expects.
     if "sub_a" not in out and out.get("domain_a"):
         out["sub_a"] = {"domain": out.get("domain_a"), "label": out.get("label_a", "Metric A"),
                         "question": out.get("question_a", "")}
@@ -85,13 +77,65 @@ def plan_correlation(question: str, history: list | None = None) -> dict:
     return out
 
 
+def plan_is_valid(plan: dict) -> bool:
+    """A usable correlation plan needs TWO DIFFERENT domains, each with a sub-question."""
+    if not isinstance(plan, dict):
+        return False
+    a = plan.get("sub_a") or {}
+    b = plan.get("sub_b") or {}
+    da, db = (a.get("domain") or "").strip(), (b.get("domain") or "").strip()
+    if not da or not db or da == db:
+        return False
+    return bool((a.get("question") or "").strip() and (b.get("question") or "").strip())
+
+
+def plan_correlation(question: str, history: list | None = None) -> dict:
+    """Plan a 2-domain correlation. Retries once when the planner collapses both sides
+    onto the SAME domain, then gives up so the caller can fall back to single-domain
+    routing instead of running an invalid A == B plan."""
+    sys = PLANNER_SYS.format(domains=knowledge.domain_overview_text(question))
+    base_msgs = [{"role": "system", "content": sys}]
+    if history:
+        for h in history[-4:]:
+            base_msgs.append(h)
+    base_msgs.append({"role": "user", "content": question})
+
+    # ANALYST model is more reliable for this structured 2-domain split than FAST.
+    out = _normalise_plan(llm.chat_json(base_msgs, model=config.LLM_MODEL_ANALYST,
+                                        max_tokens=900))
+    if plan_is_valid(out):
+        return out
+
+    same = ((out.get("sub_a") or {}).get("domain") or "").strip()
+    retry_msgs = list(base_msgs)
+    retry_msgs.append({
+        "role": "user",
+        "content": (
+            "Your previous plan was REJECTED: it put both metrics in the same domain"
+            + (f" ('{same}')" if same else "")
+            + ". `domain_a` and `domain_b` MUST be TWO DIFFERENT domain keys, each owning "
+              "one of the two metrics. Re-read the domain list and map each metric to the "
+              "domain whose tables actually hold it. If both metrics genuinely live in ONE "
+              "domain, reply exactly {\"single_domain\": \"<domain key>\"} instead."
+        ),
+    })
+    retry = _normalise_plan(llm.chat_json(retry_msgs, model=config.LLM_MODEL_ANALYST,
+                                          max_tokens=900))
+    if plan_is_valid(retry):
+        return retry
+    if isinstance(retry, dict) and retry.get("single_domain"):
+        return {"invalid": "single_domain", "single_domain": retry["single_domain"]}
+    fallback = same or ((retry.get("sub_a") or {}).get("domain") if isinstance(retry, dict) else "")
+    return {"invalid": "same_domain", "single_domain": fallback or ""}
+
+
 def _find_key_col(columns: list[str], join_key: str) -> str | None:
     jk = join_key.lower()
     for c in columns:
         if c.lower() == jk:
             return c
     # fallbacks
-    for cand in (jk, "kabkota", "kabkot", "kec_id", "kecamatan", "region", "branch"):
+    for cand in (jk, "kabkota", "kabkot", "kec_id", "kecamatan", "region", "area", "district", "branch"):
         for c in columns:
             if c.lower() == cand:
                 return c

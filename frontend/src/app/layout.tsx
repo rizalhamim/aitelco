@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Bizplan Java Agent",
-  description: "Winning Every Second — AI agent bisnis Circle Java",
+  description: "Winning Every Second: AI agent bisnis Circle Java",
   icons: { icon: "/brand/icon_circle_java.png", apple: "/brand/icon_circle_java.png" },
 };
 

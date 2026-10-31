@@ -44,6 +44,12 @@ _FORBIDDEN = re.compile(
     re.IGNORECASE,
 )
 _MULTI_STMT = re.compile(r";\s*\S")  # semicolon followed by more content
+_QUOTED_IDENTIFIER = re.compile(r"`([^`]+)`")
+_UNQUOTED_TABLE = re.compile(
+    r"\b(?:from|join)\s+"
+    r"([a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z_][a-zA-Z0-9_]*)",
+    re.IGNORECASE,
+)
 
 _client = None
 _lock = threading.Lock()
@@ -81,7 +87,82 @@ def _json_default(o):
     return str(o)
 
 
-def validate_sql(sql: str) -> str:
+def extract_table_references(sql: str) -> set[tuple[str, str, str]]:
+    """Extract physical fully qualified table references conservatively."""
+    refs: set[tuple[str, str, str]] = set()
+    identifiers = list(_QUOTED_IDENTIFIER.findall(sql or ""))
+    identifiers.extend(_UNQUOTED_TABLE.findall(sql or ""))
+    for identifier in identifiers:
+        parts = identifier.split(".")
+        if len(parts) == 3 and all(parts):
+            refs.add((parts[0], parts[1], parts[2]))
+    return refs
+
+
+def validate_table_policy(
+    sql: str, allowed_tables: set[str] | list[str] | tuple[str, ...] | None = None
+) -> set[str]:
+    """Reject unknown, cross-dataset, banned, and unselected physical tables."""
+    from . import knowledge
+
+    refs = extract_table_references(sql)
+    approved = knowledge.approved_table_names()
+    blocked = knowledge.blocked_table_names()
+    selected = set(allowed_tables or [])
+    used: set[str] = set()
+    for project, dataset, table in refs:
+        if project != config.BQ_PROJECT or dataset != config.BQ_DATASET:
+            raise QueryError(
+                f"Table `{project}.{dataset}.{table}` is outside the approved dataset."
+            )
+        if table in blocked:
+            raise QueryError(
+                f"Table `{table}` is rejected by governance and cannot be queried."
+            )
+        if table not in approved:
+            raise QueryError(
+                f"Table `{table}` is not approved in the runtime knowledge base."
+            )
+        if selected and table not in selected:
+            raise QueryError(
+                f"Table `{table}` was not selected for this question. "
+                "Regenerate SQL using only the retrieved schema."
+            )
+        used.add(table)
+    _reject_sensitive_columns(sql, used)
+    return used
+
+def _reject_sensitive_columns(sql: str, used: set[str]) -> None:
+    """Block identity columns (KB sensitive_dimensions) of any queried table.
+
+    Name match is conservative: a same-named column of a joined table is also
+    refused, and SELECT * is refused because it would expose them implicitly.
+    """
+    from . import knowledge
+    import sqlglot
+    from sqlglot import exp
+
+    index = knowledge.table_index()
+    sensitive = {c.lower() for t in used for c in index.get(t, {}).get("sensitive_dimensions") or []}
+    if not sensitive:
+        return
+    try:
+        tree = sqlglot.parse_one(sql, read="bigquery")
+    except sqlglot.errors.SqlglotError as exc:
+        raise QueryError(f"Invalid BigQuery SQL: {exc}") from exc
+    # A bare table alias (SELECT o, TO_JSON_STRING(o)) serialises the whole row.
+    aliases = {t.alias_or_name.lower() for t in tree.find_all(exp.Table)}
+    names = {c.name.lower() for c in tree.find_all(exp.Column) if not isinstance(c.this, exp.Star)}
+    hit = sorted(names & (sensitive | aliases))
+    if hit:
+        raise QueryError(f"Columns {', '.join(hit)} are personal or sales identity data and cannot be queried. Aggregate by territory, status or vendor instead.")
+    if any(isinstance(s.parent, (exp.Select, exp.Column)) for s in tree.find_all(exp.Star)):
+        raise QueryError("SELECT * is not allowed on tables with personal data. List the aggregate columns you need.")
+
+
+def validate_sql(
+    sql: str, allowed_tables: set[str] | list[str] | tuple[str, ...] | None = None
+) -> str:
     s = sql.strip()
     # Strip a leading/trailing markdown code fence if the LLM wrapped the SQL.
     if s.startswith("```"):
@@ -108,7 +189,69 @@ def validate_sql(sql: str) -> str:
         raise QueryError("Multiple statements are not allowed.")
     if _FORBIDDEN.search(s):
         raise QueryError("Query contains a forbidden (write/DDL) keyword.")
+    validate_table_policy(s, allowed_tables=allowed_tables)
     return s
+
+
+def check_sql_balance(sql: str) -> str | None:
+    """Cheap pre-flight structural check for TRUNCATED generated SQL.
+
+    The SQL writer occasionally runs out of tokens mid-CTE, producing SQL with an
+    unclosed paren or string. BigQuery answers that with a paid round trip and an
+    opaque "Expected ) but got end of script". Catching it locally lets the pipeline
+    retry with a simplify instruction instead. Returns a reason string when the SQL is
+    structurally broken, or None when it looks well formed.
+
+    String literals and comments are skipped so an apostrophe inside a value or a
+    paren inside a comment never trips the counter.
+    """
+    depth = 0
+    i = 0
+    n = len(sql)
+    while i < n:
+        ch = sql[i]
+        nxt = sql[i + 1] if i + 1 < n else ""
+        if ch == "-" and nxt == "-":
+            j = sql.find("\n", i)
+            i = n if j == -1 else j + 1
+            continue
+        if ch == "/" and nxt == "*":
+            j = sql.find("*/", i + 2)
+            if j == -1:
+                return "unterminated block comment"
+            i = j + 2
+            continue
+        if ch in ("'", '"', "`"):
+            quote = ch
+            j = i + 1
+            while j < n:
+                if sql[j] == "\\":
+                    j += 2
+                    continue
+                if sql[j] == quote:
+                    break
+                j += 1
+            if j >= n:
+                return f"unterminated {quote} literal, the query looks cut off"
+            i = j + 1
+            continue
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth < 0:
+                return "unbalanced parentheses (one ')' too many)"
+        i += 1
+    if depth > 0:
+        return f"unbalanced parentheses ({depth} unclosed), the query looks cut off"
+
+    tail = sql.rstrip().rstrip(";").rstrip()
+    last = tail.rsplit(None, 1)[-1].upper() if tail else ""
+    if last in {"SELECT", "FROM", "WHERE", "AND", "OR", "BY", "JOIN", "ON", "AS",
+                "GROUP", "ORDER", "HAVING", "WITH", "CASE", "WHEN", "THEN", "ELSE",
+                "LIMIT", "UNION", "OVER", "PARTITION", ","}:
+        return f"query ends on the dangling keyword '{last}', it looks cut off"
+    return None
 
 
 def _ensure_limit(sql: str, limit: int) -> str:
@@ -125,23 +268,41 @@ def dry_run(sql: str) -> int:
     return int(job.total_bytes_processed or 0)
 
 
-def run_query(sql: str, row_limit: int | None = None) -> dict:
+def run_query(
+    sql: str,
+    row_limit: int | None = None,
+    allowed_tables: set[str] | list[str] | tuple[str, ...] | None = None,
+) -> dict:
     """Validate -> dry-run cost check -> execute. Returns dict with rows/columns/meta."""
     limit = row_limit or config.DEFAULT_ROW_LIMIT
-    clean = validate_sql(sql)
+    clean = validate_sql(sql, allowed_tables=allowed_tables)
+    # Catch truncated generations locally: a dry run would cost a round trip and come
+    # back with an opaque parser error that the retry loop cannot act on.
+    broken = check_sql_balance(clean)
+    if broken:
+        raise QueryError(
+            f"Generated SQL is structurally invalid: {broken}. Rewrite it as a SIMPLER "
+            f"query (fewer CTEs, no redundant subselects) that fits in one complete "
+            f"statement."
+        )
+    had_outer_limit = bool(re.search(r"\blimit\s+\d+\s*$", clean, re.IGNORECASE))
     clean = _ensure_limit(clean, limit)
+
+    from .query_cost import prepare_query
+    clean, cost_notes = prepare_query(clean, get_client())
+    budget = min(config.MAX_BYTES_BILLED, config.QUERY_SCAN_BUDGET_BYTES)
 
     # Cost estimate
     est_bytes = dry_run(clean)
-    if est_bytes > config.MAX_BYTES_BILLED:
+    if est_bytes > budget:
         raise QueryError(
             f"Query would scan {est_bytes/1024**3:.1f} GB, exceeding the "
-            f"{config.MAX_BYTES_BILLED/1024**3:.0f} GB safety cap. "
+            f"{budget/1024**3:.1f} GB scan budget. "
             f"Add a tighter dt_id/month_id filter or narrower columns."
         )
 
     cfg = bigquery.QueryJobConfig(
-        maximum_bytes_billed=config.MAX_BYTES_BILLED,
+        maximum_bytes_billed=budget,
         use_query_cache=True,
     )
     job = client = get_client().query(clean, job_config=cfg)
@@ -162,6 +323,12 @@ def run_query(sql: str, row_limit: int | None = None) -> dict:
         "row_count": len(rows),
         "bytes_processed": int(job.total_bytes_processed or 0),
         "bytes_billed": int(job.total_bytes_billed or 0),
+        "estimated_bytes": est_bytes,
+        "scan_budget_bytes": budget,
+        "cost_optimizations": cost_notes,
         "cache_hit": bool(job.cache_hit),
         "est_bytes": est_bytes,
+        "limit_applied": not had_outer_limit,
+        "row_limit": limit,
+        "truncated": bool(not had_outer_limit and len(rows) >= limit),
     }

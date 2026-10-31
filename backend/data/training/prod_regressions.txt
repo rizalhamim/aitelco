@@ -1,0 +1,14 @@
+# Regression corpus drawn from REAL production failures in sessions.db (analytics,
+# success=0), sampled 2026-08-21. Same format as hard_questions_30.txt: domain|question.
+# Kept separate from hard_questions_30.txt so the 30-question baseline stays comparable.
+# Failure class of the original production run is noted in the trailing comment.
+product|Bandingkan kontribusi revenue Freedom Internet vs Happy vs CVM Pack per region bulan ini, dan tunjukkan family mana yang share-nya naik MoM
+product|Decompose revenue VSD (voice sms data) per region bulan ini dengan persentase
+fwa|Pertumbuhan FWA RGU90 YoY per region dan kontribusi revenue FWA
+sales_distribution|URO dan QSSO per branch di kota Surabaya bulan ini
+sales_distribution|Jumlah outlet aktif di kota Surabaya bulan ini
+sales_distribution|Tampilkan outlet di kecamatan Wonocolo
+product|Berapa hit unlimited FWA di Jember untuk full month Mei 2026
+revenue|Trend mingguan revenue by price slab di Kota Surabaya 8 minggu terakhir, slab mana yang tumbuh
+kpi_summary|Trend net add 90d 6 bulan dan korelasi dengan gross add per region
+ftth|Conversion funnel FTTH SO ke SA ke PA per kabkota di Jawa Timur, mana yang konversinya paling jelek

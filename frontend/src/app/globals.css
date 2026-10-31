@@ -553,6 +553,15 @@
   margin-bottom: 0;
   font-family: var(--font-display);
 }
+/* Coverage and period of the plotted rows. The chart is not self-explanatory without
+   it: "10 kabkota" and "10 dari 38 kabkota (dipotong)" are different claims. */
+.chart-caption {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--v-mute, #5A6B68);
+  line-height: 1.4;
+}
 .chart-switch {
   display: inline-flex;
   gap: 4px;
@@ -1483,10 +1492,168 @@
 
 /* Leaflet popup override to match brand */
 .leaflet-popup-content-wrapper {
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(10, 31, 29, 0.28);
+  padding: 0;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+.leaflet-popup-tip {
+  box-shadow: 0 6px 20px rgba(10, 31, 29, 0.18);
 }
 .leaflet-container {
   font-family: var(--font-sans);
+}
+
+/* ── Fix-mode site popup (rich card) ── */
+.mq-fixpop {
+  width: 340px;
+  max-height: 440px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: var(--font-sans);
+  color: #0F1F1D;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD8D5 transparent;
+}
+.mq-fixpop::-webkit-scrollbar { width: 6px; }
+.mq-fixpop::-webkit-scrollbar-thumb { background: #CBD8D5; border-radius: 3px; }
+.mq-fixpop__hd {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 12px 14px 10px;
+  background: linear-gradient(135deg, #0A6A5F 0%, #15A697 100%);
+  color: #fff;
+}
+.mq-fixpop__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mq-fixpop__sub {
+  font-size: 10.5px;
+  opacity: 0.85;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mq-fixpop__chip {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 9.5px;
+  font-weight: 600;
+}
+.mq-fixpop__body { padding: 4px 14px 12px; }
+.mq-sect {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  color: #0A6A5F;
+  text-transform: uppercase;
+  margin: 12px 0 6px;
+}
+.mq-sect::before {
+  content: "";
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  background: #33BCAD;
+}
+.mq-attrs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 12px;
+}
+.mq-attr {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  border-bottom: 1px dashed #EAF0EF;
+  padding: 2px 0;
+}
+.mq-attr__k { color: #7A8A87; font-size: 10px; }
+.mq-attr__v { color: #0F1F1D; font-size: 10.5px; font-weight: 600; text-align: right; }
+.mq-tbl { width: 100%; border-collapse: collapse; }
+.mq-tbl thead th {
+  background: #F1F6F5;
+  color: #5A6B68;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  padding: 4px 3px;
+  text-align: right;
+  white-space: nowrap;
+}
+.mq-tbl thead th:first-child { text-align: left; border-radius: 6px 0 0 6px; padding-left: 6px; }
+.mq-tbl thead th:last-child { border-radius: 0 6px 6px 0; }
+.mq-tbl tbody td {
+  font-size: 9.5px;
+  padding: 2.5px 3px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mq-tbl tbody tr:nth-child(even) { background: #FAFCFC; }
+.mq-tbl tbody td:first-child { text-align: left; color: #5A6B68; padding-left: 6px; }
+.mq-tbl .mq-num { color: #0F1F1D; font-weight: 600; }
+.mq-tbl .mq-hi { color: #0F1F1D; font-weight: 700; }
+.mq-cg-grp { background: #F4FAF9 !important; }
+.mq-cg-grp td:first-child { color: #0A6A5F; font-weight: 700; }
+.mq-cg-det td:first-child { padding-left: 16px; color: #7A8A87; }
+.mq-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0 5px;
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.mq-pill--up { color: #0A6A5F; background: #DCF3EE; }
+.mq-pill--dn { color: #C6168D; background: #FBE4F1; }
+.mq-pill--flat { color: #9AA8A5; background: #F0F3F2; }
+.mq-abs--up { color: #0A6A5F; font-weight: 700; }
+.mq-abs--dn { color: #C6168D; font-weight: 700; }
+.mq-abs--flat { color: #9AA8A5; }
+.mq-trend-cap {
+  font-size: 8.5px;
+  color: #9AA8A5;
+  text-align: right;
+  margin-top: 1px;
+}
+.mq-fixpop__actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.mq-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 11px;
+  border-radius: 9px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  text-decoration: none;
+  color: #fff;
 }
 
 /* ── Summary email toast notification ── */
@@ -2171,16 +2338,63 @@
    LOGIN PAGE
    ═══════════════════════════════════ */
 
+/* Login-local surface tokens. The fluid canvas sits behind everything, so the
+ * card and the veil have to be tinted glass rather than flat brand surfaces.
+ * These flip with the theme; never hardcode white in the login block. */
 .login-shell {
+  --login-bg: #FFFFFF;
+  /* deeper than --ioh-panel so the white card has something to sit on top of */
+  --login-right-bg: #E4EFEC;
+  --login-card-bg: rgba(255, 255, 255, 0.94);
+  /* a plain grey rule reads as ~1.1 contrast against the panel, so the card
+   * edge disappears. Tint it with the brand teal to give the box a real border. */
+  --login-card-border: rgba(10, 106, 95, 0.22);
+  --login-card-sheen: rgba(255, 255, 255, 0.9);
+  --login-card-shadow: 0 24px 60px rgba(6, 62, 56, 0.2), 0 4px 14px rgba(6, 62, 56, 0.1);
+  --login-input-bg: rgba(255, 255, 255, 0.78);
+  --login-veil: radial-gradient(105% 75% at 26% 42%, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.34) 42%, rgba(255, 255, 255, 0) 78%);
+  --login-veil-mobile: radial-gradient(140% 100% at 30% 40%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.44) 50%, rgba(255, 255, 255, 0.2) 100%);
+  --login-fluid-opacity: 1;
+
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  background: var(--ioh-white);
+  background: var(--login-bg);
   overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) .login-shell {
+    --login-bg: #0B1211;
+    --login-right-bg: #0B1211;
+    --login-card-bg: rgba(27, 37, 36, 0.86);
+    --login-card-border: rgba(255, 255, 255, 0.12);
+    --login-card-sheen: rgba(255, 255, 255, 0.08);
+    --login-card-shadow: 0 20px 55px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.4);
+    --login-input-bg: rgba(255, 255, 255, 0.06);
+    --login-veil: radial-gradient(105% 75% at 26% 42%, rgba(8, 16, 15, 0.82) 0%, rgba(8, 16, 15, 0.5) 42%, rgba(8, 16, 15, 0.1) 78%);
+    --login-veil-mobile: radial-gradient(140% 100% at 30% 40%, rgba(8, 16, 15, 0.86) 0%, rgba(8, 16, 15, 0.6) 50%, rgba(8, 16, 15, 0.3) 100%);
+    --login-fluid-opacity: 0.75;
+  }
+}
+
+.dark .login-shell,
+[data-theme="dark"] .login-shell {
+  --login-bg: #0B1211;
+  --login-right-bg: #0B1211;
+  --login-card-bg: rgba(27, 37, 36, 0.86);
+  --login-card-border: rgba(255, 255, 255, 0.12);
+  --login-card-sheen: rgba(255, 255, 255, 0.08);
+  --login-card-shadow: 0 20px 55px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.4);
+  --login-input-bg: rgba(255, 255, 255, 0.06);
+  --login-veil: radial-gradient(105% 75% at 26% 42%, rgba(8, 16, 15, 0.82) 0%, rgba(8, 16, 15, 0.5) 42%, rgba(8, 16, 15, 0.1) 78%);
+  --login-veil-mobile: radial-gradient(140% 100% at 30% 40%, rgba(8, 16, 15, 0.86) 0%, rgba(8, 16, 15, 0.6) 50%, rgba(8, 16, 15, 0.3) 100%);
+  --login-fluid-opacity: 0.75;
 }
 
 .login-left {
   flex: 1 1 58%;
-  background: var(--ioh-white);
+  background: var(--login-bg);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2190,19 +2404,67 @@
   overflow: hidden;
 }
 
-.login-canvas {
+/* ── Fluid background layers ──
+ * the blob canvas renders at a fraction of the panel size, then gets scaled up
+ * and blurred here, which is what turns discrete radial gradients into one
+ * continuous liquid mesh. */
+
+.login-blob-canvas {
+  position: absolute;
+  inset: -14%;
+  width: 128%;
+  height: 128%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(34px) saturate(1.5);
+  transform: translateZ(0);
+  opacity: 0;
+  animation: loginFluidIn 1.6s ease forwards;
+}
+
+.login-flow-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  animation: loginFluidIn 2.4s ease 0.4s forwards;
+}
+
+/* keeps the headline readable no matter where the fluid drifts */
+.login-left-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: var(--login-veil);
+}
+
+@keyframes loginFluidIn {
+  from { opacity: 0; }
+  to { opacity: var(--login-fluid-opacity); }
 }
 
 .login-brand-content {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   max-width: 540px;
+  width: 100%;
+}
+
+/* ── Entrance stagger ── */
+
+.login-rise {
+  opacity: 0;
+  animation: loginRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes loginRise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
 }
 
 /* ── Logo with ring animation ── */
@@ -2286,12 +2548,15 @@
 
 /* ── AI Typing Demo ── */
 
+/* Terminal block: stays dark in both themes, since --ioh-ink inverts to a light
+ * value in dark mode and would wash out the monospace text on it. */
 .login-typing-demo {
-  background: var(--ioh-ink);
+  background: #0F1F1D;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 14px 18px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(26, 26, 27, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .login-typing-label {
@@ -2398,7 +2663,8 @@
 }
 
 .login-pipeline-step.active {
-  color: var(--ioh-white);
+  /* teal pill in both themes, so the label is literally white */
+  color: #FFFFFF;
   background: var(--ioh-red);
   border-color: var(--ioh-red);
   box-shadow: 0 2px 12px rgba(21, 166, 151, 0.3);
@@ -2451,8 +2717,8 @@
   gap: 10px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(247, 247, 248, 0.8);
-  border: 1px solid var(--ioh-rule);
+  background: var(--login-card-bg);
+  border: 1px solid var(--login-card-border);
   backdrop-filter: blur(8px);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
@@ -2467,7 +2733,8 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: var(--ioh-ink);
+  /* pinned dark for the same reason as the terminal block above */
+  background: #0F1F1D;
   color: var(--ioh-yellow);
   display: flex;
   align-items: center;
@@ -2540,21 +2807,51 @@
 
 .login-right {
   flex: 1 1 42%;
-  background: var(--ioh-panel);
+  background: var(--login-right-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* same engine as the left panel, dialled way down so the two halves read as
+ * one continuous surface instead of two separate zones */
+.login-blob-canvas-right {
+  filter: blur(64px) saturate(1.1);
+  opacity: 0;
+  animation: loginFluidIn 2.2s ease 0.2s forwards;
 }
 
 .login-form-card {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 420px;
-  background: var(--ioh-white);
+  background: var(--login-card-bg);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
   border-radius: 22px;
   padding: 44px 40px;
-  border: 1px solid var(--ioh-rule);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--login-card-border);
+  box-shadow: var(--login-card-shadow), inset 0 1px 0 var(--login-card-sheen);
+  animation: loginCardIn 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes loginCardIn {
+  from { opacity: 0; transform: translateY(22px) scale(0.975); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* mode switch (login / forgot / reset) slides in instead of hard-swapping */
+.login-pane {
+  animation: loginPaneIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes loginPaneIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: none; }
 }
 
 .login-form-header {
@@ -2603,6 +2900,13 @@
   color: var(--ioh-ink);
   margin-bottom: 8px;
   letter-spacing: 0.01em;
+  transition: color 0.2s, transform 0.2s;
+  transform-origin: left center;
+}
+
+.login-field:focus-within .login-label {
+  color: var(--teal-600);
+  transform: translateX(2px);
 }
 
 .login-input-wrap {
@@ -2627,12 +2931,14 @@
 
 .login-input {
   width: 100%;
+  min-height: 48px;
   padding: 14px 14px 14px 44px;
   border-radius: 12px;
   border: 1.5px solid var(--ioh-rule);
-  background: var(--ioh-panel);
+  background: var(--login-input-bg);
   color: var(--ioh-ink);
-  font-size: 15px;
+  /* 16px keeps iOS Safari from zooming the viewport on focus */
+  font-size: 16px;
   font-family: var(--font-sans);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
@@ -2640,9 +2946,9 @@
 }
 
 .login-input:focus {
-  border-color: var(--ioh-red);
+  border-color: var(--teal-500);
   background: var(--ioh-white);
-  box-shadow: 0 0 0 3px rgba(21, 166, 151, 0.08);
+  box-shadow: 0 0 0 3px rgba(21, 166, 151, 0.18);
 }
 
 .login-input::placeholder {
@@ -2654,8 +2960,8 @@
   padding: 12px 14px;
   border-radius: 10px;
   background: var(--tint-danger);
-  border: 1px solid rgba(21, 166, 151, 0.2);
-  color: var(--ioh-red);
+  border: 1px solid rgba(225, 56, 56, 0.22);
+  color: var(--ioh-danger);
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 20px;
@@ -2675,7 +2981,10 @@
 }
 
 .login-submit {
+  position: relative;
+  overflow: hidden;
   width: 100%;
+  min-height: 48px;
   padding: 15px 0;
   border-radius: 12px;
   border: none;
@@ -2683,11 +2992,35 @@
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 700;
-  background: var(--ioh-red);
-  color: var(--ioh-white);
+  background: linear-gradient(120deg, var(--teal-600) 0%, var(--teal-500) 50%, var(--teal-400) 100%);
+  color: #FFFFFF;
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
   box-shadow: 0 4px 16px rgba(21, 166, 151, 0.3);
   letter-spacing: 0.02em;
+}
+
+/* idle shimmer sweep */
+.login-submit::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg);
+  animation: loginShimmer 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.login-submit:disabled::after {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes loginShimmer {
+  0%, 55% { left: -60%; }
+  85%, 100% { left: 125%; }
 }
 
 .login-submit:hover:not(:disabled) {
@@ -2718,7 +3051,8 @@
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: var(--ioh-white);
+  /* the submit button is teal in both themes, so this stays literally white */
+  border-top-color: #FFFFFF;
   border-radius: 50%;
   animation: loginSpin 0.7s linear infinite;
 }
@@ -2835,19 +3169,74 @@
   }
 }
 
+@media (min-width: 1440px) {
+  .login-brand-content {
+    max-width: 620px;
+  }
+  .login-headline {
+    font-size: 52px;
+  }
+  .login-form-card {
+    max-width: 452px;
+  }
+}
+
+/* Below 900 the layout stacks. The left panel is NOT hidden any more: it
+ * becomes a compact hero above the form so the fluid stays part of the page. */
 @media (max-width: 900px) {
   .login-shell {
     flex-direction: column;
+    min-height: auto;
   }
   .login-left {
+    flex: 0 0 auto;
+    padding: 40px 24px 28px;
+    padding-top: max(40px, env(safe-area-inset-top));
+    align-items: flex-start;
+  }
+  .login-brand-content {
+    max-width: 100%;
+  }
+  .login-logo-row {
+    margin-bottom: 22px;
+  }
+  .login-headline {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+  .login-lede {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  /* keep the hero short on phones: typing demo stays, the rest goes */
+  .login-pipeline,
+  .login-agents-grid,
+  .login-stats,
+  .login-footer-left {
     display: none;
   }
+  .login-typing-demo {
+    margin-bottom: 0;
+  }
+  .login-left-veil {
+    background: var(--login-veil-mobile);
+  }
+  /* fade the fluid out at the panel edge so it bleeds into the form below */
+  .login-blob-canvas {
+    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+  }
   .login-right {
-    flex: 1;
-    padding: 24px 20px;
-    min-height: 100vh;
+    flex: 1 1 auto;
+    /* transparent so the stacked panels read as one surface, no seam line */
+    background: transparent;
+    padding: 8px 20px 40px;
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+    min-height: 0;
     align-items: flex-start;
-    padding-top: 60px;
+  }
+  .login-blob-canvas-right {
+    display: none;
   }
   .login-form-card {
     max-width: 100%;
@@ -2856,6 +3245,86 @@
   }
   .login-form-logo-wrap {
     margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-left {
+    padding: 32px 18px 24px;
+  }
+  .login-right {
+    padding: 8px 16px 32px;
+  }
+  .login-headline {
+    font-size: 28px;
+  }
+  .login-logo-name {
+    font-size: 21px;
+  }
+  .login-logo-sub {
+    font-size: 10px;
+  }
+  .login-logo-img-wrap {
+    width: 56px;
+    height: 56px;
+  }
+  .login-logo-img {
+    width: 52px;
+    height: 52px;
+  }
+  .login-form-card {
+    padding: 28px 20px;
+  }
+  .login-form-title {
+    font-size: 21px;
+  }
+  .login-field {
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 400px) {
+  .login-headline {
+    font-size: 25px;
+  }
+  .login-lede {
+    font-size: 13px;
+  }
+  .login-typing-query {
+    font-size: 12px;
+  }
+  .login-form-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+}
+
+/* Touch devices get no hover lift and no pointer-driven fluid push. */
+@media (hover: none) {
+  .login-submit:hover:not(:disabled) {
+    transform: none;
+  }
+  .login-agent-card:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-rise,
+  .login-pane,
+  .login-form-card,
+  .login-blob-canvas,
+  .login-flow-canvas,
+  .login-error {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+  .login-submit::after,
+  .login-logo-ring,
+  .login-typing-cursor,
+  .login-typing-dot {
+    animation: none !important;
   }
 }
 
@@ -3046,6 +3515,10 @@
 .mq-back:hover, .mq-recenter:hover { background: var(--ioh-panel); }
 .mq-title { font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--ioh-red); flex: 0 0 auto; }
 .mq-loc { font-size: 12px; color: var(--ioh-mute); margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* AI/Fix toggle blended into the map header */
+.mq-mode-seg { display: flex; gap: 2px; background: var(--ioh-panel); border: 1px solid var(--ioh-rule); border-radius: 999px; padding: 2px; flex: 0 0 auto; }
+.mq-mode-btn { border: none; border-radius: 999px; padding: 4px 12px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: var(--font-display); display: flex; align-items: center; gap: 4px; background: transparent; color: var(--ioh-mute); }
+.mq-mode-btn.active { background: var(--ioh-red); color: #fff; }
 
 .mq-badge {
   position: absolute; top: 66px; left: 50%; transform: translateX(-50%); z-index: 1000;

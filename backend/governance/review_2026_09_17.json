@@ -1,0 +1,315 @@
+{
+  "review_id": "java-precalc-review-2026-09-17",
+  "reviewed_at": "2026-09-17",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "43 objects discovered after five-agent-panel-2026-08-19, plus 7 governed objects that no longer exist in BigQuery.",
+  "method": "Live schema read, date coverage, grain uniqueness, per-column population, sign checks, and byte/partition cost review. Evidence captured with tools_profile_candidate.py.",
+  "decisions": {
+    "rham_ga_new_imei_mtd": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Aggregate new-device gross-add mix at site grain. Grain dt_id+brand+site_id is unique (211719/211719), all metrics fully populated, no negative values, 9 monthly cutoffs from 2026-01-08 to 2026-09-08.",
+      "evidence": "grain 211719 rows = 211719 distinct keys; ga_all min 1 max 11933; 0 nulls across GA columns."
+    },
+    "rham_ga_new_imei_mth": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Closed-month counterpart of the new-device GA mix. Grain unique (256983/256983), metrics fully populated, no negatives.",
+      "evidence": "grain 256983 rows = 256983 distinct keys; 9 periods 2026-01-31 to 2026-09-08."
+    },
+    "rham_outlet_ga_quality": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Daily-dated outlet acquisition quality with channel and device detail. Base source for channel-level drilldown.",
+      "evidence": "48 columns, partitioned mth_dt, clustered brand+outlet_id."
+    },
+    "rham_outlet_ga_quality_dtu": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Adds sp_source DTU/NON-DTU and outlet_mapping_status, so one table answers both populations plus the comparison. Preferred over the ex_dtu filtered copies.",
+      "evidence": "49 columns including sp_source and outlet_mapping_status."
+    },
+    "rham_outlet_ga_quality_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Cutoff-aligned MTD outlet acquisition quality. Grain month_id+brand+outlet_id unique (1162553/1162553), cutoff_dd is a constant 14 so current and prior months are directly comparable.",
+      "evidence": "grain 1162553 = 1162553 distinct; cutoff_dd min 14 max 14; 9 periods."
+    },
+    "rham_outlet_ga_quality_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Closed-month outlet acquisition quality. Grain unique (1786237/1786237), ga_days up to 31 confirming full-month coverage.",
+      "evidence": "grain 1786237 = 1786237 distinct; 9 periods 2026-01 to 2026-09."
+    },
+    "rham_outlet_ga_quality_ex_dtu": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga_quality_dtu",
+      "reason": "NON-DTU-only filtered copy. The DTU table carries the same rows plus sp_source, so keeping both invites a silently wrong population in the answer.",
+      "evidence": "5913776 rows versus 6098772 in the unfiltered base."
+    },
+    "rham_outlet_ga_quality_mth_ex_dtu": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga_quality_mth",
+      "reason": "Monthly NON-DTU-only filtered copy, same duplication risk.",
+      "evidence": "1751629 rows versus 1786237 in the unfiltered monthly table."
+    },
+    "rham_outlet_low_stock": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Only source for outlet stock availability. Grain dt_id+brand+outlet_id+kpi is unique within one partition (810193/810193).",
+      "evidence": "grain verified on MAX(dt_id); 35.25 GB so a literal dt_id filter is mandatory."
+    },
+    "rham_outlet_secondary_daily": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Daily secondary-sales value and transaction detail by outlet and price point.",
+      "evidence": "14.7 GB partitioned dt_id, clustered brand+outlet_id."
+    },
+    "rham_outlet_secondary_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Cutoff-aligned MTD secondary sales. NOT unique on month_id+brand+outlet_id+main_price (1163942 rows versus 1150707 distinct), so every query must aggregate rather than assume one row per outlet.",
+      "evidence": "grain 1163942 rows = 1150707 distinct keys; still 1153453 distinct after adding site_id."
+    },
+    "rham_outlet_secondary_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Closed-month secondary sales for trend and ranking.",
+      "evidence": "9.15 GB partitioned mth_dt."
+    },
+    "rham_postpaid_ga_daily": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Postpaid gross adds and acquisition revenue with no employee identifier. Unique on the full dimension set (13925/13925 over the last 7 days).",
+      "evidence": "grain unique on activation_date+circle+region+store_code+channel+channel_group+rcm+order_type+order_group+package_type+tenure_pack+package_rev."
+    },
+    "rham_postpaid_ga_daily_direct_sales": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Carries id_sales and sales_name. Individual employee performance is not available to general chat.",
+      "evidence": "columns id_sales, sales_name."
+    },
+    "rham_postpaid_ga_daily_gerai": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Carries nik_sales and employee name. Individual employee performance is not available to general chat.",
+      "evidence": "columns nik_sales, sales_name."
+    },
+    "rham_postpaid_ga_daily_direct_sales_trad": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Only 31 rows. Coverage looks like a pilot, so promoting it would let the agent answer a national question from a near-empty table.",
+      "evidence": "31 rows, 6198 bytes."
+    },
+    "rham_postpaid_ga_daily_partner_store": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Partner-store split whose overlap with rham_postpaid_ga_daily is not yet reconciled. Double counting risk until the relationship is proven.",
+      "evidence": "937845 rows versus 1508403 in the base table."
+    },
+    "rham_report_fb_device_5g": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "5G-device market share versus Telkomsel and XLS across five location levels. Grain dt_id+location_type+location unique (15539/15539).",
+      "evidence": "ms_* are fractions in 0-1 (ms_ioh max 0.745); ga_amount_* only 12210/15539 populated."
+    },
+    "rham_report_fb_network_5g": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Market share among subscribers actually using the 5G network. Grain unique (12711/12711). Distinct population from the device table.",
+      "evidence": "ms_* fractions 0-1; ga_amount_* only 3294/12711 populated."
+    },
+    "rham_site_ga_quality_daily": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Site-level acquisition quality with device and survival metrics at daily grain.",
+      "evidence": "12.0 GB partitioned dt_id, clustered site_id+brand."
+    },
+    "rham_site_ga_quality_mtd": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Cutoff-aligned MTD site acquisition quality. Grain month_id+site_id+brand unique (52078/52078) and every one of the 41 numeric columns is populated.",
+      "evidence": "grain 52078 = 52078 distinct; empty_cols = []."
+    },
+    "rham_site_ga_quality_mth": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Closed-month site acquisition quality. Grain unique (52078/52078), no empty numeric columns.",
+      "evidence": "grain 52078 = 52078 distinct; empty_cols = []."
+    },
+    "rham_site_traffic_usage_mtd": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "MTD traffic and revenue by site and commercial segment, with LMTD comparison, run rate, and full-month projection already computed.",
+      "evidence": "2.27 GB partitioned as_of_date; carries traffic_mb_mtd, traffic_mb_lmtd, traffic_projected_full_month."
+    },
+    "rham_site_traffic_usage_mth": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Closed-month traffic, revenue, quota utilisation, and burning behaviour by site and segment.",
+      "evidence": "334M rows, 56.8 GB, partitioned month_id which is a DATE (2026-07-01), not a YYYYMM string."
+    },
+    "rham_kec_wise_tnr": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "17.7 GB daily cube whose period semantics mix daily, rolling-30-day, and MTD columns in one row. The MTD and MTH siblings cover the reporting need at a fraction of the cost and risk.",
+      "evidence": "29.8M rows, 188 columns, 17.7 GB."
+    },
+    "rham_kec_wise_tnr_mtd": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Kecamatan, brand, and tenure KPI cube. Grain is unique per month (103297/103297). 68 of 184 numeric columns are entirely empty, so the empty list is recorded as warning_columns to stop the SQL writer ranking on nothing.",
+      "evidence": "dt_id is a within-month cutoff, not a daily series: MAX(dt_id)=2026-09-15 holds 103026 of 103297 rows for 202609."
+    },
+    "rham_kec_wise_tnr_mth": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Closed-month counterpart. Grain unique per month (103446/103446) with 18 entirely empty numeric columns recorded as warning_columns.",
+      "evidence": "empty_cols has 18 entries, all site-allocated voice/SMS revenue splits."
+    },
+    "rham_kec_wise_tnr_kpi_ref": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "A single undocumented column. It cannot explain a KPI code, so it adds no retrieval value yet.",
+      "evidence": "184 rows, 1 column."
+    },
+    "rham_ftth_tt_mttr": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Only aggregate FTTH restoration-time source. Small and safe, but it mixes WEEKLY and MONTHLY rows and contains a 'Grand Total' bucket, both of which double count unless filtered.",
+      "evidence": "period_type MONTHLY 142 rows (202601-202608) and WEEKLY 612 rows (2026W01-2026W36); bucket 'Grand Total' present 130 times; source_scope is VENDOR only."
+    },
+    "rham_ftth_tt_mo_detail": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Mass-outage incident detail with free-text RCA, vendor, and infrastructure identifiers. Needs a reviewed aggregate contract before chat exposure.",
+      "evidence": "35 columns including inc_rca, reason_for_outage, action_taken."
+    },
+    "rham_ftth_tt_mo_impacted": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Per-customer outage impact rows carrying customer_id, homepass_id, order_id, and ONT serial. Customer-grain data is not available to general chat.",
+      "evidence": "6.7M rows, 2.4 GB, customer and ONT identifiers."
+    },
+    "rham_ftth_tt_single_detail": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Individual trouble tickets with customer identifiers, agent names, and free-text cause fields.",
+      "evidence": "61 columns, 790 MB, customer_id plus agent name."
+    },
+    "rham_ga_quality_tracker": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Subscriber-grain cohort tracker keyed by msisdn with M0-M3 revenue and traffic history. Aggregate GA quality is already served by the site and outlet tables.",
+      "evidence": "24.5M rows, 3.88 GB, msisdn column."
+    },
+    "rham_ref_msisdn_dtu": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Subscriber identifier reference. Usable only inside controlled ETL, never in an agent-visible query.",
+      "evidence": "columns msisdn_key, msisdn_raw."
+    },
+    "rham_ref_msisdn_dtu_check": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Links an MSISDN to acquisition, revenue, traffic, and recharge behaviour. Highest privacy exposure in this review.",
+      "evidence": "29 columns keyed by msisdn_key."
+    },
+    "rham_ref_msisdn_dtu_bak20260912": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Dated backup of a subscriber reference. Stale, duplicated, and identifier bearing.",
+      "evidence": "name carries a bak20260912 suffix; 228859 rows versus 363659 in the live reference."
+    },
+    "_stg_ref_msisdn_dtu": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Staging table of raw subscriber identifiers with no reviewed transformation owner.",
+      "evidence": "_stg prefix, msisdn_raw column."
+    },
+    "rham_network_ncp": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Zero rows. The NCA and NCP formulas behind the 110 and 115 suffixes are also undocumented.",
+      "evidence": "COUNT(*) = 0."
+    },
+    "rham_network_ncp_stg": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Load staging table with one validation row. A staging object must never serve a runtime question.",
+      "evidence": "_stg suffix, 1 row."
+    },
+    "rham_site_competitor": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Zero rows. Competitor metric definitions and provenance are also unverified.",
+      "evidence": "COUNT(*) = 0."
+    },
+    "rham_site_competitor_stg": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "reason": "Staging table with two test rows.",
+      "evidence": "_stg suffix, 2 rows."
+    },
+    "rham_migration_matrix_monthly": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "Successor shape of the deleted rham_subs_traffic_agg_migration_matrix_monthly, but it holds a single month and month_id is a DATE rather than the YYYYMM string used elsewhere. Promote once a second month lands and the period type is reconciled.",
+      "evidence": "only month_id 2026-08-01 present, 459 rows."
+    },
+    "rham_site_wise_daily_snap_20260828": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_site_wise_daily",
+      "reason": "Dated 60.6 GB snapshot kept for reproducibility. The maintained daily table answers the same questions without the frozen cutoff.",
+      "evidence": "SNAPSHOT object type, 104M rows, name pins it to 2026-08-28."
+    },
+    "rham_subs_traffic_agg_geo_mtd_lmtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_wise_tnr_mtd",
+      "reason": "Deleted from BigQuery. It was still in the runtime KB, so the agent was being shown the schema of a table that no longer exists.",
+      "evidence": "absent from list_tables; no rham_subs_traffic_* object remains in the dataset."
+    },
+    "rham_subs_traffic_agg_migration_matrix_monthly": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_migration_matrix_monthly",
+      "reason": "Deleted from BigQuery and replaced by rham_migration_matrix_monthly, which is still a candidate pending a second month of data.",
+      "evidence": "absent from list_tables."
+    },
+    "rham_subs_traffic_agg_segment_mtd_lmtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_site_traffic_usage_mtd",
+      "reason": "Deleted from BigQuery. Segment-level MTD versus LMTD traffic and revenue is now served by rham_site_traffic_usage_mtd.",
+      "evidence": "absent from list_tables."
+    },
+    "rham_subs_traffic_dim_subs_segment_monthly": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Deleted from BigQuery. The blocked decision is retained so the name can never be reintroduced without a fresh review.",
+      "evidence": "absent from list_tables; previously quarantined as subscriber grain."
+    },
+    "rham_subs_traffic_fact_subs_mtd_lmtd": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Deleted from BigQuery. Blocked decision retained.",
+      "evidence": "absent from list_tables; previously quarantined as subscriber grain."
+    },
+    "rham_subs_traffic_raw_purchase_txn": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Deleted from BigQuery. Blocked decision retained.",
+      "evidence": "absent from list_tables; previously quarantined as raw customer transactions."
+    },
+    "rham_subs_traffic_raw_subs_daily": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "reason": "Deleted from BigQuery. Blocked decision retained.",
+      "evidence": "absent from list_tables; previously quarantined as raw customer data."
+    }
+  }
+}

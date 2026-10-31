@@ -57,7 +57,8 @@ def analyze(question: str, history: list | None = None) -> dict:
     try:
         result = llm.chat_json(msgs, model=config.LLM_MODEL_FAST, max_tokens=500)
         # ensure required keys exist
-        result.setdefault("validated_query", question)
+        from .territory import preserve_requested_grain
+        result["validated_query"] = preserve_requested_grain(question, result.get("validated_query", ""))
         result.setdefault("is_data_query", True)
         result.setdefault("export_requested", False)
         result.setdefault("export_format", None)

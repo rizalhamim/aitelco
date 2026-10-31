@@ -1,0 +1,32 @@
+{
+  "review_id": "highlevel-snd-metrics-2026-10-08",
+  "reviewed_at": "2026-10-08",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Second upstream highlevel change on 2026-10-08: SND metrics in highlevel, placeholders removed.",
+  "decisions": {
+    "rham_mkt_highlevel_mtd": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Upstream 2026-10-08 load added the full SND metric set and removed zero placeholders.",
+      "evidence": "Live 2026-10-08: rham_mkt_highlevel_mth 281 cols, _mtd 297 cols. All 54 SND metrics loaded under metric names (snd_ga_m1s/snd_ga_m2s for SND survival since ga_m1s/ga_m2s belong to MKT). 14 always-zero placeholders dropped: site_5_uro, site_3_uro, site_3_quro, site_5_quro, site_3_sso, site_5_sso, site_3_qsso, site_5_qsso, site_20_qsc, site_40_qsc, vlr_postpaid, q_uro, q_sso, qsc."
+    },
+    "rham_mkt_highlevel_mth": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Same upstream 2026-10-08 change as the MTD table.",
+      "evidence": "Live 2026-10-08: rham_mkt_highlevel_mth 281 cols, _mtd 297 cols. All 54 SND metrics loaded under metric names (snd_ga_m1s/snd_ga_m2s for SND survival since ga_m1s/ga_m2s belong to MKT). 14 always-zero placeholders dropped: site_5_uro, site_3_uro, site_3_quro, site_5_quro, site_3_sso, site_5_sso, site_3_qsso, site_5_qsso, site_20_qsc, site_40_qsc, vlr_postpaid, q_uro, q_sso, qsc."
+    },
+    "rham_hvc_highlevel_mtd_serving": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "SELECT * EXCEPT view over rham_mkt_highlevel_mtd; output follows the 2026-10-08 base schema.",
+      "evidence": "Dry-run SELECT * resolves 297 output columns identical to the base table; stored view metadata still lists obsolete names and is not used."
+    },
+    "rham_hvc_highlevel_mth_serving": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "SELECT * EXCEPT view over rham_mkt_highlevel_mth; output follows the 2026-10-08 base schema.",
+      "evidence": "Dry-run SELECT * resolves 281 output columns identical to the base table."
+    }
+  }
+}

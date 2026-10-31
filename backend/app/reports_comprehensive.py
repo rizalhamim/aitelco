@@ -1,4 +1,4 @@
-"""Comprehensive Report — multi-metric P&L style daily brief.
+"""Comprehensive Report - multi-metric P&L style daily brief.
 
 Recreates the Comprehensive report (Section 5 of the engineering reference):
 ~21 sections across logical groups, each with several metrics, rendered as a
@@ -20,17 +20,23 @@ from typing import Optional
 
 from . import config
 from .bigquery_tool import run_query
+from .territory import scope_column
+from .report_formulas import metric_value, safe_growth, shift_month_id
+from .report_metric_catalog import (HVC_MTD_MIXED_NOTE, HVC_UNRELIABLE_NOTE, PREPAID_METRICS, catalog_payload,
+                                    hvc_unreliable, metric_fields)
 
 _PROJECT = config.BQ_PROJECT
 _DATASET = config.BQ_DATASET
-_MTD = f"`{_PROJECT}.{_DATASET}.rham_mkt_highlevel_mtd`"
-_MTH = f"`{_PROJECT}.{_DATASET}.rham_mkt_highlevel_mth`"
+# Serving views: same rows and columns as rham_mkt_highlevel_*, with subs_hvc and
+# hvc_rev_total recovered. Base HVC is NULL/stale from 2026-09.
+_MTD = f"`{_PROJECT}.{_DATASET}.rham_hvc_highlevel_mtd_serving`"
+_MTH = f"`{_PROJECT}.{_DATASET}.rham_hvc_highlevel_mth_serving`"
 _TERR = f"`{_PROJECT}.{_DATASET}.rham_ref_territory`"
 
 # ── SECTIONS catalog ─────────────────────────────────────────────────────────
 # metric keys: code, name, unit, expr (default m.{code}); flags:
-#   brand_split (default True) — emit IM3/3ID; else IOH only
-#   network_metric — repeat IM3 across all brands (sites)
+#   brand_split (default True) - emit IM3/3ID; else IOH only
+#   network_metric - repeat IM3 across all brands (sites)
 # section keys: title, group (optional), cumulative_yoy (optional), metrics[]
 def _m(code, name, unit, expr=None, brand_split=True, network=False, snapshot=False):
     # snapshot=True → point-in-time stock metric (site/RGU/VLR/HVC balance/outlets).
@@ -56,8 +62,7 @@ _BIO_ALL = ("(m.ga_traditional_biometric + m.ga_dsf_biometric + m.ga_modern_biom
 _BIO_TRADE = "(m.ga_traditional_biometric + m.ga_dsf_biometric)"
 _GA_TRADE = "(m.ga_traditional + m.ga_dsf)"
 # Gross Add derived from RGU-GA components (per request: gross add dari rgu ga)
-_RGU_GA = ("(m.rgu_ga_fwa + m.rgu_ga_digital_nat + m.rgu_ga_others_nat + "
-           "m.rgu_ga_trad_dsf_nat + m.rgu_ga_trad_outlet_nat)")
+_RGU_GA = "m.gaq_rgu_ga"
 
 SECTIONS: list[dict] = [
     {"title": "Site", "metrics": [
@@ -180,12 +185,17 @@ SECTIONS: list[dict] = [
     ]},
     {"title": "Trade", "group": "Trade", "metrics": [
         _m("num_outlet", "Number of Outlets", "Outlets", snapshot=True),
-        _m("primary_all", "Primary", "Outlets", snapshot=True),
-        _m("secondary_nat", "Secondary", "Outlets", snapshot=True),
-        _m("tertiary_a_nat", "Tertiary A", "Outlets", snapshot=True),
-        _m("tertiary_b", "Tertiary B", "Outlets", snapshot=True),
-        _m("tertiary_b_inner", "Tertiary B Inner", "Outlets", snapshot=True),
-        _m("tertiary_b_outer", "Tertiary B Outer", "Outlets", snapshot=True),
+        # Source renamed primary_all/secondary_nat and dropped tertiary_a_nat on 2026-10-07.
+        # Codes stay stable for clients and caches; only the source column moved.
+        _m("primary_all", "Primary", "Outlets", expr="m.`primary`", snapshot=True),
+        _m("secondary_nat", "Secondary", "Outlets", expr="m.secondary", snapshot=True),
+        # Traditional trade value comes from both components, not the source total.
+        # Keep an entirely missing value NULL; retain a populated single component.
+        _m("tertiary_b", "Tertiary B Trad", "IDR",
+           expr="COALESCE(m.tertiary_b_inner + m.tertiary_b_outer, "
+                "m.tertiary_b_inner, m.tertiary_b_outer)", snapshot=True),
+        _m("tertiary_b_inner", "Tertiary B Inner", "IDR", snapshot=True),
+        _m("tertiary_b_outer", "Tertiary B Outer", "IDR", snapshot=True),
         _m("trade_demand", "Trade Demand", "Subs"),
         _m("trade_demand_inner", "Trade Demand Inner", "Subs"),
         _m("trade_demand_outer", "Trade Demand Outer", "Subs"),
@@ -284,22 +294,19 @@ def _brand_cols(m: dict) -> str:
     """SUM columns for one metric at one timeframe (alias = code_ioh/_im3/_3id)."""
     code, expr = m["code"], m["expr"]
     if m.get("network"):
-        im3 = f"COALESCE(SUM(CASE WHEN m.brand='IM3' THEN {expr} END),0)"
+        im3 = f"SUM(CASE WHEN m.brand='IM3' THEN {expr} END)"
         return f"{im3} AS {code}_ioh, {im3} AS {code}_im3, {im3} AS {code}_3id"
     return (
-        f"COALESCE(SUM({expr}),0) AS {code}_ioh, "
-        f"COALESCE(SUM(CASE WHEN m.brand='IM3' THEN {expr} END),0) AS {code}_im3, "
-        f"COALESCE(SUM(CASE WHEN m.brand='3ID' THEN {expr} END),0) AS {code}_3id"
+        f"SUM({expr}) AS {code}_ioh, "
+        f"SUM(CASE WHEN m.brand='IM3' THEN {expr} END) AS {code}_im3, "
+        f"SUM(CASE WHEN m.brand='3ID' THEN {expr} END) AS {code}_3id"
     )
 
 
 def _terr_filter(filter_type: str, filter_value: str) -> str:
     if not filter_value:
         return ""
-    col = {"region": "t.region", "area": "t.area_im3", "branch": "t.branch_im3",
-           "kabkota": "t.kabkot", "kecamatan": "t.kec_id",
-           "microcluster": "t.micro_cluster_im3",
-           "supergtm": "t.super_gtm", "island": "t.island"}.get(filter_type)
+    col = scope_column(filter_type)
     return f" AND {col} = '{_esc(filter_value)}'" if col else ""
 
 
@@ -352,7 +359,7 @@ WHERE {_circle_clause(circle)}{fc} AND m.month_id <= {upto}
 
 def _m2m_query(circle: str, fc: str, upto: int) -> tuple[dict, Optional[int]]:
     """Pull fb_ms_* / fb_soga_* actor columns from _mth (closed-month, dedup to
-    IM3 rows). Returns (summed row, the month used) — share% computed downstream."""
+    IM3 rows). Returns (summed row, the month used) - share% computed downstream."""
     mm = _m2m_latest_closed_month(circle, fc, upto)
     if mm is None:
         return {}, None
@@ -389,7 +396,8 @@ def build_comprehensive(circle: str, month_id: Optional[int],
                         filter_type: str = "all", filter_value: str = "") -> dict:
     fc = _terr_filter(filter_type, filter_value)
     mid = int(month_id) if month_id else _latest_month()
-    lmtd, llmtd = mid - 1, mid - 2
+    lmtd = shift_month_id(mid, -1)
+    llmtd = shift_month_id(mid, -2)
     base = _base_metrics()  # only real SUM-able columns
 
     # 3 timeframe wide rows from the MTD table
@@ -405,9 +413,9 @@ def build_comprehensive(circle: str, month_id: Optional[int],
     #   LYTD = SUM(_mth, Jan..(mid-1) last year)      + MTD(last year, mid-100)
     # The current month (this year & last year) ALWAYS comes from the _MTD table
     # (which is itself capped at the same cutoff day-of-month), never from _MTH
-    # (full closed month) — otherwise YTD's partial month would be compared
+    # (full closed month) - otherwise YTD's partial month would be compared
     # against a full prior-year month.
-    mid_ly = mid - 100  # same month, previous year
+    mid_ly = shift_month_id(mid, -12)
     ytd_months, lytd_months = _year_months(mid)
     flow_m = [m for m in base if not m.get("snapshot")]
     snap_m = [m for m in base if m.get("snapshot")]
@@ -426,33 +434,85 @@ def build_comprehensive(circle: str, month_id: Optional[int],
     r_lytd_point = {}
     if snap_m:
         try:
-            r_lytd_point = _wide_one_month(_MTH, snap_m, circle, mid - 100, fc)["rows"][0]
+            r_lytd_point = _wide_one_month(_MTD, snap_m, circle, mid_ly, fc)["rows"][0]
         except Exception:
             r_lytd_point = {}
+
+    # HVC revenue is a subset of prepaid revenue. Some MTD months carry the
+    # full-month HVC value (7-8x prepaid MTD), so a month where HVC > prepaid is
+    # N/A instead of a fake +1000% swing. Checked per brand on the raw MTD rows.
+    hvc_rev_codes = [m["code"] for m in base if m["expr"].startswith("m.hvc_rev_")]
+    def _gate_hvc_revenue(row, ref):
+        nonlocal hvc_mixed
+        for brand in ("ioh", "im3", "3id"):
+            hvc = row.get(f"hvc_rev_total_{brand}", row.get(f"hvc_rev_total_pt_{brand}"))
+            prepaid = ref.get(f"rev_prepaid_h_{brand}")
+            # A separate reference without prepaid cannot clear the value: N/A.
+            unchecked = prepaid is None and ref is not row
+            if hvc is not None and (unchecked or prepaid is not None and float(hvc) > float(prepaid)):
+                hvc_mixed = True
+                for code in hvc_rev_codes:
+                    if f"{code}_{brand}" in row:
+                        row[f"{code}_{brand}"] = None
+    hvc_mixed = False
+    for row in (r_mtd, r_lmtd, r_llmtd, r_lytd_cur_mtd):
+        _gate_hvc_revenue(row, row)
+    # r_lytd_point holds snapshot codes only; prepaid comes from the same month's flow row.
+    _gate_hvc_revenue(r_lytd_point, r_lytd_cur_mtd)
 
     def num(d, k):
         v = d.get(k)
         return float(v) if v is not None else 0.0
 
+    def optional_num(d, k):
+        v = d.get(k)
+        return float(v) if v is not None else None
+
+    def cumulative_value(current, closed, has_closed_months):
+        if current is None:
+            return None
+        if not has_closed_months:
+            return current
+        if closed is None:
+            return None
+        return closed + current
+
     # Build a value-map for every base metric: vals[code][brand] = {timeframes}
     snap_codes = {m["code"] for m in snap_m}
+    tf_month = {"llmtd": llmtd, "lmtd": lmtd, "mtd": mid, "ytd": mid, "lytd": mid_ly}
+    hvc_na = False
     vals: dict[str, dict] = {}
     for m in base:
         code = m["code"]
         is_snap = code in snap_codes
         vals[code] = {}
         for brand in ("ioh", "im3", "3id"):
-            mtd = num(r_mtd, f"{code}_{brand}")
-            lm = num(r_lmtd, f"{code}_{brand}")
-            llm = num(r_llmtd, f"{code}_{brand}")
+            mtd = optional_num(r_mtd, f"{code}_{brand}")
+            lm = optional_num(r_lmtd, f"{code}_{brand}")
+            llm = optional_num(r_llmtd, f"{code}_{brand}")
             if is_snap:
-                ytd, lytd = mtd, num(r_lytd_point, f"{code}_{brand}")
+                ytd = mtd
+                lytd = optional_num(r_lytd_point, f"{code}_{brand}")
             else:
-                ytd = num(r_ytd_flow, f"{code}_{brand}") + mtd
+                ytd = cumulative_value(
+                    mtd,
+                    optional_num(r_ytd_flow, f"{code}_{brand}"),
+                    bool(prior_months),
+                )
                 # LYTD = prior full months last year + MTD of current month last year
                 # (both partial-current-month parts use the cutoff-capped _MTD table).
-                lytd = num(r_lytd_flow, f"{code}_{brand}") + num(r_lytd_cur_mtd, f"{code}_{brand}")
+                lytd = cumulative_value(
+                    optional_num(r_lytd_cur_mtd, f"{code}_{brand}"),
+                    optional_num(r_lytd_flow, f"{code}_{brand}"),
+                    bool(prior_months_ly),
+                )
             vals[code][brand] = {"llmtd": llm, "lmtd": lm, "mtd": mtd, "ytd": ytd, "lytd": lytd}
+        # YTD sums end at mid, LYTD at mid_ly: the latest month decides validity.
+        for tf, month in tf_month.items():
+            if hvc_unreliable(m["expr"].removeprefix("m."), month):
+                hvc_na = True
+                for brand in vals[code]:
+                    vals[code][brand][tf] = None
 
     def _rec_base(m):
         code = m["code"]
@@ -464,11 +524,15 @@ def build_comprehensive(circle: str, month_id: Optional[int],
             ytd, lytd = v["ytd"], v["lytd"]
             rec[brand] = {
                 "llmtd": v["llmtd"], "lmtd": lm, "mtd": mtd,
-                "var_mom": mtd - lm,
-                "growth_mom_pct": ((mtd - lm) / lm * 100) if lm else None,
+                "var_mom": (
+                    mtd - lm if mtd is not None and lm is not None else None
+                ),
+                "growth_mom_pct": safe_growth(mtd, lm),
                 "ytd": ytd, "lytd": lytd,
-                "var_yoy": ytd - lytd,
-                "growth_yoy_pct": ((ytd - lytd) / lytd * 100) if lytd else None,
+                "var_yoy": (
+                    ytd - lytd if ytd is not None and lytd is not None else None
+                ),
+                "growth_yoy_pct": safe_growth(ytd, lytd),
             }
         return rec
 
@@ -481,21 +545,96 @@ def build_comprehensive(circle: str, month_id: Optional[int],
             n = vals.get(num_code, {}).get(brand, {})
             d = vals.get(den_code, {}).get(brand, {})
             def r(tf):
-                dv = d.get(tf) or 0.0
-                return (n.get(tf, 0.0) / dv * scale) if dv else None
+                nv = n.get(tf)
+                dv = d.get(tf)
+                return (
+                    nv / dv * scale
+                    if nv is not None and dv not in (None, 0)
+                    else None
+                )
             mtd_r, lm_r = r("mtd"), r("lmtd")
             ytd_r, lytd_r = r("ytd"), r("lytd")
             rec[brand] = {
                 "llmtd": r("llmtd"), "lmtd": lm_r, "mtd": mtd_r,
                 "var_mom": (mtd_r - lm_r) if (mtd_r is not None and lm_r is not None) else None,
-                "growth_mom_pct": ((mtd_r - lm_r) / lm_r * 100) if (mtd_r is not None and lm_r) else None,
+                "growth_mom_pct": safe_growth(mtd_r, lm_r),
                 "ytd": ytd_r, "lytd": lytd_r,
                 "var_yoy": (ytd_r - lytd_r) if (ytd_r is not None and lytd_r is not None) else None,
-                "growth_yoy_pct": ((ytd_r - lytd_r) / lytd_r * 100) if (ytd_r is not None and lytd_r) else None,
+                "growth_yoy_pct": safe_growth(ytd_r, lytd_r),
             }
         return rec
 
-    out_sections = []
+    prepaid_fields = metric_fields(PREPAID_METRICS)
+
+    def _prepaid_bag(brand: str, timeframe: str) -> dict[str, float]:
+        bag: dict[str, float] = {}
+        for field in prepaid_fields:
+            value = vals.get(field, {}).get(brand, {}).get(timeframe)
+            if value is not None:
+                bag[field] = value
+        return bag
+
+    def _prepaid_prior_year_bag(brand: str) -> dict[str, float]:
+        bag: dict[str, float] = {}
+        for field in prepaid_fields:
+            source = r_lytd_point if field in snap_codes else r_lytd_cur_mtd
+            value = source.get(f"{field}_{brand}")
+            if value is not None:
+                bag[field] = float(value)
+        return bag
+
+    def _prepaid_rec(metric):
+        rec = {
+            "code": metric.code,
+            "name": metric.label,
+            "unit": metric.unit,
+            "kind": metric.kind,
+            "format": metric.format,
+            "category": metric.category,
+            "source_grain": metric.source_grain,
+            "network": metric.network,
+            "snapshot": metric.kind == "snapshot",
+            "computed": metric.kind == "ratio",
+        }
+        for brand in ("ioh", "im3", "3id"):
+            llm_value = metric_value(metric, _prepaid_bag(brand, "llmtd"))
+            lm_value = metric_value(metric, _prepaid_bag(brand, "lmtd"))
+            current_value = metric_value(metric, _prepaid_bag(brand, "mtd"))
+            if metric.temporal == "last":
+                ytd_value = current_value
+                lytd_value = metric_value(metric, _prepaid_prior_year_bag(brand))
+            else:
+                ytd_value = metric_value(metric, _prepaid_bag(brand, "ytd"))
+                lytd_value = metric_value(metric, _prepaid_bag(brand, "lytd"))
+            rec[brand] = {
+                "llmtd": llm_value,
+                "lmtd": lm_value,
+                "mtd": current_value,
+                "var_mom": (
+                    current_value - lm_value
+                    if current_value is not None and lm_value is not None
+                    else None
+                ),
+                "growth_mom_pct": safe_growth(current_value, lm_value),
+                "ytd": ytd_value,
+                "lytd": lytd_value,
+                "var_yoy": (
+                    ytd_value - lytd_value
+                    if ytd_value is not None and lytd_value is not None
+                    else None
+                ),
+                "growth_yoy_pct": safe_growth(ytd_value, lytd_value),
+            }
+        return rec
+
+    out_sections = [{
+        "title": "Prepaid Executive Overview",
+        "group": "Prepaid",
+        "cumulative_yoy": True,
+        "layout": "grid",
+        "snapshot": False,
+        "metrics": [_prepaid_rec(metric) for metric in PREPAID_METRICS],
+    }]
     for s in SECTIONS:
         rows = []
         for m in s["metrics"]:
@@ -518,19 +657,37 @@ def build_comprehensive(circle: str, month_id: Optional[int],
             columns = ["SoGA %", "FB GA Abs", "FB Churn Abs", "FB Net Add"]
         else:
             columns = ["MS %", "MS Abs"]
+        def _m2m_cells(raw: float, churn: Optional[float]) -> tuple:
+            """Returns (share, cells) for one actor at this section's prefix."""
+            share = round(raw / ind * 100, 2) if ind else None
+            if is_soga:
+                net = (raw - churn) if (churn is not None) else None
+                return share, [share, round(raw),
+                               (round(churn) if churn is not None else None),
+                               (round(net) if net is not None else None)]
+            return share, [share, round(raw)]
+
         flat_rows = []
         for label, key in sec["actors"]:
             raw = num(m2m_row, f"{sec['prefix']}_{key}") if m2m_row else 0.0
-            share = round(raw / ind * 100, 2) if ind else None
-            if is_soga:
-                churn = num(m2m_row, f"fb_churn_{key}") if (m2m_row and key != "industry") else None
-                ga = raw
-                net = (ga - churn) if (churn is not None) else None
-                cells = [share, round(ga), (round(churn) if churn is not None else None),
-                         (round(net) if net is not None else None)]
-            else:
-                cells = [share, round(raw)]
+            churn = num(m2m_row, f"fb_churn_{key}") if (m2m_row and key != "industry") else None
+            share, cells = _m2m_cells(raw, churn)
             flat_rows.append({"actor": label, "value": share, "cells": cells})
+            # IOH is not a source column. It is IM3 plus 3ID, inserted right
+            # after Industry so the group total is readable before its parts.
+            if key == "3id":
+                ioh_raw = (num(m2m_row, f"{sec['prefix']}_im3") + raw) if m2m_row else 0.0
+                ioh_churn = (
+                    num(m2m_row, "fb_churn_im3") + churn
+                    if (m2m_row and churn is not None)
+                    else None
+                )
+                ioh_share, ioh_cells = _m2m_cells(ioh_raw, ioh_churn)
+                insert_at = next(
+                    (i for i, r in enumerate(flat_rows) if r["actor"] == "Industry"), -1
+                ) + 1
+                flat_rows.insert(insert_at, {"actor": "IOH", "value": ioh_share,
+                                             "cells": ioh_cells, "aggregate": True})
         out_sections.append({"title": sec["title"], "group": sec["group"],
                              "layout": "flat", "unit": sec["unit"], "columns": columns,
                              "month_used": m2m_month, "rows": flat_rows})
@@ -539,7 +696,9 @@ def build_comprehensive(circle: str, month_id: Optional[int],
         "scope": {"circle": circle, "month_id": mid,
                   "filter_type": filter_type, "filter_value": filter_value,
                   "data_as_of": _data_as_of()},
+        "catalog": {"prepaid": catalog_payload("prepaid")},
         "sections": out_sections,
+        "notes": ([HVC_UNRELIABLE_NOTE] if hvc_na else []) + ([HVC_MTD_MIXED_NOTE] if hvc_mixed else []),
     }
 
 

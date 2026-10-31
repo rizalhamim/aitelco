@@ -1,0 +1,20 @@
+{
+  "review_id": "hvc-resolved-schema-2026-10-08",
+  "reviewed_at": "2026-10-08",
+  "reviewer": "Codex, upstream schema reconciliation requested by user",
+  "scope": "Refresh only the resolved output schema of already-approved HVC serving views. No warehouse or loader changes.",
+  "decisions": {
+    "rham_hvc_highlevel_mtd_serving": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "The SELECT * serving view is valid but stored metadata still lists obsolete SND columns. Use the dry-run resolved output schema.",
+      "evidence": "2026-10-08 BigQuery dry run: 278 output columns, zero scanned bytes; primary, secondary, ono and sso exist. Obsolete SND names are absent. Existing HVC reliability constraints are preserved."
+    },
+    "rham_hvc_highlevel_mth_serving": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "Same resolved-view schema correction as the MTD serving view.",
+      "evidence": "2026-10-08 BigQuery dry run: 262 output columns, zero scanned bytes; primary, secondary, ono and sso exist. Obsolete SND names are absent. Existing HVC reliability constraints are preserved."
+    }
+  }
+}

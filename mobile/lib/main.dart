@@ -14,6 +14,7 @@ import 'src/screens/reports_screen.dart';
 import 'src/screens/site_performance_screen.dart';
 import 'src/screens/splash_screen.dart';
 import 'src/screens/stats_screen.dart';
+import 'src/widgets/app_update_checker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,14 +32,19 @@ class BizplanApp extends StatefulWidget {
 }
 
 class _BizplanAppState extends State<BizplanApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
   @override
   void initState() {
     super.initState();
     AppState.I.addListener(() => setState(() {}));
+    ApiClient.onSessionExpired = () => _navigatorKey.currentState
+        ?.pushNamedAndRemoveUntil('/login', (_) => false);
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Bizplan Java Agent',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
@@ -47,13 +53,17 @@ class _BizplanAppState extends State<BizplanApp> {
       // WithForegroundTask lets the keep-alive foreground service coordinate
       // with the app lifecycle so in-flight requests survive backgrounding.
       // Text sizes follow the mockups 1:1; the OS font scale is respected but
-      // capped so cards keep their layout.
+      // capped so cards keep their layout. AppUpdateChecker checks for a new
+      // APK on every route, including splash and login.
       builder: (context, child) {
         final mq = MediaQuery.of(context);
         final base = mq.textScaler.scale(1.0).clamp(1.0, 1.3);
         return MediaQuery(
           data: mq.copyWith(textScaler: TextScaler.linear(base)),
-          child: WithForegroundTask(child: child ?? const SizedBox.shrink()),
+          child: AppUpdateChecker(
+            navigatorKey: _navigatorKey,
+            child: WithForegroundTask(child: child ?? const SizedBox.shrink()),
+          ),
         );
       },
       initialRoute: '/splash',

@@ -15,6 +15,9 @@ type Detail = {
   attributes: Record<string, unknown>;
   brand: string;
   month_id: string;
+  detail_grain?: string;
+  detail_scope?: string;
+  detail_month_id?: string;
   metrics: Metric[];
   performance: Record<string, number | null>;
   funnel: { m1s: number | null; m2s: number | null; p1m: number | null; p2m: number | null; gross_add: number | null };
@@ -175,6 +178,22 @@ export default function SitePerformancePage() {
     if (hit) setDetail(hit);          // instant from cache
     else if (selected) openSite(selected, b);
   }, [selected, openSite]);
+
+  // Deep-link: open a specific site when arriving with ?site_id=... (e.g. from Map Query).
+  const deepLinkedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkedRef.current || typeof window === "undefined") return;
+    const sid = new URLSearchParams(window.location.search).get("site_id");
+    if (sid) {
+      deepLinkedRef.current = true;
+      const timer = window.setTimeout(() => {
+        setMode("search");
+        setQuery(sid);
+        void openSite(sid, "ioh");
+      }, 0);
+      return () => { deepLinkedRef.current = false; window.clearTimeout(timer); };
+    }
+  }, [openSite]);
 
   return (
     <div style={{ minHeight: "100vh", background: C.panel, fontFamily: "Prompt, sans-serif", color: C.ink }}>
@@ -367,9 +386,10 @@ function SiteDetailView({ d, brand, setBrand }: { d: Detail; brand: "ioh" | "im3
       {/* header */}
       <div style={{ background: C.white, borderRadius: 16, borderTop: `3px solid ${C.teal}`, padding: 18, boxShadow: "0 2px 10px rgba(15,31,29,.06)" }}>
         <div style={{ fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 20 }}>{str(a.site_name)} <span style={{ fontSize: 12, color: C.mute, fontWeight: 500 }}>{str(a.site_id)}</span></div>
-        <div style={{ color: C.mute, fontSize: 12.5, marginTop: 4 }}>{str(a.site_type)} · {str(a.category)} · {str(a.kecamatan)}, {str(a.kabupaten)} · {str(a.branch)} · {str(a.micro_cluster)}</div>
+        <div style={{ color: C.mute, fontSize: 12.5, marginTop: 4 }}>{str(a.site_type)} · {str(a.category)} · {str(a.kecamatan)}, {str(a.kabupaten)} · Area {str(a.branch)} · District {str(a.micro_cluster)}</div>
         <div style={{ color: C.mute, fontSize: 11.5, marginTop: 2 }}>Region {str(a.region)} · Area {str(a.area)} · Addressable: {str(a.addressable)} · Profitability: {str(a.profitability_status_m1)} · Bulan {d.month_id}</div>
       </div>
+      {d.detail_grain === "kecamatan" && <div style={{ background: C.panel, color: C.mute, padding: "10px 12px", borderRadius: 12, fontSize: 12 }}>Detail channel, produk, dan price slab: Kecamatan {d.detail_scope}, periode {d.detail_month_id || "N/A"}. Angka performance utama tetap per site.</div>}
 
       {/* brand tabs + view tabs */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>

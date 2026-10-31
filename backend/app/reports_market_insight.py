@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Optional
 from . import config
 from .bigquery_tool import run_query
+from .territory import scope_column
 
 _P = config.BQ_PROJECT
 _D = config.BQ_DATASET
@@ -34,10 +35,7 @@ def _circle_clause(circle: str) -> str:
 def _terr_filter(filter_type: str, filter_value: str) -> str:
     if not filter_value:
         return ""
-    col = {"region": "t.region", "area": "t.area_im3", "branch": "t.branch_im3",
-           "kabkota": "t.kabkot", "kecamatan": "t.kec_id",
-           "microcluster": "t.micro_cluster_im3",
-           "supergtm": "t.super_gtm", "island": "t.island"}.get(filter_type)
+    col = scope_column(filter_type)
     return f" AND {col} = '{_esc(filter_value)}'" if col else ""
 
 
@@ -83,6 +81,18 @@ ORDER BY m.month_id DESC
         v = d.get(k)
         return float(v) if v is not None else 0.0
 
+    # IOH is not a source column. It is the sum of its two brands, so every
+    # actor lookup routes through here and the synthetic key is handled once.
+    def actor_num(d, prefix, key):
+        if key == "ioh":
+            return num(d, f"{prefix}_im3") + num(d, f"{prefix}_3id")
+        return num(d, f"{prefix}_{key}")
+
+    # Display order: Industry, then the IOH group total, then its parts.
+    panel_actors = [("Industry", "industry"), ("IOH", "ioh")] + [
+        item for item in M2M_SECTIONS[0]["actors"] if item[1] != "industry"
+    ]
+
     # New requirement: X=Month, Y=Operator. We will return data structured
     # as panels, where each panel represents a metric (e.g. MS %, MS Abs),
     # and contains operators -> values per month.
@@ -95,9 +105,7 @@ ORDER BY m.month_id DESC
         
         def build_panel(title, kind, calc_func):
             actors_data = []
-            for label, key in M2M_SECTIONS[0]["actors"]:
-                if key == "industry" and kind in ("churn", "netadd"):
-                    continue # Industry has no churn data
+            for label, key in panel_actors:
                 history = []
                 for i in range(len(rows) - 1):
                     r = rows[i]
@@ -111,32 +119,41 @@ ORDER BY m.month_id DESC
                         else:
                             growth = (val - val_prev) / abs(val_prev) * 100
                     history.append({"value": val, "growth": growth})
-                actors_data.append({"actor": label, "history": history})
+                # Industry has no churn source, so it has no churn or net add
+                # row either. Emit no row rather than a column of nulls.
+                if all(point["value"] is None for point in history):
+                    continue
+                actors_data.append({
+                    "actor": label,
+                    "aggregate": key == "ioh",
+                    "history": history,
+                })
             return {"title": title, "kind": kind, "months": months_list, "actors": actors_data}
         
         # 1. FB MS %
         metrics_panels.append(build_panel("FB Market Share (%)", "pct_ms", 
-            lambda r, k: (num(r, f"fb_ms_{k}") / num(r, "fb_ms_industry") * 100) if num(r, "fb_ms_industry") else None))
+            lambda r, k: (actor_num(r, "fb_ms", k) / num(r, "fb_ms_industry") * 100) if num(r, "fb_ms_industry") else None))
         
         # 2. FB MS Abs
         metrics_panels.append(build_panel("FB Market Share (Absolute)", "abs", 
-            lambda r, k: num(r, f"fb_ms_{k}")))
+            lambda r, k: actor_num(r, "fb_ms", k)))
             
         # 3. FB SoGA %
         metrics_panels.append(build_panel("FB Share of Gross Add (SoGA %)", "pct_soga", 
-            lambda r, k: (num(r, f"fb_soga_{k}") / num(r, "fb_soga_industry") * 100) if num(r, "fb_soga_industry") else None))
+            lambda r, k: (actor_num(r, "fb_soga", k) / num(r, "fb_soga_industry") * 100) if num(r, "fb_soga_industry") else None))
             
         # 4. FB GA Abs
         metrics_panels.append(build_panel("FB Gross Add (Absolute)", "abs", 
-            lambda r, k: num(r, f"fb_soga_{k}")))
+            lambda r, k: actor_num(r, "fb_soga", k)))
             
         # 5. FB Churn Abs
         metrics_panels.append(build_panel("FB Churn (Absolute)", "abs", 
-            lambda r, k: num(r, f"fb_churn_{k}")))
+            lambda r, k: None if k == "industry" else actor_num(r, "fb_churn", k)))
             
         # 6. FB Net Add
         metrics_panels.append(build_panel("FB Net Add", "abs", 
-            lambda r, k: (num(r, f"fb_soga_{k}") - num(r, f"fb_churn_{k}")) if f"fb_churn_{k}" in r else None))
+            lambda r, k: None if k == "industry"
+                else actor_num(r, "fb_soga", k) - actor_num(r, "fb_churn", k)))
             
 
     # determine data_as_of

@@ -1,0 +1,20 @@
+# Live questions for the tables onboarded by java-precalc-review-2026-09-17.
+# Format: expected_domain|question
+# Run with:
+#   venv/bin/python data/training/run_hard_questions.py \
+#     --corpus data/training/precalc_onboarding_questions.txt --run-tag precalc
+acquisition|Berapa gross add dengan IMEI device baru per site MTD bulan ini, top 10 site
+acquisition|Bandingkan proporsi GA device baru vs device lama per brand bulan lalu
+acquisition|Gross add postpaid per channel group minggu terakhir, urutkan terbesar
+sales_distribution|Outlet mana yang survival M1 gross add-nya paling rendah MTD, top 10
+sales_distribution|Bandingkan kualitas gross add outlet DTU vs NON-DTU bulan ini
+sales_distribution|Outlet mana yang stoknya rendah paling banyak minggu ini
+sales_distribution|Berapa total secondary sales dan jumlah transaksi per outlet MTD, top 10
+competitive|Market share pengguna device 5G IOH vs Telkomsel per kabkota periode terbaru
+competitive|Pangsa pasar pengguna jaringan 5G per operator di level region
+site_performance|Site mana dengan QSC 1GB tertinggi MTD, top 10
+site_performance|Proyeksi traffic full month dan run rate per site MTD, top 10
+site_performance|Site mana yang quota utilization-nya paling rendah bulan lalu
+kpi_summary|Revenue prepaid per tenure group di kecamatan MTD, top 10 kecamatan
+kpi_summary|Tenure group mana yang churn-nya paling tinggi bulan lalu
+ftth|Berapa MTTR trouble ticket FTTH bulan ini per bucket durasi

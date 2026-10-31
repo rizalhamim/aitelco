@@ -14,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from . import llm, knowledge, config
 from .bigquery_tool import run_query, QueryError
+from .report_metric_catalog import HVC_UNRELIABLE_FROM
+from .territory import normalize_level
 
 
 # ── Profile Clarification Detection ──
@@ -44,6 +46,7 @@ CLARIFY_PROMPT = """Anda ingin melihat profile {territory}. Pilih format:
    • Base Revenue vs Acquisition Revenue
    • Site profile (total, addressable, new, avg rev/site)
    • FWA (revenue, subs, gross add, churn, net add)
+   • FTTH / Indosat HiFi (homepass, subscribers, TUR, footprint ORBIT/NON-ORBIT/IFORTE, SO→SA→PA funnel)
    • 5G penetration & device funnel
    • Market Share & SOGA by operator
    • HVC profile
@@ -69,20 +72,20 @@ PROFILE_SECTIONS_FULL = [
      "table_hint": "rham_mkt_highlevel_mth"},
     {"section_title": "Revenue by Channel (ATL vs BTL)", "domain": "revenue",
      "question_template": "Revenue {territory} by atl_btl & channel_group.",
-     "table_hint": "rham_site_data_rev_channel_mtd"},
+     "table_hint": "rham_kec_data_rev_channel_mtd"},
     {"section_title": "Revenue by Channel Detail", "domain": "revenue",
      "question_template": "Revenue {territory} by channel_detail.",
-     "table_hint": "rham_site_data_rev_channel_mtd"},
+     "table_hint": "rham_kec_data_rev_channel_mtd"},
     {"section_title": "MOBO Trade Revenue Trend", "domain": "revenue",
      "question_template": "Revenue {territory} MOBO TRADE channel detail trend.",
-     "table_hint": "rham_site_data_rev_channel_mtd"},
+     "table_hint": "rham_kec_data_rev_channel_mtd"},
     {"section_title": "Revenue by Price Slab", "domain": "revenue",
      "question_template": "Revenue {territory} by price_slab + hit.",
-     "table_hint": "rham_site_data_rev_price_slab_mtd"},
+     "table_hint": "rham_kec_data_rev_price_slab_mtd"},
     # ── PRODUCT ──
     {"section_title": "Product Mix (Family & Stream)", "domain": "product",
      "question_template": "Revenue {territory} product mix: top 10 family_group by revenue (Mn) with contribution %, plus kpi_group data-vs-non-data split and MTD vs LMTD growth.",
-     "table_hint": "rham_site_data_rev_product_mtd"},
+     "table_hint": "rham_kec_data_rev_product_mtd"},
     # ── SUBSCRIBER & CHURN 360 ──
     {"section_title": "Subscriber & RGU (Trend 360)", "domain": "kpi_summary",
      "question_template": "Subscriber {territory}: rgu_90d, rgu_30d, pack_subs, avg_vlr_daily, subs_pau with MoM/monthly/YoY/quarterly.",
@@ -95,7 +98,7 @@ PROFILE_SECTIONS_FULL = [
      "table_hint": "rham_mkt_highlevel_mth"},
     # ── ACQUISITION ──
     {"section_title": "Acquisition by Channel", "domain": "kpi_summary",
-     "question_template": "Gross add {territory} by channel: ga_modern/ola/online/fwa/gerai/bank/h2h/traditional/dsf + biometric + M1S/M2S survival.",
+     "question_template": "Gross add {territory} by channel: ga_modern/ola/online/gerai/bank/h2h/traditional/dsf + biometric (FWA exists only as ga_fwa_biometric) + M1S/M2S survival.",
      "table_hint": "rham_mkt_highlevel_mth"},
     # ── SITE ──
     {"section_title": "Site Infrastructure Profile", "domain": "kpi_summary",
@@ -105,9 +108,18 @@ PROFILE_SECTIONS_FULL = [
     {"section_title": "FWA Business Profile", "domain": "kpi_summary",
      "question_template": "FWA {territory}: rev_fwa_total/pack/sim/regular, fwa_rgu90, fwa_net_add, churn, vlr aging.",
      "table_hint": "rham_mkt_highlevel_mth"},
-    # ── FTTH ──
+    # ── FTTH (Indosat HiFi) ──
+    {"section_title": "FTTH Infrastructure & Utilization (TUR)", "domain": "ftth",
+     "question_template": "FTTH Indosat HiFi {territory}: homepass, subscribers (PA), available homepass, gross add, net add, Take-Up Rate (TUR = PA/homepass), sites with homepass, and low-TUR sites (<20%) trend.",
+     "table_hint": "rham_ftth_sitewise_monthly"},
+    {"section_title": "FTTH Footprint by Project (ORBIT / NON-ORBIT / IFORTE)", "domain": "ftth",
+     "question_template": "FTTH Indosat HiFi {territory}: footprint split ORBIT (mplay) vs NON-ORBIT (seahawk/spartan) vs IFORTE by sites, homepass, subscribers (PA), and TUR.",
+     "table_hint": "rham_ftth_sitewise_monthly"},
     {"section_title": "FTTH / HBB Funnel", "domain": "ftth",
      "question_template": "FTTH {territory}: funnel SO (Sales Order, pasang baru) -> SA (Service Active, terinstalasi) -> PA (Permanent Active, bayar & aktif) trend bulanan + conversion rate.",
+     "table_hint": "rham_ftth_so_detail"},
+    {"section_title": "FTTH Product Mix (Advance Payment vs Regular)", "domain": "ftth",
+     "question_template": "FTTH {territory}: product mix Advance Payment (AP/Super) vs Regular by SO accounts.",
      "table_hint": "rham_ftth_so_detail"},
     # ── 5G ──
     {"section_title": "5G Penetration & Device Funnel", "domain": "5g",
@@ -137,14 +149,14 @@ PROFILE_SECTIONS_FULL = [
     # ── HVC ──
     {"section_title": "HVC (High Value Customer) Profile", "domain": "kpi_summary",
      "question_template": "HVC {territory}: subs_hvc flow + hvc_rev_total trend.",
-     "table_hint": "rham_mkt_highlevel_mth"},
+     "table_hint": "rham_hvc_highlevel_mth_serving"},
     # ── SALES & DISTRIBUTION ──
     {"section_title": "Sales & Distribution KPI", "domain": "sales_distribution",
-     "question_template": "SND {territory}: total_outlet, uro, sso, qsso, q_uro, trade_supply, trade_demand trend.",
+     "question_template": "SND {territory}: outlet_total, uro, sso, qsso_m0, quro, trade_supply, trade_demand trend.",
      "table_hint": "rham_snd_kpi_highlevel_dly"},
     # ── CHANNEL TRADE: PRIMARY / SECONDARY / TERTIARY (MANDATORY) ──
     {"section_title": "Channel Trade — Primary / Secondary / Tertiary & Ratio", "domain": "sales_distribution",
-     "question_template": "Channel trade flow {territory}: SUM(primary), SUM(secondary), SUM(tertiary) (and tertiary_inner vs tertiary_outer) for the latest period with trend. COMPUTE the key trade business ratios: secondary/primary (sell-through from distributor to retailer) and tertiary/secondary (sell-out from retailer to end customer), plus tertiary_inner vs tertiary_outer split. Interpret the ratios: a healthy channel has secondary and tertiary tracking primary (low stock pile-up); flag if primary >> secondary (overstock at distributor) or secondary >> tertiary (overstock at retailer / weak sell-out).",
+     "question_template": "Channel trade flow {territory}: SUM(primary), SUM(secondary), SUM(tertiary_b) (and tertiary_b_inner vs tertiary_b_outer) for the latest period with trend. COMPUTE the key trade business ratios: secondary/primary (sell-through from distributor to retailer) and tertiary_b/secondary (sell-out from retailer to end customer), plus tertiary_b_inner vs tertiary_b_outer split. Interpret the ratios: a healthy channel has secondary and tertiary tracking primary (low stock pile-up); flag if primary >> secondary (overstock at distributor) or secondary >> tertiary (overstock at retailer / weak sell-out).",
      "table_hint": "rham_snd_kpi_highlevel_dly"},
     # ── TERRITORY INFO ──
     {"section_title": "Territory Info", "domain": "kpi_summary",
@@ -152,12 +164,15 @@ PROFILE_SECTIONS_FULL = [
      "table_hint": "rham_mkt_highlevel_mth"},
 ]
 
-PROFILE_SECTIONS_SIMPLE = [
-    PROFILE_SECTIONS_FULL[0],   # Revenue Overview
-    PROFILE_SECTIONS_FULL[7],   # Subscriber & RGU
-    PROFILE_SECTIONS_FULL[17],  # Market Share
-    PROFILE_SECTIONS_FULL[11],  # Site Profile
+# Pick SIMPLE-deck sections by title so they stay correct if FULL is reordered.
+_SIMPLE_TITLES = [
+    "Revenue Overview (Trend 360)",
+    "Subscriber & RGU (Trend 360)",
+    "Market Share (Trend 360)",
+    "Site Infrastructure Profile",
 ]
+_FULL_BY_TITLE = {s["section_title"]: s for s in PROFILE_SECTIONS_FULL}
+PROFILE_SECTIONS_SIMPLE = [_FULL_BY_TITLE[t] for t in _SIMPLE_TITLES]
 
 
 # ── Profile Planner ──
@@ -183,7 +198,7 @@ __SECTIONS__
 
 Output JSON:
 {
-  "territory_type": "kabkota|kecamatan|region|circle|branch|province",
+  "territory_type": "kabkota|kecamatan|region|circle|area|district|province",
   "territory_name": "<exact territory name>",
   "sub_queries": [
     {"domain": "<domain>", "section_title": "<title>", "question": "<specific question with territory filter>"},
@@ -194,10 +209,11 @@ Output JSON:
 
 _TERRITORY_SYS = (
     "Extract the territory from an Indonesian telco profile request. "
-    "Return ONLY compact JSON: {\"territory_type\":\"kabkota|kecamatan|region|circle|branch|province\","
+    "Return ONLY compact JSON: {\"territory_type\":\"kabkota|kecamatan|region|circle|area|district|province\","
     "\"territory_name\":\"<name as written, without the prefix word>\"}. "
     "Rules: 'kota X' or 'kabupaten X' -> kabkota; 'kecamatan X' -> kecamatan; "
-    "'region X' -> region; 'circle X' -> circle; 'branch X' -> branch. "
+    "'region X' -> region; 'circle X' -> circle; 'area X' or 'branch X' -> area; "
+    "'district X', 'MC X', or 'microcluster X' -> district. "
     "If only a place name is given (e.g. 'profile Surabaya'), default territory_type=kabkota. "
     "Output JSON only, no prose."
 )
@@ -227,6 +243,7 @@ def plan_profile(question: str, history: list | None = None,
         except Exception:
             pass
 
+    territory_type = normalize_level(territory_type)
     territory_label = f"{territory_type} {territory_name}".strip()
 
     return {
@@ -274,7 +291,8 @@ def _resolve_territory(question: str):
         (r'\b(?:kota|kabupaten|kabkota|kab\.?)\s+([A-Za-z][A-Za-z .\-]*)', "kabkota"),
         (r'\bregion\s+([A-Za-z][A-Za-z .\-]*)', "region"),
         (r'\bcircle\s+([A-Za-z][A-Za-z .\-]*)', "circle"),
-        (r'\bbranch\s+([A-Za-z][A-Za-z .\-]*)', "branch"),
+        (r'\b(?:area|branch)\s+([A-Za-z][A-Za-z .\-]*)', "area"),
+        (r'\b(?:district|mc|microcluster|micro.cluster)\s+([A-Za-z][A-Za-z .\-]*)', "district"),
         (r'\bprovinsi\s+([A-Za-z][A-Za-z .\-]*)', "province"),
     ]
     for pat, ttype in patterns:
@@ -327,11 +345,16 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
     # ── territory filters per table family ──
     # Normalize territory name for case-insensitive LIKE matching (e.g. "Surabaya"
     # must match "KOTA SURABAYA"). Strip common prefixes the user might omit.
+    territory_type = normalize_level(territory_type)
     tn = (territory_name or "").upper().strip()
     for pfx in ("KOTA ", "KABUPATEN ", "KAB ", "KAB. ", "KEC ", "KEC. ", "KECAMATAN "):
         if tn.startswith(pfx):
             tn = tn[len(pfx):]
     tn = tn.replace("'", "")
+    # FTTH funnel detail tables (rham_ftth_{so,sa,pa}_detail) have NULL
+    # shp_kabkota/shp_kecamatan; they filter on FTTH-native cols (city/province).
+    # The sitewise table (rham_ftth_sitewise_monthly) keys on city/kecamatan/
+    # provinsi/region_25. f_ftth = detail-table scope, f_ftth_sw = sitewise scope.
     if territory_type == "kabkota":
         f_mkt = f"UPPER(kabkot) LIKE '%{tn}%'"
         f_chan = f"UPPER(kabkota) LIKE '%{tn}%'"
@@ -340,6 +363,7 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
         f_avail = f"territory_level = 'kabkot' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_nb = f"UPPER(kabkot) LIKE '%{tn}%'"
         f_ftth = f"UPPER(city) LIKE '%{tn}%'"
+        f_ftth_sw = f"UPPER(city) LIKE '%{tn}%'"
         f_snd = f"kec_unik IN (SELECT kec_id FROM `{_PROJECT}.{_DATASET}.zz_territory_kecamatan` WHERE UPPER(kabkota) LIKE '%{tn}%')"
     elif territory_type == "kecamatan":
         f_mkt = f"UPPER(kecamatan) LIKE '%{tn}%'"
@@ -348,11 +372,14 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
         f_report = f"UPPER(kecamatan) LIKE '%{tn}%'"
         f_avail = f"territory_level = 'kecamatan' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_nb = f"UPPER(kecamatan) LIKE '%{tn}%'"
-        f_ftth = f"UPPER(shp_kecamatan) LIKE '%{tn}%'"
+        # detail tables have no usable kecamatan col -> funnel falls back to none;
+        # sitewise has a real kecamatan column.
+        f_ftth = None
+        f_ftth_sw = f"UPPER(kecamatan) LIKE '%{tn}%'"
         f_snd = f"UPPER(kec_unik) LIKE '%{tn}%'"
-    elif territory_type in ("region", "circle", "branch", "province", "area"):
-        col = {"region": "region", "circle": "circle", "branch": "branch",
-               "province": "province", "area": "area"}[territory_type]
+    elif territory_type in ("region", "circle", "province", "area", "district"):
+        col = {"region": "region", "circle": "circle", "district": "im3_mc",
+               "province": "province", "area": "branch"}[territory_type]
         # These tables are kecamatan-grain; resolve the higher-level territory by
         # joining to the territory reference on kec_id (canonical names live there).
         kec_sub = (f"kec_id IN (SELECT kec_id FROM "
@@ -360,18 +387,33 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
                    f"WHERE UPPER({col}) LIKE '%{tn}%')")
         f_mkt = kec_sub          # rham_mkt_highlevel_* has kec_id
         f_chan = kec_sub         # rev channel/slab have kec_id... fallback below
-        f_5g = f"territory_level = '{territory_type}' AND UPPER(territory_name) LIKE '%{tn}%'"
+        physical_level = {"area": "branch", "district": "micro_cluster"}.get(territory_type, territory_type)
+        f_5g = f"territory_level = '{physical_level}' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_report = kec_sub       # rham_report_fb_ms_kecamatan has kec_id
-        f_avail = f"territory_level = '{territory_type}' AND UPPER(territory_name) LIKE '%{tn}%'"
+        f_avail = f"territory_level = '{physical_level}' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_nb = kec_sub
         f_ftth = None
+        # FTTH sitewise scope for higher levels (FTTH-native cols only):
+        #   province -> provinsi; region -> region_25 (e.g. '05. East Java');
+        #   circle   -> the set of FTTH provinces in that circle. branch/area have
+        #   no FTTH equivalent -> None (section is skipped, not wrong).
+        if territory_type == "province":
+            f_ftth_sw = f"UPPER(provinsi) LIKE '%{tn}%'"
+        elif territory_type == "region":
+            f_ftth_sw = f"UPPER(region_25) LIKE '%{tn}%'"
+        elif territory_type == "circle":
+            from .reports_ftth import _circle_provinces
+            _provs = _circle_provinces(tn)
+            f_ftth_sw = ("UPPER(provinsi) IN (" + ",".join(f"'{p}'" for p in _provs) + ")") if _provs else None
+        else:
+            f_ftth_sw = None
         f_snd = kec_sub
         _territory_grain = territory_type  # used to switch report table to kecamatan
     else:
         f_mkt = f"UPPER(kabkot) LIKE '%{tn}%'"; f_chan = f"UPPER(kabkota) LIKE '%{tn}%'"
         f_5g = f"territory_level = 'kabkot' AND UPPER(territory_name) LIKE '%{tn}%'"
         f_report = f"UPPER(kabkota) LIKE '%{tn}%'"; f_avail = f_5g
-        f_nb = f"UPPER(kabkot) LIKE '%{tn}%'"; f_ftth = None; f_snd = None
+        f_nb = f"UPPER(kabkot) LIKE '%{tn}%'"; f_ftth = None; f_ftth_sw = None; f_snd = None
 
     t = f"`{_PROJECT}.{_DATASET}"
     out = {}
@@ -379,7 +421,7 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
     # For higher-level territories (circle/region/etc.) the competitive market
     # share table must be the KECAMATAN one (it has kec_id); for kabkota/kecamatan
     # we use the kabkota table. SND keys on kec_unik; network benchmark on kabkot.
-    _is_high = territory_type in ("region", "circle", "branch", "province", "area")
+    _is_high = territory_type in ("region", "circle", "province", "area", "district")
     # kecamatan-grain report table when the territory is kecamatan OR a higher
     # level (those filter via kec_id); kabkota table only for a kabkota profile.
     report_table = ("rham_report_fb_ms_kabkota" if territory_type == "kabkota"
@@ -388,8 +430,8 @@ def _direct_sql_templates(territory_type: str, territory_name: str) -> dict:
     nb_table = ("rham_fb_network_kabkot_wly_wide" if territory_type == "kabkota"
                 else "rham_fb_network_kec_wly_wide")
     if _is_high:
-        _col = {"region": "region", "circle": "circle", "branch": "branch",
-                "province": "province", "area": "area"}[territory_type]
+        _col = {"region": "region", "circle": "circle", "district": "im3_mc",
+                "province": "province", "area": "branch"}[territory_type]
         # SND keys by kec_unik -> map via territory ref (its kec_id == kec_unik)
         f_snd = (f"kec_unik IN (SELECT kec_id FROM "
                  f"`{_PROJECT}.{_DATASET}.zz_territory_kecamatan` "
@@ -452,7 +494,7 @@ ORDER BY period DESC{(', ' + extra_group) if extra_group else ''}""".strip()
         out["Acquisition by Channel"] = trend_mth(
             KPI_TABLE, "month_id", "mth_dt", f_mkt,
             "SUM(ga_modern) AS ga_modern, SUM(ga_ola) AS ga_ola, SUM(ga_online) AS ga_online, "
-            "SUM(ga_fwa) AS ga_fwa, SUM(ga_gerai) AS ga_gerai, SUM(ga_bank) AS ga_bank, "
+            "SUM(ga_fwa_biometric) AS ga_fwa_biometric, SUM(ga_gerai) AS ga_gerai, SUM(ga_bank) AS ga_bank, "
             "SUM(ga_h2h) AS ga_h2h, SUM(ga_traditional) AS ga_traditional, SUM(ga_dsf) AS ga_dsf, "
             "SUM(ga_total) AS ga_total")
         out["Site Infrastructure Profile"] = trend_mth(
@@ -464,10 +506,15 @@ ORDER BY period DESC{(', ' + extra_group) if extra_group else ''}""".strip()
             "SUM(rev_fwa_total) AS rev_fwa_total, SUM(rev_fwa_pack) AS rev_fwa_pack, "
             "SUM(fwa_rgu90) AS fwa_rgu90, SUM(fwa_net_add) AS fwa_net_add, "
             "SUM(fwa_grosschurn90) AS fwa_grosschurn90")
+        # Serving view recovers subs_hvc/hvc_rev_total; in/out flow is broken
+        # from HVC_UNRELIABLE_FROM, so it stays NULL (N/A) for those months.
         out["HVC (High Value Customer) Profile"] = trend_mth(
-            KPI_TABLE, "month_id", "mth_dt", f_mkt,
-            "SUM(subs_hvc) AS subs_hvc, SUM(subs_hvc_in) AS subs_hvc_in, SUM(subs_hvc_out) AS subs_hvc_out, "
-            "SUM(hvc_rev_total) AS hvc_rev_total")
+            "rham_hvc_highlevel_mtd_serving", "month_id", "mth_dt", f_mkt,
+            "SUM(subs_hvc) AS subs_hvc, "
+            f"SUM(IF(month_id >= {HVC_UNRELIABLE_FROM}, NULL, subs_hvc_in)) AS subs_hvc_in, "
+            f"SUM(IF(month_id >= {HVC_UNRELIABLE_FROM}, NULL, subs_hvc_out)) AS subs_hvc_out, "
+            # Some MTD months hold the full-month HVC revenue (above prepaid): N/A.
+            "IF(SUM(hvc_rev_total) > SUM(rev_prepaid), NULL, SUM(hvc_rev_total)) AS hvc_rev_total", basis="MTD")
         out["Territory Info"] = f"""
 WITH mx AS (SELECT MAX(mth_dt) AS m FROM {t}.{KPI_TABLE}`)
 SELECT COUNT(DISTINCT kec_id) AS jumlah_kecamatan, COUNT(DISTINCT kabkot) AS jumlah_kabkota,
@@ -478,27 +525,27 @@ WHERE {f_mkt} AND mth_dt = mx.m""".strip()
     # ===== REVENUE channel/slab =====
     if f_chan:
         out["Revenue by Channel (ATL vs BTL)"] = trend_mth(
-            "rham_site_data_rev_channel_mtd", "month_id", "mth_dt", f_chan,
+            "rham_kec_data_rev_channel_mtd", "month_id", "mth_dt", f_chan,
             "SUM(revenue) AS revenue", extra_group="atl_btl")
         out["Revenue by Channel Detail"] = f"""
-WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_site_data_rev_channel_mtd`)
+WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_kec_data_rev_channel_mtd`)
 SELECT month_id AS period, channel_group, channel_detail, SUM(revenue) AS revenue
-FROM {t}.rham_site_data_rev_channel_mtd`, mx
+FROM {t}.rham_kec_data_rev_channel_mtd`, mx
 WHERE {f_chan} AND month_id = mx.m
 GROUP BY period, channel_group, channel_detail
 ORDER BY revenue DESC LIMIT 30""".strip()
         out["MOBO Trade Revenue Trend"] = f"""
-WITH mx AS (SELECT MAX(mth_dt) AS m FROM {t}.rham_site_data_rev_channel_mtd`)
+WITH mx AS (SELECT MAX(mth_dt) AS m FROM {t}.rham_kec_data_rev_channel_mtd`)
 SELECT month_id AS period, channel_detail, SUM(revenue) AS revenue
-FROM {t}.rham_site_data_rev_channel_mtd`, mx
+FROM {t}.rham_kec_data_rev_channel_mtd`, mx
 WHERE {f_chan} AND channel_group = 'MOBO TRADE'
   AND mth_dt >= DATE_SUB(mx.m, INTERVAL 15 MONTH)
 GROUP BY period, channel_detail
 ORDER BY period DESC, revenue DESC""".strip()
         out["Revenue by Price Slab"] = f"""
-WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_site_data_rev_price_slab_mtd`)
+WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_kec_data_rev_price_slab_mtd`)
 SELECT month_id AS period, price_slab, SUM(revenue) AS revenue, SUM(hit) AS hit
-FROM {t}.rham_site_data_rev_price_slab_mtd`, mx
+FROM {t}.rham_kec_data_rev_price_slab_mtd`, mx
 WHERE {f_chan} AND month_id = mx.m
 GROUP BY period, price_slab
 ORDER BY revenue DESC""".strip()
@@ -572,14 +619,62 @@ SELECT '3. PA (Permanent Active - bayar & aktif)', year_month, COUNT(DISTINCT bi
 FROM {t}.rham_ftth_pa_detail` WHERE {f_ftth} GROUP BY year_month
 ORDER BY period DESC, funnel_stage""".strip()
 
+        # ── FTTH product mix (SO MTD): Advance Payment vs Regular ──
+        out["FTTH Product Mix (Advance Payment vs Regular)"] = f"""
+WITH mx AS (SELECT MAX(year_month) AS m FROM {t}.rham_ftth_so_detail`)
+SELECT year_month AS period,
+       CASE WHEN REGEXP_CONTAINS(product, r'^(AP|Super ?)[0-9]+') THEN 'Advance Payment' ELSE 'Regular' END AS product_mix,
+       COUNT(DISTINCT bill_acc) AS so_accounts
+FROM {t}.rham_ftth_so_detail`, mx
+WHERE {f_ftth} AND year_month = mx.m
+GROUP BY period, product_mix ORDER BY so_accounts DESC""".strip()
+
+    # ===== FTTH infrastructure & utilization (sitewise: subscriber/homepass/TUR) =====
+    # Subscribers (pa) is CUMULATIVE active at each month_id; per-period totals are
+    # correct (never sum pa across months). TUR = SUM(pa)/SUM(homepass)*100.
+    if f_ftth_sw:
+        out["FTTH Infrastructure & Utilization (TUR)"] = f"""
+WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_ftth_sitewise_monthly`)
+SELECT month_id AS period,
+       SUM(homepass) AS homepass,
+       SUM(pa) AS subscribers_pa,
+       SUM(available_hp) AS available_hp,
+       SUM(ga) AS gross_add,
+       SUM(pa_net_latest) AS net_add,
+       SAFE_DIVIDE(SUM(pa), SUM(homepass)) * 100 AS tur_pct,
+       COUNT(DISTINCT IF(homepass > 0, site_id, NULL)) AS sites_with_hp,
+       COUNT(DISTINCT IF(homepass > 0 AND SAFE_DIVIDE(pa, homepass) < 0.2, site_id, NULL)) AS low_tur_sites
+FROM {t}.rham_ftth_sitewise_monthly`, mx
+WHERE {f_ftth_sw}
+  AND PARSE_DATE('%Y%m', month_id) >= DATE_SUB(PARSE_DATE('%Y%m', mx.m), INTERVAL 15 MONTH)
+GROUP BY period ORDER BY period DESC""".strip()
+
+        # ── FTTH footprint by project (current month): ORBIT / NON-ORBIT / IFORTE ──
+        out["FTTH Footprint by Project (ORBIT / NON-ORBIT / IFORTE)"] = f"""
+WITH mx AS (SELECT MAX(month_id) AS m FROM {t}.rham_ftth_sitewise_monthly`)
+SELECT
+  CASE
+    WHEN LOWER(project_awal) LIKE '%mplay%' THEN 'ORBIT'
+    WHEN LOWER(project_awal) LIKE '%seahawk%' OR LOWER(project_awal) LIKE '%spartan%' THEN 'NON-ORBIT'
+    WHEN LOWER(project_awal) LIKE '%iforte%' OR LOWER(project_awal) LIKE '%i-forte%' OR LOWER(project_awal) LIKE '%i_forte%' THEN 'IFORTE'
+    ELSE 'OTHER'
+  END AS footprint,
+  COUNT(DISTINCT site_id) AS sites,
+  SUM(homepass) AS homepass,
+  SUM(pa) AS subscribers_pa,
+  SAFE_DIVIDE(SUM(pa), SUM(homepass)) * 100 AS tur_pct
+FROM {t}.rham_ftth_sitewise_monthly`, mx
+WHERE {f_ftth_sw} AND month_id = mx.m
+GROUP BY footprint ORDER BY homepass DESC""".strip()
+
     # ===== Sales & Distribution =====
     if f_snd:
         out["Sales & Distribution KPI"] = f"""
 WITH mx AS (SELECT MAX(dt_id) AS m FROM {t}.rham_snd_kpi_highlevel_dly`)
-SELECT month_id AS period, SUM(total_outlet) AS total_outlet, SUM(uro) AS uro, SUM(sso) AS sso,
-       SUM(qsso_m0) AS qsso, SUM(q_uro) AS q_uro, SUM(trade_supply) AS trade_supply,
+SELECT month_id AS period, SUM(outlet_total) AS total_outlet, SUM(uro) AS uro, SUM(sso) AS sso,
+       SUM(qsso_m0) AS qsso, SUM(quro) AS q_uro, SUM(trade_supply) AS trade_supply,
        SUM(trade_demand) AS trade_demand, SUM(`primary`) AS primary_sales, SUM(secondary) AS secondary,
-       SUM(tertiary) AS tertiary
+       SUM(tertiary_b) AS tertiary_b
 FROM {t}.rham_snd_kpi_highlevel_dly`, mx
 WHERE {f_snd} AND dt_id >= DATE_SUB(mx.m, INTERVAL 12 MONTH)
 GROUP BY period ORDER BY period DESC""".strip()
@@ -644,7 +739,7 @@ def _run_one_domain(domain_key: str, question: str, section_title: str) -> dict:
             continue
 
         try:
-            qr = run_query(sql)
+            qr = run_query(sql, allowed_tables=gen.get("_allowed_tables"))
             result_entry["rows"] = qr["rows"][:50]
             result_entry["columns"] = qr["columns"]
             result_entry["row_count"] = qr["row_count"]
@@ -747,8 +842,17 @@ SECTION ORDER (group logically):
 A. Executive Summary
 B. REVENUE: Overview (MoM/YoY/QoQ) → Decomposition → Base vs Acquisition → Channel (ATL/BTL) → Channel Detail → MOBO Trade → Price Slab
 C. CUSTOMER: Subscriber & RGU → Gross/Net Add → Churn → Acquisition by Channel → HVC
-D. INFRASTRUCTURE: Site Profile → FWA → FTTH/HBB Funnel
-   - FTTH funnel: show SO (Sales Order) → SA (Service Active) → PA (Permanent Active) with stage-to-stage conversion % (SA/SO, PA/SA).
+D. INFRASTRUCTURE: Site Profile → FWA → FTTH (Indosat HiFi)
+   - FTTH (Indosat HiFi) is a FULL sub-section. Cover ALL of:
+     1) Infrastructure & Utilization: homepass, subscribers (PA), available homepass,
+        gross add, net add, and Take-Up Rate (TUR = PA/homepass, %), plus sites with
+        homepass and low-TUR sites (<20%). Show MoM/YoY trend and flag low TUR 🔴.
+     2) Footprint by project: ORBIT vs NON-ORBIT vs IFORTE (sites/homepass/subs/TUR), with composition %.
+     3) Sales Funnel: SO (Sales Order) → SA (Service Active) → PA (Permanent Active) with
+        stage-to-stage conversion % (SA/SO, PA/SA).
+     4) Product Mix: Advance Payment vs Regular share.
+     NOTE: PA (subscribers) is CUMULATIVE active per month — do NOT sum it across months.
+     If FTTH sections are empty/errored (territory has no FTTH footprint), say so briefly and continue.
 E. NETWORK: 5G Funnel → Network Availability & SLA → Network Benchmark (vs competitor)
    - 5G funnel: show Data UU all → Data UU with 5G device → 5G device with 5G traffic, with conversion % at each step (conv_5g_device_pct, conv_5g_traffic_pct).
 F. COMPETITIVE: Market Share → SOGA → Churn Share
@@ -833,6 +937,11 @@ def _group_sections(domain_results: list[dict]) -> list[tuple[str, list[dict]]]:
             if i in used:
                 continue
             title = (dr.get("section_title") or "").lower()
+            # Keep ALL FTTH sections together in INFRA_NET, even when a generic
+            # keyword (e.g. "product") would otherwise pull one into BUSINESS.
+            is_ftth = ("ftth" in title or "hbb" in title)
+            if is_ftth and name != "INFRA_NET":
+                continue
             if any(k in title for k in keys):
                 bucket.append(dr)
                 used.add(i)
@@ -902,7 +1011,10 @@ def compile_profile_stream(territory_type: str, territory_name: str,
         yield from _run(
             "INFRA_NET",
             "Write the detailed sections under '" + part_titles["INFRA_NET"] + "'. For each: data "
-            "table + trend (MoM/YoY/QoQ), arrows, 🔴/🟢. Include BOTH network condition (availability/"
+            "table + trend (MoM/YoY/QoQ), arrows, 🔴/🟢. Give FTTH (Indosat HiFi) a FULL treatment: "
+            "infrastructure & utilization (homepass, subscribers PA, TUR %, gross/net add, low-TUR sites), "
+            "footprint by project (ORBIT/NON-ORBIT/IFORTE), the SO->SA->PA funnel with conversion %, and "
+            "product mix (Advance Payment vs Regular). Include BOTH network condition (availability/"
             "SLA/congestion) AND network competition (FB speed/congestion + OpenSignal vs Telkomsel/XL/SF). "
             "Finish every sentence. Do NOT repeat earlier parts.",
             infra, 5000)

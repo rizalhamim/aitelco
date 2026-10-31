@@ -14,6 +14,7 @@ import '../ui/chart.dart';
 import '../ui/ds.dart';
 import '../ui/icons.dart';
 import '../ui/kit.dart';
+import '../widgets/chart_panel.dart';
 import '../widgets/collapsible.dart';
 import '../widgets/data_table_view.dart';
 import 'location_sheet.dart';
@@ -142,6 +143,12 @@ class ChatScreenState extends State<ChatScreen> {
             final rows = (data['rows'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
             setState(() => a.result = ResultTable(cols, rows, (data['row_count'] as int?) ?? rows.length,
                 chart: data['chart'] is Map ? Map<String, dynamic>.from(data['chart'] as Map) : null));
+          case 'chart_spec':
+            // Server builds the chart spec after the result (build_chart_spec);
+            // kept as a fallback when the result carries no Redesign chart.
+            if ((data['mode'] ?? 'none').toString() != 'none') {
+              setState(() => a.chartSpec = Map<String, dynamic>.from(data));
+            }
           case 'profile_domain_result':
             a.profileResults.add(ProfileSection(
               title: (data['section_title'] ?? '').toString(),
@@ -392,6 +399,10 @@ class ChatScreenState extends State<ChatScreen> {
             height: spec.type == 'line' || spec.type == 'area' ? 130 : 180,
             touchIndex: widget.previewTouch,
           ),
+        ],
+        if ((spec == null || spec.type == 'none') && m.chartSpec != null && rows.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          ChartPanel(columns: m.result!.columns, rows: rows, spec: m.chartSpec),
         ],
         if (m.result != null && rows.isNotEmpty && widget.preview == null)
           Collapsible(

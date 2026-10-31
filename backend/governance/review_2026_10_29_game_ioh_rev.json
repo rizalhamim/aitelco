@@ -1,0 +1,26 @@
+{
+  "review_id": "game-ioh-rev-2026-10-29",
+  "reviewed_at": "2026-10-29",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Re-approve game voucher tables after the loader moved from digital_sbx.des_prd_pbi_voucher_game (stopped sending 3ID on 2026-09-03) to data-cvm-prd-c324.main.ioh_rev with a kecamatan grain.",
+  "decisions": {
+    "rham_game_daily": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Schema replaced: product_flag, cp_name, mc, hos, hor, sum_revenue, sum_hit dropped; now dt_id, brand, kec_id, region, circle, branch, micro_cluster, revenue, hits. Scope = game voucher B2B Reseller only (IM3 Nuon reseller product codes, 3ID PAYU_VAS / PT Metrane at reseller voucher price). History 2024-12-01 onward.",
+      "evidence": "Rebuilt 2026-10-29 from ioh_rev. User references 2026-07-31 / 2026-08-31: IM3 3,027,807,553 / 2,138,987,727 matched within 108 IDR; 3ID 2,549,909,982 / 2,408,016,080 matched within 0.02%. Monthly vs old source B2B Reseller: IM3 ratio 1.000 except 2024-12 (0.846), 3ID 1.000-1.03 except 2026-08 (1.32, PT Metrane absent in old source)."
+    },
+    "rham_game_mtd": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Same schema as rham_game_daily plus month_id, mth_dt; MTD cut at the day-of-month of MAX(dt_id).",
+      "evidence": "Full rebuild 2026-10-29; MTD <= MTH for every month and brand."
+    },
+    "rham_game_mth": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Same schema as rham_game_daily plus month_id, mth_dt; full-month rollup.",
+      "evidence": "Full rebuild 2026-10-29; SUM(revenue) and SUM(hits) equal rham_game_daily per month and brand."
+    }
+  }
+}

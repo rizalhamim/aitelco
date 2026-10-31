@@ -53,11 +53,14 @@ class AuthState {
     refreshToken = p.getString('refresh_token');
     final u = p.getString('user');
     if (u != null) {
-      try { user = jsonDecode(u) as Map<String, dynamic>; } catch (_) {}
+      try {
+        user = jsonDecode(u) as Map<String, dynamic>;
+      } catch (_) {}
     }
   }
 
-  static Future<void> save(Map<String, dynamic> data, {bool rememberMe = false}) async {
+  static Future<void> save(Map<String, dynamic> data,
+      {bool rememberMe = false}) async {
     final p = await SharedPreferences.getInstance();
     accessToken = data['access_token'] as String?;
     refreshToken = data['refresh_token'] as String?;
@@ -90,7 +93,8 @@ class AuthState {
   static bool get isAdmin => (user?['role']) == 'admin';
   static String get role => (user?['role'] as String?) ?? 'end_user';
   static bool get canViewSql => role == 'admin' || role == 'analyst';
-  static bool get canExport => role == 'admin' || role == 'analyst' || role == 'data_user';
+  static bool get canExport =>
+      role == 'admin' || role == 'analyst' || role == 'data_user';
 }
 
 class ApiClient {
@@ -109,6 +113,23 @@ class ApiClient {
   /// access token expires after 8h; without this, after expiry the history API
   /// returns 401 (empty history) and new chats get saved with no owner. Returns
   /// true if a new access token was obtained.
+  /// Called once when the stored session can no longer be renewed (the refresh
+  /// token was rejected). main.dart routes to the login screen from here, so an
+  /// expired session asks the user to sign in again instead of failing every call.
+  static void Function()? onSessionExpired;
+  static bool _expiring = false;
+
+  static Future<void> _expireSession() async {
+    if (_expiring) return;
+    _expiring = true;
+    try {
+      await AuthState.clear();
+      onSessionExpired?.call();
+    } finally {
+      _expiring = false;
+    }
+  }
+
   static Future<bool> refreshAccessToken() async {
     final rt = AuthState.refreshToken;
     if (rt == null || rt.isEmpty) return false;
@@ -116,6 +137,10 @@ class ApiClient {
       final res = await http.post(Uri.parse('$base/api/auth/refresh'),
           headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
           body: jsonEncode({'refresh_token': rt}));
+      if (res.statusCode == 401) {
+        await _expireSession();
+        return false;
+      }
       if (res.statusCode != 200) return false;
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final at = data['access_token'] as String?;
@@ -140,7 +165,8 @@ class ApiClient {
     return res;
   }
 
-  static Future<Map<String, dynamic>> requestLoginToken(String username, String password) async {
+  static Future<Map<String, dynamic>> requestLoginToken(
+      String username, String password) async {
     final res = await http.post(Uri.parse('$base/api/auth/login/request-token'),
         headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'password': password}));
@@ -151,7 +177,9 @@ class ApiClient {
     return data;
   }
 
-  static Future<Map<String, dynamic>> verifyLoginToken(String username, String code, {bool rememberMe = false}) async {
+  static Future<Map<String, dynamic>> verifyLoginToken(
+      String username, String code,
+      {bool rememberMe = false}) async {
     final res = await http.post(Uri.parse('$base/api/auth/login/verify'),
         headers: {...ClientInfo.headers, 'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'code': code}));
@@ -175,13 +203,17 @@ class ApiClient {
   static Future<List<dynamic>> domains() async {
     final res = await _authGet(Uri.parse('$base/api/domains'));
     final d = jsonDecode(res.body);
-    return (d is Map && d['domains'] is List) ? d['domains'] as List : (d is List ? d : []);
+    return (d is Map && d['domains'] is List)
+        ? d['domains'] as List
+        : (d is List ? d : []);
   }
 
   // ── Daily Reports ──
   static Future<Map<String, dynamic>> reportMetrics() async {
     final res = await _authGet(Uri.parse('$base/api/reports/metrics'));
-    if (res.statusCode != 200) return {'metrics': [], 'categories': [], 'circles': []};
+    if (res.statusCode != 200) {
+      return {'metrics': [], 'categories': [], 'circles': []};
+    }
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
@@ -199,7 +231,8 @@ class ApiClient {
       if (filterValue.isNotEmpty) 'filter_value': filterValue,
       if (monthId != null) 'month_id': '$monthId',
     };
-    final uri = Uri.parse('$base/api/reports/snapshot').replace(queryParameters: q);
+    final uri =
+        Uri.parse('$base/api/reports/snapshot').replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 && data['error'] == null) {
@@ -208,8 +241,34 @@ class ApiClient {
     return data;
   }
 
+  static Future<Map<String, dynamic>> reportMapExplore({
+    required String metric,
+    String circle = 'JAVA',
+    String level = 'kecamatan',
+    String brand = 'ioh',
+    String valueMode = 'growth',
+  }) async {
+    final uri = Uri.parse('$base/api/reports/map-explore').replace(
+      queryParameters: {
+        'metric': metric,
+        'circle': circle,
+        'level': level,
+        'brand': brand,
+        'value_mode': valueMode,
+      },
+    );
+    final res = await _authGet(uri).timeout(const Duration(seconds: 90));
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    if (res.statusCode != 200 && data['error'] == null) {
+      throw Exception(data['detail'] ?? 'Gagal memuat data map');
+    }
+    return data;
+  }
+
   static Future<Map<String, dynamic>> appVersion() async {
-    final res = await http.get(Uri.parse('$base/api/app/version'), headers: ClientInfo.headers).timeout(const Duration(seconds: 10));
+    final res = await http
+        .get(Uri.parse('$base/api/app/version'), headers: ClientInfo.headers)
+        .timeout(const Duration(seconds: 10));
     if (res.statusCode != 200) return {};
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
@@ -229,14 +288,24 @@ class ApiClient {
       final res = await _authGet(Uri.parse('$base/api/reports/data-version'));
       if (res.statusCode != 200) return '';
       final d = jsonDecode(res.body) as Map<String, dynamic>;
-      return '${d['highlevel'] ?? ''}|${d['data'] ?? ''}';
+      const families = [
+        'highlevel',
+        'data',
+        'benchmark',
+        'fwa',
+        'ftth-summary',
+        'network-catalog',
+      ];
+      return families.map((family) => '$family:${d[family] ?? ''}').join('|');
     } catch (_) {
       return '';
     }
   }
 
-  static Future<List<String>> reportScopeOptions({String circle = 'JAVA', String level = 'region'}) async {
-    final uri = Uri.parse('$base/api/reports/scope-options').replace(queryParameters: {'circle': circle, 'level': level});
+  static Future<List<String>> reportScopeOptions(
+      {String circle = 'JAVA', String level = 'region'}) async {
+    final uri = Uri.parse('$base/api/reports/scope-options')
+        .replace(queryParameters: {'circle': circle, 'level': level});
     final res = await _authGet(uri);
     if (res.statusCode != 200) return [];
     final d = jsonDecode(res.body);
@@ -244,8 +313,10 @@ class ApiClient {
     return vals.map((e) => e.toString()).toList();
   }
 
-  static Future<List<String>> reportFtthScopeOptions({String circle = 'JAVA', String level = 'ftth_region'}) async {
-    final uri = Uri.parse('$base/api/reports/ftth/scope-options').replace(queryParameters: {'circle': circle, 'level': level});
+  static Future<List<String>> reportFtthScopeOptions(
+      {String circle = 'JAVA', String level = 'ftth_region'}) async {
+    final uri = Uri.parse('$base/api/reports/ftth/scope-options')
+        .replace(queryParameters: {'circle': circle, 'level': level});
     final res = await _authGet(uri);
     if (res.statusCode != 200) return [];
     final d = jsonDecode(res.body);
@@ -253,15 +324,23 @@ class ApiClient {
     return vals.map((e) => e.toString()).toList();
   }
 
-  static Future<Map<String, dynamic>> reportLocate({required double lat, required double lon}) async {
-    final uri = Uri.parse('$base/api/reports/locate').replace(queryParameters: {'lat': '$lat', 'lon': '$lon'});
+  static Future<Map<String, dynamic>> reportLocate(
+      {required double lat, required double lon}) async {
+    final uri = Uri.parse('$base/api/reports/locate')
+        .replace(queryParameters: {'lat': '$lat', 'lon': '$lon'});
     final res = await _authGet(uri);
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
-  static Future<Map<String, dynamic>> reportMyCoordinate({required double lat, required double lon, int? monthId}) async {
-    final q = <String, String>{'lat': '$lat', 'lon': '$lon', if (monthId != null) 'month_id': '$monthId'};
-    final uri = Uri.parse('$base/api/reports/my-coordinate').replace(queryParameters: q);
+  static Future<Map<String, dynamic>> reportMyCoordinate(
+      {required double lat, required double lon, int? monthId}) async {
+    final q = <String, String>{
+      'lat': '$lat',
+      'lon': '$lon',
+      if (monthId != null) 'month_id': '$monthId'
+    };
+    final uri = Uri.parse('$base/api/reports/my-coordinate')
+        .replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 && data['error'] == null) {
@@ -282,7 +361,8 @@ class ApiClient {
       if (filterValue.isNotEmpty) 'filter_value': filterValue,
       if (monthId != null) 'month_id': '$monthId',
     };
-    final uri = Uri.parse('$base/api/reports/comprehensive').replace(queryParameters: q);
+    final uri = Uri.parse('$base/api/reports/comprehensive')
+        .replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 && data['error'] == null) {
@@ -291,9 +371,21 @@ class ApiClient {
     return data;
   }
 
-  static Future<Map<String, dynamic>> reportDataRevenue({String circle = 'JAVA', String brand = 'ioh', String filterType = 'all', String filterValue = '', int? monthId}) async {
-    final q = <String, String>{'circle': circle, 'brand': brand, 'filter_type': filterType, if (filterValue.isNotEmpty) 'filter_value': filterValue, if (monthId != null) 'month_id': '$monthId'};
-    final uri = Uri.parse('$base/api/reports/data-revenue').replace(queryParameters: q);
+  static Future<Map<String, dynamic>> reportDataRevenue(
+      {String circle = 'JAVA',
+      String brand = 'ioh',
+      String filterType = 'all',
+      String filterValue = '',
+      int? monthId}) async {
+    final q = <String, String>{
+      'circle': circle,
+      'brand': brand,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue,
+      if (monthId != null) 'month_id': '$monthId'
+    };
+    final uri =
+        Uri.parse('$base/api/reports/data-revenue').replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 && data['error'] == null) {
@@ -302,9 +394,23 @@ class ApiClient {
     return data;
   }
 
-  static Future<Map<String, dynamic>> reportProductDemand({String circle = 'JAVA', String scope = 'total', String brand = 'ioh', int? monthId}) async {
-    final q = <String, String>{'circle': circle, 'scope': scope, 'brand': brand, if (monthId != null) 'month_id': '$monthId'};
-    final uri = Uri.parse('$base/api/reports/product-demand').replace(queryParameters: q);
+  static Future<Map<String, dynamic>> reportProductDemand(
+      {String circle = 'JAVA',
+      String scope = 'total',
+      String brand = 'ioh',
+      String filterType = 'all',
+      String filterValue = '',
+      int? monthId}) async {
+    final q = <String, String>{
+      'circle': circle,
+      'scope': scope,
+      'brand': brand,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue,
+      if (monthId != null) 'month_id': '$monthId'
+    };
+    final uri = Uri.parse('$base/api/reports/product-demand')
+        .replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 && data['error'] == null) {
@@ -313,9 +419,17 @@ class ApiClient {
     return data;
   }
 
-  static Future<Map<String, dynamic>> reportNetworkBenchmark({String circle = 'JAVA', String filterType = 'all', String filterValue = ''}) async {
-    final q = <String, String>{'circle': circle, 'filter_type': filterType, if (filterValue.isNotEmpty) 'filter_value': filterValue};
-    final uri = Uri.parse('$base/api/reports/network-benchmark').replace(queryParameters: q);
+  static Future<Map<String, dynamic>> reportNetworkBenchmark(
+      {String circle = 'JAVA',
+      String filterType = 'all',
+      String filterValue = ''}) async {
+    final q = <String, String>{
+      'circle': circle,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue
+    };
+    final uri = Uri.parse('$base/api/reports/network-benchmark')
+        .replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 && data['error'] == null) {
@@ -324,9 +438,62 @@ class ApiClient {
     return data;
   }
 
-  static Future<Map<String, dynamic>> reportMarketInsight({String circle = 'JAVA', String filterType = 'all', String filterValue = ''}) async {
-    final q = <String, String>{'circle': circle, 'filter_type': filterType, if (filterValue.isNotEmpty) 'filter_value': filterValue};
-    final uri = Uri.parse('$base/api/reports/market-insight').replace(queryParameters: q);
+  static Future<Map<String, dynamic>> reportFwa({
+    String circle = 'JAVA',
+    String brand = 'ioh',
+    String filterType = 'all',
+    String filterValue = '',
+    int? monthId,
+  }) async {
+    final q = <String, String>{
+      'circle': circle,
+      'brand': brand,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue,
+      if (monthId != null) 'month_id': '$monthId',
+    };
+    final uri = Uri.parse('$base/api/reports/fwa').replace(queryParameters: q);
+    final res = await _authGet(uri);
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    if (res.statusCode != 200 && data['error'] == null) {
+      throw Exception(data['detail'] ?? 'Gagal memuat laporan FWA');
+    }
+    return data;
+  }
+
+  static Future<Map<String, dynamic>> reportInternalPerformance({
+    String circle = 'JAVA',
+    String brand = 'ioh',
+    String filterType = 'all',
+    String filterValue = '',
+  }) async {
+    final q = <String, String>{
+      'circle': circle,
+      'brand': brand,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue,
+    };
+    final uri = Uri.parse('$base/api/reports/internal-performance')
+        .replace(queryParameters: q);
+    final res = await _authGet(uri);
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    if (res.statusCode != 200 && data['error'] == null) {
+      throw Exception(data['detail'] ?? 'Gagal memuat Internal Performance');
+    }
+    return data;
+  }
+
+  static Future<Map<String, dynamic>> reportMarketInsight(
+      {String circle = 'JAVA',
+      String filterType = 'all',
+      String filterValue = ''}) async {
+    final q = <String, String>{
+      'circle': circle,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue
+    };
+    final uri = Uri.parse('$base/api/reports/market-insight')
+        .replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 && data['error'] == null) {
@@ -335,8 +502,15 @@ class ApiClient {
     return data;
   }
 
-  static Future<Map<String, dynamic>> reportFtth({String circle = 'JAVA', String filterType = 'all', String filterValue = ''}) async {
-    final q = <String, String>{'circle': circle, 'filter_type': filterType, if (filterValue.isNotEmpty) 'filter_value': filterValue};
+  static Future<Map<String, dynamic>> reportFtth(
+      {String circle = 'JAVA',
+      String filterType = 'all',
+      String filterValue = ''}) async {
+    final q = <String, String>{
+      'circle': circle,
+      'filter_type': filterType,
+      if (filterValue.isNotEmpty) 'filter_value': filterValue
+    };
     final uri = Uri.parse('$base/api/reports/ftth').replace(queryParameters: q);
     final res = await _authGet(uri);
     final data = jsonDecode(res.body) as Map<String, dynamic>;
@@ -486,30 +660,38 @@ class ApiClient {
 
   // ── Site Performance ──
   static Future<List<Map<String, dynamic>>> siteSearch(String q) async {
-    final res = await _authGet(Uri.parse('$base/api/site/search').replace(queryParameters: {'q': q}));
+    final res = await _authGet(
+        Uri.parse('$base/api/site/search').replace(queryParameters: {'q': q}));
     if (res.statusCode != 200) return [];
     final d = jsonDecode(res.body) as Map<String, dynamic>;
     return ((d['sites'] as List?) ?? []).cast<Map<String, dynamic>>();
   }
 
-  static Future<List<Map<String, dynamic>>> siteNearest(double lat, double lon) async {
-    final res = await http.post(Uri.parse('$base/api/site/nearest'),
-        headers: _headers(), body: jsonEncode({'lat': lat, 'lon': lon})).timeout(const Duration(seconds: 60));
+  static Future<List<Map<String, dynamic>>> siteNearest(
+      double lat, double lon) async {
+    final res = await http
+        .post(Uri.parse('$base/api/site/nearest'),
+            headers: _headers(), body: jsonEncode({'lat': lat, 'lon': lon}))
+        .timeout(const Duration(seconds: 60));
     if (res.statusCode != 200) return [];
     final d = jsonDecode(res.body) as Map<String, dynamic>;
     return ((d['sites'] as List?) ?? []).cast<Map<String, dynamic>>();
   }
 
-  static Future<Map<String, dynamic>> siteDetail(String siteId, {String brand = 'ioh'}) async {
-    final res = await _authGet(Uri.parse('$base/api/site/detail').replace(queryParameters: {'site_id': siteId, 'brand': brand}))
+  static Future<Map<String, dynamic>> siteDetail(String siteId,
+      {String brand = 'ioh'}) async {
+    final res = await _authGet(Uri.parse('$base/api/site/detail')
+            .replace(queryParameters: {'site_id': siteId, 'brand': brand}))
         .timeout(const Duration(seconds: 90));
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
   // Fix mode: nearest ~100 sites with attributes + perf + monthly history.
-  static Future<Map<String, dynamic>> nearestSites(double lat, double lon) async {
-    final res = await http.post(Uri.parse('$base/api/geo/nearest-sites'),
-        headers: _headers(), body: jsonEncode({'lat': lat, 'lon': lon}))
+  static Future<Map<String, dynamic>> nearestSites(
+      double lat, double lon) async {
+    final res = await http
+        .post(Uri.parse('$base/api/geo/nearest-sites'),
+            headers: _headers(), body: jsonEncode({'lat': lat, 'lon': lon}))
         .timeout(const Duration(seconds: 60));
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
@@ -518,7 +700,9 @@ class ApiClient {
   static Future<Map<String, dynamic>> getMe() async {
     final res = await _authGet(Uri.parse('$base/api/auth/me'));
     final data = jsonDecode(res.body) as Map<String, dynamic>;
-    if (res.statusCode != 200) throw Exception(data['detail'] ?? 'Gagal memuat profil');
+    if (res.statusCode != 200) {
+      throw Exception(data['detail'] ?? 'Gagal memuat profil');
+    }
     AuthState.mergeUser(data);
     return data;
   }
@@ -533,22 +717,29 @@ class ApiClient {
           if (department != null) 'department': department,
         }));
     final data = jsonDecode(res.body) as Map<String, dynamic>;
-    if (res.statusCode != 200) throw Exception(data['detail'] ?? 'Gagal menyimpan profil');
+    if (res.statusCode != 200) {
+      throw Exception(data['detail'] ?? 'Gagal menyimpan profil');
+    }
     AuthState.mergeUser(data);
     return data;
   }
 
-  static Future<String> changePassword(String oldPassword, String newPassword) async {
+  static Future<String> changePassword(
+      String oldPassword, String newPassword) async {
     final res = await http.put(Uri.parse('$base/api/auth/me/password'),
         headers: _headers(),
-        body: jsonEncode({'old_password': oldPassword, 'new_password': newPassword}));
+        body: jsonEncode(
+            {'old_password': oldPassword, 'new_password': newPassword}));
     final data = jsonDecode(res.body) as Map<String, dynamic>;
-    if (res.statusCode != 200) throw Exception(data['detail'] ?? 'Gagal mengubah password');
+    if (res.statusCode != 200) {
+      throw Exception(data['detail'] ?? 'Gagal mengubah password');
+    }
     return (data['message'] ?? 'Password berhasil diubah.').toString();
   }
 
   static Future<List<dynamic>> notifications() async {
-    final res = await http.get(Uri.parse('$base/api/auth/me/notifications'), headers: _headers());
+    final res = await http.get(Uri.parse('$base/api/auth/me/notifications'),
+        headers: _headers());
     if (res.statusCode != 200) return [];
     final d = jsonDecode(res.body);
     if (d is List) return d;
@@ -556,11 +747,13 @@ class ApiClient {
   }
 
   static Future<void> markAllNotificationsRead() async {
-    await http.put(Uri.parse('$base/api/auth/me/notifications/read-all'), headers: _headers());
+    await http.put(Uri.parse('$base/api/auth/me/notifications/read-all'),
+        headers: _headers());
   }
 
   // ── Summary email ──
-  static Future<Map<String, dynamic>> summarizeChat(List<Map<String, dynamic>> messages, String lang) async {
+  static Future<Map<String, dynamic>> summarizeChat(
+      List<Map<String, dynamic>> messages, String lang) async {
     final res = await http.post(Uri.parse('$base/api/auth/me/summarize-chat'),
         headers: _headers(),
         body: jsonEncode({'messages': messages, 'language': lang}));
@@ -588,6 +781,7 @@ class ApiClient {
         r.body = body;
         return r;
       }
+
       var resp = await client.send(buildReq());
       // If the access token expired (401), refresh once and retry so the chat
       // is attributed to the logged-in user (and thus saved to their history).

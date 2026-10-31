@@ -101,8 +101,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isLoggedIn()) { router.push("/login"); return; }
     if (!isAdmin()) { router.push("/"); return; }
-    const t = setTimeout(loadData, 0);
-    return () => clearTimeout(t);
+    const timer = window.setTimeout(() => { void loadData(); }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadData, router]);
 
   async function loadUserDetail(userId: number) {
@@ -611,7 +611,7 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
       setOpen(false);
       onCreated();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed");
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }

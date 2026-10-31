@@ -169,7 +169,7 @@ export default function LoginPage() {
               <h2 className="lg-title">Lupa password</h2>
               {forgotSent ? (
                 <>
-                  <p className="lg-msg ok">Jika email terdaftar, tautan reset sudah dikirim. Periksa kotak masuk Anda.</p>
+                  <p className="lg-msg ok">Jika email terdaftar, tautan reset sudah dikirim ke <strong>{forgotEmail}</strong>. Periksa kotak masuk atau folder spam. Tautan berlaku 30 menit.</p>
                   <button type="button" className="lg-submit" onClick={() => switchMode("login")}>Kembali ke Masuk</button>
                 </>
               ) : (

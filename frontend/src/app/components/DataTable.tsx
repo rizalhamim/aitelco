@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 type Props = { columns: string[]; rows: Record<string, unknown>[]; bytes?: number; sql?: string };
 
@@ -12,7 +12,7 @@ function fmtBytes(b?: number) {
 }
 
 function fmtCell(v: unknown): { text: string; numeric: boolean } {
-  if (v === null || v === undefined) return { text: "—", numeric: false };
+  if (v === null || v === undefined) return { text: "N/A", numeric: false };
   if (typeof v === "number") {
     const numeric = true;
     if (Number.isInteger(v)) return { text: v.toLocaleString("id-ID"), numeric };
@@ -23,7 +23,8 @@ function fmtCell(v: unknown): { text: string; numeric: boolean } {
 }
 
 export default function DataTable({ columns, rows, bytes }: Props) {
-  const showCount = Math.min(rows.length, 200);
+  const [expanded, setExpanded] = useState(false);
+  const showCount = expanded ? rows.length : Math.min(rows.length, 200);
   const numericCols = useMemo(() => {
     const set = new Set<string>();
     for (const c of columns) {
@@ -40,7 +41,10 @@ export default function DataTable({ columns, rows, bytes }: Props) {
           {rows.length.toLocaleString("id-ID")} rows
           {rows.length > showCount ? ` · showing first ${showCount}` : ""}
         </span>
-        <span>{rows.length > showCount ? "scroll for more" : ""}</span>
+        <span>{bytes !== undefined ? `${fmtBytes(bytes)} scanned` : ""}</span>
+        {rows.length > 200 && <button type="button" onClick={() => setExpanded(!expanded)}>
+          {expanded ? "Show first 200" : `Show all ${rows.length.toLocaleString("id-ID")} rows`}
+        </button>}
       </div>
       <div className="data-table-scroll">
         <table className="data-table">

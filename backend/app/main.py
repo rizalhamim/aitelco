@@ -7,10 +7,12 @@ import uuid
 from fastapi import FastAPI, Query, Depends, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from . import knowledge, orchestrator, llm, memory, config
+from . import knowledge, orchestrator, llm, lessons, memory, config
 from .bigquery_tool import run_query, QueryError
+from .result_profiler import profile_result, empty_result_hint
+from .chart_spec import build_chart_spec
 from .export_agent import export_xlsx, export_pdf
 from .analyst_agent import analyze as analyst_analyze
 from . import profile_engine
@@ -242,12 +244,12 @@ class ChatReq(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True}
+    return {"ok": True, "knowledge_graph": knowledge.graph_health()}
 
 
 class GeoLocateReq(BaseModel):
-    lat: float
-    lon: float
+    lat: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    lon: float = Field(ge=-180, le=180, allow_inf_nan=False)
 
 
 @app.post("/api/geo/locate")
@@ -313,7 +315,7 @@ def geo_nearest_sites(req: GeoLocateReq):
     """Fix mode: up to 100 nearest sites with full attributes + latest-month
     performance + per-site monthly history (for rich map tooltips)."""
     try:
-        data = geo_locate.nearest_sites_perf(req.lat, req.lon, n=100, months=6)
+        data = geo_locate.nearest_sites_perf(req.lat, req.lon, n=100, months=12)
         return {"ok": True, "lat": req.lat, "lon": req.lon, **data}
     except Exception as e:
         return {"ok": False, "error": str(e)[:300]}
@@ -450,6 +452,38 @@ def get_session_analytics(session_id: str):
 @app.get("/api/learnings")
 def get_learnings(category: str | None = None, limit: int = 50):
     return {"learnings": memory.get_learnings(category, limit)}
+
+@app.get("/api/lessons/{domain_key}")
+def get_domain_lessons(domain_key: str):
+    """What the closed-loop learner is currently injecting for one domain."""
+    return {
+        "domain": domain_key,
+        "enabled": config.LESSONS_ENABLED,
+        "window_days": config.LESSON_DAYS,
+        "min_count": config.LESSON_MIN_COUNT,
+        "buckets": dict(lessons.failure_buckets(domain_key)),
+        "injected": lessons.domain_lessons(domain_key),
+    }
+
+
+@app.get("/api/knowledge/status")
+def get_knowledge_status():
+    catalog_summary = None
+    try:
+        catalog_summary = json.loads(config.TABLE_CATALOG_PATH.read_text()).get("summary")
+    except Exception:
+        pass
+    return {
+        "graph": knowledge.graph_health(),
+        "approved_tables": len(knowledge.approved_table_names()),
+        "blocked_tables": len(knowledge.blocked_table_names()),
+        "catalog": catalog_summary,
+    }
+
+
+@app.get("/api/knowledge/routing")
+def get_knowledge_routing(limit: int = 200):
+    return {"routing_edges": memory.get_knowledge_routing(limit)}
 
 
 @app.post("/api/chat")
@@ -619,10 +653,23 @@ def chat_stream(req: ChatReq, request: Request):
             yield sse("done", {"_usage": llm.get_last_usage(), "domain": "none"})
             return
 
-        # ──── Data query detected → Analyst validates & enriches ────
+        # Low-risk questions use the router result directly. Complex, ambiguous,
+        # export, profile, and cross-domain requests retain the Analyst call.
+        fast_flow = orchestrator.fast_path_intent(domain, req.message)
         yield sse("step_start", {"step": "analyst", "label": "Analyst", "desc": "Memvalidasi & memperkaya pertanyaan"})
-        analysis = analyst_analyze(req.message, merged_history)
-        analysis["_usage"] = llm.get_last_usage()
+        if fast_flow.get("safe"):
+            analysis = {
+                "is_data_query": True,
+                "validated_query": req.message,
+                "language": language,
+                "export_requested": False,
+                "export_format": "xlsx",
+                "fast_path": True,
+                "reason": fast_flow.get("reason"),
+            }
+        else:
+            analysis = analyst_analyze(req.message, merged_history)
+            analysis["_usage"] = llm.get_last_usage()
         yield sse("analyst", analysis)
 
         language = pref_lang or analysis.get("language", language)
@@ -666,15 +713,42 @@ def chat_stream(req: ChatReq, request: Request):
                 r = r2
 
         # ──── CORRELATE MODE: cross-domain correlation (2 domains, joined) ────
+        # Plan first. A plan that collapses both metrics onto ONE domain is not a
+        # correlation at all, so fall back to normal single-domain routing instead of
+        # running an invalid A == B join.
+        correlate_plan = None
         if domain == "CORRELATE":
             yield sse("step_start", {"step": "sql_write", "label": "Correlation Planner", "desc": "Memetakan 2 domain"})
             try:
-                plan = correlate_agent.plan_correlation(req.message, merged_history)
+                correlate_plan = correlate_agent.plan_correlation(req.message, merged_history)
             except Exception as e:
                 _save_failed_turn(session_id, req.message, f"Correlation planning failed: {e}",
                                   "CORRELATE", _user_id, int((_time.time() - t0) * 1000))
                 yield sse("error", {"error": f"Correlation planning failed: {e}"})
                 return
+            if correlate_plan.get("invalid"):
+                fallback = (correlate_plan.get("single_domain") or "").strip()
+                if fallback not in kb["domains"]:
+                    r2 = orchestrator.route(req.message, merged_history,
+                                            avoid_domains=["CORRELATE"])
+                    fallback = (r2.get("domain") or "").strip()
+                    if fallback in kb["domains"]:
+                        r = r2
+                if fallback in kb["domains"]:
+                    domain = fallback
+                    r = {**r, "domain": fallback,
+                         "reason": "both metrics live in one domain; answered as a single-domain question"}
+                    correlate_plan = None
+                    yield sse("route", r)
+                else:
+                    _save_failed_turn(session_id, req.message,
+                                      "Correlation needs two different domains but planning collapsed to one.",
+                                      "CORRELATE", _user_id, int((_time.time() - t0) * 1000))
+                    yield sse("error", {"error": "Correlation needs two different domains but planning collapsed to one."})
+                    return
+
+        if domain == "CORRELATE":
+            plan = correlate_plan or {}
             sub_a = plan.get("sub_a") or {}
             sub_b = plan.get("sub_b") or {}
             join_key = plan.get("join_key", "kabkota")
@@ -895,7 +969,12 @@ def chat_stream(req: ChatReq, request: Request):
         # domain. If the question is ambiguous, ask the user to confirm before we
         # execute (avoids guessing & wrong answers). Skipped for map_context (the
         # map flow widens the schema and has its own logic).
-        if not req.map_context:
+        # Set when a domain reroutes to itself: the table it named becomes a retrieval
+        # hint for SQL generation. Initialised OUTSIDE the gate because the fast path
+        # and map mode skip the gate entirely but still reach SQL generation.
+        scope_table_hints = None
+
+        if not req.map_context and not fast_flow.get("safe"):
             _tried_domains: list[str] = []
             for _gate_round in range(3):
                 yield sse("step_start", {"step": "scope", "label": "Domain Check",
@@ -939,9 +1018,49 @@ def chat_stream(req: ChatReq, request: Request):
                     return
 
                 # verdict == "reroute": ask orchestrator for the next best domain.
-                _tried_domains.append(domain)
+                # But first: a gate whose REASON names a table from its own domain is
+                # describing a RETRIEVAL MISS, not a scope problem. The table it wants
+                # exists here; it just was not in the bounded subset it was shown. That
+                # is true whether it suggests itself or blames another domain, so key
+                # off the named table rather than the suggested domain.
                 suggested = (fit.get("suggested_domain") or "").strip()
+                _hint_tables = orchestrator.tables_named_in(fit.get("reason", ""), domain)
+                if _hint_tables and domain not in _tried_domains:
+                    scope_table_hints = _hint_tables
+                    yield sse("scope", {
+                        "domain": domain, "verdict": "answerable",
+                        "confidence": fit.get("confidence"),
+                        "reason": ("retrieval miss, not out of scope: the reason names "
+                                   + ", ".join(_hint_tables)
+                                   + " which belongs to this domain; retrying with it "
+                                     "forced into retrieval"),
+                        "round": _gate_round,
+                        "deterministic": True,
+                    })
+                    break
+
+                _tried_domains.append(domain)
                 next_domain = None
+                # A gate can also name a table that belongs to a domain ALREADY tried:
+                # the earlier gate simply was not shown that table. Rather than declaring
+                # the question out of scope, go back to the owning domain with the table
+                # forced into retrieval. Bounded: only once, and only for an approved
+                # table of that domain.
+                _owner, _owner_tables = orchestrator.domain_owning_named_table(
+                    fit.get("reason", ""))
+                if (_owner and _owner != domain and not scope_table_hints
+                        and _owner in kb["domains"]):
+                    scope_table_hints = _owner_tables
+                    yield sse("reroute", {
+                        "from": domain, "to": _owner,
+                        "reason": (f"{fit.get('reason', '')} | retrieval miss: "
+                                   + ", ".join(_owner_tables) + f" lives in {_owner}"),
+                        "suggested": _owner,
+                    })
+                    domain = _owner
+                    _tried_domains = [d for d in _tried_domains if d != _owner]
+                    continue
+
                 if suggested and suggested in kb["domains"] and suggested not in _tried_domains:
                     next_domain = suggested
                 else:
@@ -986,6 +1105,16 @@ def chat_stream(req: ChatReq, request: Request):
                 domain = next_domain
                 # loop again: assess the NEW domain (bounded by range(3))
 
+        elif not req.map_context:
+            yield sse("scope", {
+                "domain": domain,
+                "verdict": "answerable",
+                "confidence": fast_flow.get("selection", {}).get("confidence"),
+                "reason": "Validated by bounded runtime knowledge graph",
+                "round": 0,
+                "deterministic": True,
+            })
+
         label = kb["domains"][domain]["label"]
         yield sse("step_start", {"step": "sql_write", "label": "Query Builder", "desc": f"Menyusun query untuk {label}"})
 
@@ -1002,6 +1131,8 @@ def chat_stream(req: ChatReq, request: Request):
         prior_attempt_sql = None      # last successfully-run SQL we are improving on
         best_effort = None            # critique's note when we give up gracefully
         alt_suggestion = None         # closest askable data to suggest to the user
+        result_profile = None
+        _empty_refine_used = False    # deterministic empty/degenerate rescue runs once
         MAX_REFINE_ROUNDS = 2         # extra re-queries after the first good run
         refine_round = 0
         is_map = bool(req.map_context) or orchestrator._is_map_query(req.message)
@@ -1016,7 +1147,8 @@ def chat_stream(req: ChatReq, request: Request):
                         domain, r.get("rephrased") or validated_query,
                         prior_error, prior_sql, merged_history, last_res,
                         map_context=bool(req.map_context),
-                        refine_hint=refine_hint, prior_attempt_sql=prior_attempt_sql)
+                        refine_hint=refine_hint, prior_attempt_sql=prior_attempt_sql,
+                        table_hints=scope_table_hints)
                 except Exception as e:
                     yield sse("retry", {"error": f"sql_gen_failed: {e}", "attempt": attempt + 1})
                     prior_error = f"sql_gen_failed: {e}"
@@ -1039,20 +1171,49 @@ def chat_stream(req: ChatReq, request: Request):
                                   "_usage": llm.get_last_usage()})
                 try:
                     yield sse("step_start", {"step": "bq_exec", "label": "Data Engine", "desc": "Mengambil data dari database"})
-                    result = run_query(sql)
+                    result = run_query(
+                        sql, allowed_tables=gen_sql.get("_allowed_tables")
+                    )
                     if is_map:
                         result = _backfill_coords(result)
+                    result_profile = profile_result(
+                        result,
+                        req.message,
+                        selected_tables=gen_sql.get("_allowed_tables"),
+                        table_contracts=knowledge.table_contracts(),
+                    )
                     yield sse("result", {
                         "columns": result["columns"], "rows": result["rows"],
                         "row_count": result["row_count"], "sql": result["sql"],
                         "bytes_processed": result["bytes_processed"],
                         "refine_round": refine_round,
-                        "chart": chart_spec.suggest(result["columns"], result["rows"], req.message),
+                        "chart": chart_spec.suggest(result["columns"], result["rows"], req.message,
+                                                    sql=result.get("sql") or ""),
                     })
+                    # Chart rendering is decided here, not in the clients: a column's
+                    # TYPE says nothing about its meaning, so web and mobile used to
+                    # plot whichever numeric column came first (drawing `rank` as bars,
+                    # or squashing a percentage against rupiah on one axis).
+                    try:
+                        chart = build_chart_spec(
+                            result["columns"], result["rows"],
+                            question=req.message, result_profile=result_profile,
+                            sql=result.get("sql", ""))
+                    except Exception as _ce:
+                        chart = {"mode": "none", "reason": f"spec_failed: {_ce}"}
+                    yield sse("chart_spec", chart)
                     break
                 except Exception as e:
                     prior_error = str(e)[:600]
                     prior_sql = sql
+                    # A policy rejection names a table the model insists on. Carry it
+                    # forward as a retrieval hint for EVERY later attempt, not just the
+                    # next one: prior_error is reset each time the outer refine loop
+                    # restarts, so a hint derived from it alone would be forgotten.
+                    _rejected = orchestrator._policy_rejected_tables(prior_error)
+                    if _rejected:
+                        scope_table_hints = sorted(
+                            set(scope_table_hints or []) | set(_rejected))
                     yield sse("retry", {"error": prior_error, "attempt": attempt + 1})
                     result = None
 
@@ -1079,6 +1240,44 @@ def chat_stream(req: ChatReq, request: Request):
 
             if refine_round >= MAX_REFINE_ROUNDS:
                 break  # exhausted refinement budget → deliver best result so far
+
+            # ---- deterministic empty / degenerate rescue (no LLM call) ----
+            # A zero-row result, or rows whose metric or ranking column is NULL
+            # throughout, answers nothing. Spend one grounded refine round on a
+            # targeted correction hint before asking the critique model anything.
+            _empty_hint = empty_result_hint(result_profile or {}, req.message)
+            if _empty_hint and not _empty_refine_used:
+                _empty_refine_used = True
+                refine_round += 1
+                refine_hint = _empty_hint
+                prior_attempt_sql = result.get("sql", "")
+                yield sse("reflect", {
+                    "verdict": "refine",
+                    "reason": "; ".join((result_profile or {}).get("qa", {}).get("degenerate", []))
+                              or "empty result",
+                    "round": refine_round,
+                    "deterministic": True,
+                })
+                yield sse("step_start", {"step": "refine", "label": "Refining",
+                                         "desc": "Hasil kosong, memperbaiki query"})
+                if session_id:
+                    memory.add_learning(
+                        session_id, "refine",
+                        f"empty_rescue domain={domain}: {refine_hint[:200]}")
+                continue
+
+            run_critique, critique_reason = orchestrator.needs_llm_critique(
+                req.message, domain, result, result_profile
+            )
+            if not run_critique:
+                yield sse("reflect", {
+                    "verdict": "ok",
+                    "confidence": 1.0,
+                    "reason": critique_reason,
+                    "round": refine_round,
+                    "deterministic": True,
+                })
+                break
 
             yield sse("step_start", {"step": "reflect", "label": "Quality Check",
                                      "desc": "Memeriksa apakah jawaban sudah relevan"})
@@ -1159,6 +1358,9 @@ def chat_stream(req: ChatReq, request: Request):
                 "question": req.message, "what_it_computes": explanation,
                 "columns": result["columns"], "row_count": result["row_count"],
                 "rows_preview": preview,
+                "result_profile": result_profile or profile_result(
+                    result, req.message, table_contracts=knowledge.table_contracts()
+                ),
             }
             # When the self-check concluded the data is legitimately absent, give the
             # synthesizer the reason + closest alternative so it explains + suggests
@@ -1167,6 +1369,26 @@ def chat_stream(req: ChatReq, request: Request):
                 payload["best_effort_note"] = best_effort
             if alt_suggestion:
                 payload["alternative_suggestion"] = alt_suggestion
+            # The narration must agree with the chart the user is looking at: same
+            # metric, same units, same coverage. Without this the text says "seluruh
+            # kabkota" while the chart shows a top-10.
+            try:
+                _chart = build_chart_spec(
+                    result["columns"], result["rows"], question=req.message,
+                    result_profile=payload["result_profile"],
+                    sql=result.get("sql", ""))
+                if _chart.get("mode") != "none":
+                    payload["chart_spec"] = {
+                        "mode": _chart["mode"],
+                        "category": _chart.get("category"),
+                        "series": [
+                            {"column": s["column"], "unit": s["unit"], "role": s["role"]}
+                            for s in _chart.get("series", [])
+                        ],
+                        "caption": _chart.get("caption"),
+                    }
+            except Exception:
+                pass
             msgs = [
                 {"role": "system", "content":
                     orchestrator.SYNTH_SYS.format(language=language)},
@@ -1176,6 +1398,11 @@ def chat_stream(req: ChatReq, request: Request):
                 buf.append(tok)
                 yield sse("token", {"t": tok})
         answer_text = "".join(buf)
+        if not answer_text.strip():
+            answer_text = orchestrator.deterministic_fallback_answer(
+                result, language, result_profile
+            )
+            yield sse("token", {"t": answer_text})
         if session_id:
             memory.append_assistant(
                 session_id, answer_text, domain=domain,

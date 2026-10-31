@@ -1,0 +1,34 @@
+# Graphify scans source and curated project knowledge only.
+# Git ignore rules still apply. These patterns add stricter corpus boundaries.
+
+# Generated Graphify state must never be indexed into itself.
+graphify-out/
+
+# Runtime data, credentials, databases, and large binary assets.
+backend/data/
+**/.env
+**/.env.*
+*token*.txt
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.apk
+*.aab
+*.ipa
+shp/
+
+# Build outputs and dependency caches.
+**/__pycache__/
+**/venv/
+**/node_modules/
+**/.next/
+**/.dart_tool/
+**/build/
+
+# Historical or generated evaluation material is not architecture truth.
+session-ses_16ca.md
+test_results/
+
+# The installed Graphify manual is tooling documentation, not app knowledge.
+.claude/skills/graphify/

@@ -21,6 +21,32 @@ def _esc(v: str) -> str:
     return (v or "").replace("'", "")
 
 
+# XL and SF are one commercial operator, XLSMART. Merge them the same way
+# reports_competitive._facebook_query does: weight each member by its own
+# sample count, never a plain average of two averages.
+_XLSMART_MEMBERS = ("xl", "sf")
+_FB_MEASURES = ("dl_speed", "latency", "signal")
+
+
+def _xlsmart_select() -> str:
+    # IFNULL keeps one member with no data from nulling the whole pair, and the
+    # denominator only counts samples for weeks where that member reported.
+    parts = []
+    for measure in _FB_MEASURES:
+        numerator = " + ".join(
+            f"IFNULL(SUM({measure}_{member}_4g * sample_{member}_4g), 0)"
+            for member in _XLSMART_MEMBERS
+        )
+        denominator = " + ".join(
+            f"IFNULL(SUM(IF({measure}_{member}_4g IS NULL, NULL, sample_{member}_4g)), 0)"
+            for member in _XLSMART_MEMBERS
+        )
+        parts.append(
+            f"SAFE_DIVIDE({numerator}, {denominator}) as {measure}_xlsmart_4g"
+        )
+    return ",\n            ".join(parts)
+
+
 def build_network_benchmark(circle: str, filter_type: str = "all", filter_value: str = "") -> dict:
     """Builds the network benchmark payload for the last 3 available months."""
     c = _esc(circle)
@@ -31,7 +57,8 @@ def build_network_benchmark(circle: str, filter_type: str = "all", filter_value:
         t_level = _esc(filter_type)
         t_name = _esc(filter_value)
     
-    if t_level == 'microcluster': t_level = 'micro_cluster'
+    if t_level in ('district', 'microcluster'): t_level = 'micro_cluster'
+    if t_level == 'area': t_level = 'branch'
     if t_level == 'kabkota': t_level = 'kabkot'
 
     # --- FB Network Data (Weekly data, we will aggregate to monthly for the last 3 months) ---
@@ -46,13 +73,14 @@ def build_network_benchmark(circle: str, filter_type: str = "all", filter_value:
     if max_dt_str:
         # Get data for the last ~12 weeks (approx 3 months)
         sql_fb = f"""
-        SELECT 
+        SELECT
             SUBSTR(CAST(wk_end_dt AS STRING), 1, 7) as month_prefix,
             AVG(dl_speed_im3_4g) as dl_speed_im3_4g, AVG(latency_im3_4g) as latency_im3_4g, AVG(signal_im3_4g) as signal_im3_4g,
             AVG(dl_speed_tri_4g) as dl_speed_tri_4g, AVG(latency_tri_4g) as latency_tri_4g, AVG(signal_tri_4g) as signal_tri_4g,
             AVG(dl_speed_tsel_4g) as dl_speed_tsel_4g, AVG(latency_tsel_4g) as latency_tsel_4g, AVG(signal_tsel_4g) as signal_tsel_4g,
             AVG(dl_speed_xl_4g) as dl_speed_xl_4g, AVG(latency_xl_4g) as latency_xl_4g, AVG(signal_xl_4g) as signal_xl_4g,
-            AVG(dl_speed_sf_4g) as dl_speed_sf_4g, AVG(latency_sf_4g) as latency_sf_4g, AVG(signal_sf_4g) as signal_sf_4g
+            AVG(dl_speed_sf_4g) as dl_speed_sf_4g, AVG(latency_sf_4g) as latency_sf_4g, AVG(signal_sf_4g) as signal_sf_4g,
+            {_xlsmart_select()}
         FROM {_FB_NET}
         WHERE territory_level = '{t_level}' AND territory_name = '{t_name}'
           AND wk_end_dt >= DATE_SUB(CAST('{max_dt_str}' AS DATE), INTERVAL 90 DAY)

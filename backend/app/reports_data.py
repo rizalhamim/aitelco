@@ -1,6 +1,6 @@
 """Prepaid Data Revenue + Product Demand reports (reference Sections 6 & 7).
 
-Both read the site-level data-revenue family (filtered to kpi_group='REVENUE
+Both read the Kecamatan-level data-revenue family (filtered to kpi_group='REVENUE
 DATA'); these tables carry circle/kabkota/kec_id directly (no territory join
 needed). Brand model IOH = IM3 + 3ID as elsewhere.
 
@@ -16,16 +16,19 @@ Product Demand (Section 7):
 from __future__ import annotations
 
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor
 
 from . import config
 from .bigquery_tool import run_query
+from .territory import scope_column
+from .reports_comprehensive import shift_month_id
 
 _PROJECT = config.BQ_PROJECT
 _DATASET = config.BQ_DATASET
-_CHANNEL = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_channel_mtd`"
-_MTH = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_channel_mth`"
-_SLAB = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_price_slab_mtd`"
-_PRODUCT = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_product_mtd`"
+_CHANNEL = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_channel_mtd`"
+_MTH = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_channel_mth`"
+_SLAB = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_price_slab_mtd`"
+_PRODUCT = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_product_mtd`"
 
 CIRCLES = ["JAVA", "KALISUMAPA", "JAKARTA RAYA", "SUMATERA"]
 
@@ -75,8 +78,7 @@ def _scope_filter(filter_type: str, filter_value: str) -> tuple[str, str]:
         return "", f" AND f.kabkota='{fv}'"
     if filter_type == "kecamatan":
         return "", f" AND f.kec_id='{fv}'"
-    col = {"region": "t.region", "area": "t.area_im3", "branch": "t.branch_im3",
-           "microcluster": "t.micro_cluster_im3", "supergtm": "t.super_gtm"}.get(filter_type)
+    col = scope_column(filter_type)
     if not col:
         return "", ""
     join = f" JOIN {_TERR} t ON f.kec_id = t.kec_id"
@@ -153,10 +155,38 @@ def _node(ioh, im3, id3, lm, llm, ytd, lytd, contrib_base=None):
     return rec
 
 
+def _sum_product_months(query, table, months):
+    """Bound additive product scans without dropping requested YTD months.
+
+    Product history is unclustered and a whole-year detail scan can exceed the
+    shared job budget. Two-month literal batches preserve every SUM bucket.
+    Ratios and rankings are computed only after combining all batches.
+    """
+    batches = [months[i:i + 2] for i in range(0, len(months), 2)]
+    if not batches:
+        return {}
+    def fetch(batch):
+        return query(table, "f.month_id IN (" + ",".join(f"'{m}'" for m in batch) + ")")
+    with ThreadPoolExecutor(max_workers=min(3, len(batches))) as pool:
+        results = list(pool.map(fetch, batches))
+    merged = {}
+    for result in results:
+        for key, row in result.items():
+            if key not in merged:
+                merged[key] = dict(row)
+                continue
+            for column in ("ioh", "im3", "id3", "hit"):
+                if column not in row:
+                    continue
+                a, b = merged[key].get(column), row.get(column)
+                merged[key][column] = None if a is None and b is None else (a or 0) + (b or 0)
+    return merged
+
+
 def build_data_revenue(circle: str, month_id: Optional[int], brand: str = "ioh",
                        filter_type: str = "all", filter_value: str = "") -> dict:
     mid = int(month_id) if month_id else _latest_month(_CHANNEL)
-    lmtd, llmtd = mid - 1, mid - 2
+    lmtd, llmtd = shift_month_id(mid, -1), shift_month_id(mid, -2)
     bc = _brand_clause(brand, alias="f")
     cc = _circle_clause(circle, alias="f")
     sj, sw = _scope_filter(filter_type, filter_value)  # scope join + where
@@ -324,7 +354,7 @@ GROUP BY channel_group, channel_detail, price_slab
 def build_product_demand(circle: str, month_id: Optional[int], scope: str = "total",
                          brand: str = "ioh", filter_type: str = "all", filter_value: str = "") -> dict:
     mid = int(month_id) if month_id else _latest_month(_PRODUCT)
-    lmtd = mid - 1
+    lmtd, llmtd = shift_month_id(mid, -1), shift_month_id(mid, -2)
     cir = _esc(circle)
     bc = _brand_clause(brand, alias="f")
     cc = _circle_clause(circle, alias="f")
@@ -388,7 +418,7 @@ FROM cur c LEFT JOIN prev p USING(quota_slab, validity_slab)
 SELECT product_group, family_group,
   COALESCE(SUM(revenue),0) AS rev,
   COALESCE(SUM(hit),0) AS hit
-{base} AND month_id='{mid}' AND product_group IS NOT NULL
+{base} AND f.month_id='{mid}' AND f.product_group IS NOT NULL
 GROUP BY product_group, family_group
 ORDER BY rev DESC
 LIMIT 10
@@ -402,8 +432,7 @@ LIMIT 10
     # ── Slab tables (Data-Revenue-style) per channel scope + full timeframe ──
     # Grouped once by channel_group + quota_slab + validity_slab; aggregated in
     # Python into quota-slab and validity-slab tables for each scope.
-    cc = _circle_clause(circle)
-    pbase = f"FROM {_PRODUCT} WHERE {cc} AND kpi_group='REVENUE DATA'{bc}"
+    cc = _circle_clause(circle, alias="f")
     pmth = _PRODUCT.replace("_mtd", "_mth")
     ytd_months, lytd_months = _ytd_lytd_months(mid)
     mid_ly = mid - 100
@@ -425,11 +454,11 @@ GROUP BY channel_group, channel_detail, quota_slab, validity_slab
                 for x in r["rows"]}
 
     pq_mtd = _slabq(_PRODUCT, f"f.month_id='{mid}'")
-    pq_lmtd = _slabq(_PRODUCT, f"f.month_id='{mid-1}'")
-    pq_llmtd = _slabq(_PRODUCT, f"f.month_id='{mid-2}'")
-    pq_ytd_prior = _slabq(pmth, "f.month_id IN (" + ",".join(f"'{x}'" for x in prior) + ")") if prior else {}
+    pq_lmtd = _slabq(_PRODUCT, f"f.month_id='{lmtd}'")
+    pq_llmtd = _slabq(_PRODUCT, f"f.month_id='{llmtd}'")
+    pq_ytd_prior = _sum_product_months(_slabq, pmth, prior)
     # LYTD = prior full months last year (_mth) + current month last year MTD (_mtd, cutoff-capped)
-    pq_lytd_prior = _slabq(pmth, "f.month_id IN (" + ",".join(f"'{x}'" for x in prior_ly) + ")") if prior_ly else {}
+    pq_lytd_prior = _sum_product_months(_slabq, pmth, prior_ly)
     pq_lytd_cur = _slabq(_PRODUCT, f"f.month_id='{mid_ly}'")
     pkeys = set(pq_mtd) | set(pq_lmtd) | set(pq_llmtd) | set(pq_ytd_prior) | set(pq_lytd_prior) | set(pq_lytd_cur)
 
@@ -480,10 +509,10 @@ GROUP BY channel_group, channel_detail, product_group, family_group
         return {(x.get("channel_group"), x.get("channel_detail"), x.get("product_group"), x.get("family_group")): x for x in r["rows"]}
 
     tp_mtd = _prodq(_PRODUCT, f"f.month_id='{mid}'")
-    tp_lmtd = _prodq(_PRODUCT, f"f.month_id='{mid-1}'")
-    tp_llmtd = _prodq(_PRODUCT, f"f.month_id='{mid-2}'")
-    tp_ytd_prior = _prodq(pmth, "f.month_id IN (" + ",".join(f"'{x}'" for x in prior) + ")") if prior else {}
-    tp_lytd_prior = _prodq(pmth, "f.month_id IN (" + ",".join(f"'{x}'" for x in prior_ly) + ")") if prior_ly else {}
+    tp_lmtd = _prodq(_PRODUCT, f"f.month_id='{lmtd}'")
+    tp_llmtd = _prodq(_PRODUCT, f"f.month_id='{llmtd}'")
+    tp_ytd_prior = _sum_product_months(_prodq, pmth, prior)
+    tp_lytd_prior = _sum_product_months(_prodq, pmth, prior_ly)
     tp_lytd_cur = _prodq(_PRODUCT, f"f.month_id='{mid_ly}'")
     tp_keys = set(tp_mtd) | set(tp_lmtd) | set(tp_llmtd) | set(tp_ytd_prior) | set(tp_lytd_prior) | set(tp_lytd_cur)
 
@@ -519,7 +548,8 @@ GROUP BY channel_group, channel_detail, product_group, family_group
                 slab_scopes[sk]["details"][dn]["top_products"] = _top_products(cg, dn)
 
     return {
-        "scope": {"circle": circle, "month_id": mid, "channel_scope": scope, "brand": brand, "data_as_of": _data_as_of()},
+        "scope": {"circle": circle, "month_id": mid, "channel_scope": scope, "brand": brand,
+                  "filter_type": filter_type, "filter_value": filter_value, "data_as_of": _data_as_of()},
         "unit": "IDR",
         "quota_labels": q_labels,
         "validity_labels": v_labels,

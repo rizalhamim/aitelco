@@ -1,0 +1,93 @@
+{
+  "review_id": "additional-sources-2026-10-04",
+  "reviewed_at": "2026-10-04",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Promote HVC serving views, outlet GA 5G/FWA variants, FTTH install orders and FB 5G kabkota market share after live profiling.",
+  "decisions": {
+    "rham_hvc_highlevel_mth_serving": {
+      "lifecycle": "approved", "domain": "customer_hvc",
+      "reason": "Authoritative HVC total revenue and HVC subscriber source. Base highlevel HVC columns are frozen at the 2026-09-01 snapshot from 202609 onward.",
+      "evidence": "Live 2026-10-04: mth 202608 serving hvc_rev_total 1,385.11B matches base. Mth 202609 serving 1,350.27B and subs_hvc 10,885,052 vs base 55.24B. Organic/trade/digital and stay/in/out remain wrong in serving from 202609, so they are reported as N/A. Scan about 4.6MB with an mth_dt literal."
+    },
+    "rham_hvc_highlevel_mtd_serving": {
+      "lifecycle": "approved", "domain": "customer_hvc",
+      "reason": "MTD counterpart of the HVC serving view for current-month HVC revenue and subscribers.",
+      "evidence": "Live 2026-10-04: mtd 202610 hvc_rev_total 110.61B, subs_hvc 10,928,960. Organic/trade/digital/stay columns are NULL."
+    },
+    "rham_outlet_ga_5g_mtd": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet GA restricted to 5G-capable acquisitions (has_5g), MTD.",
+      "evidence": "Live profiling: GA equals has_5g rows of the outlet GA base. 38 of 256k rows have invalid coordinates, so coordinate validation is required for maps."
+    },
+    "rham_outlet_ga_5g_mth": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet GA restricted to 5G-capable acquisitions (has_5g), full month.",
+      "evidence": "Live profiling: GA equals has_5g rows of the outlet GA base. Partition mth_dt, month_id STRING."
+    },
+    "rham_outlet_ga_fwa_mtd": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet-level FWA gross adds, MTD.",
+      "evidence": "Live profiling: totals reconcile with rham_mkt_highlevel fwa_rgu_ga. outlet_mapping_status UNKNOWN rows exist."
+    },
+    "rham_outlet_ga_fwa_mth": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet-level FWA gross adds, full month.",
+      "evidence": "Live profiling: totals reconcile with rham_mkt_highlevel fwa_rgu_ga. outlet_mapping_status UNKNOWN rows exist."
+    },
+    "rham_outlet_ga_fwa_5g_mtd": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet-level FWA 5G gross adds, MTD.",
+      "evidence": "Live profiling 2026-10-04: same grain as outlet FWA GA, filtered to 5G FWA."
+    },
+    "rham_outlet_ga_fwa_5g_mth": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet-level FWA 5G gross adds, full month.",
+      "evidence": "Live profiling 2026-10-04: same grain as outlet FWA GA, filtered to 5G FWA."
+    },
+    "rham_outlet_ga_ex_dtu": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet GA MTD excluding DTU-sourced acquisitions.",
+      "evidence": "Live profiling: equals outlet GA minus DTU source rows."
+    },
+    "rham_outlet_ga_mth_ex_dtu": {
+      "lifecycle": "approved", "domain": "sales_distribution",
+      "reason": "Outlet GA full month excluding DTU-sourced acquisitions.",
+      "evidence": "Live profiling: equals outlet GA full month minus DTU source rows."
+    },
+    "rham_ftth_install_orders": {
+      "lifecycle": "approved", "domain": "ftth",
+      "reason": "FTTH install order pipeline at order level. Customer and sales identity columns are blocked at runtime.",
+      "evidence": "Live profiling: one row per bill_acc, snapshot load, no partition, about 8MB. PII columns customer_name, customer_id, bill_acc, sales_name, sales_code, manager, rm are listed as sensitive_dimensions and rejected by the SQL validator."
+    },
+    "rham_fb_ms_5g_device": {
+      "lifecycle": "approved", "domain": "competitive",
+      "reason": "Weekly FB 5G device market share by kabkota, absolute counts.",
+      "evidence": "Live profiling: weekly dt_id, 30 snapshots, column kabkota, no partition. Different population from rham_report_fb_device_5g. Not summable across dt_id."
+    },
+    "rham_fb_ms_5g_network": {
+      "lifecycle": "approved", "domain": "competitive",
+      "reason": "Weekly FB 5G network market share by kabkota, absolute counts.",
+      "evidence": "Live profiling: weekly dt_id, 30 snapshots, column kabkota, no partition. Different population from rham_report_fb_network_5g. Not summable across dt_id."
+    },
+    "rham_hvc_snapshot_recovery": {
+      "lifecycle": "candidate", "domain": null,
+      "reason": "Recovery staging behind the HVC serving views. Not a runtime source.",
+      "evidence": "Serving views supersede it for runtime HVC totals."
+    },
+    "rham_hvc_revenue_recovery": {
+      "lifecycle": "candidate", "domain": null,
+      "reason": "Recovery staging behind the HVC serving views. Not a runtime source.",
+      "evidence": "Serving views supersede it for runtime HVC totals."
+    },
+    "rham_kec_hvc_revenue": {
+      "lifecycle": "candidate", "domain": null,
+      "reason": "Kecamatan HVC revenue detail pending reconciliation with serving totals.",
+      "evidence": "Not reconciled against rham_hvc_highlevel_mth_serving yet."
+    },
+    "rham_hvc_revenue_serving": {
+      "lifecycle": "candidate", "domain": null,
+      "reason": "Intermediate serving table. The highlevel serving views are the approved interface.",
+      "evidence": "Highlevel serving views cover the same totals with territory columns."
+    }
+  }
+}

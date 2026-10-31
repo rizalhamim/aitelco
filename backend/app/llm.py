@@ -4,6 +4,7 @@ Note: the endpoint streams SSE by default, so we always parse stream chunks
 even for non-streaming calls.
 """
 import json
+import re
 import urllib.request
 import urllib.error
 
@@ -91,14 +92,19 @@ def _parse_sse(resp):
 
 
 def chat(messages, model=None, max_tokens=2000, temperature=0.0) -> str:
-    """Non-streaming convenience call. Collapses the SSE stream into a string."""
+    """Non-streaming convenience call. Collapses the SSE stream into a string.
+
+    Reasoning blocks are stripped here too: callers such as the advisory answer and
+    the profile compiler put this text straight in front of the user, so a raw
+    `<think>` block would be just as visible as it is on the streaming path.
+    """
     try:
         resp = _post(messages, model=model, max_tokens=max_tokens,
                      temperature=temperature, stream=True)
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:500]
         raise RuntimeError(f"LLM HTTP {e.code}: {detail}")
-    return "".join(_parse_sse(resp))
+    return "".join(_strip_reasoning_stream(_parse_sse(resp)))
 
 
 def chat_stream(messages, model=None, max_tokens=2000, temperature=0.0):
@@ -132,6 +138,112 @@ def chat_stream(messages, model=None, max_tokens=2000, temperature=0.0):
     yield from _parse_sse(resp)
 
 
+_REASONING_TAGS = ("think", "thinking", "reasoning", "antthinking")
+
+
+_OPEN_TAG = re.compile(r"<(" + "|".join(_REASONING_TAGS) + r")\b[^>]*>", re.I)
+_CLOSE_TAG = re.compile(r"</(" + "|".join(_REASONING_TAGS) + r")\s*>", re.I)
+# Longest prefix worth holding while a tag may still be forming. An opener can carry
+# attributes, so this must be generous: flushing early leaks raw reasoning markup.
+_MAX_TAG_HOLD = 200
+
+
+class ReasoningFilter:
+    """Strips reasoning blocks (<think>...</think>) from a token stream.
+
+    Stateful on purpose: a token-cap continuation splits one logical generation into
+    several streamed segments, and a reasoning block can straddle that boundary. One
+    filter instance is reused across every segment so an unclosed block stays
+    suppressed instead of leaking into the answer as plain text.
+
+    Text is held back only while it could still be part of a tag, so ordinary output
+    streams without added latency.
+    """
+
+    def __init__(self) -> None:
+        self._buffer = ""
+        self._depth = 0
+
+    @property
+    def inside_block(self) -> bool:
+        return self._depth > 0
+
+    def feed(self, piece: str):
+        self._buffer += piece
+        while self._buffer:
+            if self._depth == 0:
+                match = _OPEN_TAG.search(self._buffer)
+                if match:
+                    head = self._buffer[:match.start()]
+                    self._buffer = self._buffer[match.end():]
+                    if head:
+                        yield head
+                    self._depth += 1
+                    continue
+                cut = self._buffer.rfind("<")
+                if cut == -1:
+                    yield self._buffer
+                    self._buffer = ""
+                    break
+                tail = self._buffer[cut:]
+                if not self._could_open(tail):
+                    # Definitely not a reasoning opener (e.g. "<b>", "a < b", or an
+                    # over-long run). Emit through the "<" and keep scanning.
+                    yield self._buffer[:cut + 1]
+                    self._buffer = self._buffer[cut + 1:]
+                    continue
+                if cut:
+                    yield self._buffer[:cut]
+                    self._buffer = tail
+                break
+            else:
+                match = _CLOSE_TAG.search(self._buffer)
+                if match:
+                    self._buffer = self._buffer[match.end():]
+                    self._depth -= 1
+                    continue
+                # Inside a block: discard everything except a possible partial closer.
+                self._buffer = self._buffer[-_MAX_TAG_HOLD:]
+                break
+
+    def flush(self):
+        """Emit whatever is safe once the whole generation is finished."""
+        buffer, self._buffer = self._buffer, ""
+        if self._depth or not buffer:
+            return
+        if self._could_open(buffer.lstrip()) and buffer.lstrip() != "<":
+            return  # a truncated reasoning opener, never real text
+        yield buffer
+
+    @staticmethod
+    def _could_open(text: str) -> bool:
+        """True when `text` is a prefix of a reasoning opener, or an unfinished one."""
+        if not text.startswith("<"):
+            return False
+        if len(text) > _MAX_TAG_HOLD:
+            return False
+        body = text[1:].lower()
+        if ">" in body:
+            return False  # a complete tag that the opener regex already rejected
+        if not body:
+            return True
+        name = re.match(r"[a-z]*", body).group(0)
+        rest = body[len(name):]
+        if rest:
+            # Attributes started, so the name part must already be a full tag name.
+            return name in _REASONING_TAGS
+        return any(tag.startswith(name) for tag in _REASONING_TAGS)
+
+
+def _strip_reasoning_stream(pieces, state: "ReasoningFilter | None" = None):
+    """Convenience wrapper: filter one iterable with a fresh or supplied filter."""
+    filt = state or ReasoningFilter()
+    for piece in pieces:
+        yield from filt.feed(piece)
+    if state is None:
+        yield from filt.flush()
+
+
 def chat_stream_complete(messages, model=None, max_tokens=2000,
                          temperature=0.0, max_continuations=3):
     """Like chat_stream, but if the model stops because it hit the token cap
@@ -144,20 +256,30 @@ def chat_stream_complete(messages, model=None, max_tokens=2000,
     times."""
     convo = list(messages)
     produced = ""
+    # One filter for the whole generation: a reasoning block can straddle a
+    # continuation boundary, and a fresh filter per segment would resume at depth 0
+    # and leak the rest of the block as answer text.
+    reasoning = ReasoningFilter()
     for _i in range(max_continuations + 1):
         segment = []
+        raw_len = 0
         for piece in chat_stream(convo, model=model, max_tokens=max_tokens,
                                  temperature=temperature):
-            segment.append(piece)
-            yield piece
+            raw_len += len(piece.strip())
+            for visible in reasoning.feed(piece):
+                segment.append(visible)
+                yield visible
         seg_text = "".join(segment)
         produced += seg_text
         # Different OpenAI-compatible backends report the token-cap stop reason as
         # 'length' or 'max_tokens'. Treat both as "truncated → continue".
         if get_last_finish_reason() not in ("length", "max_tokens"):
-            return  # completed naturally (or stopped for another reason)
-        if not seg_text.strip():
-            return  # nothing produced — avoid an infinite continue loop
+            break  # completed naturally (or stopped for another reason)
+        # Guard against an infinite continue loop on a genuinely empty segment. This
+        # must measure the RAW stream: a segment that was entirely reasoning produces
+        # no visible text yet still needs a continuation to reach the real answer.
+        if not raw_len:
+            break
         # Continue: feed back what we have so far and ask to resume seamlessly.
         convo = list(messages) + [
             {"role": "assistant", "content": produced},
@@ -166,6 +288,7 @@ def chat_stream_complete(messages, model=None, max_tokens=2000,
                 "teks yang sudah ditulis, JANGAN menambahkan pembuka/penutup baru — "
                 "langsung sambung kalimat/tabel yang terpotong sampai selesai."},
         ]
+    yield from reasoning.flush()
 
 
 def chat_json(messages, model=None, max_tokens=2000, retries=4) -> dict:

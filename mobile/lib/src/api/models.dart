@@ -46,6 +46,10 @@ class ChatMessage {
   String? status;
   String? error;
   ResultTable? result;
+  /// Chart render decision from the backend (see backend/app/chart_spec.py). The
+  /// client draws what this says instead of guessing from column types, which used
+  /// to plot whichever numeric column came first.
+  Map<String, dynamic>? chartSpec;
   List<ProfileSection> profileResults;
   Map<String, dynamic>? locationResult;
 
@@ -66,6 +70,7 @@ class ChatMessage {
     this.status,
     this.error,
     this.result,
+    this.chartSpec,
     List<ProfileSection>? profileResults,
     this.locationResult,
   }) : profileResults = profileResults ?? [];

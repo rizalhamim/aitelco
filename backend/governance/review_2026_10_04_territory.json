@@ -1,0 +1,2056 @@
+{
+  "review_id": "territory-migration-2026-10-04",
+  "reviewed_at": "2026-10-04",
+  "reviewer": "Business Planning Circle Java",
+  "scope": "Current approved schema refresh, retired missing sources, reviewed successors and discovery quarantine.",
+  "decisions": {
+    "rham_5g_nr2600": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 61 columns; partition=None; rows=41963."
+    },
+    "rham_5g_site_daily": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 26 columns; partition=dt_id; rows=69672093."
+    },
+    "rham_5g_site_monthly": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 27 columns; partition=mth_dt; rows=2404972."
+    },
+    "rham_5g_territory_daily": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 24 columns; partition=dt_id; rows=7607870."
+    },
+    "rham_5g_territory_monthly": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 25 columns; partition=mth_dt; rows=272928."
+    },
+    "rham_5g_territory_mtd": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 25 columns; partition=mth_dt; rows=14288."
+    },
+    "rham_avail_stat_site_monthly": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 49 columns; partition=month_start; rows=142655."
+    },
+    "rham_avail_stat_territory_daily": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 23 columns; partition=dt_id; rows=556154."
+    },
+    "rham_avail_stat_territory_monthly": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=month_start; rows=18555."
+    },
+    "rham_availability_kpi_site": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 29 columns; partition=dt_id; rows=14715034."
+    },
+    "rham_branch_5g_daily": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 23 columns; partition=dt_id; rows=142378."
+    },
+    "rham_branch_5g_monthly": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 24 columns; partition=mth_dt; rows=5112."
+    },
+    "rham_branch_5g_territory_daily": {
+      "lifecycle": "approved",
+      "domain": "5g",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 23 columns; partition=dt_id; rows=142378."
+    },
+    "rham_branch_ga_daily": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 29 columns; partition=dt_id; rows=73546."
+    },
+    "rham_cohort_voucher_mobotrade": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 18 columns; partition=cohort_month_dt; rows=288464."
+    },
+    "rham_data_rev_digicommerce_daily": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 7 columns; partition=dt_id; rows=820983."
+    },
+    "rham_demand_inner_outer": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 8 columns; partition=dt_id; rows=79655326."
+    },
+    "rham_demand_inner_outer_mtd": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 9 columns; partition=mth_dt; rows=3107072."
+    },
+    "rham_demand_inner_outer_mth": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 9 columns; partition=mth_dt; rows=15212720."
+    },
+    "rham_desa_perf_history": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_desa_perf_monthly": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_desa_perf_mtd": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_fb_ms_age": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 33 columns; partition=None; rows=189835."
+    },
+    "rham_fb_network_5g": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 19 columns; partition=dt_id; rows=61808."
+    },
+    "rham_fb_network_insight_wly": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 24 columns; partition=wk_end_dt; rows=524592."
+    },
+    "rham_fb_network_kabkot": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 15 columns; partition=None; rows=392527."
+    },
+    "rham_fb_network_kabkot_wly_wide": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 48 columns; partition=wk_end_dt; rows=67271."
+    },
+    "rham_fb_network_kec_wly_wide": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 56 columns; partition=wk_end_dt; rows=903504."
+    },
+    "rham_fb_network_kecamatan": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 15 columns; partition=None; rows=4300000."
+    },
+    "rham_fb_network_territory_wly_wide": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 46 columns; partition=wk_end_dt; rows=1090620."
+    },
+    "rham_forecast_daily_branch_output": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_branch_output_v3": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_branch_source": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_kabkota_output": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_kabkota_output_v3": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_kabkota_source": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_mc_output": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_mc_output_v3": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_mc_source": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_rev_mc_input": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_daily_rev_mc_output": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_monthly_branch_output_v3": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_monthly_kabkota_output_v3": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_forecast_monthly_mc_output_v3": {
+      "lifecycle": "rejected",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Source no longer exists after the warehouse migration. No verified replacement is available.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_ftth_kec_wise_daily": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 22 columns; partition=dt_id; rows=132211."
+    },
+    "rham_ftth_kec_wise_mtd": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 24 columns; partition=mth_dt; rows=4934."
+    },
+    "rham_ftth_kec_wise_mth": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 24 columns; partition=mth_dt; rows=4935."
+    },
+    "rham_ftth_pa_detail": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 31 columns; partition=None; rows=255512."
+    },
+    "rham_ftth_sa_detail": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 31 columns; partition=None; rows=256987."
+    },
+    "rham_ftth_site_wise_daily": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 25 columns; partition=dt_id; rows=2241311."
+    },
+    "rham_ftth_site_wise_mtd": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 27 columns; partition=mth_dt; rows=83629."
+    },
+    "rham_ftth_site_wise_mth": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 27 columns; partition=mth_dt; rows=83631."
+    },
+    "rham_ftth_sitewise_monthly": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 33 columns; partition=None; rows=191636."
+    },
+    "rham_ftth_so_detail": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 29 columns; partition=None; rows=588113."
+    },
+    "rham_fwa_kec_wise_daily": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 61 columns; partition=dt_id; rows=4872329."
+    },
+    "rham_fwa_kec_wise_mtd": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 63 columns; partition=mth_dt; rows=169688."
+    },
+    "rham_fwa_kec_wise_mth": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 63 columns; partition=mth_dt; rows=293676."
+    },
+    "rham_fwa_monthly": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 32 columns; partition=month_dt; rows=240847."
+    },
+    "rham_fwa_monthly_kpi": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 53 columns; partition=month_start; rows=109413."
+    },
+    "rham_fwa_site_wise_daily": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 62 columns; partition=dt_id; rows=26026055."
+    },
+    "rham_fwa_site_wise_mtd": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 64 columns; partition=mth_dt; rows=927598."
+    },
+    "rham_fwa_site_wise_mth": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 64 columns; partition=mth_dt; rows=1491217."
+    },
+    "rham_game_daily": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 10 columns; partition=dt_id; rows=691816."
+    },
+    "rham_game_mtd": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 11 columns; partition=mth_dt; rows=28149."
+    },
+    "rham_game_mth": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 11 columns; partition=mth_dt; rows=38200."
+    },
+    "rham_hvc_kec_daily": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 15 columns; partition=None; rows=2149107."
+    },
+    "rham_hvc_kec_mtd": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 17 columns; partition=mth_dt; rows=159617."
+    },
+    "rham_hvc_kec_mth": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 17 columns; partition=mth_dt; rows=159595."
+    },
+    "rham_hvc_site_daily": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 16 columns; partition=None; rows=20605417."
+    },
+    "rham_hvc_site_mtd": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 18 columns; partition=mth_dt; rows=1524884."
+    },
+    "rham_hvc_site_mth": {
+      "lifecycle": "approved",
+      "domain": "customer_hvc",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 18 columns; partition=mth_dt; rows=1524931."
+    },
+    "rham_master_tracker_fwa": {
+      "lifecycle": "approved",
+      "domain": "fwa",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 20 columns; partition=dt_id; rows=176360."
+    },
+    "rham_mkt_highlevel_mtd": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 283 columns; partition=mth_dt; rows=385330."
+    },
+    "rham_mkt_highlevel_mth": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 267 columns; partition=mth_dt; rows=386505."
+    },
+    "rham_mkt_kpi_highlevel_dly": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 40 columns; partition=dt_id; rows=11395860."
+    },
+    "rham_network_comp": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 325 columns; partition=dt_id; rows=55024."
+    },
+    "rham_network_comp_kec": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 28 columns; partition=dt_id; rows=373093."
+    },
+    "rham_network_internal": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 368 columns; partition=dt_id; rows=172655."
+    },
+    "rham_network_internal_kec": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 370 columns; partition=dt_id; rows=558493."
+    },
+    "rham_opensignal_experience_wly": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 10 columns; partition=end_dt; rows=1013751."
+    },
+    "rham_opensignal_kabkot_wly_wide": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 30 columns; partition=end_dt; rows=28784."
+    },
+    "rham_opensignal_kec_wly_wide": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 38 columns; partition=end_dt; rows=386906."
+    },
+    "rham_opensignal_territory_wly_wide": {
+      "lifecycle": "approved",
+      "domain": "network_benchmark",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 28 columns; partition=end_dt; rows=467278."
+    },
+    "rham_outlet_junction_java": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 5 columns; partition=None; rows=136652."
+    },
+    "rham_outlet_nbs": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 25 columns; partition=mth_dt; rows=3378850."
+    },
+    "rham_outlet_population_java": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 5 columns; partition=None; rows=136652."
+    },
+    "rham_outlet_road_java": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 11 columns; partition=None; rows=127966."
+    },
+    "rham_outlet_spacing_java": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 31 columns; partition=None; rows=136761."
+    },
+    "rham_outlet_transaction_java": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 20 columns; partition=None; rows=62244."
+    },
+    "rham_outlet_wise_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 29 columns; partition=mth_dt; rows=2818304."
+    },
+    "rham_outlet_wise_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 29 columns; partition=mth_dt; rows=2818304."
+    },
+    "rham_outletwise_daily_pjp": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 28 columns; partition=dt; rows=356444."
+    },
+    "rham_ref_site_desa": {
+      "lifecycle": "approved",
+      "domain": "territory_reference",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 5 columns; partition=None; rows=351941."
+    },
+    "rham_ref_territory": {
+      "lifecycle": "approved",
+      "domain": "territory_reference",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 27 columns; partition=None; rows=7175."
+    },
+    "rham_report_fb_ms_age": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 46 columns; partition=None; rows=244723."
+    },
+    "rham_report_fb_ms_area": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=3564."
+    },
+    "rham_report_fb_ms_branch_3id": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=26452."
+    },
+    "rham_report_fb_ms_branch_im3": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=26452."
+    },
+    "rham_report_fb_ms_circle": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=792."
+    },
+    "rham_report_fb_ms_cluster_3id": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 47 columns; partition=None; rows=142784."
+    },
+    "rham_report_fb_ms_focus_gtm_bau": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=0."
+    },
+    "rham_report_fb_ms_focus_gtm_high_potential": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=0."
+    },
+    "rham_report_fb_ms_focus_gtm_must_win": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=1584."
+    },
+    "rham_report_fb_ms_focus_gtm_super88": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=0."
+    },
+    "rham_report_fb_ms_island": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=1386."
+    },
+    "rham_report_fb_ms_kabkota": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 46 columns; partition=None; rows=101551."
+    },
+    "rham_report_fb_ms_kecamatan": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 48 columns; partition=None; rows=1313636."
+    },
+    "rham_report_fb_ms_micro_cluster": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 46 columns; partition=None; rows=143468."
+    },
+    "rham_report_fb_ms_mp3_3kiosk": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 46 columns; partition=None; rows=4656."
+    },
+    "rham_report_fb_ms_mp3_3kiosk_branch": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 47 columns; partition=None; rows=45008."
+    },
+    "rham_report_fb_ms_mp3_3kiosk_circle": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=1552."
+    },
+    "rham_report_fb_ms_mp3_3kiosk_region": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=4656."
+    },
+    "rham_report_fb_ms_mpc_sdp_im3": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=4656."
+    },
+    "rham_report_fb_ms_mpc_sdp_im3_branch": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 46 columns; partition=None; rows=45008."
+    },
+    "rham_report_fb_ms_mpc_sdp_im3_circle": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=1552."
+    },
+    "rham_report_fb_ms_national": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=198."
+    },
+    "rham_report_fb_ms_partner_3id": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 49 columns; partition=None; rows=212428."
+    },
+    "rham_report_fb_ms_partner_territory": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 49 columns; partition=None; rows=212429."
+    },
+    "rham_report_fb_ms_province": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=None; rows=7920."
+    },
+    "rham_report_fb_ms_region": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=None; rows=2376."
+    },
+    "rham_report_fb_ms_sea": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 46 columns; partition=None; rows=4950."
+    },
+    "rham_sellin_ga_location": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 9 columns; partition=mth_dt_sellin; rows=13877."
+    },
+    "rham_site_acquisition_rev": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 11 columns; partition=dt_id; rows=71807990."
+    },
+    "rham_site_data_rev_channel_daily": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_channel_daily",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_channel_daily at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_channel_mtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_channel_mtd",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_channel_mtd at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_channel_mth": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_channel_mth",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_channel_mth at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_price_slab_daily": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_price_slab_daily",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_price_slab_daily at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_price_slab_mtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_price_slab_mtd",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_price_slab_mtd at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_price_slab_mth": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_price_slab_mth",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_price_slab_mth at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_product_daily": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_product_daily",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_product_daily at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_product_mtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_product_mtd",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_product_mtd at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_data_rev_product_mth": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_kec_data_rev_product_mth",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_kec_data_rev_product_mth at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_fwa_daily": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_fwa_site_wise_daily",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_fwa_site_wise_daily at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_ga_daily": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 29 columns; partition=dt_id; rows=7528107."
+    },
+    "rham_site_wise_addr_java": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 50 columns; partition=None; rows=346274."
+    },
+    "rham_site_wise_addr_java_perf": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 364 columns; partition=perf_dt_id; rows=1038756."
+    },
+    "rham_site_wise_addr_java_perf_yoy": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 175 columns; partition=None; rows=1038756."
+    },
+    "rham_site_wise_daily": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 62 columns; partition=dt_id; rows=108632519."
+    },
+    "rham_site_wise_monthly": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 62 columns; partition=dt_id; rows=3757163."
+    },
+    "rham_site_wise_mtd": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 62 columns; partition=dt_id; rows=3674548."
+    },
+    "rham_site_wise_occupancy": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 54 columns; partition=None; rows=5384901."
+    },
+    "rham_site_wise_occupancy_mth": {
+      "lifecycle": "approved",
+      "domain": "network",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 25 columns; partition=None; rows=233931."
+    },
+    "rham_snd_kecwise_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 23 columns; partition=mth_date; rows=1015293."
+    },
+    "rham_snd_kecwise_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 23 columns; partition=mth_date; rows=73766."
+    },
+    "rham_snd_kpi_highlevel_dly": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 165 columns; partition=dt_id; rows=3894931."
+    },
+    "rham_snd_kpi_highlevel_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 166 columns; partition=mth_dt; rows=377236."
+    },
+    "rham_snd_kpi_highlevel_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 166 columns; partition=mth_dt; rows=377236."
+    },
+    "rham_ssd_details_mtd": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 14 columns; partition=mth_dt; rows=20074148."
+    },
+    "rham_ssd_details_mth": {
+      "lifecycle": "approved",
+      "domain": "customer_demand",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 14 columns; partition=mth_dt; rows=44778105."
+    },
+    "rham_subs_traffic_agg_segment_mtd_lmtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_site_wise_mtd",
+      "reason": "Follow the replacement chain after the October source retirement.",
+      "evidence": "rham_site_traffic_usage_mtd is absent; current successor is rham_site_wise_mtd."
+    },
+    "rham_zz_ref_holiday": {
+      "lifecycle": "approved",
+      "domain": "territory_reference",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 2 columns; partition=None; rows=338."
+    },
+    "zz_territory_kecamatan": {
+      "lifecycle": "approved",
+      "domain": "territory_reference",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 20 columns; partition=None; rows=7175."
+    },
+    "rham_ga_new_imei_mtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_mkt_highlevel_mtd",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_mkt_highlevel_mtd at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_ga_new_imei_mth": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_mkt_highlevel_mth",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_mkt_highlevel_mth at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_outlet_ga_quality": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_outlet_ga at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_outlet_ga_quality_dtu": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga_dtu",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_outlet_ga_dtu at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_outlet_ga_quality_mtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga_mtd",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_outlet_ga_mtd at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_outlet_ga_quality_mth": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga_mth",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_outlet_ga_mth at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_outlet_ga_quality_ex_dtu": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga_dtu",
+      "reason": "Follow the replacement chain after the October source retirement.",
+      "evidence": "rham_outlet_ga_quality_dtu is absent; current successor is rham_outlet_ga_dtu."
+    },
+    "rham_outlet_ga_quality_mth_ex_dtu": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_outlet_ga_mth",
+      "reason": "Follow the replacement chain after the October source retirement.",
+      "evidence": "rham_outlet_ga_quality_mth is absent; current successor is rham_outlet_ga_mth."
+    },
+    "rham_outlet_low_stock": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 37 columns; partition=dt_id; rows=108230601."
+    },
+    "rham_outlet_secondary_daily": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 58 columns; partition=dt_id; rows=27786438."
+    },
+    "rham_outlet_secondary_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 59 columns; partition=mth_dt; rows=1249923."
+    },
+    "rham_outlet_secondary_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 58 columns; partition=mth_dt; rows=17161861."
+    },
+    "rham_postpaid_ga_daily": {
+      "lifecycle": "approved",
+      "domain": "acquisition",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 16 columns; partition=activation_date; rows=1538276."
+    },
+    "rham_report_fb_device_5g": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 27 columns; partition=dt_id; rows=17276."
+    },
+    "rham_report_fb_network_5g": {
+      "lifecycle": "approved",
+      "domain": "competitive",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 27 columns; partition=dt_id; rows=14432."
+    },
+    "rham_site_ga_quality_daily": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 45 columns; partition=dt_id; rows=45585944."
+    },
+    "rham_site_ga_quality_mtd": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=dt_id; rows=778665."
+    },
+    "rham_site_ga_quality_mth": {
+      "lifecycle": "approved",
+      "domain": "site_performance",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 44 columns; partition=dt_id; rows=3353999."
+    },
+    "rham_site_traffic_usage_mtd": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_site_wise_mtd",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_site_wise_mtd at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_site_traffic_usage_mth": {
+      "lifecycle": "superseded",
+      "domain": null,
+      "replacement_table": "rham_site_wise_monthly",
+      "reason": "Source no longer exists after the warehouse migration. Use rham_site_wise_monthly at its declared grain.",
+      "evidence": "BigQuery list_tables and live catalog 2026-10-04: source absent."
+    },
+    "rham_kec_wise_tnr_mtd": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 189 columns; partition=dt_id; rows=1137672."
+    },
+    "rham_kec_wise_tnr_mth": {
+      "lifecycle": "approved",
+      "domain": "kpi_summary",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 189 columns; partition=dt_id; rows=1137672."
+    },
+    "rham_ftth_tt_mttr": {
+      "lifecycle": "approved",
+      "domain": "ftth",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 10 columns; partition=None; rows=772."
+    },
+    "rham_kec_data_rev_channel_daily": {
+      "lifecycle": "approved",
+      "domain": "revenue",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 14 columns; partition=dt_id; rows=262716215."
+    },
+    "rham_kec_data_rev_channel_mtd": {
+      "lifecycle": "approved",
+      "domain": "revenue",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 16 columns; partition=mth_dt; rows=7004276."
+    },
+    "rham_kec_data_rev_channel_mth": {
+      "lifecycle": "approved",
+      "domain": "revenue",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 16 columns; partition=mth_dt; rows=16906919."
+    },
+    "rham_kec_data_rev_price_slab_daily": {
+      "lifecycle": "approved",
+      "domain": "revenue",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 12 columns; partition=dt_id; rows=348005753."
+    },
+    "rham_kec_data_rev_price_slab_mtd": {
+      "lifecycle": "approved",
+      "domain": "revenue",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 14 columns; partition=mth_dt; rows=15252567."
+    },
+    "rham_kec_data_rev_price_slab_mth": {
+      "lifecycle": "approved",
+      "domain": "revenue",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 14 columns; partition=mth_dt; rows=31119189."
+    },
+    "rham_kec_data_rev_product_daily": {
+      "lifecycle": "approved",
+      "domain": "product",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 18 columns; partition=dt_id; rows=1043813400."
+    },
+    "rham_kec_data_rev_product_mtd": {
+      "lifecycle": "approved",
+      "domain": "product",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 20 columns; partition=mth_dt; rows=55897392."
+    },
+    "rham_kec_data_rev_product_mth": {
+      "lifecycle": "approved",
+      "domain": "product",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 20 columns; partition=mth_dt; rows=254868249."
+    },
+    "rham_outlet_ga": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 47 columns; partition=mth_dt; rows=22746519."
+    },
+    "rham_outlet_ga_dtu": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 47 columns; partition=mth_dt; rows=24360492."
+    },
+    "rham_outlet_ga_mtd": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 42 columns; partition=mth_dt; rows=477204."
+    },
+    "rham_outlet_ga_mth": {
+      "lifecycle": "approved",
+      "domain": "sales_distribution",
+      "reason": "Refresh reviewed live schema and partition metadata after territory migration; preserve existing domain ownership.",
+      "evidence": "Live schema: 41 columns; partition=mth_dt; rows=3486437."
+    },
+    "rham_5g_site_daily_bak_territory_20261003_040005": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_5g_site_monthly_bak_territory_20261003_040442": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_5g_territory_daily_bak_territory_20261003_041923": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_5g_territory_monthly_bak_territory_20261003_042134": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_5g_territory_mtd_bak_territory_20261003_042154": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_analysis_m2s_202607": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_avail_stat_site_monthly_bak_territory_20261003_040451": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_avail_stat_territory_daily_bak_territory_20261003_042600": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_avail_stat_territory_monthly_bak_territory_20261003_042622": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_availability_kpi_site_bak_territory_20261003_040455": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_branch_5g_daily_bak_territory_20261003_042211": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_branch_5g_daily_bak_territory_20261003_042452": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_branch_5g_monthly_bak_territory_20261003_042520": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_branch_5g_territory_daily_bak_territory_20261003_042527": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_branch_ga_daily_bak_20260928_biometric": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_branch_ga_daily_bak_20260928_tracker": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_branch_ga_daily_bak_territory_20261003_042546": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fb_ms_kecamatan_v2_bak_territory_20261003_040558": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fb_network_kec_wly_wide_bak_territory_20261003_040620": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fb_network_territory_wly_wide_bak_territory_20261003_042628": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ftth_install_orders": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ftth_kec_wise_daily_bak_territory_20261003_040630": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ftth_kec_wise_mtd_bak_territory_20261003_040641": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ftth_kec_wise_mth_bak_territory_20261003_040645": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ftth_site_wise_daily_bak_territory_20261003_035906": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ftth_site_wise_mtd_bak_territory_20261003_040649": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ftth_site_wise_mth_bak_territory_20261003_040652": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_kec_wise_daily_bak_territory_20261003_040657": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_kec_wise_mtd_bak_territory_20261003_040730": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_kec_wise_mth_bak_territory_20261003_040735": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_monthly_bak_territory_20261003_040740": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_site_wise_daily_bak_20260928_biometric": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_site_wise_daily_bak_territory_20261003_040746": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_site_wise_mtd_bak_territory_20261003_040859": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_fwa_site_wise_mth_bak_territory_20261003_040906": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ga_biometric_lookup": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ga_quality_tracker_bak_20260928_biometric": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ga_quality_tracker_fwa": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ga_quality_tracker_fwa_bak_territory_20261003_040913": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ga_quality_tracker_load_state": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_highlevel_mtd_serving": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_highlevel_mth_serving": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_kec_daily_bak_territory_20261003_040921": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_kec_mtd_bak_territory_20261003_040929": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_kec_mth_bak_territory_20261003_040933": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_revenue_recovery": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_revenue_serving": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_site_daily_bak_territory_20261003_040938": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_site_mtd_bak_territory_20261003_041019": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_site_mth_bak_territory_20261003_041026": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_hvc_snapshot_recovery": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_kec_data_rev_channel_mth_bak_territory_20261003_041033": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_kec_data_rev_price_slab_mth_bak_territory_20261003_041102": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_kec_data_rev_product_mth_bak_territory_20261003_041151": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_kec_hvc_revenue": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_kec_hvc_revenue_bak_territory_20261003_042444": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_mkt_highlevel_mtd_bak_20260928_biometric": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_mkt_highlevel_mtd_bak_20260928_site_ga": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_mkt_highlevel_mth_bak_20260928_biometric": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_mkt_highlevel_mth_bak_20260928_site_ga": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_opensignal_kec_wly_wide_bak_territory_20261003_042659": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_opensignal_territory_wly_wide_bak_territory_20261003_042813": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_5g_mtd": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_5g_mtd_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_5g_mth": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_5g_mth_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_dtu_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_ex_dtu": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_ex_dtu_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_5g_mtd": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_5g_mtd_bak_territory_20261003_043900": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_5g_mth": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_5g_mth_bak_territory_20261003_043900": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_mtd": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_mtd_bak_territory_20261003_043900": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_mth": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_fwa_mth_bak_territory_20261003_043900": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_mtd_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_mth_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_mth_ex_dtu": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_ga_mth_ex_dtu_bak_territory_20261003_043637": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_low_stock_bak_territory_20261003_042705": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_nbs_bak_territory_20261003_043214": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_secondary_daily_bak_territory_20261003_043226": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_secondary_mtd_bak_territory_20261003_043410": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_secondary_mth_bak_territory_20261003_043418": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_wise_mtd_bak_territory_20261003_043508": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_outlet_wise_mth_bak_territory_20261003_043515": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ref_territory2_bak_20261003_034838": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ref_territory_bak_20261003_034838": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_age_bak_kab_20261003_184338": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_age_bak_territory_20261003_041746": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_age_verify_kab_20261003_184005": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_age_verify_kab_20261003_184338": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Discovered during migration; awaits a separate semantic review.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_branch_3id_bak_territory_20261003_041504": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_branch_im3_bak_territory_20261003_041530": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_cluster_3id_bak_territory_20261003_041539": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_micro_cluster_bak_territory_20261003_041552": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_mp3_3kiosk_bak_territory_20261003_041609": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_mp3_3kiosk_branch_bak_territory_20261003_041621": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_mp3_3kiosk_circle_bak_territory_20261003_041629": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_mp3_3kiosk_region_bak_territory_20261003_041643": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_mpc_sdp_im3_bak_territory_20261003_041649": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_mpc_sdp_im3_branch_bak_territory_20261003_041659": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_mpc_sdp_im3_circle_bak_territory_20261003_041713": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_partner_3id_bak_territory_20261003_041721": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_partner_territory_bak_territory_20261003_041733": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_report_fb_ms_region_bak_territory_20261003_041742": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_ga_daily_bak_20260928_biometric": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_ga_daily_bak_20260928_tracker": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_wise_addr_java_bak_territory_20261003_045538": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_wise_addr_java_perf_bak_territory_20261003_043522": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_wise_addr_java_perf_yoy_bak_territory_20261003_043532": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_wise_daily_bak_territory_20261003_043545": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_wise_monthly_bak_territory_20261003_044101": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_site_wise_mtd_bak_territory_20261003_044113": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_snd_kecwise_mtd_bak_territory_20261003_044124": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_snd_kecwise_mth_bak_territory_20261003_035450": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ssd_details_daily_bak_territory_20261003_044129": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ssd_details_mtd_bak_territory_20261003_045427": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "rham_ssd_details_mth_bak_territory_20261003_045505": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "zz_territory_kecamatan_bak_20261003_034838": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "zz_territory_kecamatan_candidate_20261003": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "zz_territory_kecamatan_candidate_20261003_034838": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    },
+    "zz_territory_kecamatan_candidate_20261003_050922": {
+      "lifecycle": "quarantined",
+      "domain": null,
+      "replacement_table": null,
+      "reason": "Backup/staging object excluded from runtime.",
+      "evidence": "BigQuery live catalog 2026-10-04; no automatic promotion of unknown sources."
+    }
+  }
+}

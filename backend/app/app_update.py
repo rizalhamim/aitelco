@@ -97,14 +97,14 @@ def app_version():
         "version_code": int(rel.get("version_code", 1)),
         "notes": rel.get("notes", ""),
         "mandatory": bool(rel.get("mandatory", False)),
-        "download_url": "/api/app/download",
+        "download_url": rel.get("download_url") or "/api/app/download",
         "size_bytes": size,
         "available": size > 0,
         "released_at": released_at,
         "apk_filename": rel.get("apk_filename") or _DEFAULT_RELEASE["apk_filename"],
         "sha256": _sha256(apk) if size else None,
         "min_android": rel.get("min_android", "8.0"),
-    })
+    }, headers={"Cache-Control": "no-store, max-age=0"})
 
 
 @router.get("/releases")

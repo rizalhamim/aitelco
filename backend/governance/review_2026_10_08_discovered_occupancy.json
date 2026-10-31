@@ -1,0 +1,14 @@
+{
+  "review_id": "discovered-occupancy-2026-10-08",
+  "reviewed_at": "2026-10-08",
+  "reviewer": "Codex, metadata discovery only",
+  "scope": "Record an object that appeared while reconciling SND schemas. No runtime promotion.",
+  "decisions": {
+    "rham_site_wise_occupancy_5g": {
+      "lifecycle": "candidate",
+      "domain": null,
+      "reason": "New live object discovered during this audit. Semantic and business-value review is pending; it is not an approved runtime source.",
+      "evidence": "Live java_precalc metadata discovery on 2026-10-08 reports this object as ungoverned. No data profiling or approval has been performed."
+    }
+  }
+}

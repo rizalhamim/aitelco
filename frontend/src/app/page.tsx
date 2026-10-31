@@ -7,7 +7,8 @@ import {
   Square, ThumbsUp, TrendingUp, Upload, Code2, Workflow,
 } from "lucide-react";
 import AppShell from "./components/shell/AppShell";
-import SmartChart, { type ChartSpec } from "./components/charts/SmartChart";
+import SmartChart, { type ChartSpec as SmartChartSpec } from "./components/charts/SmartChart";
+import ChartPanel from "./components/ChartPanel";
 import ResultTable from "./components/ResultTable";
 import SiteMap from "./components/SiteMap";
 import { downloadXlsx } from "@/lib/xlsx";
@@ -133,7 +134,41 @@ type Result = {
   row_count: number;
   sql?: string;
   bytes_processed?: number;
-  chart?: ChartSpec;
+  chart?: SmartChartSpec;
+};
+
+// Server chart spec (sse "chart_spec", read by components/ChartPanel). The redesign
+// SmartChart spec arrives as result.chart and is imported above as SmartChartSpec.
+// Decided by the backend (see backend/app/chart_spec.py) so web and mobile draw the
+// same thing. A column's TYPE says nothing about its meaning, and the client-side
+// guess used to plot whichever numeric column came first.
+export type ChartSeries = {
+  column: string;
+  role: string;
+  unit: string;
+  label: string;
+  axis_side: "left" | "right";
+  can_be_negative: boolean;
+};
+export type ChartAxis = {
+  unit: string;
+  side: "left" | "right";
+  columns: string[];
+  zero_line: boolean;
+};
+export type ChartSpec = {
+  mode: "bar" | "line" | "pie" | "matrix" | "funnel" | "none";
+  category?: string;
+  series?: ChartSeries[];
+  axes?: ChartAxis[];
+  dual_axis?: boolean;
+  title?: string;
+  caption?: string;
+  truncated?: boolean;
+  /** Present when the result had more categories than fit as bars: the ranked subset
+   *  the chart should plot, already sorted. The caption says it is a subset. */
+  rows?: Record<string, unknown>[];
+  ranked_subset?: boolean;
 };
 
 type Stage = "router" | "analyst" | "sql" | "validasi" | "ringkasan";
@@ -151,6 +186,7 @@ type Msg = {
   sql?: string;
   sqlExplanation?: string;
   result?: Result;
+  chartSpec?: ChartSpec;
   status?: string;
   error?: string;
   exportReady?: { format: string; url: string };
@@ -169,7 +205,7 @@ type Msg = {
     rows: Record<string, unknown>[];
     sql?: string | null;
     explanation?: string;
-    chart?: ChartSpec;
+    chart?: SmartChartSpec;
   }[];
   locationResult?: {
     lat: number;
@@ -791,7 +827,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
               rows: (data.rows as Record<string, unknown>[]) || [],
               sql: data.sql as string | null,
               explanation: (data.explanation as string) || "",
-              chart: data.chart as ChartSpec | undefined,
+              chart: data.chart as SmartChartSpec | undefined,
             };
             setMessages((prev) => {
               const next = [...prev];
@@ -827,7 +863,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
                 row_count: rowCount,
                 sql: data.sql as string,
                 bytes_processed: bytes,
-                chart: data.chart as ChartSpec | undefined,
+                chart: data.chart as SmartChartSpec | undefined,
               },
             });
             markStage("router", "analyst", "sql");
@@ -837,6 +873,9 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
               feedback: `${cols.length} kolom · ${rowCount.toLocaleString("id-ID")} baris data diterima`,
               meta: { "columns": cols.length, "rows": rowCount },
             });
+          } else if (event === "chart_spec") {
+            const spec = data as unknown as ChartSpec;
+            if (spec && spec.mode && spec.mode !== "none") update({ chartSpec: spec });
           } else if (event === "export_ready") {
             update({
               exportReady: {
@@ -1155,9 +1194,12 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
                   const spec = m.result.chart;
                   return (
                     <>
-                      {spec && spec.type !== "none" && (
+                      {spec && spec.type !== "none" ? (
                         <SmartChart spec={spec} rows={m.result.rows} onDrill={drill} height={spec.type === "hbar" ? Math.min(420, 60 + Math.min(m.result.rows.length, spec.top_n ?? 15) * 30) : 220} />
-                      )}
+                      ) : m.chartSpec ? (
+                        // Server chart spec (funnel, matrix, dual axis) when the redesign chart has no fit.
+                        <ChartPanel columns={m.result.columns} rows={m.result.rows} spec={m.chartSpec} />
+                      ) : null}
                       {geo && (
                         <div className="chat-map"><SiteMap columns={m.result.columns} rows={m.result.rows} latKey={geo.latKey} lonKey={geo.lonKey} /></div>
                       )}

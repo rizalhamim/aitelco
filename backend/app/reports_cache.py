@@ -25,15 +25,26 @@ from .bigquery_tool import run_query
 _PROJECT = config.BQ_PROJECT
 _DATASET = config.BQ_DATASET
 _MTD = f"`{_PROJECT}.{_DATASET}.rham_mkt_highlevel_mtd`"
-_CHANNEL = f"`{_PROJECT}.{_DATASET}.rham_site_data_rev_channel_mtd`"
+_CHANNEL = f"`{_PROJECT}.{_DATASET}.rham_kec_data_rev_channel_mtd`"
 
 _FB_NET = f"`{_PROJECT}.{_DATASET}.rham_fb_network_territory_wly_wide`"
+_FWA_MTD = f"`{_PROJECT}.{_DATASET}.rham_fwa_kec_wise_mtd`"
+_FTTH_MTD = f"`{_PROJECT}.{_DATASET}.rham_ftth_kec_wise_mtd`"
+_NET_COMP = f"`{_PROJECT}.{_DATASET}.rham_network_comp`"
+_NET_INTERNAL = f"`{_PROJECT}.{_DATASET}.rham_network_internal`"
 
 # marker source per family
 _MARKER_SQL = {
     "highlevel": f"SELECT MAX(dt_id_snapshot) AS m FROM {_MTD}",
     "data": f"SELECT MAX(as_of_dt) AS m FROM {_CHANNEL}",
     "benchmark": f"SELECT MAX(wk_end_dt) AS m FROM {_FB_NET}",
+    "fwa": f"SELECT MAX(dt_id) AS m FROM {_FWA_MTD}",
+    "ftth-summary": f"SELECT MAX(dt_id) AS m FROM {_FTTH_MTD}",
+    "network-catalog": (
+        "SELECT MAX(m) AS m FROM ("
+        f"SELECT MAX(dt_id) AS m FROM {_NET_COMP} UNION ALL "
+        f"SELECT MAX(dt_id) AS m FROM {_NET_INTERNAL})"
+    ),
 }
 
 # which family each report belongs to
@@ -42,10 +53,12 @@ _FAMILY = {
     "comprehensive": "highlevel",
     "data-revenue": "data",
     "product-demand": "data",
-    "network-benchmark": "benchmark",
+    "network-benchmark": "network-catalog",
+    "internal-performance": "network-catalog",
+    "fwa": "fwa",
     "market-insight": "highlevel",
     "profile-analysis": "highlevel",
-    "ftth": "highlevel",
+    "ftth": "ftth-summary",
 }
 
 _MARKER_TTL = 120.0  # seconds

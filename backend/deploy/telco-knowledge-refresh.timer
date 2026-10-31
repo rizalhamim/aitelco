@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh Telco AI java_precalc catalog daily
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 Asia/Jakarta
+Persistent=true
+RandomizedDelaySec=900
+
+[Install]
+WantedBy=timers.target

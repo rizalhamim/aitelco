@@ -28,7 +28,7 @@ SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER", "notification@bizplan-java.com")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")  # never commit the real password; set it in backend/.env
 SMTP_FROM = os.environ.get("SMTP_FROM", "Bizplan Java Agent <notification@bizplan-java.com>")
-APP_URL = os.environ.get("APP_URL", "http://agent-02.bizplan-java.com:3000")
+APP_URL = os.environ.get("APP_URL", "https://agent.bizplan-java.com")
 
 
 def _send(to: str, subject: str, html_body: str) -> bool:

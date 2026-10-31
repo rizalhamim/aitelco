@@ -5,6 +5,67 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// Signing credentials, in order: android/key.properties (local, gitignored),
+// then a Gradle property, then the environment. key.properties keeps the
+// release build reproducible without putting secrets in a tracked file.
+def keyPropertiesFile = rootProject.file("key.properties")
+def keyProperties = new Properties()
+if (keyPropertiesFile.exists()) {
+    keyPropertiesFile.withInputStream { keyProperties.load(it) }
+}
+def signingValue = { String name ->
+    keyProperties.getProperty(name)
+        ?: project.findProperty(name)
+        ?: System.getenv(name)
+}
+def releaseSigning = [
+    storeFile: signingValue("TELCO_RELEASE_STORE_FILE"),
+    storePassword: signingValue("TELCO_RELEASE_STORE_PASSWORD"),
+    keyAlias: signingValue("TELCO_RELEASE_KEY_ALIAS"),
+    keyPassword: signingValue("TELCO_RELEASE_KEY_PASSWORD"),
+    storeType: signingValue("TELCO_RELEASE_STORE_TYPE") ?: "JKS",
+]
+def releaseTaskRequested = gradle.startParameter.taskNames.any {
+    it.toLowerCase().contains("release")
+}
+def missingReleaseSigning = releaseSigning.findAll { key, value ->
+    key != "storeType" && (value == null || value.toString().trim().isEmpty())
+}.keySet()
+def canonicalReleaseSignerSha256 =
+    "038aa1bfa5d283f5ea3f65fc4aee1d1d35c754ab9b45e0d84c78cc810ade0458"
+
+if (releaseTaskRequested) {
+    if (!missingReleaseSigning.isEmpty()) {
+        throw new GradleException(
+            "Release signing is required. Missing: ${missingReleaseSigning.join(', ')}"
+        )
+    }
+    def releaseStore = file(releaseSigning.storeFile)
+    if (!releaseStore.isFile()) {
+        throw new GradleException("Release keystore was not found: ${releaseStore}")
+    }
+    def keyStore = java.security.KeyStore.getInstance(releaseSigning.storeType)
+    releaseStore.withInputStream {
+        keyStore.load(it, releaseSigning.storePassword.toCharArray())
+    }
+    def certificate = keyStore.getCertificate(releaseSigning.keyAlias)
+    if (certificate == null) {
+        throw new GradleException(
+            "Release key alias was not found: ${releaseSigning.keyAlias}"
+        )
+    }
+    def signerSha256 = java.security.MessageDigest
+        .getInstance("SHA-256")
+        .digest(certificate.encoded)
+        .collect { String.format("%02x", it & 0xff) }
+        .join()
+    if (signerSha256 != canonicalReleaseSignerSha256) {
+        throw new GradleException(
+            "Release signer mismatch. Expected ${canonicalReleaseSignerSha256}, got ${signerSha256}"
+        )
+    }
+}
+
 android {
     namespace = "com.bizplan.bizplan_java_agent"
     compileSdk = flutter.compileSdkVersion
@@ -30,11 +91,23 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (missingReleaseSigning.isEmpty()) {
+            release {
+                storeFile = file(releaseSigning.storeFile)
+                storePassword = releaseSigning.storePassword
+                keyAlias = releaseSigning.keyAlias
+                keyPassword = releaseSigning.keyPassword
+                storeType = releaseSigning.storeType
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
+            if (missingReleaseSigning.isEmpty()) {
+                signingConfig = signingConfigs.release
+            }
         }
     }
 }
