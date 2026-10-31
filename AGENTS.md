@@ -96,9 +96,29 @@ Never `--rebuild-governance` (erases decision history). Profile before approving
   overwrite a stored baseline.
 - Never remove or hide data in UI to look cleaner; use disclosure, grouping, better encoding.
 - Mobile release: bump `mobile/pubspec.yaml` AND `backend/data/app_release.json` (authoritative
-  current version). Steps: vault `50-conventions/deploy-restart.md`.
+  current version). Steps: vault `50-conventions/deploy-restart.md`. Current release: 1.49.0+67.
 - Restarts need `sudo`; some agent harnesses block them. If blocked, finish everything else
   and hand the exact command to the user.
+- Never put real secrets as code defaults; `backend/.env.example` lists every key.
+
+## Dependencies and environment
+
+- `requirements.txt` declares everything the app imports (FastAPI, BigQuery, SQLAlchemy, jose,
+  passlib, openpyxl, reportlab, pyshp, shapely, requests). Many are imported lazily inside
+  endpoints, so a missing package only fails when that endpoint is hit (auth, export, geo).
+  Add new deps to `requirements.txt`.
+- `backend/data/` (knowledge_base.json, geo files, SQLite DB) is gitignored, so a fresh clone
+  cannot answer questions until that folder is copied from the server.
+- Security keys in `backend/.env`: `JWT_SECRET_KEY` (server refuses to start without it when
+  `APP_ENV=production`), `CORS_ORIGINS` (comma-separated, default `*`), `SMTP_PASS` (no
+  default; email fails without it).
+
+## Design system
+
+`design/tokens.json` is the single source for colors, spacing, radius, type and motion on web
+and Android. Run `python3 design/build_tokens.py` after editing it; it regenerates
+`frontend/src/app/design-tokens.css` and `mobile/lib/src/design_tokens.dart`. See
+`design/README.md`.
 
 ## Design panel (significant UI work only)
 

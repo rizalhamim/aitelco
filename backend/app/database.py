@@ -1,7 +1,7 @@
 """Database models and session management.
 
 SQLite-backed user management with SQLAlchemy ORM.
-Tables: users, chat_sessions, chat_messages, login_audit
+Tables: users, chat_sessions, chat_messages, login_audit, usage_log, app_downloads, app_clients
 """
 import os
 from datetime import datetime, timezone
@@ -149,6 +149,153 @@ class Notification(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
 
+class AppDownload(Base):
+    """One APK download (web Download page or the in-app updater)."""
+    __tablename__ = "app_downloads"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    version_name = Column(String(32), nullable=True)
+    version_code = Column(Integer, nullable=True)
+    source = Column(String(20), nullable=False, default="unknown")  # web, in_app, unknown
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+
+
+class AppClient(Base):
+    """Last known app install per user + device, from the X-App-* request headers."""
+    __tablename__ = "app_clients"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    platform = Column(String(20), nullable=False)          # android, web
+    device_model = Column(String(120), nullable=False, default="")
+    os_version = Column(String(60), nullable=True)
+    app_version = Column(String(32), nullable=True)
+    app_build = Column(Integer, nullable=True)
+    first_seen = Column(DateTime, default=utcnow, nullable=False)
+    last_seen = Column(DateTime, default=utcnow, nullable=False, index=True)
+
+    __table_args__ = (Index("ix_app_clients_user_device", "user_id", "platform", "device_model", unique=True),)
+
+
+class AppVersionSeen(Base):
+    """Each app version a device has run, with when it was first/last seen.
+    Unlike app_clients (latest state only) this keeps history for version adoption."""
+    __tablename__ = "app_version_seen"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    platform = Column(String(20), nullable=False)
+    device_model = Column(String(120), nullable=False, default="")
+    app_version = Column(String(32), nullable=False)
+    first_seen = Column(DateTime, default=utcnow, nullable=False)
+    last_seen = Column(DateTime, default=utcnow, nullable=False)
+
+    __table_args__ = (Index("ix_app_version_seen_key", "user_id", "platform", "device_model", "app_version", unique=True),)
+
+
+class WatchRule(Base):
+    """A KPI the user watches: metric at a territory, with a threshold condition."""
+    __tablename__ = "watch_rules"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(160), nullable=False)
+    metric = Column(String(40), nullable=False)            # see watchlist.METRICS
+    scope_level = Column(String(20), nullable=False, default="circle")  # circle, region, kabkota, branch
+    scope_value = Column(String(120), nullable=False, default="JAVA")
+    condition = Column(String(20), nullable=False, default="turun")     # turun, naik, berubah, di_bawah, di_atas
+    threshold = Column(Float, nullable=False, default=5.0)
+    days = Column(Integer, nullable=False, default=1)      # consecutive daily checks in breach before alerting
+    notify_inapp = Column(Boolean, nullable=False, default=True)
+    notify_email = Column(Boolean, nullable=False, default=False)
+    active = Column(Boolean, nullable=False, default=True)
+    source_question = Column(Text, nullable=True)          # chat question it was created from
+    last_value = Column(Float, nullable=True)              # value compared against the threshold
+    last_level = Column(Float, nullable=True)              # underlying metric level
+    breach_streak = Column(Integer, nullable=False, default=0)
+    last_checked_on = Column(String(10), nullable=True)    # YYYY-MM-DD (WIB)
+    status = Column(String(20), nullable=False, default="normal")  # normal, peringatan, kritis, error
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class WatchSample(Base):
+    """Daily value of a rule, for the 7-day trend sparkline."""
+    __tablename__ = "watch_samples"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    rule_id = Column(Integer, ForeignKey("watch_rules.id", ondelete="CASCADE"), nullable=False, index=True)
+    day = Column(String(10), nullable=False)
+    value = Column(Float, nullable=True)
+
+    __table_args__ = (Index("ix_watch_samples_rule_day", "rule_id", "day", unique=True),)
+
+
+class WatchAlert(Base):
+    __tablename__ = "watch_alerts"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    rule_id = Column(Integer, ForeignKey("watch_rules.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    severity = Column(String(20), nullable=False, default="peringatan")  # kritis, peringatan, pulih
+    title = Column(String(255), nullable=False)
+    message = Column(Text, nullable=False)
+    value = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+    resolved_at = Column(DateTime, nullable=True)
+    acknowledged_at = Column(DateTime, nullable=True)
+
+
+class ReportSchedule(Base):
+    """An automatic report the agent builds and emails on a fixed day and hour (WIB)."""
+    __tablename__ = "report_schedules"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(160), nullable=False)
+    region = Column(String(120), nullable=False, default="")     # "" = all of Java
+    frequency = Column(String(20), nullable=False, default="mingguan")  # mingguan, bulanan
+    weekday = Column(Integer, nullable=False, default=0)        # 0 = Monday (mingguan)
+    monthday = Column(Integer, nullable=False, default=1)       # 1..28 (bulanan)
+    hour = Column(Integer, nullable=False, default=8)           # WIB
+    recipients = Column(Text, nullable=False, default="")      # comma separated
+    active = Column(Boolean, nullable=False, default=True)
+    last_sent_on = Column(String(10), nullable=True)            # YYYY-MM-DD (WIB)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class ReportRun(Base):
+    """One generated report, shown in the Laporan library."""
+    __tablename__ = "report_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    schedule_id = Column(Integer, ForeignKey("report_schedules.id", ondelete="SET NULL"), nullable=True)
+    title = Column(String(200), nullable=False)
+    kind = Column(String(20), nullable=False, default="mingguan")  # mingguan, bulanan, adhoc
+    region = Column(String(120), nullable=False, default="")
+    recipients = Column(Integer, nullable=False, default=0)
+    status = Column(String(20), nullable=False, default="terkirim")  # terkirim, gagal
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+
+
+class ReportLink(Base):
+    """A read-only link to a live performance report, shared from the Laporan page."""
+    __tablename__ = "report_links"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    token = Column(String(64), nullable=False, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    region = Column(String(120), nullable=False, default="")
+    payload = Column(Text, nullable=True)                       # JSON {columns, rows} of an ad-hoc answer
+    expires_at = Column(DateTime, nullable=False)
+    views = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
 # ── Database Init ──
 
 def init_db():
@@ -161,29 +308,26 @@ def init_db():
     try:
         user_count = db.query(User).count()
         if user_count == 0:
+            # First boot only. Never hardcode or reset the admin password here:
+            # it used to be committed in this file and re-applied on every start.
+            import secrets
             from passlib.context import CryptContext
             pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            initial = os.environ.get("ADMIN_INITIAL_PASSWORD") or secrets.token_urlsafe(12)
             admin = User(
                 username="admin",
                 email="admin@ioh.co.id",
-                hashed_password=pwd_ctx.hash("Apotoxin4869"),
+                hashed_password=pwd_ctx.hash(initial),
                 full_name="Administrator",
                 role="admin",
                 is_active=True,
             )
             db.add(admin)
             db.commit()
-            print("[init_db] Default admin user created (username: admin)")
-        else:
-            # Ensure existing admin has the correct password
-            admin = db.query(User).filter(User.username == "admin").first()
-            if admin:
-                from passlib.context import CryptContext
-                pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
-                if not pwd_ctx.verify("Apotoxin4869", admin.hashed_password):
-                    admin.hashed_password = pwd_ctx.hash("Apotoxin4869")
-                    db.commit()
-                    print("[init_db] Admin password updated")
+            if os.environ.get("ADMIN_INITIAL_PASSWORD"):
+                print("[init_db] Default admin user created (username: admin, password from ADMIN_INITIAL_PASSWORD)")
+            else:
+                print(f"[init_db] Default admin user created (username: admin, password: {initial}). Change it after first login.")
     finally:
         db.close()
 
