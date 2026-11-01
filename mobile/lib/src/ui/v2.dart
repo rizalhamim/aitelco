@@ -323,3 +323,32 @@ BoxShadow cssShadow(Color color, double dx, double dy, double blur, [double spre
       blurRadius: blur <= 1 ? 0 : (blur / 2 - 0.5) / 0.57735,
       spreadRadius: spread,
     );
+
+/// Multi-line text whose block is exactly lines x [lineHeight] tall, like CSS.
+/// Flutter rounds each line box to whole pixels and sets Prompt glyphs about
+/// 1 px lower than Chrome, so a 3-line paragraph drifts; this keeps the
+/// mockup's block height and nudges the glyphs up by [dy].
+class V2Lines extends StatelessWidget {
+  const V2Lines(this.text, {super.key, required this.lineHeight, this.dy = -1});
+  final InlineSpan text;
+  final double lineHeight;
+  final double dy;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      final tp = TextPainter(text: text, textDirection: TextDirection.ltr, textScaler: MediaQuery.textScalerOf(context))
+        ..layout(maxWidth: c.maxWidth);
+      final lines = tp.computeLineMetrics().length;
+      tp.dispose();
+      return SizedBox(
+        height: lines * lineHeight,
+        child: OverflowBox(
+          alignment: Alignment.topLeft,
+          maxHeight: double.infinity,
+          child: Transform.translate(offset: Offset(0, dy), child: Text.rich(text)),
+        ),
+      );
+    });
+  }
+}

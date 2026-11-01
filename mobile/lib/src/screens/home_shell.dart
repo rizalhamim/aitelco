@@ -89,7 +89,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           openAlerts: _openAlerts,
           child: IndexedStack(index: _tab, children: [
             ChatScreen(key: _chat, onWatch: _openAlerts, onOpenMap: () => _go(3)),
-            DashboardScreen(alertCount: _alerts, onAsk: _ask, onTab: (i) => i == 2 ? _openAlerts() : _go(i)),
+            DashboardScreen(onAsk: _ask, onAlerts: _openAlerts, onPerformance: () => _go(2)),
             const SitePerformanceScreen(),
             MapScreen(onAsk: _ask),
             ReportListScreen(onAsk: _ask),
