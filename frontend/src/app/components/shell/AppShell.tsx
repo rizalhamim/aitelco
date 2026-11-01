@@ -23,7 +23,7 @@ type NavItem = {
 const MENU: NavItem[] = [
   { href: "/", label: "Tanya Agent", icon: "chat", bg: "#C0EDE8", fg: "#0A6A5F" },
   { href: "/dashboard", label: "Dashboard", icon: "grid", bg: "#E1ECFA", fg: "#2C6CB0" },
-  { href: "/site", label: "Performance", icon: "pulse", bg: "#F4FCE3", fg: "#5E8A12", isNew: true },
+  { href: "/performance", label: "Performance", icon: "pulse", bg: "#F4FCE3", fg: "#5E8A12", isNew: true },
   { href: "/map", label: "Peta Agent", icon: "map", bg: "#E3F7FA", fg: "#0E6F7C", isNew: true },
   { href: "/reports", label: "Laporan", icon: "file", bg: "#FCEDD3", fg: "#B7791F" },
   { href: "/watchlist", label: "Watchlist dan Alert", icon: "bell", bg: "#FBE2E8", fg: "#C23A5B" },

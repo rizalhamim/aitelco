@@ -38,4 +38,11 @@ export const CASES = [
       const box = await page.locator(".rchart").boundingBox();
       await page.mouse.move(box.x + 46 + ((box.width - 52) / 6) * 3.5, box.y + 200);
     } },
+  // 04 Performance: Kab. Garut, trend hovered on Okt (default), first site row open.
+  { name: "performance-web", route: "/performance?region=WEST%20JAVA&kabupaten=GARUT", width: 1440, height: 1591, clock: "2026-11-01T06:00:00Z",
+    mockup: `${M}/04-performance/png/Web - Performance@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".tchart");
+      await page.mouse.move(5, 1580);
+    } },
 ];
