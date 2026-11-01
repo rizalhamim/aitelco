@@ -82,7 +82,8 @@ def startup():
 
 @app.on_event("startup")
 async def start_watchlist_loop():
-    """Hourly: check watchlist rules (each at most once per day) and send due scheduled reports."""
+    """Hourly: check watchlist rules (each at most once per day), send due scheduled reports,
+    and write the daily Performance dump after 05.00 WIB (perf_dump)."""
     import asyncio
     import logging
 
@@ -97,6 +98,13 @@ async def start_watchlist_loop():
                 await run_in_threadpool(run_due_reports)
             except Exception as e:
                 logging.getLogger("report_schedule").warning(f"report loop: {e}")
+            try:
+                from . import perf_dump
+                if perf_dump.due():
+                    res = await run_in_threadpool(perf_dump.run_dump)
+                    logging.getLogger("perf_dump").info(f"dump: {res.get('dump') or res}")
+            except Exception as e:
+                logging.getLogger("perf_dump").warning(f"dump loop: {e}")
             await asyncio.sleep(3600)
 
     if _os.environ.get("WATCHLIST_LOOP", "1") != "0":

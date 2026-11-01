@@ -106,7 +106,10 @@ def test_dashboard_overview(monkeypatch):
 
     monkeypatch.setattr(dashboard, "run_query", fake_query)
     monkeypatch.setattr(dashboard.reports_cache, "data_marker", lambda fam, force=False: "m1")
+    monkeypatch.setattr(dashboard.perf_dump, "status", lambda: {"available": False, "fresh": False})
+    monkeypatch.setattr(dashboard.perf_dump, "load", lambda name, allow_stale=False: None)
     out = dashboard.build_overview()
+    assert out["source"]["kind"] == "bigquery"
     assert out["month_label"] == "Okt 2026" and out["prev_label"] == "Sep"
     keys = [k["key"] for k in out["kpis"]]
     assert keys == ["revenue", "subs", "payload", "availability"]
@@ -118,5 +121,5 @@ def test_dashboard_overview(monkeypatch):
     assert jb["mom_pct"] < 0 and jb["achievement_pct"] is None and 0 < jb["share_pct"] < 50
     assert len(out["revenue_by_region"]["labels"]) == 6
     text = out["summary"]["text"].replace("**", "").lower()
-    assert "revenue jawa turun" in text and "terutama dari jawa barat" in text
+    assert "revenue circle java turun" in text and "terutama dari jawa barat" in text
     assert "payload data turun 10,0%" in text

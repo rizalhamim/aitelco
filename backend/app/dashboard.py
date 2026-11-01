@@ -8,10 +8,14 @@ table; availability comes from rham_avail_stat_territory_monthly. The agent
 summary in the hero card is written from those numbers (no LLM call), so the
 dashboard stays fast and deterministic.
 
-Optional monthly targets live in data/targets.json:
-    {"revenue": {"<region name>": <IDR per month>, ...}}
-When present the region table shows "Pencapaian target"; otherwise it shows
-each region's contribution to Java revenue.
+Optional monthly targets live in data/targets.json, per KPI and region:
+    {"revenue": {"<region name>": <IDR per month>, ...}, "subs": {...}, "payload": {...}, "gross_add": {...}}
+Revenue targets drive "Pencapaian target" in the region table (otherwise each region's
+contribution to Java revenue); every KPI with targets for all scope regions gets a
+target bar on its card.
+
+When the daily Performance dump (perf_dump.py) is fresh, the numbers come from its
+Parquet files and no BigQuery query runs; the payload says which via "source".
 """
 from __future__ import annotations
 
@@ -23,10 +27,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from . import config, reports_cache
+from . import config, perf_dump, reports_cache
 from .auth import get_current_user
 from .bigquery_tool import QueryError, run_query
-from .database import UsageLog, User, get_db
+from .database import ChatMessage, UsageLog, User, get_db
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -112,12 +116,66 @@ WHERE territory_level IN ('circle', 'region')
     return out
 
 
-def build_overview(region: str = "", months_back: int = 6) -> dict:
-    latest = int(run_query(f"SELECT MAX(month_id) AS m FROM {_MTD}")["rows"][0]["m"])
-    spark_n = 12
+_DUMP_KEYS = {"revenue": "revenue", "subs": "subs", "payload": "payload_gb", "gross_add": "gross_add"}
+
+
+def _from_dump(spark_n: int):
+    """(latest, months, region-month rows, availability, daily rows, status) from the
+    Performance dump, or None when it is missing or stale."""
+    st = perf_dump.status()
+    kec = perf_dump.load("kec_month") if st.get("fresh") else None
+    if not kec:
+        return None
+    latest = int(st.get("latest_month") or max(int(r["month_id"]) for r in kec))
     months = [month_add(latest, -i) for i in range(spark_n - 1, -1, -1)]
-    rows = _region_month_rows(months)
-    avail = _availability(months)
+    agg: dict = {}
+    for r in kec:
+        m = int(r["month_id"])
+        if m not in months or not r.get("region"):
+            continue
+        a = agg.setdefault((m, r["region"]), {"month_id": m, "region": r["region"], **{k: 0.0 for k in _DUMP_KEYS}})
+        for k, col in _DUMP_KEYS.items():
+            a[k] += float(r.get(col) or 0)
+    avail: dict = {}
+    for r in perf_dump.load("avail_month") or []:
+        if r.get("level") in ("circle", "region"):
+            avail.setdefault((r["level"], str(r["name"]).upper()), {})[int(r["month_id"])] = {
+                "avail": r.get("avail"), "below_sla": int(r["below_sla"]) if r.get("below_sla") is not None else None}
+    return latest, months, list(agg.values()), avail, perf_dump.load("region_daily") or [], st
+
+
+def _daily_spark(daily: list[dict], scope: list[str], key: str, n: int = 10):
+    """Last n days of one KPI for the scope regions: (values, labels) or (None, None)."""
+    col = _DUMP_KEYS.get(key)
+    if not daily or not col:
+        return None, None
+    by: dict = {}
+    scope_u = {s.upper() for s in scope}
+    for r in daily:
+        if str(r.get("region") or "").upper() in scope_u and r.get(col) is not None:
+            d = str(r["dt_id"])[:10]
+            by[d] = by.get(d, 0.0) + float(r[col])
+    days = sorted(by)[-n:]
+    if len(days) < 2:
+        return None, None
+    return [by[d] for d in days], [f"{int(d[8:10])} {MONTHS_ID[int(d[5:7]) - 1]}" for d in days]
+
+
+def build_overview(region: str = "", months_back: int = 6) -> dict:
+    spark_n = 12
+    dump = _from_dump(spark_n)
+    if dump:
+        latest, months, rows, avail, daily, st = dump
+        source = {"kind": "dump", "label": st["label"], "created_at": st["created_at"]}
+    else:
+        latest = int(run_query(f"SELECT MAX(month_id) AS m FROM {_MTD}")["rows"][0]["m"])
+        months = [month_add(latest, -i) for i in range(spark_n - 1, -1, -1)]
+        rows = _region_month_rows(months)
+        avail = _availability(months)
+        daily = []
+        st = perf_dump.status()
+        source = {"kind": "bigquery", "label": "BigQuery langsung" + (" (dump terlambat)" if st.get("available") else ""),
+                  "created_at": None}
 
     regions = sorted({r["region"] for r in rows})
     scope = [rg for rg in regions if not region or rg.upper() == region.upper()]
@@ -129,13 +187,19 @@ def build_overview(region: str = "", months_back: int = 6) -> dict:
         return sum(val(rg, mid, key) for rg in (regs if regs is not None else scope))
 
     prev = month_add(latest, -1)
+    all_targets = _load_targets()
     kpis = []
     for k in KPIS:
         cur, last = total(latest, k["key"]), total(prev, k["key"])
+        tg = all_targets.get(k["key"]) or {}
+        tvals = [tg.get(rg) or tg.get(rg.upper()) for rg in scope]
+        dvals, dlabels = _daily_spark(daily, scope, k["key"])
         kpis.append({
             "key": k["key"], "label": k["label"], "format": k["format"], "icon": k["icon"],
             "value": cur, "prev": last, "pct_change": _pct(cur, last),
             "spark": [total(m, k["key"]) for m in months],
+            "spark_daily": dvals, "spark_daily_labels": dlabels,
+            "target": sum(tvals) if tvals and all(tvals) else None,
             "note_prev_label": month_label(prev),
         })
 
@@ -191,6 +255,9 @@ def build_overview(region: str = "", months_back: int = 6) -> dict:
         "regions": region_rows,
         "has_targets": bool(targets),
         "summary": _summary(kpis, region_rows, region),
+        "source": source,
+        "kabupaten_count": len({(r.get("kabupaten"), r.get("provinsi")) for r in (perf_dump.load("kec_month") or [])
+                                if int(r["month_id"]) == latest and r.get("kabupaten")}) or None,
     }
 
 
@@ -201,7 +268,7 @@ def _fmt_pct(p: Optional[float]) -> str:
 def _summary(kpis: list[dict], regions: list[dict], region: str) -> dict:
     """Short agent-style briefing for the hero card, built from the numbers."""
     rev = next((k for k in kpis if k["key"] == "revenue"), None)
-    scope = region or "Jawa"
+    scope = region.title() if region else "Circle Java"
     parts, highlights = [], []
     movers = [r for r in regions if r["mom_pct"] is not None]
     if rev and rev["pct_change"] is not None:
@@ -252,8 +319,15 @@ def _activity(db: Session) -> dict:
     wib_midnight = (now + timedelta(hours=7)).replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(hours=7)
     since = wib_midnight.replace(tzinfo=None)
     q = db.query(UsageLog).filter(UsageLog.created_at >= since, UsageLog.action == "query")
+    week = since - timedelta(days=6)
+    answers = db.query(ChatMessage).filter(ChatMessage.role == "assistant", ChatMessage.created_at >= week)
+    total_answers = answers.count()
+    failed = answers.filter(ChatMessage.content.like("[ERROR]%")).count()
     return {
         "questions_today": q.count(),
         "active_users_today": q.with_entities(UsageLog.user_id).distinct().count(),
         "date": date.today().isoformat(),
+        # share of agent answers in the last 7 days that passed validation (no error turn)
+        "validation_pct": round((total_answers - failed) / total_answers * 100, 1) if total_answers else None,
+        "answers_7d": total_answers,
     }
