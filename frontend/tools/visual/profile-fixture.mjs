@@ -14,6 +14,6 @@ export const PROFILE = {
     quiet_hours: true },
   options: { regions: [{ key: "JAVA", label: "Circle Java" }, { key: "WEST JAVA", label: "West Java" }, { key: "CENTRAL JAVA", label: "Central Java" }, { key: "EAST JAVA", label: "East Java" }],
     departments: ["Business Planning", "Finance", "Marketing", "Network", "Operations", "Sales"] },
-  admin: { active_users_7d: 48, version_name: "1.50.0", downloads_current: 126, accounts: 63, inactive: 3 },
+  admin: { active_users_7d: 48, version_name: "1.50.0", downloads_current: 126, accounts: 63, inactive: 3, pending: 3 },
 };
 export const NOTIFS = { notifications: [], unread_count: 0 };

@@ -25,7 +25,7 @@ type Profile = {
   apk: { installed_devices: number };
   prefs: Prefs;
   options: { regions: { key: string; label: string }[]; departments: string[] };
-  admin?: { active_users_7d: number; version_name: string | null; downloads_current: number; accounts: number; inactive: number };
+  admin?: { active_users_7d: number; version_name: string | null; downloads_current: number; accounts: number; inactive: number; pending?: number };
 };
 type Version = { version_name: string | null; version_code: number; size_bytes: number; available: boolean; min_android?: string };
 type Notif = { id: number; title: string; message: string; is_read: boolean; created_at: string | null };
@@ -211,7 +211,7 @@ export default function ProfilePage() {
               </Link>
               <Link className="ai2" href="/admin">
                 <i style={{ background: "#E1ECFA", color: "#2C6CB0" }}><Icon name="users" /></i><b>Pengguna dan akses</b>
-                <small>{p.admin.accounts} akun · {p.admin.inactive} nonaktif</small>
+                <small>{p.admin.accounts} akun · {p.admin.pending ? `${p.admin.pending} menunggu persetujuan` : `${p.admin.inactive} nonaktif`}</small>
                 <Icon name="chevr" className="go" />
               </Link>
             </Card>

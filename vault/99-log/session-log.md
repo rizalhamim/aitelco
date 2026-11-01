@@ -547,3 +547,10 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Theme and animation are saved locally (AppState) and on the server via PUT /api/profile/prefs, shared with web.
 - `openProfile` now returns the profile result: a tab index from the bottom nav or 'alerts' from the bell, handled through `V2Scope.goTab` / `openAlerts`.
 - Golden `test/golden_v2/profil_test.dart`: all regions under 2%. Admin row shows "N akun · M nonaktif" where the mockup said "menunggu persetujuan" (no pending-approval state in the user table).
+
+## 2026-11-01 Redesign v2 page 09 Statistik and Unduh APK (web + Android)
+- Backend: `POST /api/auth/request-access` creates a pending account (`users.approval_status`), Admin approves or rejects on Statistik (`/api/admin/app-stats/pending/{id}/approve|reject`); approval emails a 3-day set-password link. Login locks an account for 15 minutes after 5 wrong passwords (423). Unknown usernames go to `unknown_logins`. Page sessions come from `POST /api/usage/view` (30-minute dedupe), topics from keyword + domain buckets (Performance, Site productivity, Profile wilayah).
+- `/api/admin/app-stats` gained a `v2` block; `/api/app/releases` gives summary, availability and per-version download URLs; `POST /api/app/send-link` emails the /unduh link.
+- Web: `statistik/page.tsx` + `stat2.css`, `unduh/page.tsx` + `unduh2.css`, shared `components/v2/Qr.tsx`, "Belum punya akun? Minta akses" on login. Gates: statistik-web 0.15%, unduh-web 0.43%, login-web 1.19%.
+- Android: `stats_screen.dart` rewritten (charts are CustomPainters with the mockup SVG geometry), golden `test/golden_v2/statistik_test.dart` all regions under 1.6%. Shows the first 5 users; the card header opens the full searchable list. "Minta akses" sheet on login. Profil Admin row now shows "N menunggu persetujuan" when requests are pending and opens Statistik.
+- Backend tests that share the SQLite test DB must use unique usernames and assert deltas, not totals (`TELCO_AI_DB` is read once per pytest process).

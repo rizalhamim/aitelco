@@ -175,6 +175,88 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  static const _regions = [('JAVA', 'Circle Java'), ('WEST JAVA', 'West Java'), ('CENTRAL JAVA', 'Central Java'), ('EAST JAVA', 'East Java')];
+  static const _departments = ['Business Planning', 'Sales', 'Marketing', 'Network', 'Finance', 'Operations'];
+
+  /// New users ask for an account; an Admin approves it on Statistik and the
+  /// approval email carries the link to set a password.
+  Future<void> _requestAccess() async {
+    final name = TextEditingController(), email = TextEditingController();
+    var dept = _departments.first, region = _regions.first.$1;
+    String? err;
+    var sending = false;
+    Widget chips<T>(List<(T, String)> xs, T value, ValueChanged<T> on) => Wrap(spacing: 8, runSpacing: 8, children: [
+          for (final x in xs)
+            ChoiceChip(
+              label: Text(x.$2, style: V2.d(12.5, FontWeight.w600, x.$1 == value ? Colors.white : V2.ink2, lh: 1)),
+              selected: x.$1 == value,
+              showCheckmark: false,
+              selectedColor: V2.teal600,
+              backgroundColor: Colors.white,
+              side: BorderSide(color: x.$1 == value ? V2.teal600 : V2.rule),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
+              onSelected: (_) => on(x.$1),
+            ),
+        ]);
+    final done = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (ctx) => StatefulBuilder(builder: (ctx, set) {
+        Future<void> send() async {
+          if (sending) return;
+          final n = name.text.trim(), e = email.text.trim();
+          if (n.length < 2 || !e.contains('@')) {
+            set(() => err = 'Isi nama dan email kantor yang benar.');
+            return;
+          }
+          set(() { sending = true; err = null; });
+          try {
+            final r = await ApiClient.requestAccess({'full_name': n, 'email': e, 'department': dept, 'region': region});
+            if (ctx.mounted) Navigator.pop(ctx, (r['message'] ?? 'Permintaan terkirim.').toString());
+          } catch (x) {
+            set(() { sending = false; err = _msg(x); });
+          }
+        }
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(22, 14, 22, 26 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              const _Grab(),
+              const SizedBox(height: 16),
+              Text('Minta akses', style: V2.d(22, FontWeight.w700, V2.ink, lh: 1.2)),
+              const SizedBox(height: 4),
+              Text('Admin akan meninjau permintaan Anda. Setelah disetujui, tautan untuk membuat password dikirim ke email.',
+                  style: V2.b(14, FontWeight.w400, V2.mute, lh: 1.55)),
+              const SizedBox(height: 14),
+              _V2Field(label: 'Nama lengkap', controller: name, hint: 'Nama Anda', icon: 'luser', action: TextInputAction.next, autofocus: true),
+              const SizedBox(height: 14),
+              _V2Field(label: 'Email kantor', controller: email, hint: 'nama@kantor.co.id', icon: 'mail', keyboard: TextInputType.emailAddress),
+              const SizedBox(height: 14),
+              Text('Departemen', style: V2.d(13, FontWeight.w600, V2.ink2, lh: 1.2)),
+              const SizedBox(height: 8),
+              chips([for (final d in _departments) (d, d)], dept, (v) => set(() => dept = v)),
+              const SizedBox(height: 14),
+              Text('Region', style: V2.d(13, FontWeight.w600, V2.ink2, lh: 1.2)),
+              const SizedBox(height: 8),
+              chips(_regions, region, (v) => set(() => region = v)),
+              if (err != null) ...[
+                const SizedBox(height: 10),
+                Text(err!, style: V2.d(13, FontWeight.w500, V2.red, lh: 1.4)),
+              ],
+              const SizedBox(height: 14),
+              _Cta('Kirim permintaan', onTap: send, loading: sending),
+            ]),
+          ),
+        );
+      }),
+    );
+    // The controllers are left to the GC: the sheet still paints them while it animates out.
+    if (done != null && mounted) showToast(context, done);
+  }
+
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
@@ -248,8 +330,22 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 14),
           SizedBox(
             height: 20,
-            child: Text(_error ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: V2.d(13, FontWeight.w500, _error != null ? V2.red : V2.teal700, lh: 1.4)),
+            child: _error == null && !_codeSent
+                ? Align(
+                    alignment: Alignment.centerLeft,
+                    child: GestureDetector(
+                      onTap: _requestAccess,
+                      child: Text.rich(
+                        TextSpan(text: 'Belum punya akun? ', children: [
+                          TextSpan(text: 'Minta akses', style: V2.d(13, FontWeight.w600, V2.teal700, lh: 1.4)),
+                        ]),
+                        maxLines: 1,
+                        style: V2.d(13, FontWeight.w500, V2.mute, lh: 1.4),
+                      ),
+                    ),
+                  )
+                : Text(_error ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: V2.d(13, FontWeight.w500, _error != null ? V2.red : V2.teal700, lh: 1.4)),
           ),
           // room for the system gesture bar, like the mockup's home indicator
           const SizedBox(height: 22),

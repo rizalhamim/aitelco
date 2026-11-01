@@ -64,9 +64,10 @@ def test_lock_after_wrong_passwords_and_security_lines():
     assert r.status_code == 423 and "dikunci" in r.json()["detail"]
     client.post("/api/auth/login", json={"username": "hantu", "password": "x"}, headers=WEB)
     v2 = client.get("/api/admin/app-stats?days=7", headers=_token("boss")).json()["v2"]
-    assert v2["security"][0]["tag"] == "terkunci" and v2["security"][0]["title"] == "lina · 5 kali salah password"
-    assert v2["security"][-1] == {**v2["security"][-1], "tag": "diblokir", "title": "Akun tidak dikenal · 1 kali"}
-    assert v2["failed"]["locked_accounts"] == 1 and v2["failed"]["count"] >= 7
+    # Other test modules share this database, so look for our lines rather than exact totals.
+    assert any(s["tag"] == "terkunci" and s["title"] == "lina · 5 kali salah password" for s in v2["security"])
+    assert any(s["tag"] == "diblokir" and s["title"].startswith("Akun tidak dikenal · ") for s in v2["security"])
+    assert v2["failed"]["locked_accounts"] >= 1 and v2["failed"]["count"] >= 7
 
 
 def test_page_sessions_topics_and_shape():
@@ -74,6 +75,7 @@ def test_page_sessions_topics_and_shape():
     assert client.post("/api/usage/view", json={"page": "dashboard"}, headers=admin).json()["new"] is True
     assert client.post("/api/usage/view", json={"page": "dashboard"}, headers=admin).json()["new"] is False
     assert client.post("/api/usage/view", json={"page": "rahasia"}, headers=admin).json() == {"ok": False}
+    before = client.get("/api/admin/app-stats?days=1", headers=admin).json()["v2"]
     db = SessionLocal()
     uid = db.query(User).filter_by(username="boss").one().id
     for q in ("payload Garut bulan ini", "revenue per site baru West Java", "market share Cianjur"):
@@ -82,7 +84,8 @@ def test_page_sessions_topics_and_shape():
     db.close()
     v2 = client.get("/api/admin/app-stats?days=1", headers=admin).json()["v2"]
     assert next(f for f in v2["features"] if f["key"] == "dashboard")["sessions"] == 1
-    assert [t["count"] for t in v2["topics"]] == [1, 1, 1] and v2["questions"]["count"] == 3
+    assert [a["count"] - b["count"] for a, b in zip(v2["topics"], before["topics"])] == [1, 1, 1]
+    assert v2["questions"]["count"] - before["questions"]["count"] == 3
     assert len(v2["daily_active"]) == 30 and v2["daily_active"][-1]["dau"] >= 1
     assert len(v2["downloads_14d"]) == 14 and v2["logins_today"]["web"] >= 1
     assert topic_bucket("network", "") == "site" and topic_bucket(None, "Penetrasi FWA") == "profile"

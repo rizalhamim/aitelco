@@ -26,7 +26,7 @@ Map<String, dynamic> mockupProfile() => {
         'notify': {'alert_kritis': {'email': true, 'push': true}},
       },
       'options': {'regions': [], 'departments': []},
-      'admin': {'active_users_7d': 48, 'accounts': 52, 'inactive': 3, 'version_name': '1.50.0'},
+      'admin': {'active_users_7d': 48, 'accounts': 52, 'inactive': 3, 'pending': 3, 'version_name': '1.50.0'},
     };
 
 void main() {

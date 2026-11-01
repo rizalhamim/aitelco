@@ -39,11 +39,11 @@ def test_releases_old_apk_and_send_link(tmp_path, monkeypatch):
     assert client.get("/api/app/download?version=1.49.1").content == b"old"
     assert client.get("/api/app/download?version=1.48.3").status_code == 404
     db = SessionLocal()
-    db.add(User(username="rizal", email="rizal@x.id", full_name="Rizal", hashed_password=hash_password("x")))
+    db.add(User(username="rizal.dl", email="rizal.dl@x.id", full_name="Rizal", hashed_password=hash_password("x")))
     db.commit()
     db.close()
     sent = []
     monkeypatch.setattr("app.email_service.send_notification", lambda *a: sent.append(a) or True)
-    tok = create_access_token({"sub": "rizal", "role": "user"})
+    tok = create_access_token({"sub": "rizal.dl", "role": "user"})
     j = client.post("/api/app/send-link", headers={"authorization": f"Bearer {tok}"}).json()
-    assert j == {"ok": True, "to": "ri***@x.id"} and sent and sent[0][0] == "rizal@x.id" and "/unduh" in sent[0][2]
+    assert j == {"ok": True, "to": "ri***@x.id"} and sent and sent[0][0] == "rizal.dl@x.id" and "/unduh" in sent[0][2]

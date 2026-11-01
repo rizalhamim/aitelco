@@ -156,10 +156,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (admin != null)
                   _group('Admin', [
                     _li('bars', const Color(0xFFECE5FA), const Color(0xFF6A4CB5), 'Statistik aplikasi',
-                        '${admin['active_users_7d'] ?? 0} pengguna aktif 7 hari', onTap: () => Navigator.of(context).pushNamed('/stats')),
+                        '${admin['active_users_7d'] ?? 0} pengguna aktif 7 hari', onTap: () async {
+                          // A bottom-nav tap on Statistik closes it and Profil, then switches tab.
+                          final r = await Navigator.of(context).pushNamed('/stats');
+                          if (r is int && context.mounted) Navigator.of(context).pop(r);
+                        }),
                     _li('users', const Color(0xFFE1ECFA), const Color(0xFF2C6CB0), 'Pengguna dan akses',
-                        '${admin['accounts'] ?? 0} akun · ${admin['inactive'] ?? 0} nonaktif',
-                        onTap: () => launchUrl(Uri.parse('$_publicSite/admin'), mode: LaunchMode.externalApplication)),
+                        (admin['pending'] ?? 0) > 0
+                            ? '${admin['pending']} menunggu persetujuan'
+                            : '${admin['accounts'] ?? 0} akun · ${admin['inactive'] ?? 0} nonaktif',
+                        // Approvals live on Statistik; user management stays on the web admin page.
+                        onTap: (admin['pending'] ?? 0) > 0
+                            ? () async {
+                                final r = await Navigator.of(context).pushNamed('/stats');
+                                if (r is int && context.mounted) Navigator.of(context).pop(r);
+                              }
+                            : () => launchUrl(Uri.parse('$_publicSite/admin'), mode: LaunchMode.externalApplication)),
                   ]),
                 _group('Tentang', [
                   _li('info', V2.teal50, V2.teal700, 'Tentang Agent Java', 'Versi, catatan rilis, kebijakan data', onTap: _aboutSheet),

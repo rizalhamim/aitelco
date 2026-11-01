@@ -656,6 +656,10 @@ class ApiClient {
 
   static Future<Map<String, dynamic>> appStats({int days = 30}) => _getJson('/api/admin/app-stats', {'days': '$days'});
 
+  /// Access requests from the login page (Statistik, admin): approve emails a first-password link.
+  static Future<Map<String, dynamic>> decideAccess(int id, bool approve) =>
+      _sendJson('POST', '/api/admin/app-stats/pending/$id/${approve ? 'approve' : 'reject'}');
+  static Future<Map<String, dynamic>> requestAccess(Map<String, dynamic> body) => _sendJson('POST', '/api/auth/request-access', body);
   static Future<int> remindUsers(List<int> ids) async =>
       ((await _sendJson('POST', '/api/admin/app-stats/remind', {'user_ids': ids}))['sent'] as num?)?.toInt() ?? 0;
 

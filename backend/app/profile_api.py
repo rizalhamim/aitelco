@@ -157,12 +157,15 @@ def profile(request: Request, user: User = Depends(get_current_user), db: Sessio
         latest = db.query(func.max(AppDownload.version_name)).scalar()
         from .app_update import _load_release
         version = _load_release().get("version_name") or latest
+        # NULL counts as approved (accounts created before access requests existed).
+        approved = (User.approval_status.is_(None)) | (User.approval_status == "approved")
         out["admin"] = {
             "active_users_7d": len(active),
             "version_name": version,
             "downloads_current": db.query(func.count(AppDownload.id)).filter(AppDownload.version_name == version).scalar() or 0,
-            "accounts": db.query(func.count(User.id)).scalar() or 0,
-            "inactive": db.query(func.count(User.id)).filter(User.is_active.is_(False)).scalar() or 0,
+            "accounts": db.query(func.count(User.id)).filter(approved).scalar() or 0,
+            "inactive": db.query(func.count(User.id)).filter(approved, User.is_active.is_(False)).scalar() or 0,
+            "pending": db.query(func.count(User.id)).filter(User.approval_status == "pending").scalar() or 0,
         }
     return out
 
