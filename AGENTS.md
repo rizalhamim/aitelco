@@ -96,7 +96,7 @@ Never `--rebuild-governance` (erases decision history). Profile before approving
   overwrite a stored baseline.
 - Never remove or hide data in UI to look cleaner; use disclosure, grouping, better encoding.
 - Mobile release: bump `mobile/pubspec.yaml` AND `backend/data/app_release.json` (authoritative
-  current version). Steps: vault `50-conventions/deploy-restart.md`. Current release: 1.50.0+69 (pending deploy; 1.49.1+68 live until then).
+  current version). Steps: vault `50-conventions/deploy-restart.md`. Current release: 1.50.0+69 (live since 2026-11-01).
 - Restarts need `sudo`; some agent harnesses block them. If blocked, finish everything else
   and hand the exact command to the user.
 - Never put real secrets as code defaults; `backend/.env.example` lists every key.

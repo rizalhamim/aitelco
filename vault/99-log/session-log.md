@@ -554,3 +554,9 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Web: `statistik/page.tsx` + `stat2.css`, `unduh/page.tsx` + `unduh2.css`, shared `components/v2/Qr.tsx`, "Belum punya akun? Minta akses" on login. Gates: statistik-web 0.15%, unduh-web 0.43%, login-web 1.19%.
 - Android: `stats_screen.dart` rewritten (charts are CustomPainters with the mockup SVG geometry), golden `test/golden_v2/statistik_test.dart` all regions under 1.6%. Shows the first 5 users; the card header opens the full searchable list. "Minta akses" sheet on login. Profil Admin row now shows "N menunggu persetujuan" when requests are pending and opens Statistik.
 - Backend tests that share the SQLite test DB must use unique usernames and assert deltas, not totals (`TELCO_AI_DB` is read once per pytest process).
+
+## 2026-11-01 Redesign v2 deployed to agent-02, APK 1.50.0 (69) published
+- Server runs branch `redesign-v2` (= `claude/project-thread-mnz2kt`); rollback point `c0b66dd` (server-sync-redesign-v1), DB backups in `~/backup` on the server.
+- Deploy is one command from Git Bash on Rizal's PC (`deploy/redesign-v2/run.sh`, read through the server's own `git fetch github` because the raw GitHub CDN served stale scripts).
+- Lessons: `rham_site_wise_monthly.month_id` is STRING (perf_dump now types month literals from table metadata); server venv lacked `requirements-dev.txt`; the PC Flutter needs AGP >= 8.11.1 and must not use the tracked Linux `org.gradle.java.home` (the build copy drops it and builds with `--android-skip-build-dependency-validation`).
+- Gates on the server: pytest only `test_governance_covers_live_inventory` failing (also failing before), KB benchmark passed, smoke #11 empty once then OK on rerun. APK signer 038aa1bf...0458 verified, sha256 72737441...9659.
