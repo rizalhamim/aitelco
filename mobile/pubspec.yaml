@@ -64,3 +64,5 @@ flutter:
           weight: 400
         - asset: assets/fonts/Prompt-Medium.ttf
           weight: 500
+        - asset: assets/fonts/Prompt-SemiBold.ttf
+          weight: 600
