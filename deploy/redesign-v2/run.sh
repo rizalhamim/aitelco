@@ -66,6 +66,11 @@ do_apk() {
   git reset --hard FETCH_HEAD
   grep -q '^version: 1.50.0+69' mobile/pubspec.yaml || { echo "pubspec bukan 1.50.0+69, berhenti."; exit 1; }
   signing
+  # The tracked gradle.properties pins the Linux server JDK; on the PC let Flutter pick its own JDK.
+  if grep -q '^org.gradle.java.home=' mobile/android/gradle.properties; then
+    jh="$(sed -n 's/^org.gradle.java.home=//p' mobile/android/gradle.properties | tr -d '\r')"
+    [ -d "$jh" ] || sed -i '/^org.gradle.java.home=/d' mobile/android/gradle.properties
+  fi
   cd mobile
   flutter pub get
   flutter build apk --release
