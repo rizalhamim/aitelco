@@ -13,7 +13,7 @@ const path = require('path');
   await page.addStyleTag({ content: '.fit{width:auto!important;height:auto!important} .fit>.frame{position:relative!important;transform:none!important;box-shadow:none!important} .panel{display:block!important} video{opacity:0!important} .sec-bar i{width:35%!important}' });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(600);
-  const sprite = await page.evaluate(() => document.querySelector('svg[aria-hidden="true"][width="0"]').outerHTML);
+  const sprite = await page.evaluate(() => [...document.querySelectorAll('svg[aria-hidden="true"][width="0"]')].map(e => e.outerHTML).join(''));
   const frames = [];
   for (const sel of sels) {
     const tree = await page.evaluate((sel) => {
@@ -110,7 +110,7 @@ const path = require('path');
     // rasterise svgs in isolation (2x)
     const rp = await b.newPage({ viewport: { width: 400, height: 400 }, deviceScaleFactor: 2 });
     for (const ra of tree.rasters) {
-      await rp.setContent(`<html><head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"></head><body style="margin:0;background:transparent">${sprite}<div id="h" style="display:inline-block;color:${ra.color};line-height:0;border-radius:${ra.radius[0]}px;overflow:hidden">${ra.html.replace(/\s(width|height)="[^"]*"/g, '').replace(/<svg(\s|>)/, `<svg width="${ra.w}" height="${ra.h}"$1`)}</div></body></html>`);
+      await rp.setContent(`<html><head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"></head><body style="margin:0;background:transparent">${sprite}<div id="h" style="display:inline-block;color:${ra.color};line-height:0;border-radius:${ra.radius[0]}px;overflow:hidden">${ra.html.replace(/^<svg[^>]*>/, t => t.replace(/\s(width|height)="[^"]*"/g, '').replace(/<svg(\s|>)/, `<svg width="${ra.w}" height="${ra.h}"$1`))}</div></body></html>`);
       await rp.evaluate(() => document.fonts.ready); await rp.waitForTimeout(80);
       const file = path.join(outDir, `${frames.length}_${ra.id}.png`);
       await (await rp.$('#h')).screenshot({ path: file, omitBackground: true });

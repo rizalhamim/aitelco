@@ -1,6 +1,6 @@
 # Agent Java · Redesign v2 (dalam review)
 
-Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login disetujui (1 Nov 2026), 02 Tanya Agent menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
+Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login dan 02 Tanya Agent disetujui (1 Nov 2026), 03 Dashboard menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
 
 Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 
@@ -15,7 +15,8 @@ Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 | `01-login/review/agent-java-login.html` | Halaman review interaktif; video latar benar-benar diputar (`media/login.mp4`, H.264 720p) |
 | `01-login/review/template.html` | Sumber halaman review (placeholder `{{POSTER}}` dan `{{OLDLOGO}}` diisi saat build) |
 | `01-login/app-icon/` | Ikon app Android baru berupa tulisan "Agent Java": PNG 1024 (bulat dan kotak) + layer adaptive icon 432 (foreground, background) |
-| `02-tanya-agent/` | Halaman 02 Tanya Agent: `.figcraft` (Web 1440 × 1080, Android 390 × 844), PNG @2x (termasuk state tab Tabel dan Peta), halaman review interaktif |
+| `02-tanya-agent/` | Halaman 02 Tanya Agent: `.figcraft` (Web 1440 × 1080, Android 390 × 844), PNG @2x, halaman review interaktif (tab Grafik/Tabel/Peta) |
+| `03-dashboard/` | Halaman 03 Dashboard: `.figcraft` (Web 1440 × 1420, Android 390 × 1720 layar digulir), PNG @2x, halaman review interaktif (tooltip, legenda, Batang/Garis) |
 | `tools/` | Konverter HTML ke FigCraft (lihat bawah) |
 
 ## Video login
@@ -37,6 +38,8 @@ node tools/extract.js page.html tree.json '#webFrame' '#droidFrame' '#brandFrame
 python3 tools/build.py tree.json "out.figcraft" "Agent Java - Redesign v2" "01 · Login" poster.jpg thumb.png
 python3 tools/preview.py out.figcraft preview.html                                   # render balik untuk cek posisi
 ```
+
+Penamaan wilayah mengikuti data dan tidak diterjemahkan: Circle Java, West Java, Central Java, East Java.
 
 Catatan: font isi Prompt dipetakan ke Poppins di file FigCraft karena Prompt belum terpasang di PC desain. Teks bergradasi (kata "Second") disimpan sebagai lime solid.
 

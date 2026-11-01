@@ -494,3 +494,9 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Rizal asked for Redesign v2: rename to Agent Java with a new logo, drop IOH branding on web, chat-style map (coordinates + SHP), Performance back in nav, Performance dump to Parquet, Android profile reachable from every tab, Flutter rework. Review is per page, Login first.
 - Found: live web login video is HEVC (28.6 MB), not playable in Firefox and many Chrome installs; H.264 1080p re-encode is 7.8 MB. /map/query (map chat) exists but is not in nav; /site performance page dropped from web nav; Android profile only via Dashboard avatar.
 - design/mockup-v2/: Login v2 (web + Android + logo/palette), .figcraft generated from HTML via design/mockup-v2/tools (extract.js + build.py). Accents: lagoon #22B8C9, lime #C7F25E, coral #FF7A59.
+
+## 2026-11-01 (Redesign v2 reviews: Login, Tanya Agent approved; Dashboard sent)
+- Rizal kept the old eagle logo as the official logo (login, web, in-app); only the Android launcher icon becomes the text "Agent Java" and the app name becomes Agent Java.
+- Naming rule from Rizal: region names follow the data and are never translated: Circle Java, West Java, Central Java, East Java (not "Jawa", not "Jatim").
+- 01 Login and 02 Tanya Agent approved. 03 Dashboard (hero summary, 4 KPI with target bar + sparkline, region chart with tooltip/legend/bar-line toggle, alert list, region table linking to Performance) sent for review.
+- Converter fix in design/mockup-v2/tools/extract.js: SVG rasterization stripped width/height from every child (bars vanished) and loaded only the first icon sprite; now only the root svg is resized and all sprites are loaded. preview.py wraps auto-height text.

@@ -18,7 +18,7 @@ def node(i):
     if n['type'] == 'text':
         st = n['style']; c = n['fills'][0]
         w = {'Regular':400,'Medium':500,'SemiBold':600,'Bold':700,'ExtraBold':800}[st['font_style']]
-        s += f"font-family:{st['font_family']};font-weight:{w};font-size:{st['font_size']}px;line-height:{st['line_height']['value']}%;letter-spacing:{st['letter_spacing']['value']/100}em;color:{col(c['color'], c['opacity'])};white-space:pre;text-align:{n.get('align_h','left')}"
+        s += f"font-family:{st['font_family']};font-weight:{w};font-size:{st['font_size']}px;line-height:{st['line_height']['value']}%;letter-spacing:{st['letter_spacing']['value']/100}em;color:{col(c['color'], c['opacity'])};white-space:{'pre-wrap' if n.get('auto_resize')=='height' else 'pre'};text-align:{n.get('align_h','left')}"
         chars = n['characters']; out = ''; pos = 0
         for r in n.get('runs', []):
             out += chars[pos:r['start']]
