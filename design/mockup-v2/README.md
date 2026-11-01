@@ -1,6 +1,6 @@
 # Agent Java · Redesign v2 (dalam review)
 
-Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login sampai 06 Laporan disetujui (1 Nov 2026), 07 Watchlist dan Alert menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
+Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login sampai 07 Watchlist dan Alert disetujui (1 Nov 2026), 08 Profil menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
 
 Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 
@@ -21,6 +21,7 @@ Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 | `05-peta-agent/` | Halaman 05 Peta Agent: `.figcraft` (Web 1440 × 900, Android 390 × 844), PNG @2x, halaman review interaktif (hover kecamatan, klik site, layer on/off). Revisi 1 Nov: peta bisa diwarnai Performance, Site productivity, atau Profile wilayah, dan klik kecamatan membuka kartu ringkasan ketiganya. Batas 42 kecamatan Kab. Garut diambil dari `mobile/assets/geo/kecamatan.geojson.gz`; nilai dan titik site ilustrasi |
 | `06-laporan/` | Halaman 06 Laporan: `.figcraft` (Web 1440 × 1040, Android 390 × 1300 layar digulir), PNG @2x, halaman review interaktif (filter, pilih laporan, daftar isi, jadwal kirim). Performance Outlook memuat bagian Performance, Site productivity, dan Profile wilayah |
 | `07-watchlist-alert/` | Halaman 07 Watchlist dan Alert: `.figcraft` (Web 1440 × 1156, Android 390 × 1320 layar digulir), PNG @2x, halaman review interaktif (filter status dan kelompok, tab Riwayat alert). Pantauan dikelompokkan Performance, Site productivity, dan Profile wilayah; pantauan baru bisa dibuat dari kalimat |
+| `08-profil/` | Halaman 08 Profil: `.figcraft` (Web 1440 × 1266, Android 390 × 1340 layar digulir), PNG @2x, halaman review interaktif. Kartu identitas, Aplikasi Android (QR asli ke /unduh, Unduh APK, kirim link), Admin (Statistik, Pengguna dan akses), Keamanan (sesi aktif), Informasi akun dengan wilayah default, Tampilan, Notifikasi per jenis dan kanal. Android: dibuka dari avatar di app bar semua tab |
 | `tools/` | Konverter HTML ke FigCraft (lihat bawah) |
 
 ## Video login
