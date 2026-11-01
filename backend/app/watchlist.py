@@ -452,6 +452,9 @@ def _rule_json(db: Session, r: WatchRule) -> dict:
         "value_sub": "dekat ambang" if is_near else None,
         "level": r.last_level, "level_label": fmt_level(r.metric, r.last_level), "breach_streak": r.breach_streak,
         "trend": [s.value for s in reversed(samples)],
+        # Threshold in the unit of `trend` (change for turun/naik, level otherwise); None draws no line.
+        "trend_threshold": (r.threshold if r.condition in ("di_bawah", "di_atas") else -abs(r.threshold) if r.condition == "turun"
+                            else abs(r.threshold) if r.condition == "naik" else None),
         "last_checked_on": r.last_checked_on, "source_question": r.source_question,
         "created_at": r.created_at.isoformat() + "Z" if r.created_at else None,
     }
@@ -466,6 +469,7 @@ def _alert_json(a: WatchAlert, rule: Optional[WatchRule]) -> dict:
         "resolved_at": a.resolved_at.isoformat() + "Z" if a.resolved_at else None,
         "acknowledged_at": a.acknowledged_at.isoformat() + "Z" if a.acknowledged_at else None,
         "scope_label": scope_label(rule) if rule else None,
+        "metric": rule.metric if rule else None,
         "metric_label": m["label"] if m else None, "rule_title": _title(rule) if rule else None,
         "group": m["group"] if m else None, "group_label": GROUPS[m["group"]] if m else None,
         "kabupaten": rule.scope_value if rule and rule.scope_level == "kabkota" else None,

@@ -72,4 +72,12 @@ export const CASES = [
       await page.mouse.move(5, 1030);
       await page.waitForTimeout(400);
     } },
+  { name: "watchlist-web", route: "/watchlist", width: 1440, height: 1157, clock: "2026-11-01T06:00:00Z",
+    mockup: `${M}/07-watchlist-alert/png/Web - Watchlist dan Alert@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".wfoot");
+      await page.waitForSelector(".parse");
+      await page.mouse.move(5, 1150);
+      await page.waitForTimeout(400);
+    } },
 ];

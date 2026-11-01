@@ -1,0 +1,95 @@
+/* Redesign v2 page 07: Watchlist dan Alert (web). Reuses dashboard.css .al/.sev and v2.css .card/.seg. */
+.v2 .wlx { flex: 1; min-width: 0; padding: 20px 24px; display: grid; grid-template-columns: minmax(0, 1fr) 352px; gap: 16px; background: #F5F9F8; align-content: start }
+.v2 .wlx :where(button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer }
+.v2 .wlx .full { grid-column: 1 / -1 }
+.v2 .wlx .werr { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; padding: 12px 16px; border-radius: 14px; background: #FDECEC; color: #C42B2B; font: 500 13px/1.3 var(--f-display) }
+.v2 .wlx .werr svg { width: 16px; height: 16px }
+
+.v2 .sstrip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px }
+.v2 .sstrip .ss { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px; display: grid; grid-template-columns: 40px 1fr; gap: 2px 12px; align-items: center; cursor: pointer; text-align: left }
+.v2 .sstrip .ss .ic3 { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center } .v2 .sstrip .ss .ic3 svg { width: 20px; height: 20px }
+.v2 .sstrip .ss b { font: 700 24px/1.1 var(--f-display); color: #0F1F1D } .v2 .sstrip .ss small { font: 500 12px/1.2 var(--f-display); color: #5A6B68 }
+.v2 .sstrip .ss.on { border-color: #0F1F1D; box-shadow: inset 0 0 0 1px #0F1F1D }
+
+.v2 .wlx .wtabs { display: flex; gap: 4px; border-bottom: 1px solid #E1E9E7; margin: -4px -20px 0; padding: 0 20px }
+.v2 .wlx .wtabs button { padding: 12px 12px 11px; font: 600 13.5px/1 var(--f-display); color: #5A6B68; border-bottom: 2.5px solid transparent; display: inline-flex; gap: 7px; align-items: center; white-space: nowrap }
+.v2 .wlx .wtabs button b { font: 700 11px/1 var(--f-display); padding: 3px 6px; border-radius: 99px; background: #ECF3F1; color: #3D4C49 }
+.v2 .wlx .wtabs button.on { color: #0A6A5F; border-color: #0E8579 } .v2 .wlx .wtabs button.on b { background: #0E8579; color: #fff }
+
+.v2 .wlx .gbar { display: flex; align-items: center; gap: 10px; padding: 12px 0 6px } .v2 .wlx .gbar small { font: 500 12px/1 var(--f-display); color: #5A6B68 }
+.v2 .wlx .gbar .grow { flex: 1 } .v2 .wlx .gbar .seg { margin: 0 } .v2 .wlx .gbar .seg.hid { visibility: hidden }
+
+.v2 .wt { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums; color: #0F1F1D }
+.v2 .wt th { text-align: left; font: 600 10.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 9px 7px; border-bottom: 1px solid #E1E9E7 }
+.v2 .wt td { padding: 9px 7px; border-bottom: 1px solid #ECF3F1; vertical-align: middle; white-space: nowrap }
+.v2 .wt tbody tr.rw { cursor: pointer } .v2 .wt tbody tr.rw:hover td { background: #FAFCFB }
+.v2 .wt tr.grp td { background: #F5F9F8; font: 600 11px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #0A6A5F; padding: 8px 10px }
+.v2 .wt tr.grp .gl { display: flex; gap: 8px; align-items: baseline } .v2 .wt tr.grp td span { font: 500 11px/1 var(--f-display); letter-spacing: 0; text-transform: none; color: #5A6B68 }
+.v2 .wt .mn { display: grid; grid-template-columns: 32px 1fr; gap: 0 10px; align-items: center }
+.v2 .wt .mn i { grid-row: span 2; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center } .v2 .wt .mn i svg { width: 16px; height: 16px }
+.v2 .wt .mn b { font: 600 13px/1.25 var(--f-display) } .v2 .wt .mn small { font: 400 11.5px/1.25 var(--f-body); color: #5A6B68 }
+.v2 .wt .val { font: 700 13.5px/1.2 var(--f-display) } .v2 .wt .val small { display: block; font: 500 10.5px/1.2 var(--f-display); color: #B7791F }
+.v2 .wt .thr { font: 500 12px/1.3 var(--f-display); color: #3D4C49 } .v2 .wt .thr small { display: block; font: 400 11px/1.2 var(--f-body); color: #5A6B68 }
+.v2 .wt .wsp { vertical-align: baseline }
+.v2 .wt td.ntc { position: relative }
+.v2 .wt .rmore { position: absolute; right: 2px; top: 50%; margin-top: -15px; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #5A6B68; background: #fff; border: 1px solid #E1E9E7; opacity: 0 }
+.v2 .wt .rmore svg { width: 16px; height: 16px }
+.v2 .wt tr.rw:hover .rmore, .v2 .wt .rmore[aria-expanded="true"], .v2 .wt .rmore:focus-visible { opacity: 1 }
+.v2 .wt .rmenu { position: absolute; right: 2px; top: calc(50% + 18px); z-index: 20; background: #fff; border: 1px solid #E1E9E7; border-radius: 12px; box-shadow: 0 12px 28px rgba(15,31,29,.14); padding: 4px; display: grid; min-width: 190px }
+.v2 .wt .rmenu button { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 8px; font: 500 13px/1 var(--f-display); color: #0F1F1D; text-align: left }
+.v2 .wt .rmenu button:hover { background: #F5F9F8 } .v2 .wt .rmenu button.danger { color: #C42B2B } .v2 .wt .rmenu svg { width: 15px; height: 15px }
+.v2 .wt .empty td { padding: 22px 10px; text-align: center; color: #5A6B68; white-space: normal }
+
+.v2 .st2 { font: 600 11px/1 var(--f-display); padding: 5px 9px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap }
+.v2 .st2 i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none }
+.v2 .st2.k { background: #FDECEC; color: #C42B2B } .v2 .st2.w { background: #FDF3E2; color: #B7791F } .v2 .st2.n { background: #E6F4EA; color: #1F7A3A } .v2 .st2.o { background: #ECF3F1; color: #5A6B68 }
+.v2 .nt { display: inline-flex; gap: 3px }
+.v2 .nt button { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; background: #E6F7F5; color: #0A6A5F }
+.v2 .nt button svg { width: 12px; height: 12px } .v2 .nt button.off { background: #F5F9F8; color: #B9C6C3 }
+
+.v2 .wfoot { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 12px; margin-top: 14px }
+.v2 .wfoot > div { background: #F5F9F8; border-radius: 14px; padding: 12px 14px; display: grid; gap: 4px; align-content: start }
+.v2 .wfoot b { font: 600 13.5px/1.25 var(--f-display) } .v2 .wfoot small { font: 500 11.5px/1.3 var(--f-display); color: #5A6B68 }
+.v2 .wfoot .wf2 b { font: 700 20px/1.15 var(--f-display) } .v2 .wfoot .wf2 em { font: 400 11.5px/1.35 var(--f-body); font-style: normal; color: #3D4C49 }
+.v2 .gstack { display: flex; gap: 3px; height: 10px; margin-top: 6px } .v2 .gstack i { border-radius: 3px }
+.v2 .glg { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px } .v2 .glg span { font: 500 11.5px/1 var(--f-display); color: #3D4C49; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap }
+.v2 .glg span i { width: 8px; height: 8px; border-radius: 2px } .v2 .glg b { font: 700 11.5px/1 var(--f-display) }
+
+.v2 .wlx .rcol { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.v2 .wlx .rcol .ch .badge { position: static; border: 0 }
+.v2 .wlx .al > b { font-size: 13px }
+.v2 .wlx .al .acts2 { grid-column: 1 / -1; display: flex; gap: 5px; margin-top: 6px }
+.v2 .wlx .al .acts2 button, .v2 .wlx .al .acts2 a { height: 28px; padding: 0 8px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; font: 600 11px/1 var(--f-display); border: 1px solid #E1E9E7; color: #0A6A5F; background: #fff; white-space: nowrap; text-decoration: none }
+.v2 .wlx .al .acts2 .p { background: #0E8579; border-color: #0E8579; color: #fff } .v2 .wlx .al .acts2 svg { width: 12px; height: 12px }
+.v2 .wlx .alnone { margin: 0; font: 400 13px/1.45 var(--f-body); color: #5A6B68 }
+
+.v2 .wlx .nl { display: grid; gap: 10px }
+.v2 .wlx .nl .in2 { border: 1.5px solid #8FDFD7; border-radius: 14px; padding: 10px 12px; box-shadow: 0 0 0 4px rgba(34,184,201,.08); display: grid; gap: 8px }
+.v2 .wlx .nl .in2 textarea { border: 0; outline: 0; resize: none; padding: 0; margin: 0; background: none; font: 400 13px/1.45 var(--f-body); color: #0F1F1D; height: 57px; overflow: hidden }
+.v2 .wlx .nl .in2 .row { display: flex; align-items: center; gap: 6px } .v2 .wlx .nl .in2 .row .grow { flex: 1 }
+.v2 .wlx .nl .in2 .row small { font: 500 11px/1 var(--f-display); color: #5A6B68; display: inline-flex; gap: 5px; align-items: center } .v2 .wlx .nl .in2 .row small svg { width: 13px; height: 13px; color: #FF7A59 }
+.v2 .wlx .nl .in2 .snd { width: 32px; height: 30px; border-radius: 9px; background: #0E8579; color: #fff; display: grid; place-items: center } .v2 .wlx .nl .in2 .snd svg { width: 15px; height: 15px }
+.v2 .wlx .nl .in2 .snd:disabled { opacity: .5; cursor: default }
+.v2 .wlx .parse { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
+.v2 .wlx .parse div { background: #F5F9F8; border-radius: 10px; padding: 7px 9px; display: grid; gap: 2px }
+.v2 .wlx .parse small { font: 500 10.5px/1.2 var(--f-display); color: #5A6B68 } .v2 .wlx .parse b { font: 600 12.5px/1.25 var(--f-display) }
+.v2 .wlx .parse b.miss { color: #B7791F }
+.v2 .wlx .pnote { margin: 0; font: 400 12px/1.4 var(--f-body); color: #B7791F }
+.v2 .wlx .chans { display: flex; gap: 6px; flex-wrap: wrap }
+.v2 .wlx .chans button { height: 30px; padding: 0 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; font: 600 12px/1 var(--f-display); border: 1px solid #8FDFD7; background: #E6F7F5; color: #0A6A5F }
+.v2 .wlx .chans button svg { width: 14px; height: 14px } .v2 .wlx .chans button.off { background: #fff; border-color: #E1E9E7; color: #5A6B68 }
+.v2 .wlx .nl .save { display: flex; gap: 8px }
+.v2 .wlx .nl .save button { flex: 1; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 13px/1 var(--f-display) }
+.v2 .wlx .nl .save .a1 { background: #0E8579; color: #fff } .v2 .wlx .nl .save .a1:disabled { opacity: .55; cursor: default }
+.v2 .wlx .nl .save .a2 { border: 1px solid #E1E9E7; color: #3D4C49 } .v2 .wlx .nl .save svg { width: 15px; height: 15px }
+
+@media (max-width: 1180px) {
+  .v2 .wlx { grid-template-columns: minmax(0, 1fr) }
+  .v2 .wlx .tscroll { overflow-x: auto }
+}
+@media (max-width: 720px) {
+  .v2 .wlx { padding: 16px }
+  .v2 .sstrip { grid-template-columns: repeat(2, 1fr) }
+  .v2 .wfoot { grid-template-columns: 1fr }
+  .v2 .wlx .gbar { flex-wrap: wrap }
+}

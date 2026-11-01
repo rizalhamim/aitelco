@@ -82,8 +82,10 @@ function PetaAgent() {
   const focusSite = params.get("level") === "site" ? params.get("focus") || "" : "";
   const [data, setData] = useState<MapData | null>(null);
   const [err, setErr] = useState("");
-  const [cat, setCat] = useState<Cat>("perf");
-  const [metricKey, setMetricKey] = useState("payload_mom");
+  // ?metric= opens a layer directly (alert "Peta" links); its category is known before the data loads.
+  const initMetric = params.get("metric") || "payload_mom";
+  const [cat, setCat] = useState<Cat>(({ rev_site: "prod", rgu_site: "prod", vlr_site: "prod", market_share: "prof", subs: "prof", gross_add: "prof", fwa_pen: "prof" } as Record<string, Cat>)[initMetric] || "perf");
+  const [metricKey, setMetricKey] = useState(initMetric);
   const [layers, setLayers] = useState<Layers>({ chor: true, crit: true, up: true, all: true, opacity: 0.85 });
   const [critRule, setCritRule] = useState<{ metric: string; t: number } | null>(null);
   const [shape, setShape] = useState<Shape | null>(null);

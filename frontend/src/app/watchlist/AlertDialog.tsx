@@ -27,9 +27,15 @@ const LEVELS = [
 ];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
+const REGION_NAME: Record<string, string> = {
+  "WEST JAVA": "West Java", "CENTRAL JAVA": "Central Java", "EAST JAVA": "East Java",
+  "JAWA BARAT": "West Java", "JAWA TENGAH & DIY": "Central Java", "JAWA TENGAH": "Central Java", "JAWA TIMUR": "East Java",
+};
+
 export function scopeName(s: Scope): string {
   const v = s.value.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-  if (s.level === "circle") return s.value.toUpperCase() === "JAVA" ? "Jawa" : v;
+  if (s.level === "circle") return s.value.toUpperCase() === "JAVA" ? "Circle Java" : v;
+  if (s.level === "region" && REGION_NAME[s.value.toUpperCase()]) return REGION_NAME[s.value.toUpperCase()];
   if (s.level === "branch") return `Branch ${v}`;
   return v.replace(/^Kab\.?\s/, "Kab. ").replace(/\bDiy\b/, "DIY");
 }
@@ -44,9 +50,9 @@ export function guessFromQuestion(q: string): { metric?: string; scope?: Scope; 
     : /fwa/.test(s) ? "fwa_revenue"
     : /pelanggan|rgu|subscriber/.test(s) ? "subs"
     : /revenue|pendapatan/.test(s) ? "revenue" : undefined;
-  const region = /jawa barat|jabar/.test(s) ? "JAWA BARAT"
-    : /jawa tengah|jateng|diy|yogya/.test(s) ? "JAWA TENGAH & DIY"
-    : /jawa timur|jatim/.test(s) ? "JAWA TIMUR" : undefined;
+  const region = /west java|jawa barat|jabar/.test(s) ? "JAWA BARAT"
+    : /central java|jawa tengah|jateng|diy|yogya/.test(s) ? "JAWA TENGAH & DIY"
+    : /east java|jawa timur|jatim/.test(s) ? "JAWA TIMUR" : undefined;
   const kab = s.match(/\b(kab(?:upaten|\.)?|kota)\s+([a-z]+(?:\s[a-z]+)?)/);
   const condition = /naik|tumbuh/.test(s) && !/turun/.test(s) ? "naik" : undefined;
   const scope = kab ? { level: "kabkota", value: `${kab[1].startsWith("kota") ? "KOTA" : "KAB."} ${kab[2].replace(/\s(turun|naik|bulan|minggu|vs|dan|di)$/, "").toUpperCase()}` }
@@ -224,7 +230,7 @@ export default function AlertDialog({ metrics, edit, prefill, onClose, onSaved }
                   {LEVELS.map((l) => <button key={l.key} aria-pressed={level === l.key} onClick={() => setLevel(l.key)}>{l.label}</button>)}
                 </div>
                 {level === "circle" ? (
-                  <button onClick={() => addScope({ level: "circle", value: "JAVA" })}>Circle Jawa</button>
+                  <button onClick={() => addScope({ level: "circle", value: "JAVA" })}>Circle Java</button>
                 ) : (
                   <>
                     <input className="wl-picker-search" autoFocus placeholder="Cari wilayah…" value={search} onChange={(e) => setSearch(e.target.value)} />
