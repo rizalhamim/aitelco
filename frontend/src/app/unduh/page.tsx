@@ -108,7 +108,7 @@ export default function UnduhPage() {
           <div className="un-hero-text">
             {name && <span className="un-badge"><Rocket size={16} /> Versi baru v{name}{ver?.released_at ? ` · ${fmtDate(ver.released_at)}` : ""}</span>}
             <h1>Winning Every Second,<br />langsung di ponsel Anda.</h1>
-            <p>Bizplan Java Agent untuk Android: tanya bisnis Jawa, pantau KPI dan terima alert di mana pun.</p>
+            <p>Agent Java untuk Android: tanya bisnis Circle Java, pantau KPI dan terima alert di mana pun.</p>
             <div className="un-cta">
               {download}
               <a className="un-ghost" href="#riwayat"><Sparkles size={18} /> Apa yang baru</a>

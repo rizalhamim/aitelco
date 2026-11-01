@@ -64,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: Column(children: [
               const AppLogo(size: 112, radius: 31.36, border: Colors.white, borderWidth: 2, shadow: true),
               const SizedBox(height: 16),
-              Text('Bizplan Java Agent', style: ts(24, w700, Colors.white, lh: 1.3, ls: -.003)),
+              Text('Agent Java', style: ts(24, w700, Colors.white, lh: 1.3, ls: -.003)),
               const SizedBox(height: 16),
               Text('Winning Every Second', style: ts(16, w400, const Color(0xFF8FDFD7), lh: 1.5)),
             ]),

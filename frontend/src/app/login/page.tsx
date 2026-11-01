@@ -122,7 +122,7 @@ export default function LoginPage() {
           <div className="lg-product">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="lg-logo" src="/brand/icon_circle_java.png" alt="Circle Java" width={72} height={72} />
-            <span className="lg-product-name">Bizplan Java Agent</span>
+            <span className="lg-product-name">Agent Java</span>
           </div>
           <h1 className="lg-headline">Winning<br />Every Second</h1>
           <span className="lg-accent" aria-hidden="true" />

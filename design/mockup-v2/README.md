@@ -1,6 +1,6 @@
 # Agent Java · Redesign v2 (dalam review)
 
-Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login sampai 08 Profil disetujui (1 Nov 2026), 09 Statistik dan Unduh APK menunggu review. Implementasi wajib sama persis dengan mockup: setiap halaman dicek dengan screenshot diff terhadap PNG di folder ini (Android golden test, web Playwright). Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
+Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: semua halaman 01 sampai 09 disetujui (1 Nov 2026), sekarang tahap implementasi. Implementasi wajib sama persis dengan mockup: setiap halaman dicek dengan screenshot diff terhadap PNG di folder ini. Web: `cd frontend && npm run build && node tools/visual/compare.mjs` (kasus di `tools/visual/cases.mjs`). Android: `cd mobile && flutter test test/golden_v2` (layar 370 px di dalam bingkai mockup). Batas lolos 2% piksel berbeda; lembar mockup | app | heat ditulis ke folder `out/` masing-masing. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
 
 Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 

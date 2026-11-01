@@ -7,6 +7,6 @@ class AppConfig {
     defaultValue: 'https://agent.bizplan-java.com',
   );
 
-  static const String appName = 'Bizplan Java Agent';
+  static const String appName = 'Agent Java';
   static const String appSub = 'Business Planning Circle Java';
 }

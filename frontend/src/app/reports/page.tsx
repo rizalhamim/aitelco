@@ -72,14 +72,14 @@ function PageHead({ eyebrow, heading }: { eyebrow: string; heading: string }) {
     <header className="rp-doc-head">
       <div><span className="rp-doc-eyebrow">{eyebrow}</span><h2>{heading}</h2></div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/logo-ioh-color.png" alt="Indosat Ooredoo Hutchison" height={30} />
+      <img src="/brand/icon_circle_java.png" alt="Logo Agent Java" height={34} />
     </header>
   );
 }
 
 /** Pages of the live performance report built from the dashboard overview. */
 function liveReportPages(ov: Overview, kind: Kind): React.ReactNode[] {
-  const scope = ov.scope.region ? title(ov.scope.region) : "Region Jawa";
+  const scope = ov.scope.region ? title(ov.scope.region) : "Circle Java";
   const month = `${MONTHS_FULL[(ov.month_id % 100) - 1]} ${Math.floor(ov.month_id / 100)}`;
   const eyebrow = kind === "mingguan" ? "Laporan performa mingguan" : "Laporan performa bulanan";
   const rows: Record<string, unknown>[] = [];
@@ -180,7 +180,7 @@ export default function ReportsPage() {
 
   const items = useMemo<Item[]>(() => {
     const month = overview?.month_label ?? "";
-    const live: Item[] = [{ id: "live:", kind: "bulanan", title: "Performa Bulanan Region Jawa", meta: `PDF · 2 hlm${month ? ` · ${month}` : ""}`, region: "" }];
+    const live: Item[] = [{ id: "live:", kind: "bulanan", title: "Performa Bulanan Circle Java", meta: `PDF · 2 hlm${month ? ` · ${month}` : ""}`, region: "" }];
     regions.forEach((r) => live.push({ id: `live:${r}`, kind: "bulanan", title: `Performa Bulanan ${title(r)}`, meta: `PDF · 2 hlm${month ? ` · ${month}` : ""}`, region: r }));
     const sent: Item[] = runs.map((r) => ({
       id: `run:${r.id}`, kind: r.kind === "bulanan" ? "bulanan" : "mingguan", title: r.title, region: r.region,

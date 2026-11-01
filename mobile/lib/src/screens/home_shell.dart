@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
-import '../ui/nav.dart';
+import '../ui/v2.dart';
 import 'chat_screen.dart';
 import 'dashboard_screen.dart';
 import 'map_screen.dart';
 import 'report_list_screen.dart';
+import 'site_performance_screen.dart';
 import 'watchlist_screen.dart';
 
-/// The five tabs behind the bottom nav: Agent, Dashboard, Alert, Laporan, Peta.
+/// The five tabs behind the v2 bottom nav: Agent, Dashboard, Performa, Peta, Laporan.
+/// Alert (Watchlist) opens from the bell in every app bar and Profil from the avatar.
 /// Tabs stay alive so a running answer or a map position survives a switch.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key, this.initialTab = 1});
@@ -25,7 +27,6 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _alerts = 0;
   Timer? _poll;
   final _chat = GlobalKey<ChatScreenState>();
-  final _watch = GlobalKey<WatchlistScreenState>();
 
   @override
   void initState() {
@@ -54,19 +55,24 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     } catch (_) {/* badge is best-effort */}
   }
 
-  void _go(int i) {
-    if (i == 2 && _tab != 2) _watch.currentState?.reload();
-    setState(() => _tab = i);
-  }
+  void _go(int i) => setState(() => _tab = i);
 
   void _ask(String q) {
+    Navigator.of(context).popUntil((r) => r.isFirst);
     setState(() => _tab = 0);
     WidgetsBinding.instance.addPostFrameCallback((_) => _chat.currentState?.ask(q));
   }
 
-  void _watchFrom(String q) {
-    setState(() => _tab = 2);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _watch.currentState?.createFrom(q));
+  /// Opens Watchlist dan Alert on top of the tabs; [question] pre-fills a new watch.
+  Future<void> _openAlerts([String? question]) async {
+    final key = GlobalKey<WatchlistScreenState>();
+    if (question != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => key.currentState?.createFrom(question));
+    }
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => WatchlistScreen(key: key, onAsk: _ask, onCountChanged: (n) => setState(() => _alerts = n)),
+    ));
+    _refreshCount();
   }
 
   @override
@@ -78,14 +84,18 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        body: IndexedStack(index: _tab, children: [
-          ChatScreen(key: _chat, onWatch: _watchFrom),
-          DashboardScreen(alertCount: _alerts, onAsk: _ask, onTab: _go),
-          WatchlistScreen(key: _watch, onAsk: _ask, onCountChanged: (n) => setState(() => _alerts = n)),
-          ReportListScreen(onAsk: _ask),
-          MapScreen(onAsk: _ask),
-        ]),
-        bottomNavigationBar: AppBottomNav(index: _tab, alertBadge: _alerts, onTap: _go),
+        body: V2Scope(
+          alerts: _alerts,
+          openAlerts: _openAlerts,
+          child: IndexedStack(index: _tab, children: [
+            ChatScreen(key: _chat, onWatch: _openAlerts),
+            DashboardScreen(alertCount: _alerts, onAsk: _ask, onTab: (i) => i == 2 ? _openAlerts() : _go(i)),
+            const SitePerformanceScreen(),
+            MapScreen(onAsk: _ask),
+            ReportListScreen(onAsk: _ask),
+          ]),
+        ),
+        bottomNavigationBar: V2BottomNav(index: _tab, onTap: _go),
       ),
     );
   }

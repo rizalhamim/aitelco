@@ -30,6 +30,7 @@ dependencies:
   pdf: ^3.11.3
   archive: ^4.0.9
   share_plus: ^12.0.2
+  flutter_svg: ^2.0.17
 
 dev_dependencies:
   flutter_test:

@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { UserRound } from "lucide-react";
 import AppShell from "../components/shell/AppShell";
 import PageHero from "../components/ui/PageHero";
-import { authFetch, getUser, isLoggedIn, UserInfo } from "@/lib/auth";
+import Link from "next/link";
+import { authFetch, getUser, isAdmin, isLoggedIn, logout, UserInfo } from "@/lib/auth";
 
 const IOH = {
   red: "#15A697", pink: "#0E8579", yellow: "#F5A623", teal: "#15A697",
@@ -126,6 +127,12 @@ export default function ProfilePage() {
     <AppShell>
     <div className="ui-page">
       <PageHero icon={<UserRound size={30} strokeWidth={1.6} />} eyebrow="Akun" title="Profil saya" sub="Informasi akun, password dan notifikasi." pattern />
+      {/* Links that used to live in the sidebar account menu; the full v2 Profil page replaces this row. */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <Link href="/tampilan" className="ui-btn">Tampilan</Link>
+        {isAdmin() && <Link href="/admin" className="ui-btn">Kelola pengguna</Link>}
+        <button className="ui-btn" onClick={() => logout()}>Keluar</button>
+      </div>
 
       <div style={{ width: "100%", maxWidth: 800 }}>
         {needsEmail && (

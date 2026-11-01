@@ -62,7 +62,7 @@ export default function ScheduleDialog({ regions, edit, onClose, onSaved }: Prop
           <label htmlFor="rp-region">Wilayah</label>
           <div className="ui-input">
             <select id="rp-region" value={region} onChange={(e) => setRegion(e.target.value)} disabled={!!edit}>
-              <option value="">Semua region Jawa</option>
+              <option value="">Semua region Circle Java</option>
               {regions.map((r) => <option key={r} value={r}>{title(r)}</option>)}
             </select>
           </div>

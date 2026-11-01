@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const AppLogo(size: 64, radius: 17.92, border: Colors.white, borderWidth: 2, shadow: true),
         const SizedBox(height: 16),
-        Text('Bizplan Java Agent', style: ts(16, w600, const Color(0xFFC0EDE8))),
+        Text('Agent Java', style: ts(16, w600, const Color(0xFFC0EDE8))),
         const SizedBox(height: 15.6),
         Text('Winning\nEvery Second', style: ts(48, w800, Colors.white, lh: 1.02, ls: -.01)),
         const SizedBox(height: 16),

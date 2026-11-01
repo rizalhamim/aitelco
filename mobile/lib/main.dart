@@ -45,7 +45,7 @@ class _BizplanAppState extends State<BizplanApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      title: 'Bizplan Java Agent',
+      title: 'Agent Java',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),

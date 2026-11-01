@@ -1352,7 +1352,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
                 </div>
               )}
             </div>
-            <span className="ui-chip teal"><MapPin size={16} /> Lokasi: Region Jawa</span>
+            <span className="ui-chip teal"><MapPin size={16} /> Lokasi: Circle Java</span>
             {lang === "en" && <span className="ui-chip chat-hide-sm"><Globe size={16} /> English</span>}
             <span className="chat-actions-spacer" />
             <button className={`ui-iconbtn ghost chat-tool ${listening ? "on" : ""}`} onClick={voiceInput} disabled={busy} aria-label="Bicara">

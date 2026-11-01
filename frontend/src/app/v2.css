@@ -1,0 +1,107 @@
+/* Redesign v2 (Agent Java). Ported from the approved mockups in design/mockup-v2:
+   same sizes, colors and type so pages match the mockup PNGs. Scoped to .v2 so the
+   older page styles keep working while pages move over one by one. */
+
+.v2 {
+  --f-display: var(--font-poppins), "Poppins", "Segoe UI", system-ui, sans-serif;
+  --f-body: var(--font-prompt), "Prompt", "Segoe UI", system-ui, sans-serif;
+  --v2-ink: #0F1F1D; --v2-ink2: #3D4C49; --v2-mute: #5A6B68; --v2-rule: #E1E9E7; --v2-rule2: #ECF3F1;
+  --v2-bg: #F5F9F8; --v2-surface: #FFFFFF;
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--v2-ink);
+}
+.v2 *, .v2 *::before, .v2 *::after { box-sizing: border-box }
+
+/* app frame: 272 px sidebar + main */
+.v2.app { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; background: var(--v2-bg) }
+
+/* sidebar */
+.v2 .side { position: sticky; top: 0; height: 100vh; height: 100dvh; width: 272px; background: #fff; border-right: 1px solid #E1E9E7; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; z-index: 20 }
+.v2 .side .brand { display: flex; align-items: center; gap: 12px; padding: 2px 4px 6px; text-decoration: none; color: inherit }
+.v2 .side .brand .tile { width: 44px; height: 44px }
+.v2 .side .brand b { font: 700 17px/1.2 var(--f-display); display: block }
+.v2 .side .brand b em { font-style: normal; color: #0E8579 }
+.v2 .side .brand small { font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .tile { background: #fff; border-radius: 28%; display: grid; place-items: center; flex: none; border: 1px solid #E1E9E7 }
+.v2 .tile img { width: 84%; height: 84%; object-fit: contain; display: block }
+.v2 .newchat { height: 46px; border: 0; border-radius: 14px; background: linear-gradient(100deg, #0E8579, #15A697 55%, #1597A8); color: #fff; font: 600 14px/1 var(--f-display); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 18px rgba(14,133,121,.28); cursor: pointer; flex: none }
+.v2 .newchat:disabled { opacity: .6; cursor: default }
+.v2 .newchat svg { width: 18px; height: 18px }
+.v2 .search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body); flex: none }
+.v2 .search svg { width: 17px; height: 17px; flex: none }
+.v2 .search input { border: 0; outline: 0; background: transparent; font: inherit; color: #0F1F1D; min-width: 0; flex: 1; padding: 0 }
+.v2 .search input::placeholder { color: #5A6B68 }
+.v2 .search:focus-within { border-color: #8FDFD7; box-shadow: 0 0 0 3px rgba(34,184,201,.12) }
+.v2 .navh { font: 600 11px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; padding: 4px 6px 0 }
+.v2 .nav { display: flex; flex-direction: column; gap: 2px }
+.v2 .nav a { display: flex; align-items: center; gap: 11px; height: 42px; padding: 0 10px; border-radius: 12px; font: 500 14px/1 var(--f-display); color: #0F1F1D; text-decoration: none; position: relative }
+.v2 .nav a:hover { background: #F5F9F8 }
+.v2 .nav a .nt { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none }
+.v2 .nav a .nt svg { width: 17px; height: 17px }
+.v2 .nav a.on { background: #E6F7F5; color: #0A6A5F; font-weight: 600 }
+.v2 .nav a.on::before { content: ""; position: absolute; left: -16px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: #0E8579 }
+.v2 .nav a .new { margin-left: auto; font: 600 10px/1 var(--f-display); padding: 4px 7px; border-radius: 99px; background: #F4FCE3; color: #5E8A12; border: 1px solid #E2F9A8 }
+.v2 .nav a .cnt { margin-left: auto; font: 700 11px/1 var(--f-display); min-width: 22px; height: 20px; border-radius: 10px; background: #E04848; color: #fff; display: grid; place-items: center; padding: 0 6px }
+.v2 .hist { display: flex; flex-direction: column; gap: 0 }
+.v2 .hist button { display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 10px; border-radius: 10px; font: 400 13px/1.2 var(--f-body); color: #3D4C49; white-space: nowrap; overflow: hidden; border: 0; background: transparent; text-align: left; cursor: pointer; width: 100% }
+.v2 .hist button span { overflow: hidden }
+.v2 .hist button:hover { background: #F5F9F8 }
+.v2 .hist button.on { background: #ECF3F1; color: #0F1F1D }
+.v2 .hist svg { width: 15px; height: 15px; flex: none; color: #5A6B68 }
+.v2 .hist .empty { font: 400 12.5px/1.3 var(--f-body); color: #5A6B68; padding: 4px 10px }
+.v2 .side .spacer { flex: 1; min-height: 8px }
+.v2 .apk { border-radius: 16px; background: linear-gradient(135deg, #04332E, #0A6A5F); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; flex: none }
+.v2 .apk.on { box-shadow: 0 0 0 2px #C7F25E }
+.v2 .apk .ai { width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.12); display: grid; place-items: center; flex: none }
+.v2 .apk b { font: 600 13px/1.3 var(--f-display); display: block } .v2 .apk small { font: 400 11px/1.3 var(--f-body); color: #C0EDE8 }
+.v2 .apk svg { width: 18px; height: 18px }
+.v2 .me { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; background: #ECF3F1; text-decoration: none; color: inherit; border: 1px solid transparent; flex: none }
+.v2 .me.on { background: #E6F7F5; border-color: #8FDFD7; box-shadow: inset 0 0 0 1px #8FDFD7 }
+.v2 .me .avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: none }
+.v2 .me b { font: 600 13px/1.3 var(--f-display); display: block } .v2 .me small { font: 400 11px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .me > svg { margin-left: auto; width: 18px; height: 18px; color: #5A6B68 }
+
+/* shared atoms */
+.v2 .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #15A697, #0A6A5F); color: #fff; display: grid; place-items: center; font: 700 15px/1 var(--f-display); flex: none; cursor: pointer; box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px #C7F25E; text-decoration: none }
+.v2 .avatar.ring { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #0E8579 }
+.v2 .btn-ic { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: grid; place-items: center; color: #3D4C49; position: relative; cursor: pointer; text-decoration: none; flex: none }
+.v2 .btn-ic:hover { border-color: #8FDFD7 }
+.v2 .btn-ic svg { width: 20px; height: 20px }
+.v2 .badge { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; border-radius: 9px; background: #E04848; color: #fff; font: 700 10px/18px var(--f-display); text-align: center; padding: 0 5px; border: 2px solid #fff }
+.v2 .btn-p { height: 40px; padding: 0 16px; border-radius: 12px; background: #0E8579; color: #fff; display: inline-flex; align-items: center; gap: 8px; font: 600 13.5px/1 var(--f-display); box-shadow: 0 6px 16px rgba(14,133,121,.25); border: 0; cursor: pointer; text-decoration: none; white-space: nowrap }
+.v2 .btn-p svg { width: 17px; height: 17px }
+.v2 .linkbtn { height: 36px; padding: 0 14px; border-radius: 11px; border: 1px solid #E1E9E7; background: #fff; font: 600 13px/1 var(--f-display); color: #0A6A5F; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; text-decoration: none; white-space: nowrap }
+.v2 .linkbtn svg { width: 16px; height: 16px }
+.v2 .seg { display: inline-flex; padding: 3px; gap: 2px; background: #ECF3F1; border-radius: 10px }
+.v2 .seg button { border: 0; background: transparent; font: 600 12px/1 var(--f-display); color: #3D4C49; padding: 7px 11px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap }
+.v2 .seg button svg { width: 14px; height: 14px }
+.v2 .seg button.on { background: #fff; color: #0A6A5F; box-shadow: 0 1px 3px rgba(15,31,29,.12) }
+.v2 .card { background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(15,31,29,.04); display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.v2 .card .ch { display: flex; align-items: flex-start; gap: 10px }
+.v2 .card .ch h3 { margin: 0; font: 600 16px/1.3 var(--f-display) } .v2 .card .ch p { margin: 2px 0 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .card .ch .grow { flex: 1 }
+
+/* main column + top bar */
+.v2 .main { min-width: 0; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh }
+.v2 .top { position: sticky; top: 0; z-index: 15; height: 76px; flex: none; background: rgba(255,255,255,.88); backdrop-filter: blur(10px); border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 28px }
+.v2 .top h2 { font: 700 19px/1.25 var(--f-display); margin: 0 } .v2 .top p { margin: 0; font: 400 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .top .grow { flex: 1 }
+.v2 .page { flex: 1; min-width: 0; padding: 20px 24px; background: #F5F9F8 }
+
+/* narrow screens: sidebar becomes a drawer, opened from the mobile bar */
+.v2 .mbar { display: none }
+.v2 .scrim { display: none }
+@media (max-width: 960px) {
+  .v2.app { grid-template-columns: minmax(0, 1fr) }
+  .v2 .side { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); transition: transform .22s ease; box-shadow: 0 20px 60px rgba(4,51,46,.28) }
+  .v2 .side.open { transform: none }
+  .v2 .scrim.open { display: block; position: fixed; inset: 0; background: rgba(4,51,46,.35); z-index: 19 }
+  .v2 .mbar { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 12px; background: #fff; border-bottom: 1px solid #E1E9E7; position: sticky; top: 0; z-index: 16 }
+  .v2 .mbar b { font: 700 16px/1 var(--f-display) } .v2 .mbar b em { font-style: normal; color: #0E8579 }
+  .v2 .mbar .grow { flex: 1 }
+  .v2 .top { top: 56px; height: auto; min-height: 64px; padding: 10px 16px; flex-wrap: wrap }
+  .v2 .page { padding: 16px }
+}
+@media (prefers-reduced-motion: reduce) { .v2 .side { transition: none } }
