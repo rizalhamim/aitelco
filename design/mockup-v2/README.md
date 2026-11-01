@@ -1,6 +1,6 @@
 # Agent Java · Redesign v2 (dalam review)
 
-Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login, 02 Tanya Agent, dan 03 Dashboard disetujui (1 Nov 2026), 04 Performance menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
+Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login sampai 04 Performance disetujui (1 Nov 2026), 05 Peta Agent menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
 
 Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 
@@ -18,6 +18,7 @@ Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 | `02-tanya-agent/` | Halaman 02 Tanya Agent: `.figcraft` (Web 1440 × 1080, Android 390 × 844), PNG @2x, halaman review interaktif (tab Grafik/Tabel/Peta) |
 | `03-dashboard/` | Halaman 03 Dashboard: `.figcraft` (Web 1440 × 1420, Android 390 × 1720 layar digulir), PNG @2x, halaman review interaktif (tooltip, legenda, Batang/Garis) |
 | `04-performance/` | Halaman 04 Performance: `.figcraft` (Web 1440 × 1590, Android 390 × 1990 layar digulir), PNG @2x, halaman review interaktif (drill-down, tren 12 bulan Revenue/Payload/Pelanggan, detail site di baris tabel) |
+| `05-peta-agent/` | Halaman 05 Peta Agent: `.figcraft` (Web 1440 × 900, Android 390 × 844), PNG @2x, halaman review interaktif (hover kecamatan, klik site, layer on/off). Batas 42 kecamatan Kab. Garut diambil dari `mobile/assets/geo/kecamatan.geojson.gz`; nilai dan titik site ilustrasi |
 | `tools/` | Konverter HTML ke FigCraft (lihat bawah) |
 
 ## Video login
