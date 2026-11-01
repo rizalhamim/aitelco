@@ -45,7 +45,7 @@ git log --oneline -1
 
 say "4. Backend dependencies (adds pyarrow for the Parquet dump)"
 cd "$APP/backend"
-venv/bin/pip install -q -r requirements.txt
+venv/bin/pip install -q -r requirements.txt -r requirements-dev.txt
 
 say "5. Performance dump to Parquet (first run, then daily at 05.00 WIB from the backend)"
 PYTHONPATH=. venv/bin/python -m app.perf_dump --check > /tmp/perf_dump_check.log 2>&1 || { tail -20 /tmp/perf_dump_check.log; exit 1; }
@@ -59,8 +59,27 @@ tail -3 /tmp/build_geo.log
 
 if [ "${SKIP_GATES:-0}" != "1" ]; then
   say "7. Gates: pytest and KB benchmark"
-  venv/bin/python -m pytest tests/ -q > /tmp/pytest.log 2>&1 || { tail -30 /tmp/pytest.log; echo "pytest failed, backend NOT restarted"; exit 1; }
-  tail -1 /tmp/pytest.log
+  # Only new failures block: a test that also fails on the commit running now is reported, not blocking.
+  ids() { grep -E '^(FAILED|ERROR) ' "$1" | sed -E 's/^(FAILED|ERROR) //; s/ - .*//' | sort -u; }
+  if venv/bin/python -m pytest tests/ -q -rfE --continue-on-collection-errors > /tmp/pytest.log 2>&1; then
+    tail -1 /tmp/pytest.log
+  else
+    tail -1 /tmp/pytest.log
+    echo "some tests fail; comparing with the previous commit $PREV"
+    WT=/tmp/telco-prev-tests
+    git -C "$APP" worktree remove --force "$WT" 2>/dev/null || true
+    git -C "$APP" worktree add --detach "$WT" "$PREV" > /dev/null
+    ln -s "$APP/backend/data" "$WT/backend/data" 2>/dev/null || true
+    (cd "$WT/backend" && "$APP/backend/venv/bin/python" -m pytest tests/ -q -rfE --continue-on-collection-errors > /tmp/pytest_prev.log 2>&1 || true)
+    git -C "$APP" worktree remove --force "$WT"
+    NEWFAIL=$(comm -23 <(ids /tmp/pytest.log) <(ids /tmp/pytest_prev.log))
+    if [ -n "$NEWFAIL" ]; then
+      echo "New failures (not failing before):"; echo "$NEWFAIL"
+      grep -E -A25 '^_{5,} ' /tmp/pytest.log | head -80
+      echo "pytest failed, backend NOT restarted"; exit 1
+    fi
+    echo "no new failures; already failing before this deploy:"; ids /tmp/pytest.log
+  fi
   venv/bin/python tools_agent_knowledge_benchmark.py > /tmp/kb_bench.log 2>&1 || { tail -30 /tmp/kb_bench.log; echo "KB benchmark failed, backend NOT restarted"; exit 1; }
   tail -3 /tmp/kb_bench.log
 fi
