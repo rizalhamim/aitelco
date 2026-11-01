@@ -89,9 +89,26 @@ def _columns(table: str) -> set[str]:
         return set()
 
 
-def build_queries(latest: int, latest_day: Optional[date], cols: Callable[[str], set[str]]) -> dict[str, str]:
-    """SQL per dump table. Partition filters are literals (hard rule)."""
+def _column_types(table: str) -> dict[str, str]:
+    """Column name -> BigQuery type, from table metadata (no bytes scanned)."""
+    from .bigquery_tool import get_client
+    try:
+        return {f.name.lower(): f.field_type.upper() for f in get_client().get_table(f"{_P}.{_D}.{table}").schema}
+    except Exception as e:
+        log.warning(f"schema {table}: {e}")
+        return {}
+
+
+def build_queries(latest: int, latest_day: Optional[date], cols: Callable[[str], set[str]],
+                  types: Optional[Callable[[str], dict[str, str]]] = None) -> dict[str, str]:
+    """SQL per dump table. Partition filters are literals (hard rule), typed like the
+    column: some upstream tables keep month_id as STRING, others as INT64."""
     q: dict[str, str] = {}
+
+    def months(table: str, *mids: int) -> str:
+        quoted = (types(table).get("month_id") if types else None) == "STRING"
+        return ", ".join(f"'{m}'" if quoted else str(m) for m in mids)
+
     first = month_add(latest, -24)
     zz = cols(T_ZZ)
     kec_name = _pick(zz, "kecamatan", "kec_name", "nama_kecamatan")
@@ -138,7 +155,7 @@ GROUP BY dt_id, region
     addr = cols(T_ADDR)
     if "site_id" in site and "usg_data_gb" in site and "site_id" in addr:
         rev = _pick(site, "rev_total", "rev_prepaid", "revenue")
-        sm = f"{latest}, {month_add(latest, -1)}, {month_add(latest, -12)}"
+        sm = (latest, month_add(latest, -1), month_add(latest, -12))
         av = cols(T_SITE_AV)
         has_av = "site_id" in av and "avg_avail_pct_4g" in av
         q["site_month"] = f"""
@@ -149,15 +166,15 @@ WITH addr AS (
   WHERE month_id = (SELECT MAX(month_id) FROM {_fq(T_ADDR)})
   GROUP BY site_id
 ), perf AS (
-  SELECT site_id, month_id, SUM(usg_data_gb) AS payload_gb{f', SUM({rev}) AS revenue' if rev else ''}
+  SELECT site_id, CAST(month_id AS INT64) AS month_id, SUM(usg_data_gb) AS payload_gb{f', SUM({rev}) AS revenue' if rev else ''}
   FROM {_fq(T_SITE)}
-  WHERE month_id IN ({sm})
-  GROUP BY site_id, month_id
+  WHERE month_id IN ({months(T_SITE, *sm)})
+  GROUP BY 1, 2
 ){f''', av AS (
   SELECT site_id, CAST(month_id AS INT64) AS month_id, AVG(avg_avail_pct_4g) AS avail
   FROM {_fq(T_SITE_AV)}
-  WHERE CAST(month_id AS INT64) IN ({sm})
-  GROUP BY site_id, month_id
+  WHERE month_id IN ({months(T_SITE_AV, *sm)})
+  GROUP BY 1, 2
 )''' if has_av else ''}
 SELECT p.site_id, p.month_id, a.site_name, a.kecamatan, a.kabupaten, a.provinsi, a.lat, a.lon,
   p.payload_gb{', p.revenue' if rev else ''}{', v.avail' if has_av else ''}
@@ -196,7 +213,7 @@ def run_dump(check: bool = False) -> dict:
     import pyarrow.parquet as pq
 
     latest = _latest_month()
-    queries = build_queries(latest, _latest_day(), _columns)
+    queries = build_queries(latest, _latest_day(), _columns, _column_types)
     if check:
         out = {}
         for name, sql in queries.items():

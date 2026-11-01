@@ -30,6 +30,15 @@ def test_queries_use_literal_partitions_and_probed_columns():
     assert "IN (202610, 202609, 202510)" in q["site_month"] and "SUM(rev_total) AS revenue" in q["site_month"]
 
 
+def test_string_month_columns_get_quoted_literals():
+    # rham_site_wise_monthly keeps month_id as STRING upstream ("No matching signature for operator IN").
+    types = {perf_dump.T_SITE: {"month_id": "STRING"}, perf_dump.T_SITE_AV: {"month_id": "INT64"}}
+    q = perf_dump.build_queries(202610, None, lambda t: COLS.get(t, set()), lambda t: types.get(t, {}))["site_month"]
+    assert "WHERE month_id IN ('202610', '202609', '202510')" in q
+    assert "WHERE month_id IN (202610, 202609, 202510)" in q
+    assert "CAST(month_id AS INT64) AS month_id, SUM(usg_data_gb)" in q
+
+
 def test_optional_tables_are_skipped_when_missing():
     cols = dict(COLS)
     cols[perf_dump.T_DLY] = set()

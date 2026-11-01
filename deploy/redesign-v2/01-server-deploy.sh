@@ -21,9 +21,15 @@ if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
   git status --short --untracked-files=no
   exit 1
 fi
-PREV=$(git rev-parse HEAD)
-echo "$PREV $(git rev-parse --abbrev-ref HEAD)" > "$HOME/telco-ai-prev-commit"
-echo "current: $PREV (saved to ~/telco-ai-prev-commit)"
+if [ "$(git rev-parse --abbrev-ref HEAD)" = "redesign-v2" ] && [ -f "$HOME/telco-ai-prev-commit" ]; then
+  # A re-run after a stopped deploy: keep the commit from before the first attempt for rollback.
+  read -r PREV _ < "$HOME/telco-ai-prev-commit"
+  echo "re-run, rollback point stays $(cat "$HOME/telco-ai-prev-commit")"
+else
+  PREV=$(git rev-parse HEAD)
+  echo "$PREV $(git rev-parse --abbrev-ref HEAD)" > "$HOME/telco-ai-prev-commit"
+  echo "current: $PREV (saved to ~/telco-ai-prev-commit)"
+fi
 df -h "$APP" | tail -1
 
 say "2. Backup database"

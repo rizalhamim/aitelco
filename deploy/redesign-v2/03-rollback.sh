@@ -9,6 +9,7 @@ set -euo pipefail
 APP=/home/ubuntu/telco-ai
 cd "$APP"
 read -r PREV PREV_BRANCH < "$HOME/telco-ai-prev-commit"
+# The newest backup is from the last deploy attempt, taken before any restart.
 DB=$(ls -t "$HOME"/backup/telco_ai-*.db | head -1)
 REL=$(ls -t "$HOME"/backup/app_release-*.json | head -1)
 echo "back to $PREV ($PREV_BRANCH), database $DB, release $REL"

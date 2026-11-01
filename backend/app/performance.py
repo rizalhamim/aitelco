@@ -51,7 +51,7 @@ def _live_rows() -> dict:
             return _live
     from .bigquery_tool import run_query
     latest = perf_dump._latest_month()
-    qs = perf_dump.build_queries(latest, None, perf_dump._columns)
+    qs = perf_dump.build_queries(latest, None, perf_dump._columns, perf_dump._column_types)
     out = {"at": time.time(), "latest": latest}
     for name in ("kec_month", "site_month", "avail_month"):
         if name in qs:
