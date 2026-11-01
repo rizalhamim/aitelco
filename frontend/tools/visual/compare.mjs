@@ -51,6 +51,8 @@ async function main() {
       if (!existsSync(mock)) { console.log(`skip  ${c.name} (no mockup ${c.mockup})`); continue; }
       const page = await browser.newPage({ viewport: { width: c.width, height: c.height }, deviceScaleFactor: 2,
         reducedMotion: c.reducedMotion ? "reduce" : "no-preference" });
+      if (c.clock) await page.clock.setFixedTime(new Date(c.clock));
+      if (c.storage) await page.addInitScript((kv) => { for (const k in kv) localStorage.setItem(k, kv[k]); }, c.storage);
       if (!c.anonymous) await page.addInitScript((u) => {
         localStorage.setItem("access_token", "visual-test");
         localStorage.setItem("refresh_token", "visual-test");
@@ -61,6 +63,7 @@ async function main() {
         const url = new URL(route.request().url());
         const body = fixtureFor(url.pathname, url.searchParams, route.request().method());
         if (body === undefined) return route.fulfill({ status: 404, json: { detail: "no fixture" } });
+        if (body && body.__sse) return route.fulfill({ status: 200, headers: { "content-type": "text/event-stream" }, body: body.__sse });
         return route.fulfill({ status: 200, json: body });
       });
       await page.goto(base + c.route, { waitUntil: "networkidle" });

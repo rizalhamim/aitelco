@@ -6,6 +6,8 @@ export const USER = {
   is_active: true, created_at: "2026-01-05T08:00:00", last_login: "2026-11-01T05:40:00", login_count: 412,
 };
 
+import { QUESTION } from "./chat-fixture.mjs";
+
 const M = "design/mockup-v2";
 
 export const CASES = [
@@ -16,4 +18,16 @@ export const CASES = [
   // reference export, so the video frame is deterministic.
   { name: "login-web", route: "/login", width: 1440, height: 900, anonymous: true, reducedMotion: true,
     mockup: `${M}/01-login/png/Web - Login@2x.png` },
+  // 02 Tanya Agent: one question, the streamed answer of the mockup, chart hovered on day 16.
+  { name: "tanya-web", route: "/", width: 1440, height: 1080, clock: "2026-10-31T09:12:00",
+    storage: { "telco_ai_session_id::rizal": "s1" },
+    mockup: `${M}/02-tanya-agent/png/Web - Tanya Agent@2x.png`,
+    prepare: async (page) => {
+      await page.fill("textarea[aria-label=Pertanyaan]", QUESTION);
+      await page.click("button[aria-label=Kirim]");
+      await page.waitForSelector(".chartbox svg");
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const box = await page.locator(".chartbox").boundingBox();
+      await page.mouse.move(box.x + 44 + ((box.width - 56) * 15) / 30, box.y + 60);
+    } },
 ];

@@ -22,6 +22,7 @@ from . import site_perf
 from . import map_synth_agent
 from . import correlate_agent
 from . import chart_spec
+from . import headline_kpis
 from . import telemetry
 from starlette.concurrency import run_in_threadpool
 from .database import init_db, get_db, ChatSession, ChatMessage, UsageLog, utcnow
@@ -1182,13 +1183,16 @@ def chat_stream(req: ChatReq, request: Request):
                         selected_tables=gen_sql.get("_allowed_tables"),
                         table_contracts=knowledge.table_contracts(),
                     )
+                    _v2_chart = chart_spec.suggest(result["columns"], result["rows"], req.message,
+                                                   sql=result.get("sql") or "")
                     yield sse("result", {
                         "columns": result["columns"], "rows": result["rows"],
                         "row_count": result["row_count"], "sql": result["sql"],
                         "bytes_processed": result["bytes_processed"],
                         "refine_round": refine_round,
-                        "chart": chart_spec.suggest(result["columns"], result["rows"], req.message,
-                                                    sql=result.get("sql") or ""),
+                        "chart": _v2_chart,
+                        # Redesign v2 answer card: up to 3 headline numbers with delta and spark
+                        "kpis": headline_kpis.safe_headline(result["columns"], result["rows"], _v2_chart),
                     })
                     # Chart rendering is decided here, not in the clients: a column's
                     # TYPE says nothing about its meaning, so web and mobile used to

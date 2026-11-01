@@ -1,25 +1,15 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Activity, ArrowRight, BellRing, Calendar, Check, CircleHelp, Clock, Copy, FileSpreadsheet, FileText,
-  Globe, Languages, Mail, Map as MapIcon, MapPin, Mic, MoreHorizontal, Paperclip, Pin, RefreshCw, Send, Share2,
-  Square, ThumbsUp, TrendingUp, Upload, Code2, Workflow,
-} from "lucide-react";
-import AppShell from "./components/shell/AppShell";
-import SmartChart, { type ChartSpec as SmartChartSpec } from "./components/charts/SmartChart";
+import AppShell, { TopBar } from "./components/shell/AppShell";
+import { type ChartSpec as SmartChartSpec } from "./components/charts/SmartChart";
 import ChartPanel from "./components/ChartPanel";
-import ResultTable from "./components/ResultTable";
 import SiteMap from "./components/SiteMap";
+import { Icon } from "./components/v2/Icon";
+import { AnswerViz, KpiRow, detectLatLon, type Kpi } from "./components/v2/Answer";
 import { downloadXlsx } from "@/lib/xlsx";
 import "./chat.css";
-
-function detectLatLon(columns: string[]): { latKey: string; lonKey: string } | null {
-  const lat = columns.find((c) => /^lat(itude)?$/i.test(c) || /_lat(itude)?$/i.test(c) || /(addr_)?latitude/i.test(c));
-  const lon = columns.find((c) => /^lon(g|gitude)?$/i.test(c) || /_lon(g|gitude)?$/i.test(c) || /(addr_)?longitude/i.test(c));
-  if (lat && lon) return { latKey: lat, lonKey: lon };
-  return null;
-}
+import "./tanya.css";
 import Markdown from "./components/Markdown";
 import AgentFlow, { type FlowEvent } from "./components/AgentFlow";
 import { isLoggedIn, getUser, getAccessToken, canViewSQL, canExport, authFetch } from "@/lib/auth";
@@ -32,7 +22,7 @@ function gmaps(lat: unknown, lon: unknown): string | null {
 }
 
 function fmtNum(v: unknown): string {
-  if (v === null || v === undefined || v === "") return "—";
+  if (v === null || v === undefined || v === "") return "–";
   if (typeof v === "number") {
     return Number.isInteger(v) ? v.toLocaleString("id-ID") : v.toLocaleString("id-ID", { maximumFractionDigits: 2 });
   }
@@ -66,7 +56,7 @@ function NearestTable({ columns, rows }: { columns: string[]; rows: Record<strin
                   <td>
                     {url ? (
                       <a href={url} target="_blank" rel="noopener noreferrer" className="gmaps-link">🧭 Maps</a>
-                    ) : "—"}
+                    ) : "–"}
                   </td>
                 </tr>
               );
@@ -104,7 +94,7 @@ function KecProfileCard({ profile, isEN }: { profile: Record<string, unknown>; i
         { label: "Subscriber HVC", key: "subs_hvc" },
       ];
   function fmt(key: string, v: unknown): string {
-    if (v === null || v === undefined) return "—";
+    if (v === null || v === undefined) return "–";
     const n = typeof v === "number" ? v : parseFloat(String(v));
     if (!Number.isFinite(n)) return String(v);
     if (key === "revenue_prepaid") {
@@ -135,6 +125,8 @@ type Result = {
   sql?: string;
   bytes_processed?: number;
   chart?: SmartChartSpec;
+  kpis?: Kpi[];
+  source?: string;
 };
 
 // Server chart spec (sse "chart_spec", read by components/ChartPanel). The redesign
@@ -217,22 +209,6 @@ type Msg = {
   };
 };
 
-const DOMAIN_COLOR: Record<string, string> = {
-  site_performance: "var(--ioh-red)",
-  revenue: "var(--ioh-red)",
-  acquisition: "var(--ioh-pink)",
-  fwa: "var(--ioh-teal)",
-  ftth: "var(--ioh-teal)",
-  "5g": "var(--ioh-magenta)",
-  network: "var(--ioh-pink)",
-  network_benchmark: "var(--ioh-yellow)",
-  competitive: "var(--ioh-magenta)",
-  kpi_summary: "var(--ioh-red)",
-  customer_hvc: "var(--ioh-red)",
-  sales_distribution: "var(--ioh-magenta)",
-  territory_reference: "var(--ioh-grey)",
-  PROFILE: "var(--ioh-yellow)",
-};
 
 const DOMAIN_CHIPS = [
   { key: "revenue", label: "Revenue", icon: "duo_revenue", q: "Bagaimana performa revenue Jawa bulan ini dibanding bulan lalu per region?" },
@@ -245,10 +221,10 @@ const DOMAIN_CHIPS = [
 ];
 
 const STARTERS = [
-  { icon: "duo_revenue", title: "Revenue Jawa Barat", text: "Bagaimana performa revenue Jawa Barat bulan ini dibanding bulan lalu? Kabupaten mana yang paling turun?" },
-  { icon: "duo_site", title: "Site availability", text: "Site availability Jawa Timur minggu ini, mana yang di bawah target?" },
-  { icon: "duo_marketshare", title: "Market share", text: "Market share FWA Semarang dibanding kompetitor 3 bulan terakhir" },
-  { icon: "duo_report", title: "Profil kota", text: "Tampilkan profile lengkap kota Surabaya" },
+  { icon: "wallet", bg: "#FCEDD3", fg: "#B7791F", title: "Revenue West Java", text: "Bagaimana performa revenue West Java bulan ini dibanding bulan lalu? Kabupaten mana yang paling turun?" },
+  { icon: "tower", bg: "#FBE2E8", fg: "#C23A5B", title: "Site availability", text: "Site availability East Java minggu ini, mana yang di bawah target?" },
+  { icon: "pulse", bg: "#F4FCE3", fg: "#5E8A12", title: "Site productivity", text: "Site dengan produktivitas terendah di Central Java bulan ini" },
+  { icon: "map", bg: "#E3F7FA", fg: "#0E6F7C", title: "Profil wilayah", text: "Tampilkan profile lengkap kota Surabaya" },
 ];
 
 const STAGES: { key: Stage; label: string }[] = [
@@ -265,18 +241,18 @@ function hhmm(d = new Date()): string {
   return `${String(d.getHours()).padStart(2, "0")}.${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-function followUps(m: Msg): { icon: typeof Activity; text: string }[] {
-  const out: { icon: typeof Activity; text: string }[] = [];
+function followUps(m: Msg): string[] {
+  const out: string[] = [];
   const spec = m.result?.chart;
   const rows = m.result?.rows ?? [];
   const label = spec?.map_key ?? spec?.x;
   if (label && rows.length && spec?.type !== "line" && spec?.type !== "area") {
-    const top = String(rows[rows.length > 1 && spec?.sort !== "desc" ? 0 : 0][label] ?? "");
-    if (top) out.push({ icon: CircleHelp, text: `Kenapa ${top} seperti ini?` });
+    const top = String(rows[0][label] ?? "");
+    if (top) out.push(`Kenapa ${top} seperti ini?`);
   }
-  out.push({ icon: Activity, text: "Bandingkan dengan bulan lalu" });
-  out.push({ icon: TrendingUp, text: "Proyeksi bulan depan" });
-  if (spec?.map_key) out.push({ icon: MapIcon, text: "Tampilkan di peta" });
+  out.push("Bandingkan dengan bulan lalu");
+  out.push("Proyeksi bulan depan");
+  if (spec?.map_key) out.push("Tampilkan di peta");
   return out;
 }
 
@@ -295,13 +271,10 @@ export default function Home() {
   const [locating, setLocating] = useState(false);
   const [lang, setLang] = useState<"id" | "en">("id");
   const [historyVersion, setHistoryVersion] = useState(0);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const [showFlow, setShowFlow] = useState(false);
   const [copied, setCopied] = useState<number | null>(null);
-  const [liked, setLiked] = useState<Record<number, boolean>>({});
+  const [exportOpen, setExportOpen] = useState<number | null>(null);
   const [pinned, setPinned] = useState<Record<number, boolean>>({});
   const [listening, setListening] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -309,7 +282,28 @@ export default function Home() {
   const attachRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auth check — redirect to login if not authenticated
+  // Top bar title: the session's short title from history (falls back to the question).
+  const [sessionTitle, setSessionTitle] = useState("");
+  useEffect(() => {
+    if (!activeSession) return;
+    let alive = true;
+    authFetch("/api/history/sessions").then((r) => (r.ok ? r.json() : []))
+      .then((d) => {
+        const list: { session_id: string; title?: string }[] = Array.isArray(d) ? d : d?.sessions || [];
+        if (alive) setSessionTitle(list.find((x) => x.session_id === activeSession)?.title ?? "");
+      }).catch(() => {});
+    return () => { alive = false; };
+  }, [activeSession, historyVersion]);
+
+  // Answer language is chosen on the Profil page (Tampilan) and stored per browser.
+  useEffect(() => {
+    try {
+      const l = localStorage.getItem("telco_ai_lang");
+      if (l === "en" || l === "id") setLang(l);
+    } catch { /* storage blocked */ }
+  }, []);
+
+  // Auth check: redirect to login if not authenticated
   useEffect(() => {
     if (!isLoggedIn()) {
       router.push("/login");
@@ -317,11 +311,6 @@ export default function Home() {
       setAuthChecked(true);
     }
   }, [router]);
-
-  function chooseLang(l: "id" | "en") {
-    setLang(l);
-    try { localStorage.setItem("telco_ai_lang", l); } catch { /* ignore */ }
-  }
 
   useEffect(() => {
     if (!authChecked) return;
@@ -374,7 +363,7 @@ export default function Home() {
         headers: { ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}) },
       });
       if (!res.ok) {
-        // session not in DB yet (e.g. fresh unused id) — keep screen blank
+        // session not in DB yet (e.g. fresh unused id): keep screen blank
         return;
       }
       const data = await res.json();
@@ -419,22 +408,14 @@ export default function Home() {
     const el = scrollRef.current;
     if (!el) return;
     const id = requestAnimationFrame(() => {
-      const bubbles = el.querySelectorAll<HTMLElement>(".chat-user");
+      // the window scrolls (sidebar and top bar are sticky); keep the question below the 76 px bar
+      const bubbles = el.querySelectorAll<HTMLElement>(".ubub");
       const last = bubbles[bubbles.length - 1];
-      el.scrollTo({ top: last ? Math.max(0, last.offsetTop - 12) : 0, behavior: "smooth" });
+      const top = last ? last.getBoundingClientRect().top + window.scrollY - 76 - 22 : 0;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     });
     return () => cancelAnimationFrame(id);
   }, [messages.length]);
-
-  // close the "more" menu when clicking outside it
-  useEffect(() => {
-    if (!moreOpen) return;
-    function onDocClick(e: MouseEvent) {
-      if (!moreRef.current?.contains(e.target as Node)) setMoreOpen(false);
-    }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [moreOpen]);
 
   const [summarySending, setSummarySending] = useState(false);
   const [summaryMsg, setSummaryMsg] = useState("");
@@ -445,7 +426,7 @@ export default function Home() {
   async function summarizeAndSendMail() {
     if (summarySending) return;
     // include full underlying data (query tables + profile sections) so the
-    // emailed PDF can present the complete, informative history — not just text.
+    // emailed PDF can present the complete, informative history: not just text.
     const turns = messages
       .filter((m) => (m.content || "").trim() || m.result || (m.profileResults?.length))
       .map((m) => ({
@@ -499,13 +480,6 @@ export default function Home() {
       setSummarySending(false);
       setTimeout(() => { setSummaryMsg(""); setSummaryStatus(""); }, 9000);
     }
-  }
-
-  // Refresh: clear the current screen to a fresh/blank state (new session)
-  function refreshChat() {
-    if (busy) return;
-    newChat();
-    setSummaryMsg("");
   }
 
   // close attachment popup on outside click
@@ -596,7 +570,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
     );
   }
 
-  // Upload Excel (.xlsx) placeholder — parses client-side later
+  // Upload Excel (.xlsx) placeholder: parses client-side later
   function onPickFile() {
     setAttachOpen(false);
     fileInputRef.current?.click();
@@ -728,7 +702,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             const step = data.step as string;
             const stepLabel = (data.label as string) || step;
             const stepDesc = (data.desc as string) || "";
-            update({ status: `${stepLabel} — ${stepDesc}` });
+            update({ status: `${stepLabel}: ${stepDesc}` });
             const kindMap: Record<string, FlowEvent["kind"]> = {
               analyst: "analyst", router: "router", sql_write: "sql_write",
               bq_exec: "bq_exec", synth: "synth", export: "export",
@@ -794,10 +768,10 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             const label = (data.label as string) || "";
             const map: Record<string, string> = {
               analyzing: "Analyst sedang menganalisis…",
-              writing_sql: `${label || "Agent"} — menyiapkan query data…`,
+              writing_sql: `${label || "Agent"}: menyiapkan query data…`,
               executing: "Mengambil data dari database…",
               answering: "Menyusun jawaban…",
-              exporting: "Export Agent — membuat file…",
+              exporting: "Export Agent: membuat file…",
               general: "Menyusun jawaban…",
               planning_profile: "Merencanakan profile multi-domain…",
               parallel_queries: `Mengambil data dari ${(data.count as number) || ""} sumber…`,
@@ -812,7 +786,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
               territory_name: data.territory_name as string,
               sub_queries: data.sub_queries as { domain: string; section_title: string; question: string }[],
             };
-            update({ profilePlan: plan, status: `🏙️ Profile: ${plan.territory_name} — ${plan.sub_queries.length} domains` });
+            update({ profilePlan: plan, status: `🏙️ Profile: ${plan.territory_name}: ${plan.sub_queries.length} domains` });
             for (const sq of plan.sub_queries) {
               pushFlow({ kind: "agent", t: Date.now(), label: sq.section_title, domain: sq.domain });
             }
@@ -864,6 +838,8 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
                 sql: data.sql as string,
                 bytes_processed: bytes,
                 chart: data.chart as SmartChartSpec | undefined,
+                kpis: (data.kpis as Kpi[] | undefined) ?? [],
+                source: data.source as string | undefined,
               },
             });
             markStage("router", "analyst", "sql");
@@ -896,8 +872,8 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             const msg = verdict === "ok"
               ? "Jawaban relevan ✓"
               : verdict === "refine"
-                ? "Belum optimal — mencari jawaban lebih baik…"
-                : "Data tidak tersedia — menyiapkan alternatif…";
+                ? "Belum optimal: mencari jawaban lebih baik…"
+                : "Data tidak tersedia: menyiapkan alternatif…";
             update({ status: msg });
             if (verdict === "ok") markStage("validasi");
             pushFlow({
@@ -911,7 +887,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             const msg = verdict === "answerable"
               ? "Domain sesuai ✓"
               : verdict === "reroute"
-                ? "Domain tidak punya datanya — mengalihkan…"
+                ? "Domain tidak punya datanya: mengalihkan…"
                 : "Perlu konfirmasi pertanyaan…";
             update({ status: msg });
             pushFlow({
@@ -926,7 +902,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             pushFlow({
               kind: "reroute", t: Date.now(), label: "Re-route",
               domain: to, detail: reason.slice(0, 90),
-              feedback: `${String(data.from || "")} → ${to || "—"}`,
+              feedback: `${String(data.from || "")} → ${to || "–"}`,
             });
           } else if (event === "clarify") {
             update({ status: "Menunggu konfirmasi…" });
@@ -944,7 +920,8 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
               STAGES.forEach((x) => { if (isData || (x.key !== "sql")) done.add(x.key); });
               next[i] = {
                 ...next[i], status: undefined, stages: STAGES.map((x) => x.key).filter((k) => done.has(k)),
-                elapsedMs: next[i].startedAt ? Date.now() - next[i].startedAt! : undefined,
+                elapsedMs: typeof data.elapsed_ms === "number" ? data.elapsed_ms as number
+                  : next[i].startedAt ? Date.now() - next[i].startedAt! : undefined,
               };
               return next;
             });
@@ -956,7 +933,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
       // If the answer already streamed in (or completed), a late connection drop
-      // is not a real failure — don't show a scary "Network error".
+      // is not a real failure: don't show a scary "Network error".
       if (!err.includes("aborted") && !gotDone && !gotContent) {
         update({ error: err, status: undefined });
         pushFlow({ kind: "error", t: Date.now(), label: "Network error", detail: err });
@@ -983,7 +960,7 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
     setBusy(false);
   }
   const questions = messages.filter((m) => m.role === "user");
-  const title = questions[0]?.content.replace(/^📍\s*/, "") || "Percakapan baru";
+  const title = sessionTitle || questions[0]?.content.replace(/^📍\s*/, "") || "Percakapan baru";
   const now = new Date();
   const period = `${MONTHS_ID[now.getMonth()]} ${now.getFullYear()}`;
   const firstName = (getUser()?.full_name || getUser()?.username || "").split(" ")[0];
@@ -1060,8 +1037,11 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
 
   const drill = busy ? undefined : (col: string, value: string) =>
     send(`Detailkan ${value} (${col.replace(/_/g, " ")}) dari hasil sebelumnya`);
-  const showOnMap = (col: string, value: string) =>
-    router.push(`/map?focus=${encodeURIComponent(value)}&level=${encodeURIComponent(col)}`);
+
+  const fmtBytes = (b: number) => b >= 1e9 ? `${(b / 1e9).toLocaleString("id-ID", { maximumFractionDigits: 1 })} GB` : `${Math.max(1, Math.round(b / 1e6)).toLocaleString("id-ID")} MB`;
+  const sourceOf = (m: Msg) => m.result?.source
+    ?? (m.result && typeof m.result.bytes_processed === "number" ? `BigQuery · ${fmtBytes(m.result.bytes_processed)}` : m.domainLabel);
+  const hasMap = (m: Msg) => !!m.result && (!!detectLatLon(m.result.columns) || !!m.result.chart?.map_key);
 
   return (
     <AppShell
@@ -1070,302 +1050,228 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
       onOpenSession={(sid) => loadSession(sid)}
       historyVersion={historyVersion}
       busy={busy}
-      mainClassName="chat-main"
     >
       {summaryMsg && (
-        <div className={`chat-toast ${summaryStatus}`} role="status">
-          {summaryStatus === "success" ? <Check size={16} /> : <Mail size={16} />} {summaryMsg}
+        <div className={`toast ${summaryStatus}`} role="status">
+          <Icon name={summaryStatus === "success" ? "check" : "mail"} size={16} /> {summaryMsg}
         </div>
       )}
 
-      <header className="ui-topbar">
-        <div className="ui-topbar-title">
-          <b title={title}>{title}</b>
-          <span>{questions.length ? `Percakapan · ${questions.length} pertanyaan` : "Tanya Agent · siap menjawab"}</span>
-        </div>
-        <span className="ui-chip teal chat-hide-sm"><MapPin size={16} /> Region: Jawa</span>
-        <span className="ui-chip chat-hide-sm"><Calendar size={20} strokeWidth={1.6} /> {period}</span>
-        <button className="ui-iconbtn" onClick={summarizeAndSendMail} disabled={summarySending || busy || messages.length === 0}
-          title="Kirim ringkasan percakapan ke email" aria-label="Bagikan ringkasan">
-          <Share2 size={18} />
-        </button>
-        <div className="chat-more" ref={moreRef}>
-          <button className="ui-iconbtn" onClick={() => setMoreOpen((v) => !v)} aria-label="Lainnya" aria-expanded={moreOpen}>
-            <MoreHorizontal size={18} />
+      <TopBar
+        title={title}
+        subtitle={questions.length ? `${questions.length} pertanyaan${lang === "en" ? " · English" : ""}` : "Siap menjawab"}
+        actions={<>
+          <span className="chip teal"><Icon name="pin" />Circle Java</span>
+          <span className="chip"><Icon name="cal" />{period}</span>
+          <button className="btn-ic" onClick={summarizeAndSendMail} disabled={summarySending || busy || messages.length === 0}
+            title="Ringkas percakapan dan kirim ke email" aria-label="Bagikan ringkasan ke email">
+            <Icon name="share" className="ic" />
           </button>
-          {moreOpen && (
-            <div className="ui-popover chat-more-menu" role="menu">
-              <button role="menuitem" disabled={busy} onClick={() => { setMoreOpen(false); refreshChat(); }}>
-                <RefreshCw size={16} /> Mulai percakapan baru
-              </button>
-              <button role="menuitem" disabled={summarySending || busy || messages.length === 0}
-                onClick={() => { setMoreOpen(false); summarizeAndSendMail(); }}>
-                <Mail size={16} /> {summarySending ? "Meringkas…" : "Ringkas & kirim ke email"}
-              </button>
-              <div className="chat-menu-label"><Languages size={14} /> Bahasa jawaban</div>
-              <div className="ui-seg chat-lang">
-                <button aria-pressed={lang === "id"} onClick={() => chooseLang("id")}>Indonesia</button>
-                <button aria-pressed={lang === "en"} onClick={() => chooseLang("en")}>English</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
+        </>}
+      />
 
-      <div className="chat-scroll" ref={scrollRef}>
-        <div className="ui-glow" aria-hidden="true" />
-        <div className="chat-col">
-          <div className="chat-domains" role="list" aria-label="Topik">
-            {DOMAIN_CHIPS.map((d) => (
-              <button key={d.key} role="listitem" className="chat-domain" disabled={busy} onClick={() => send(d.q)} title={d.q}>
+      <div className="tanya-body">
+        <div className="tanya">
+          <div className="conv" ref={scrollRef}>
+            {messages.length === 0 && (
+              <section className="welcome">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/illustrations/${d.icon}.svg`} alt="" width={36} height={36} />
-                <span>{d.label}</span>
-              </button>
-            ))}
-          </div>
+                <span className="tile"><img src="/brand/icon_circle_java.png" alt="" /></span>
+                <h1>Halo{firstName ? `, ${firstName}` : ""}. Mau tahu apa hari ini?</h1>
+                <p>Tanyakan revenue, site, payload, market share atau profil wilayah di Circle Java. Agent menulis query, mengambil data, lalu menyajikan angka, grafik, tabel dan peta.</p>
+                <div className="starters">
+                  {STARTERS.map((s) => (
+                    <button key={s.text} className="starter" onClick={() => send(s.text)}>
+                      <i style={{ background: s.bg, color: s.fg }}><Icon name={s.icon} /></i>
+                      <span><b>{s.title}</b>{s.text}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="domains" role="list" aria-label="Topik">
+                  {DOMAIN_CHIPS.map((d) => (
+                    <button key={d.key} role="listitem" className="sg" disabled={busy} onClick={() => send(d.q)} title={d.q}>
+                      <Icon name="spark" />{d.label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
 
-          {messages.length === 0 && (
-            <section className="chat-welcome">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="chat-welcome-orb" src="/illustrations/ai_orb_particles.svg" alt="" width={168} height={168} />
-              <h1>Halo{firstName ? `, ${firstName}` : ""}. Mau tahu apa hari ini?</h1>
-              <p>Tanyakan revenue, site, network, market share atau sales di Jawa. Agent menulis query, mengambil data dari BigQuery, lalu menyajikan angka, grafik dan tabelnya.</p>
-              <div className="chat-starters">
-                {STARTERS.map((s) => (
-                  <button key={s.text} className="chat-starter" onClick={() => send(s.text)}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/illustrations/${s.icon}.svg`} alt="" width={40} height={40} />
-                    <span><b>{s.title}</b>{s.text}</span>
-                    <ArrowRight size={16} />
+            {messages.map((m, i) => m.role === "user" ? (
+              <div key={i} className="ubub">{m.content}{m.time && <small>{m.time}</small>}</div>
+            ) : (
+              <div key={i} className="ans">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <span className="tile"><img src="/brand/icon_circle_java.png" alt="" /></span>
+                <article className="acard" aria-label="Jawaban Agent">
+                  <div className="ahead">
+                    <b>Agent Java</b>
+                    {m.stages?.includes("validasi") && !m.error && <span className="pill ok"><Icon name="check" />Tervalidasi</span>}
+                    {m.status ? (
+                      <span className="pill live"><span className="spin" />{m.status}</span>
+                    ) : m.stages?.length ? (
+                      <button type="button" className="pill grey" aria-expanded={!!sqlVisible[i]}
+                        onClick={() => setSqlVisible((v) => ({ ...v, [i]: !v[i] }))} title="Lihat langkah agent">
+                        {m.stages.length} langkah{m.elapsedMs ? ` · ${Math.max(0.1, m.elapsedMs / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} dtk` : ""}
+                        <Icon name="chev" />
+                      </button>
+                    ) : null}
+                    {sourceOf(m) && <span className="r"><span className="pill src"><Icon name="db" />{sourceOf(m)}</span></span>}
+                  </div>
+
+                  {sqlVisible[i] && (
+                    <div className="vsub">
+                      {i === lastAssistant && pipelineFlow.length > 0 && <AgentFlow events={pipelineFlow} live={busy} tokenUsage={tokenUsage} />}
+                      {m.sql && canViewSQL() && <pre className="sqlbox"><code>{m.sql}</code></pre>}
+                    </div>
+                  )}
+
+                  {m.content && <div className="atext"><Markdown text={m.content} /></div>}
+                  {!m.content && m.status && !m.result && (
+                    <div className="askel" aria-hidden="true"><span style={{ width: "92%" }} /><span style={{ width: "76%" }} /><span style={{ width: "58%" }} /></div>
+                  )}
+
+                  {m.result && m.result.rows.length > 0 && (
+                    <>
+                      <KpiRow kpis={m.result.kpis ?? []} />
+                      {m.chartSpec && (!m.result.chart || m.result.chart.type === "none") ? (
+                        <div className="viz"><ChartPanel columns={m.result.columns} rows={m.result.rows} spec={m.chartSpec} /></div>
+                      ) : null}
+                      <AnswerViz result={m.result} onDrill={drill} />
+                    </>
+                  )}
+
+                  {m.profileResults && m.profileResults.length > 0 && (
+                    <div className="viz">
+                      <div className="vhead"><div>
+                        <h4>{m.profilePlan?.territory_name ? `Profil ${m.profilePlan.territory_name}` : "Profil wilayah"}</h4>
+                        <p>{m.profileResults.filter((r) => r.status === "ok").length} dari {m.profileResults.length} sumber data berhasil</p>
+                      </div></div>
+                      <div className="vsub">
+                        {m.profileResults.map((pr, pi) => pr.status === "ok" && pr.rows.length > 0 ? (
+                          <AnswerViz key={pi} result={{ columns: pr.columns, rows: pr.rows, row_count: pr.row_count, chart: pr.chart ? { ...pr.chart, title: pr.chart.title || pr.section_title } : undefined }} />
+                        ) : (
+                          <div key={pi} className="aerr"><b>{pr.section_title}</b>: {pr.error ? pr.error.slice(0, 140) : "tidak ada data"}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {m.locationResult && (
+                    <div className="vsub">
+                      {m.locationResult.kecProfile && (
+                        <div className="viz">
+                          <div className="vhead"><div><h4>{lang === "en" ? "Kecamatan profile" : "Profil kecamatan"}{m.locationResult.kecamatan?.kecamatan ? ` · ${m.locationResult.kecamatan.kecamatan}` : ""}</h4></div></div>
+                          <KecProfileCard profile={m.locationResult.kecProfile} isEN={lang === "en"} />
+                        </div>
+                      )}
+                      {(["sites", "outlets"] as const).map((k) => {
+                        const block = m.locationResult![k];
+                        if (!block || block.rows.length === 0) return null;
+                        const geo = detectLatLon(block.columns);
+                        return (
+                          <div key={k} className="viz">
+                            <div className="vhead"><div><h4>{k === "sites" ? (lang === "en" ? "10 nearest sites" : "10 site terdekat") : (lang === "en" ? "10 nearest outlets" : "10 outlet terdekat")}</h4></div></div>
+                            {geo && <div className="vmap"><SiteMap columns={block.columns} rows={block.rows} latKey={geo.latKey} lonKey={geo.lonKey} /></div>}
+                            <NearestTable columns={block.columns} rows={block.rows} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {m.error && <div className="aerr" role="alert"><b>Agent gagal menjawab.</b> {m.error}</div>}
+
+                  {!m.status && (m.content || m.result) && (
+                    <div className="vfoot">
+                      <button type="button" className="pill ai" onClick={() => taRef.current?.focus()}><Icon name="spark" />Lanjutkan</button>
+                      <div className="act">
+                        <button type="button" onClick={() => copyAnswer(i)}><Icon name={copied === i ? "check" : "copy"} />{copied === i ? "Tersalin" : "Salin"}</button>
+                        {(m.result?.rows.length || m.exportReady) && canExport() ? (
+                          <button type="button" onClick={() => setExportOpen((v) => (v === i ? null : i))} aria-expanded={exportOpen === i}><Icon name="dl" />Ekspor</button>
+                        ) : null}
+                        {m.result && <button type="button" onClick={() => watchThis(i)}><Icon name="bellplus" />Pantau</button>}
+                        {hasMap(m) && (
+                          <button type="button" className="pri" onClick={() => router.push(`/map?q=${encodeURIComponent(messages[i - 1]?.content || "")}`)}>
+                            <Icon name="map" />Buka di Peta Agent
+                          </button>
+                        )}
+                        {exportOpen === i && (
+                          <div className="menu" role="menu">
+                            {m.result && m.result.rows.length > 0 && <button role="menuitem" onClick={() => { setExportOpen(null); exportXlsx(i); }}><Icon name="table" />Unduh Excel (XLSX)</button>}
+                            {m.exportReady ? (
+                              <button role="menuitem" onClick={() => { setExportOpen(null); downloadFromUrl(m.exportReady!.url, `agent-java.${m.exportReady!.format}`); }}>
+                                <Icon name="file" />Unduh {m.exportReady.format.toUpperCase()}
+                              </button>
+                            ) : m.result ? (
+                              <button role="menuitem" disabled={busy} onClick={() => { setExportOpen(null); send("Buatkan laporan PDF dari hasil sebelumnya"); }}><Icon name="file" />Buat laporan PDF</button>
+                            ) : null}
+                            {m.result?.chart && m.result.chart.type !== "none" && (
+                              <button role="menuitem" disabled={pinned[i]} onClick={() => { setExportOpen(null); pinToDashboard(i); }}>
+                                <Icon name="grid" />{pinned[i] ? "Tersemat di Dashboard" : "Sematkan ke Dashboard"}
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </article>
+              </div>
+            ))}
+
+            {!busy && lastAssistant >= 0 && lastAssistant === messages.length - 1 && !messages[lastAssistant].error && (
+              <div className="sugg">
+                {followUps(messages[lastAssistant]).map((f) => (
+                  <button key={f} className="sg" onClick={() => f === "Tampilkan di peta"
+                    ? router.push(`/map?q=${encodeURIComponent(messages[lastAssistant - 1]?.content || "")}`) : send(f)}>
+                    <Icon name="spark" />{f}
                   </button>
                 ))}
               </div>
-            </section>
-          )}
-
-          {messages.map((m, i) => m.role === "user" ? (
-            <div key={i} className="chat-user">
-              <div className="chat-bubble">
-                <p>{m.content}</p>
-                {m.time && <span>{m.time}</span>}
-              </div>
-            </div>
-          ) : (
-            <div key={i} className="chat-answer">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="chat-avatar" src="/illustrations/ai_orb_particles.svg" alt="Agent" width={40} height={40} />
-              <article className="chat-card">
-                <div className="chat-pipeline">
-                  {STAGES.map((st, si) => {
-                    const done = m.stages?.includes(st.key);
-                    const live = busy && i === lastAssistant && !done && STAGES.slice(0, si).every((p) => m.stages?.includes(p.key) || p.key === "sql");
-                    if (!done && !(busy && i === lastAssistant) && !m.stages?.length) return null;
-                    return (
-                      <span key={st.key} className="chat-stage-wrap">
-                        {si > 0 && <span className="chat-stage-line" />}
-                        <span className={`chat-stage ${done ? "done" : live ? "live" : "todo"}`}>
-                          {done ? <Check size={14} strokeWidth={2.4} /> : <span className="chat-stage-dot" />}
-                          {st.label}
-                        </span>
-                      </span>
-                    );
-                  })}
-                  <span className="chat-pipeline-meta">
-                    {m.status ? (
-                      <><span className="chat-spinner" /> {m.status}</>
-                    ) : m.elapsedMs ? (
-                      <><Clock size={14} /> Selesai dalam {Math.max(0.1, m.elapsedMs / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} dtk</>
-                    ) : null}
-                  </span>
-                </div>
-
-                {m.content && <div className="chat-text"><Markdown text={m.content} /></div>}
-                {!m.content && m.status && !m.result && (
-                  <div className="chat-skeleton" aria-hidden="true">
-                    <span className="ui-skel" style={{ width: "92%" }} />
-                    <span className="ui-skel" style={{ width: "76%" }} />
-                    <span className="ui-skel" style={{ width: "58%" }} />
-                  </div>
-                )}
-
-                {m.result && m.result.rows.length > 0 && (() => {
-                  const geo = detectLatLon(m.result.columns);
-                  const spec = m.result.chart;
-                  return (
-                    <>
-                      {spec && spec.type !== "none" ? (
-                        <SmartChart spec={spec} rows={m.result.rows} onDrill={drill} height={spec.type === "hbar" ? Math.min(420, 60 + Math.min(m.result.rows.length, spec.top_n ?? 15) * 30) : 220} />
-                      ) : m.chartSpec ? (
-                        // Server chart spec (funnel, matrix, dual axis) when the redesign chart has no fit.
-                        <ChartPanel columns={m.result.columns} rows={m.result.rows} spec={m.chartSpec} />
-                      ) : null}
-                      {geo && (
-                        <div className="chat-map"><SiteMap columns={m.result.columns} rows={m.result.rows} latKey={geo.latKey} lonKey={geo.lonKey} /></div>
-                      )}
-                      <ResultTable columns={m.result.columns} rows={m.result.rows} spec={spec}
-                        onShowMap={spec?.map_key ? showOnMap : undefined} />
-                    </>
-                  );
-                })()}
-
-                {m.profileResults && m.profileResults.length > 0 && (
-                  <div className="chat-profile">
-                    <div className="chat-profile-head">
-                      <b>{m.profilePlan?.territory_name ? `Profil ${m.profilePlan.territory_name}` : "Profil wilayah"}</b>
-                      <span>{m.profileResults.filter((r) => r.status === "ok").length} dari {m.profileResults.length} sumber data berhasil</span>
-                    </div>
-                    <div className="chat-profile-grid">
-                      {m.profileResults.map((pr, pi) => (
-                        <div key={pi} className={`chat-profile-card ${pr.status === "ok" ? "" : "err"}`}>
-                          <div className="chat-profile-card-head">
-                            <span className="dot" style={{ background: DOMAIN_COLOR[pr.domain] || "var(--ds-chart-grey)" }} />
-                            <b>{pr.section_title}</b>
-                            <span>{pr.status === "ok" ? `${pr.row_count} baris` : "gagal"}</span>
-                          </div>
-                          {pr.status === "ok" && pr.chart && pr.chart.type !== "none" && (
-                            <SmartChart spec={pr.chart} rows={pr.rows} height={180} bare />
-                          )}
-                          {pr.status === "ok" && pr.rows.length > 0 && (!pr.chart || pr.chart.type === "none" || pr.chart.type === "kpi") && (
-                            <ResultTable columns={pr.columns} rows={pr.rows} spec={pr.chart} initialRows={5} />
-                          )}
-                          {pr.status !== "ok" && pr.error && <p className="chat-profile-err">{pr.error.slice(0, 140)}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {m.locationResult && (
-                  <div className="chat-loc">
-                    {m.locationResult.kecProfile && (
-                      <div className="chat-loc-block">
-                        <b>{lang === "en" ? "Kecamatan profile" : "Profil kecamatan"}{m.locationResult.kecamatan?.kecamatan ? ` · ${m.locationResult.kecamatan.kecamatan}` : ""}</b>
-                        <KecProfileCard profile={m.locationResult.kecProfile} isEN={lang === "en"} />
-                      </div>
-                    )}
-                    {(["sites", "outlets"] as const).map((k) => {
-                      const block = m.locationResult![k];
-                      if (!block || block.rows.length === 0) return null;
-                      const geo = detectLatLon(block.columns);
-                      return (
-                        <div key={k} className="chat-loc-block">
-                          <b>{k === "sites" ? (lang === "en" ? "10 nearest sites" : "10 site terdekat") : (lang === "en" ? "10 nearest outlets" : "10 outlet terdekat")}</b>
-                          {geo && <div className="chat-map"><SiteMap columns={block.columns} rows={block.rows} latKey={geo.latKey} lonKey={geo.lonKey} /></div>}
-                          <NearestTable columns={block.columns} rows={block.rows} />
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {m.error && (
-                  <div className="chat-error" role="alert">
-                    <b>Agent gagal menjawab.</b> {m.error}
-                  </div>
-                )}
-
-                {m.sql && canViewSQL() && sqlVisible[i] && (
-                  <pre className="chat-sql"><code>{m.sql}</code></pre>
-                )}
-                {showFlow && i === lastAssistant && pipelineFlow.length > 0 && (
-                  <div className="chat-flow"><AgentFlow events={pipelineFlow} live={busy} tokenUsage={tokenUsage} /></div>
-                )}
-
-                {!m.status && (m.content || m.result) && (
-                  <div className="chat-actions">
-                    {m.result && m.result.rows.length > 0 && canExport() && (
-                      <button className="ui-btn" onClick={() => exportXlsx(i)}><FileSpreadsheet size={20} strokeWidth={1.6} /> Export XLSX</button>
-                    )}
-                    {m.exportReady && canExport() ? (
-                      <button className="ui-btn" onClick={() => downloadFromUrl(m.exportReady!.url, `bizplan-report.${m.exportReady!.format}`)}>
-                        <FileText size={20} strokeWidth={1.6} /> Unduh {m.exportReady.format.toUpperCase()}
-                      </button>
-                    ) : m.result && canExport() ? (
-                      <button className="ui-btn" disabled={busy} onClick={() => send("Buatkan laporan PDF dari hasil sebelumnya")}>
-                        <FileText size={20} strokeWidth={1.6} /> Laporan PDF
-                      </button>
-                    ) : null}
-                    {m.result && m.result.chart && m.result.chart.type !== "none" && (
-                      <button className="ui-btn" onClick={() => pinToDashboard(i)} disabled={pinned[i]}>
-                        <Pin size={20} strokeWidth={1.6} /> {pinned[i] ? "Tersemat di dashboard" : "Pin ke dashboard"}
-                      </button>
-                    )}
-                    {m.result && (
-                      <button className="ui-btn tint" onClick={() => watchThis(i)}><BellRing size={20} strokeWidth={1.6} /> Pantau &amp; beri alert</button>
-                    )}
-                    <span className="chat-actions-spacer" />
-                    {m.sql && canViewSQL() && (
-                      <button className="ui-iconbtn ghost" onClick={() => setSqlVisible((v) => ({ ...v, [i]: !v[i] }))}
-                        aria-pressed={!!sqlVisible[i]} title="Lihat SQL"><Code2 size={16} /></button>
-                    )}
-                    {i === lastAssistant && pipelineFlow.length > 0 && canViewSQL() && (
-                      <button className="ui-iconbtn ghost" onClick={() => setShowFlow((v) => !v)} aria-pressed={showFlow} title="Lihat alur agent"><Workflow size={16} /></button>
-                    )}
-                    <button className={`ui-iconbtn ghost ${liked[i] ? "on" : ""}`} onClick={() => setLiked((v) => ({ ...v, [i]: !v[i] }))}
-                      aria-pressed={!!liked[i]} title="Jawaban membantu"><ThumbsUp size={16} /></button>
-                    <button className="ui-iconbtn ghost" onClick={() => copyAnswer(i)} title="Salin jawaban">
-                      {copied === i ? <Check size={16} /> : <Copy size={16} />}
-                    </button>
-                  </div>
-                )}
-              </article>
-            </div>
-          ))}
-
-          {!busy && lastAssistant >= 0 && lastAssistant === messages.length - 1 && !messages[lastAssistant].error && (
-            <div className="chat-followups">
-              {followUps(messages[lastAssistant]).map((f) => (
-                <button key={f.text} className="ui-chip outline-teal" onClick={() => f.text === "Tampilkan di peta" && messages[lastAssistant].result?.chart?.map_key
-                  ? router.push("/map") : send(f.text)}>
-                  <f.icon size={18} strokeWidth={1.7} /> {f.text}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="chat-composer">
-        <div className="chat-input">
-          <textarea
-            ref={taRef}
-            placeholder="Tanya apa saja tentang bisnis Jawa: revenue, site, market share…"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            disabled={busy}
-            rows={1}
-            aria-label="Pertanyaan"
-          />
-          <div className="chat-tools">
-            <input ref={fileInputRef} type="file" accept=".xlsx,.xls" hidden onChange={onFileChosen} />
-            <div className="chat-attach" ref={attachRef}>
-              <button className="ui-iconbtn ghost chat-tool" onClick={() => setAttachOpen((v) => !v)} disabled={busy || locating}
-                aria-label="Lampiran" aria-haspopup="menu" aria-expanded={attachOpen}>
-                {locating ? <span className="chat-spinner" /> : <Paperclip size={18} />}
-              </button>
-              {attachOpen && (
-                <div className="ui-popover chat-attach-menu" role="menu">
-                  <button role="menuitem" onClick={shareLocation}><MapPin size={16} /> Bagikan lokasi saya<small>Profil kecamatan, site & outlet terdekat</small></button>
-                  <button role="menuitem" onClick={onPickFile}><Upload size={16} /> Unggah Excel<small>File .xlsx untuk dianalisis</small></button>
-                </div>
-              )}
-            </div>
-            <span className="ui-chip teal"><MapPin size={16} /> Lokasi: Circle Java</span>
-            {lang === "en" && <span className="ui-chip chat-hide-sm"><Globe size={16} /> English</span>}
-            <span className="chat-actions-spacer" />
-            <button className={`ui-iconbtn ghost chat-tool ${listening ? "on" : ""}`} onClick={voiceInput} disabled={busy} aria-label="Bicara">
-              <Mic size={18} />
-            </button>
-            {busy ? (
-              <button className="chat-send stop" onClick={stop} aria-label="Hentikan"><Square size={16} fill="currentColor" /></button>
-            ) : (
-              <button className="chat-send" onClick={() => send()} disabled={!input.trim()} aria-label="Kirim"><Send size={18} /></button>
             )}
           </div>
+
+          <div className="dock">
+            <div className="fade" />
+            <div className="composer">
+              <textarea
+                ref={taRef}
+                placeholder="Tanya apa saja tentang bisnis Circle Java: revenue, site, market share, peta…"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                disabled={busy}
+                rows={1}
+                aria-label="Pertanyaan"
+              />
+              <div className="row" ref={attachRef}>
+                <input ref={fileInputRef} type="file" accept=".xlsx,.xls" hidden onChange={onFileChosen} />
+                <button className="btn-ic" onClick={() => setAttachOpen((v) => !v)} disabled={busy || locating}
+                  aria-label="Lampiran" aria-haspopup="menu" aria-expanded={attachOpen}>
+                  {locating ? <span className="pill live"><span className="spin" /></span> : <Icon name="clip" className="ic" />}
+                </button>
+                {attachOpen && (
+                  <div className="menu" role="menu">
+                    <button role="menuitem" onClick={shareLocation}><Icon name="locate" /><span>Bagikan lokasi saya<small>Profil kecamatan, site dan outlet terdekat</small></span></button>
+                    <button role="menuitem" onClick={onPickFile}><Icon name="up" /><span>Unggah Excel<small>File .xlsx untuk dianalisis</small></span></button>
+                  </div>
+                )}
+                <span className="chip teal"><Icon name="pin" />Circle Java</span>
+                <span className="chip"><Icon name="cal" />{period}</span>
+                {lang === "en" && <span className="chip"><Icon name="globe" />English</span>}
+                <span className="grow" />
+                <button className={`btn-ic bare ${listening ? "on" : ""}`} onClick={voiceInput} disabled={busy} aria-label="Bicara"><Icon name="mic" className="ic" /></button>
+                {busy ? (
+                  <button className="send stop" onClick={stop} aria-label="Hentikan"><Icon name="minus" /></button>
+                ) : (
+                  <button className="send" onClick={() => send()} disabled={!input.trim()} aria-label="Kirim"><Icon name="send" /></button>
+                )}
+              </div>
+            </div>
+            <p className="disclaim">Agent bisa keliru. Cek angka penting sebelum dibagikan.</p>
+          </div>
         </div>
-        <p className="chat-disclaimer">Agent bisa keliru. Verifikasi angka penting sebelum dibagikan.</p>
       </div>
     </AppShell>
   );

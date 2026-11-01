@@ -132,6 +132,14 @@ export default function ProfilePage() {
         <Link href="/tampilan" className="ui-btn">Tampilan</Link>
         {isAdmin() && <Link href="/admin" className="ui-btn">Kelola pengguna</Link>}
         <button className="ui-btn" onClick={() => logout()}>Keluar</button>
+        <label className="ui-btn" style={{ gap: 8 }}>
+          Bahasa jawaban
+          <select defaultValue={typeof window !== "undefined" ? (localStorage.getItem("telco_ai_lang") ?? "id") : "id"}
+            onChange={(e) => { try { localStorage.setItem("telco_ai_lang", e.target.value); } catch { /* storage blocked */ } }}>
+            <option value="id">Indonesia</option>
+            <option value="en">English</option>
+          </select>
+        </label>
       </div>
 
       <div style={{ width: "100%", maxWidth: 800 }}>

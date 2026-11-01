@@ -1,0 +1,136 @@
+/* Tanya Agent v2, ported from design/mockup-v2/02-tanya-agent (Web 1440 x 1080).
+   At 1440 wide the conversation column, cards and composer sit on the mockup pixels. */
+
+.v2 .tanya-body { position: relative; flex: 1; display: flex; flex-direction: column; min-width: 0;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(34,184,201,.08), rgba(34,184,201,0)), #F5F9F8 }
+.v2 .tanya { width: 100%; max-width: 1168px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; position: relative }
+.v2 .conv { flex: 1; padding: 22px 56px 200px; display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+
+/* empty state */
+.v2 .welcome { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 48px 0 8px }
+.v2 .welcome .tile { width: 64px; height: 64px; border-radius: 18px }
+.v2 .welcome h1 { margin: 6px 0 0; font: 700 26px/1.25 var(--f-display) }
+.v2 .welcome p { margin: 0; max-width: 620px; color: #5A6B68; font: 400 15px/1.55 var(--f-body) }
+.v2 .starters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 760px; margin-top: 12px }
+.v2 .starter { text-align: left; display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 18px; border: 1px solid #E1E9E7; background: #fff; cursor: pointer; font: 400 13.5px/1.45 var(--f-body); color: #3D4C49 }
+.v2 .starter:hover { border-color: #8FDFD7 }
+.v2 .starter b { display: block; font: 600 14px/1.3 var(--f-display); color: #0F1F1D; margin-bottom: 2px }
+.v2 .starter > i { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex: none }
+.v2 .starter > i svg { width: 18px; height: 18px }
+.v2 .domains { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 6px }
+
+/* messages */
+.v2 .ubub { align-self: flex-end; max-width: 620px; background: #0E8579; color: #fff; padding: 14px 18px; border-radius: 20px 20px 6px 20px; font: 400 15px/1.5 var(--f-body); box-shadow: 0 6px 16px rgba(14,133,121,.2); white-space: pre-wrap; overflow-wrap: anywhere }
+.v2 .ubub small { display: block; margin-top: 4px; font-size: 11px; color: #C0EDE8 }
+.v2 .ans { display: flex; gap: 14px; align-items: flex-start }
+.v2 .ans > .tile { width: 40px; height: 40px; border-radius: 12px }
+.v2 .acard { flex: 1; min-width: 0; background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 14px rgba(15,31,29,.05) }
+.v2 .ahead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.v2 .ahead b { font: 600 14px/1 var(--f-display) }
+.v2 .pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 99px; font: 600 12px/1 var(--f-display); border: 0; white-space: nowrap; letter-spacing: 0; text-transform: none }
+.v2 button.pill { cursor: pointer }
+.v2 .pill svg { width: 14px; height: 14px }
+.v2 .pill.ok { background: #E6F4EA; color: #1F7A3A } .v2 .pill.ai { background: #FFEDE7; color: #B5401F } .v2 .pill.src { background: #E3F7FA; color: #0E6F7C } .v2 .pill.grey { background: #ECF3F1; color: #3D4C49 }
+.v2 .pill.live { background: #E6F7F5; color: #0A6A5F }
+.v2 .pill .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(10,106,95,.25); border-top-color: #0A6A5F; animation: v2spin .8s linear infinite }
+@keyframes v2spin { to { transform: rotate(360deg) } }
+.v2 .pill.grey[aria-expanded="true"] svg { transform: rotate(180deg) }
+.v2 .ahead .r { margin-left: auto; color: #5A6B68; font: 500 12px/1 var(--f-display); display: flex; align-items: center; gap: 6px }
+.v2 .atext { font: 400 15px/1.6 var(--f-body); color: #0F1F1D; margin: 0 }
+.v2 .atext p { margin: 0 0 8px } .v2 .atext p:last-child { margin-bottom: 0 }
+.v2 .atext b, .v2 .atext strong { font-weight: 600 } .v2 .atext .dn { color: #C42B2B; font-weight: 600 }
+.v2 .askel { display: grid; gap: 8px } .v2 .askel span { height: 12px; border-radius: 6px; background: linear-gradient(90deg, #ECF3F1, #F5F9F8, #ECF3F1); background-size: 200% 100%; animation: v2sk 1.4s ease infinite }
+@keyframes v2sk { to { background-position: -200% 0 } }
+.v2 .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.v2 .kpi { border-radius: 16px; background: #F5F9F8; border: 1px solid #ECF3F1; padding: 14px 16px; display: grid; gap: 4px; position: relative; min-width: 0 }
+.v2 .kpi .lb { font: 500 12.5px/1.2 var(--f-display); color: #3D4C49; display: flex; align-items: center; gap: 8px }
+.v2 .kpi .lb i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; flex: none }
+.v2 .kpi .lb i svg { width: 15px; height: 15px }
+.v2 .kpi .v { font: 700 24px/1.15 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em }
+.v2 .kpi .d { font: 600 12px/1 var(--f-display); display: inline-flex; align-items: center; gap: 4px; color: #3D4C49 }
+.v2 .kpi .d.dn { color: #C42B2B } .v2 .kpi .d.up { color: #1F7A3A }
+.v2 .kpi .d span { color: #5A6B68; font-weight: 500 }
+.v2 .kpi svg.kspark { position: absolute; right: 14px; bottom: 14px; width: 84px; height: 30px }
+
+.v2 .viz { border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px 12px; display: grid; gap: 10px; min-width: 0 }
+.v2 .vhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.v2 .vhead h4 { margin: 0; font: 600 14.5px/1.3 var(--f-display) } .v2 .vhead p { margin: 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .vhead .seg { margin-left: auto }
+.v2 .answer-chart { display: grid; gap: 0; min-width: 0 }
+.v2 .legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.v2 .legend .lg { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49; background: #fff; cursor: pointer }
+.v2 .legend .lg i { width: 10px; height: 10px; border-radius: 50% }
+.v2 .legend .lg.off { opacity: .45 }
+.v2 .chartbox { position: relative; min-width: 0 }
+.v2 .chartbox svg { display: block }
+.v2 .tip { position: absolute; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 500 12px/1.5 var(--f-display); pointer-events: none; box-shadow: 0 10px 24px rgba(0,0,0,.25); min-width: 150px; z-index: 2 }
+.v2 .tip b { display: block; font-weight: 700; margin-bottom: 2px }
+.v2 .tip div { display: flex; align-items: center; gap: 7px } .v2 .tip div i { width: 8px; height: 8px; border-radius: 50% } .v2 .tip div span { margin-left: auto; font-weight: 700; padding-left: 12px; font-variant-numeric: tabular-nums }
+.v2 .tblwrap { overflow-x: auto; display: grid; gap: 8px; justify-items: start }
+.v2 .tbl { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.v2 .tbl th { text-align: left; font: 600 11.5px/1.2 var(--f-display); color: #5A6B68; padding: 8px 10px; border-bottom: 1px solid #E1E9E7; white-space: nowrap }
+.v2 .tbl td { padding: 8px 10px; border-bottom: 1px solid #ECF3F1 }
+.v2 .tbl td.n, .v2 .tbl th.n { text-align: right }
+.v2 .tbl .dn { color: #C42B2B; font-weight: 600 } .v2 .tbl .up { color: #1F7A3A; font-weight: 600 }
+.v2 .tmap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px }
+.v2 .tmap div { border-radius: 10px; height: 52px; padding: 6px 8px; font: 600 11px/1.2 var(--f-display); display: flex; flex-direction: column; justify-content: space-between; overflow: hidden }
+.v2 .tmap div span { font-weight: 700; font-size: 12px }
+.v2 .tmap-note { margin: 0; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .vmap { height: 320px; border-radius: 14px; overflow: hidden }
+.v2 .vsub { display: grid; gap: 12px }
+.v2 .vfoot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 2px }
+.v2 .act { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; position: relative }
+.v2 .act button, .v2 .act a { height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid #E1E9E7; background: #fff; font: 500 12px/1 var(--f-display); color: #3D4C49; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; text-decoration: none }
+.v2 .act button:disabled { opacity: .55; cursor: default }
+.v2 .act button svg, .v2 .act a svg { width: 15px; height: 15px }
+.v2 .act .pri { background: #0E8579; border-color: #0E8579; color: #fff }
+.v2 .menu { position: absolute; right: 0; bottom: 38px; background: #fff; border: 1px solid #E1E9E7; border-radius: 14px; box-shadow: 0 16px 40px rgba(4,51,46,.16); padding: 6px; display: grid; min-width: 220px; z-index: 5 }
+.v2 .menu button { height: 36px; border: 0; justify-content: flex-start; width: 100% }
+.v2 .menu button:hover { background: #F5F9F8 }
+.v2 .sqlbox { margin: 0; padding: 12px 14px; border-radius: 14px; background: #0F1F1D; color: #C0EDE8; font: 400 12px/1.5 ui-monospace, monospace; overflow-x: auto; white-space: pre }
+.v2 .aerr { padding: 12px 14px; border-radius: 14px; background: #FDECEC; color: #8A2020; font: 400 13.5px/1.5 var(--f-body) }
+.v2 .sugg { display: flex; gap: 8px; flex-wrap: wrap; padding-left: 54px }
+.v2 .sg { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 99px; border: 1px solid #FFC2AF; background: #fff; font: 500 13px/1 var(--f-display); color: #0F1F1D; cursor: pointer }
+.v2 .sg:hover { border-color: #FF7A59 }
+.v2 .sg:disabled { opacity: .55; cursor: default }
+.v2 .sg svg { width: 16px; height: 16px; color: #FF7A59 }
+.v2 .chip { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 13px/1 var(--f-display); color: #3D4C49; white-space: nowrap }
+.v2 .chip.teal { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F }
+.v2 .chip svg { width: 16px; height: 16px }
+.v2 .top .btn-ic:disabled { opacity: .55; cursor: default }
+
+/* composer dock: sticks to the bottom of the window over a fade */
+.v2 .dock { position: sticky; bottom: 0; height: 190px; margin-top: -190px; pointer-events: none; z-index: 6 }
+.v2 .dock .fade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(245,249,248,0), #F5F9F8 45%) }
+.v2 .composer { position: absolute; left: 56px; right: 56px; bottom: 34px; background: #fff; border: 1.5px solid #8FDFD7; border-radius: 22px; padding: 14px 14px 12px 18px; box-shadow: 0 16px 40px rgba(4,51,46,.14); display: grid; gap: 10px; pointer-events: auto }
+.v2 .composer:focus-within { box-shadow: 0 16px 40px rgba(4,51,46,.14), 0 0 0 4px rgba(34,184,201,.14) }
+.v2 .composer textarea { border: 0; outline: 0; resize: none; font: 400 15px/1.4 var(--f-body); color: #0F1F1D; background: transparent; padding: 0; min-height: 21px; max-height: 160px }
+.v2 .composer textarea::placeholder { color: #8A9A97 }
+.v2 .composer .row { display: flex; align-items: center; gap: 8px; position: relative }
+.v2 .composer .row .grow { flex: 1 }
+.v2 .composer .chip { height: 32px }
+.v2 .composer .btn-ic { width: 36px; height: 36px }
+.v2 .composer .btn-ic.bare { border: 0 }
+.v2 .composer .btn-ic.on { color: #C42B2B }
+.v2 .composer .menu { left: 0; right: auto; bottom: 44px }
+.v2 .composer .menu button small { display: block; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .composer .menu button { height: auto; padding: 8px 10px; text-align: left; align-items: flex-start }
+/* .v2 .composer prefix: globals.css styles ".composer button.send" for the v1 page */
+.v2 .composer .send { width: 46px; height: 46px; padding: 0; border-radius: 14px; border: 0; background: linear-gradient(135deg, #0E8579, #1597A8); color: #fff; display: grid; place-items: center; cursor: pointer; flex: none; box-shadow: none; text-transform: none; letter-spacing: 0; transform: none }
+.v2 .composer .send:disabled { cursor: default; background: linear-gradient(135deg, #0E8579, #1597A8); color: #fff }
+.v2 .composer .send svg { width: 20px; height: 20px }
+.v2 .composer .send.stop { background: #C42B2B }
+.v2 .disclaim { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font: 400 11.5px/1 var(--f-body); color: #5A6B68; pointer-events: auto; margin: 0 }
+.v2 .toast { position: fixed; top: 88px; right: 24px; z-index: 30; display: inline-flex; gap: 8px; align-items: center; padding: 10px 14px; border-radius: 12px; background: #0F1F1D; color: #fff; font: 500 13px/1.3 var(--f-display); box-shadow: 0 12px 30px rgba(0,0,0,.25) }
+.v2 .toast.error { background: #C42B2B }
+
+@media (max-width: 960px) {
+  .v2 .conv { padding: 16px 16px 200px }
+  .v2 .composer { left: 16px; right: 16px; bottom: 30px }
+  .v2 .kpis { grid-template-columns: 1fr 1fr !important }
+  .v2 .sugg { padding-left: 0 }
+  .v2 .ans > .tile { display: none }
+  .v2 .starters { grid-template-columns: 1fr }
+  .v2 .tmap { grid-template-columns: repeat(3, minmax(0, 1fr)) }
+}
+@media (prefers-reduced-motion: reduce) { .v2 .pill .spin, .v2 .askel span { animation: none } }
