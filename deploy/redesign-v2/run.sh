@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Redesign v2 (Agent Java) deploy, one command from Git Bash on the PC:
 #
-#   curl -fsSL https://raw.githubusercontent.com/rizalhamim/aitelco/claude/project-thread-mnz2kt/deploy/redesign-v2/run.sh -o ~/aj-deploy.sh && bash ~/aj-deploy.sh all
+#   ssh agent-02 'cd /home/ubuntu/telco-ai && git fetch -q github claude/project-thread-mnz2kt && git show FETCH_HEAD:deploy/redesign-v2/run.sh' > ~/aj-deploy.sh && bash ~/aj-deploy.sh all
 #
 # Steps (argument):
 #   deploy   server: code, Parquet dump, map cache, gates, web build, restart, smoke
@@ -15,7 +15,6 @@ STEP="${1:-}"
 HOST="${HOST:-agent-02}"
 BRANCH="claude/project-thread-mnz2kt"
 REPO_URL="https://github.com/rizalhamim/aitelco.git"
-RAW="https://raw.githubusercontent.com/rizalhamim/aitelco/$BRANCH/deploy/redesign-v2"
 BUILD_DIR="${BUILD_DIR:-/d/Project/Project.Bizplan-Java.com/aitelco-release}"
 LOGDIR="$HOME/aj-deploy-logs"
 mkdir -p "$LOGDIR"
@@ -23,12 +22,10 @@ LOG="$LOGDIR/$(date +%Y%m%d-%H%M%S)-$STEP.txt"
 exec > >(tee -a "$LOG") 2>&1
 echo "Log: $LOG"
 
-# Server scripts come straight from the branch, so nothing has to be copied by hand.
+# Server scripts are read from the branch by the server's own git fetch, so the GitHub
+# raw CDN (which can serve a copy minutes old) is never involved.
 remote() {
-  local tmp; tmp="$(mktemp)"
-  curl -fsSL "$RAW/$1?$(date +%s)" -o "$tmp"
-  tr -d '\r' < "$tmp" | ssh "$HOST" 'bash -s'
-  rm -f "$tmp"
+  ssh "$HOST" "cd /home/ubuntu/telco-ai && git fetch -q github $BRANCH && git show FETCH_HEAD:deploy/redesign-v2/$1 | tr -d '\r' | bash -s"
 }
 
 # Release signing: the PC repo's android/key.properties if there is one, otherwise the

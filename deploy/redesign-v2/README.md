@@ -3,7 +3,7 @@
 Satu perintah, tempel di Git Bash di PC lalu Enter:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rizalhamim/aitelco/claude/project-thread-mnz2kt/deploy/redesign-v2/run.sh -o ~/aj-deploy.sh && bash ~/aj-deploy.sh all
+ssh agent-02 'cd /home/ubuntu/telco-ai && git fetch -q github claude/project-thread-mnz2kt && git show FETCH_HEAD:deploy/redesign-v2/run.sh' > ~/aj-deploy.sh && bash ~/aj-deploy.sh all
 ```
 
 Urutannya:
