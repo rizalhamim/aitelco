@@ -400,6 +400,31 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
 .sheet .scomp .in svg { width: 18px; height: 18px; color: #3D4C49; flex: none } .sheet .scomp .in span { flex: 1 }
 .sheet .scomp .snd { width: 44px; height: 44px; border-radius: 14px; background: #0E8579; color: #fff; display: grid; place-items: center } .sheet .scomp .snd svg { width: 18px; height: 18px }
 .mmsgs > *, .sheet .sb > * { flex-shrink: 0 }
+/* metric switcher + kecamatan card (rev 2) */
+.mbar { left: 16px; top: 16px; width: 590px; padding: 10px 12px; display: grid; gap: 8px; border-radius: 16px }
+.mbar .mb1 { display: flex; align-items: center; gap: 10px } .mbar .lb { font: 600 12px/1 var(--f-display); color: #5A6B68 } .mbar .seg { margin: 0 }
+.mbar .mb2 { display: flex; gap: 6px; flex-wrap: nowrap; align-items: center }
+.mchip { height: 30px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1 var(--f-display); color: #3D4C49; cursor: pointer; white-space: nowrap }
+.mchip.on { background: #0F1F1D; color: #fff; border-color: #0F1F1D }
+.mchip.sub { margin-left: auto; color: #0A6A5F; border-style: dashed }
+.mapwrap .lyr { top: 120px }
+.kcard { right: 16px; bottom: 16px; width: 276px; padding: 12px; display: grid; gap: 9px }
+.kcard .h { display: flex; gap: 8px; align-items: flex-start } .kcard .h .grow { flex: 1 }
+.kcard .h b { font: 600 14px/1.25 var(--f-display); display: block } .kcard .h small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.kcard .ks > span { font: 600 10.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #0A6A5F; display: block; margin-bottom: 5px }
+.kcard .k3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px }
+.kcard .k3 div { background: #F5F9F8; border-radius: 9px; padding: 6px 7px; display: grid; gap: 2px; min-width: 0 }
+.kcard .k3 small { font: 500 9.5px/1.2 var(--f-display); color: #5A6B68; white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .kcard .k3 b { font: 700 12.5px/1.2 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap }
+.kcard .ac { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
+.kcard .ac span { height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font: 600 12px/1 var(--f-display) }
+.kcard .ac span svg { width: 14px; height: 14px }
+.kcard .ac .a1 { background: #0E8579; color: #fff } .kcard .ac .a2 { border: 1px solid #DCEFEC; color: #0A6A5F }
+.mapwrap .scl { right: 308px }
+.pop { display: none }
+.dmet { position: absolute; left: 12px; right: 66px; top: 12px; display: flex; gap: 6px; overflow: hidden }
+.dmet span { height: 32px; padding: 0 11px; border-radius: 99px; background: #fff; border: 1px solid #E1E9E7; box-shadow: 0 4px 12px rgba(15,31,29,.10); display: inline-flex; align-items: center; gap: 5px; font: 600 11.5px/1 var(--f-display); color: #3D4C49; white-space: nowrap; flex: none }
+.dmet span.on { background: #0F1F1D; color: #fff; border-color: #0F1F1D } .dmet svg { width: 13px; height: 13px }
+#droidFrame .dlg { top: 54px }
 
 </style>
 
@@ -439,6 +464,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <symbol id="i-layers" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5M3 17.5l9 5 9-5" opacity=".7"/></g></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></g></symbol>
   <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="i-locate" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></g></symbol>
   <symbol id="i-chevr" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -506,9 +532,13 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
             <div class="mapwrap" data-name="Peta">
               <svg class="map" data-vb="177 36 430 474" data-z="1.7395" data-pop="1"></svg>
               <div class="mtip"></div>
+              <div class="mcard mbar" data-name="Metrik peta">
+                <div class="mb1"><span class="lb">Warnai peta dengan</span><div class="seg cseg"><button class="on" data-c="perf"><svg><use href="#i-pulse"/></svg>Performance</button><button data-c="prod"><svg><use href="#i-tower"/></svg>Site productivity</button><button data-c="prof"><svg><use href="#i-users"/></svg>Profile wilayah</button></div></div>
+                <div class="mb2"></div>
+              </div>
               <div class="mcard lyr" data-name="Panel layer">
                 <div class="hd"><svg><use href="#i-layers"/></svg>Layer<small>4 aktif</small><span class="grow"></span><svg style="color:#5A6B68;width:16px"><use href="#i-chev"/></svg></div>
-                <div class="lr" data-l="chor"><span class="lsw" style="background:linear-gradient(90deg,#C42B2B,#F4A08A,#D8EFEA,#7FCFC3)"></span><div><b>Payload MoM per kecamatan</b><small>Choropleth · 42 kecamatan</small></div><span class="eye"><i></i></span></div>
+                <div class="lr" data-l="chor"><span class="lsw" style="background:linear-gradient(90deg,#C42B2B,#F4A08A,#D8EFEA,#7FCFC3)"></span><div><b class="cn">Payload MoM per kecamatan</b><small>Choropleth · 42 kecamatan</small></div><span class="eye"><i></i></span></div>
                 <div class="op">Opasitas<div class="rail"><i></i></div>85%</div>
                 <div class="lr" data-l="crit"><span class="lsw" style="background:#C42B2B;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #E1E9E7"></span><div><b>Site payload turun &gt; 10%</b><small>Titik koordinat · 14 site</small></div><span class="eye"><i></i></span></div>
                 <div class="lr" data-l="up"><span class="lsw" style="background:rgba(255,255,255,.6);border:2px dashed #0F1F1D"></span><div><b>area_ekspansi_q1.shp</b><small>Poligon SHP · 55,5 km²</small></div><span class="eye"><i></i></span></div>
@@ -517,12 +547,13 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
               </div>
               <div class="mcard zm"><span><svg><use href="#i-plus"/></svg></span><span><svg><use href="#i-minus"/></svg></span><hr><span><svg><use href="#i-locate"/></svg></span><span><svg><use href="#i-max"/></svg></span></div>
               <div class="mcard lgd" data-name="Legenda">
-                <b>Payload MoM per kecamatan</b>
-                <div class="ramp"><i style="background:#C42B2B"></i><i style="background:#E5634F"></i><i style="background:#F4A08A"></i><i style="background:#F9D6CB"></i><i style="background:#D8EFEA"></i><i style="background:#7FCFC3"></i></div>
-                <div class="tk"><span>−15%</span><span>−12%</span><span>−8%</span><span>−4%</span><span>0</span><span>+2%</span><span>+5%</span></div>
+                <b class="lt">Payload MoM per kecamatan</b>
+                <div class="ramp lr6"><i style="background:#C42B2B"></i><i style="background:#E5634F"></i><i style="background:#F4A08A"></i><i style="background:#F9D6CB"></i><i style="background:#D8EFEA"></i><i style="background:#7FCFC3"></i></div>
+                <div class="tk ltk"><span>−15%</span><span>−12%</span><span>−8%</span><span>−4%</span><span>0</span><span>+2%</span><span>+5%</span></div>
                 <div class="sy"><span><i style="background:#C42B2B;box-shadow:0 0 0 2px #fff,0 0 0 3px #E1E9E7"></i>Site kritis</span><span><i style="background:#3D4C49;transform:scale(.6)"></i>Site</span><span><i style="background:#fff;border:1.5px dashed #0F1F1D;border-radius:3px"></i>Area upload</span></div>
               </div>
               <div class="mcard scl"><span>5 km</span><i style="width:72px"></i></div>
+              <div class="mcard kcard" data-name="Kartu kecamatan"></div>
               <div class="mcard pop" data-name="Popup site">
                 <div class="h"><div><b>GRT-0412</b><small>Kec. Tarogong Kidul · 4G + 5G</small></div><span class="grow"></span><span class="sev k">Kritis</span></div>
                 <div class="m2"><div><small>Payload MoM</small><b>−14,7%</b></div><div><small>Revenue MoM</small><b>−8,4%</b></div></div>
@@ -546,7 +577,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
                   <div class="macts"><span><svg><use href="#i-table"/></svg>Daftar 17 site</span><span><svg><use href="#i-dl"/></svg>GeoJSON</span><span><svg><use href="#i-dl"/></svg>PNG peta</span></div>
                 </div>
               </div>
-              <div class="msugg"><span><svg><use href="#i-spark"/></svg>Heatmap pelanggan FWA di area ini</span><span><svg><use href="#i-spark"/></svg>Bandingkan dengan Sep</span><span><svg><use href="#i-spark"/></svg>Site 5G saja</span></div>
+              <div class="msugg"><span><svg><use href="#i-spark"/></svg>Site productivity per kecamatan</span><span><svg><use href="#i-spark"/></svg>Profile Kec. Tarogong Kidul</span><span><svg><use href="#i-spark"/></svg>Revenue MoM di area ini</span></div>
               <div class="mcomp">
                 <div class="box"><div class="ph">Tanya tentang peta, atau tarik file ke sini…</div><div class="row"><span class="ib"><svg><use href="#i-clip"/></svg></span><span class="ib"><svg><use href="#i-pin"/></svg></span><span class="ib"><svg><use href="#i-mic"/></svg></span><span class="grow"></span><span class="snd"><svg><use href="#i-send"/></svg></span></div></div>
                 <div class="ft">Upload: SHP (.zip), GeoJSON, KML, CSV lat/long · maks 20 MB</div>
@@ -570,6 +601,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
             </div>
             <div class="mapwrap" data-name="Peta">
               <svg class="map" data-vb="364 209 270 462" data-z="1.4444"></svg>
+              <div class="dmet"><span class="on"><svg><use href="#i-pulse"/></svg>Payload MoM<svg><use href="#i-chev"/></svg></span><span><svg><use href="#i-tower"/></svg>Site productivity</span><span><svg><use href="#i-users"/></svg>Profile</span></div>
               <div class="mcard dlg"><b>Payload MoM</b><div class="ramp"><i style="background:#C42B2B"></i><i style="background:#E5634F"></i><i style="background:#F4A08A"></i><i style="background:#F9D6CB"></i><i style="background:#D8EFEA"></i><i style="background:#7FCFC3"></i></div><div class="tk"><span>−15%</span><span>0</span><span>+5%</span></div></div>
               <span class="fab" style="top:12px"><svg><use href="#i-layers"/></svg><span class="badge">4</span></span>
               <span class="fab" style="top:64px"><svg><use href="#i-locate"/></svg></span>
@@ -585,7 +617,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
                   <div class="mstat"><div><small>Site</small><b>17</b><em style="color:#C42B2B">5 kritis</em></div><div><small>Revenue</small><b>Rp 4,6 M</b><em style="color:#C42B2B">▼ 6,2%</em></div><div><small>Payload</small><b>392 TB</b><em style="color:#C42B2B">▼ 12,6%</em></div></div>
                 </div>
               </div>
-              <div class="msugg"><span><svg><use href="#i-spark"/></svg>Daftar 17 site</span><span><svg><use href="#i-spark"/></svg>Heatmap FWA</span><span><svg><use href="#i-spark"/></svg>Bandingkan Sep</span></div>
+              <div class="msugg"><span><svg><use href="#i-spark"/></svg>Daftar 17 site</span><span><svg><use href="#i-spark"/></svg>Site productivity</span><span><svg><use href="#i-spark"/></svg>Profile area</span></div>
               <div class="scomp"><div class="in"><svg><use href="#i-clip"/></svg><span>Tanya tentang peta…</span><svg><use href="#i-mic"/></svg></div><span class="snd"><svg><use href="#i-send"/></svg></span></div>
             </div>
             <nav class="bnav" data-name="Bottom nav">
@@ -609,7 +641,9 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
           <li>Setiap jawaban agent menambah layer: choropleth kecamatan, titik koordinat site, atau poligon. Layer bisa dinyalakan, dimatikan, dan diatur opasitasnya.</li>
           <li>Upload SHP (.zip), GeoJSON, KML, atau CSV lat/long, lalu tanya tentang area itu. Contoh di sini: 17 site di dalam poligon upload.</li>
           <li>Batas kecamatan memakai data asli Kab. Garut dari repo (42 kecamatan). Angka payload dan lokasi site masih ilustrasi.</li>
-          <li>Klik site membuka kartu dengan tombol Tanya dan Performance. Hasil bisa diekspor GeoJSON atau PNG.</li>
+          <li><b>Revisi 1 Nov:</b> peta tidak hanya payload. Pilihan "Warnai peta dengan" berisi Performance (payload, revenue, availability), Site productivity (revenue, RGU 90D, VLR per site, bisa per tipe site), dan Profile wilayah (market share, pelanggan, gross add, penetrasi FWA).</li>
+          <li>Klik kecamatan membuka kartu yang merangkum Performance, Site productivity, dan Profile sekaligus. Klik titik merah membuka kartu site.</li>
+          <li>Hasil bisa diekspor GeoJSON atau PNG.</li>
         </ul>
       </div>
       <div class="q"><b>Yang perlu kamu cek:</b> pembagian peta dan chat, isi panel layer, cara upload SHP, dan apakah halaman ini disetujui sebelum lanjut ke 06 Laporan.</div>
@@ -629,6 +663,17 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
   const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); p && p.appendChild(e); return e; };
   const col = v => v <= -12 ? '#C42B2B' : v <= -8 ? '#E5634F' : v <= -4 ? '#F4A08A' : v < 0 ? '#F9D6CB' : v < 2 ? '#D8EFEA' : '#7FCFC3';
   const LBL = ['Garut Kota', 'Tarogong Kidul', 'Tarogong Kaler', 'Karangpawitan', 'Banyuresmi', 'Cilawu', 'Bayongbong', 'Leles', 'Wanaraja', 'Samarang', 'Cibatu', 'Kadungora', 'Sucinaraja', 'Pasirwangi', 'Cisurupan', 'Sukawening', 'Malangbong', 'Cikajang', 'Leuwigoong', 'Bl. Limbangan'];
+  const idn = (v, d) => v.toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const hash = s => { let h = 2166136261; for (const ch of s) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000; };
+  const URB = { 'Garut Kota': 1, 'Tarogong Kidul': 1, 'Tarogong Kaler': .8, 'Karangpawitan': .8, 'Banyuresmi': .6, 'Cilawu': .6, 'Leles': .5, 'Kadungora': .5, 'Cibatu': .5, 'Bayongbong': .5, 'Wanaraja': .45, 'Samarang': .4, 'Malangbong': .45 };
+  const ur = n => URB[n] ?? .15;
+  const DIV = ['#C42B2B', '#E5634F', '#F4A08A', '#F9D6CB', '#D8EFEA', '#7FCFC3'], SEQ = ['#EAF6F3', '#C3E8E1', '#8FD6CB', '#4FB8AA', '#1A9483', '#0A6A5F'];
+  const M = {
+    perf: [{ n: 'Payload MoM', s: 'Payload MoM', div: 1, v: k => k.v }, { n: 'Revenue MoM', s: 'Rev. MoM', div: 1, v: k => +(k.v * .45 + (hash(k.n + 'r') - .5) * 3).toFixed(1) }, { n: 'Availability', s: 'Availability', u: '%', d: 2, v: k => +(99.05 + hash(k.n + 'a') * .85 - (k.v < -10 ? .4 : 0)).toFixed(2) }],
+    prod: [{ n: 'Revenue / site', s: 'Rev/site', u: ' jt', pre: 'Rp ', d: 0, v: k => Math.round(105 + ur(k.n) * 120 + hash(k.n + 'p') * 40) }, { n: 'RGU 90D / site', s: 'RGU 90D/site', u: ' rb', d: 2, v: k => +(.8 + ur(k.n) * 1.4 + hash(k.n + 'g') * .4).toFixed(2) }, { n: 'VLR / site', s: 'VLR/site', u: ' rb', d: 2, v: k => +(1.1 + ur(k.n) * 1.8 + hash(k.n + 'v') * .5).toFixed(2) }],
+    prof: [{ n: 'Market share', s: 'Market share', u: '%', d: 1, v: k => +(30 + ur(k.n) * 14 + hash(k.n + 'm') * 8).toFixed(1) }, { n: 'Pelanggan aktif', s: 'Pelanggan', u: ' rb', d: 0, v: k => Math.round(8 + ur(k.n) * 80 + hash(k.n + 's') * 10) }, { n: 'Gross add', s: 'Gross add', u: '', d: 0, v: k => Math.round(250 + ur(k.n) * 1900 + hash(k.n + 'ga') * 300) }, { n: 'Penetrasi FWA', u: '%', d: 1, v: k => +(.6 + ur(k.n) * 3.2 + hash(k.n + 'f')).toFixed(1) }]
+  };
+  const fmtM = (m, v) => m.div ? pct(v) : (m.pre || '') + idn(v, m.d) + m.u;
   const pct = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
   document.querySelectorAll('svg.map').forEach(svg => {
     const [vx, vy, vw, vh] = svg.dataset.vb.split(' ').map(Number), z = +svg.dataset.z, u = 1 / z, wrap = svg.parentElement;
@@ -636,8 +681,15 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
     el('rect', { x: vx - 50, y: vy - 50, width: vw + 100, height: vh + 100, fill: '#D6EAF0' }, svg);
     const nb = el('g', {}, svg); G.nb.forEach(n => el('path', { d: n.d, fill: '#E6ECEA', stroke: '#FFFFFF', 'stroke-width': 1.2 * u, 'fill-rule': 'evenodd' }, nb));
     const L = {};
-    L.chor = el('g', { 'fill-opacity': .85 }, svg);
-    G.kec.forEach(k => { const p = el('path', { d: k.d, fill: col(k.v), stroke: '#FFFFFF', 'stroke-width': 1 * u, 'fill-rule': 'evenodd' }, L.chor); p.dataset.n = k.n; p.dataset.v = k.v; p.dataset.s = k.sites; });
+    L.chor = el('g', { 'fill-opacity': .85 }, svg); let cur = M.perf[0], brk = [];
+    G.kec.forEach(k => { const p = el('path', { d: k.d, fill: col(k.v), stroke: '#FFFFFF', 'stroke-width': 1 * u, 'fill-rule': 'evenodd' }, L.chor); p.dataset.n = k.n; p.dataset.v = k.v; p.dataset.s = k.sites; p.k = k; });
+    function recolor(m) { cur = m; const vals = G.kec.map(m.v).sort((a, b) => a - b); brk = [1, 2, 3, 4, 5].map(i => vals[Math.floor(vals.length * i / 6)]);
+      const cls = v => m.div ? col(v) : SEQ[brk.filter(b => v >= b).length];
+      L.chor.querySelectorAll('path').forEach(p => p.setAttribute('fill', cls(m.v(p.k))));
+      const lg = wrap.querySelector('.lgd'); if (lg) { lg.querySelector('.lt').textContent = m.n + ' per kecamatan';
+        lg.querySelector('.lr6').innerHTML = (m.div ? DIV : SEQ).map(c => `<i style="background:${c}"></i>`).join('');
+        lg.querySelector('.ltk').innerHTML = (m.div ? ['−15%', '−12%', '−8%', '−4%', '0', '+2%', '+5%'] : [vals[0], ...brk, vals[vals.length - 1]].map(v => idn(v, m.d))).map(t => `<span>${t}</span>`).join(''); }
+      const cn = wrap.querySelector('.lr[data-l=chor] .cn'); if (cn) cn.textContent = m.n + ' per kecamatan'; }
     el('path', { d: G.outline, fill: 'none', stroke: '#0A6A5F', 'stroke-width': 2 * u, 'stroke-linejoin': 'round' }, svg);
     L.up = el('g', {}, svg); el('path', { d: G.upload, fill: '#FFFFFF', 'fill-opacity': .16, stroke: '#FFFFFF', 'stroke-width': 5 * u, 'stroke-linejoin': 'round' }, L.up); el('path', { d: G.upload, fill: 'none', stroke: '#0F1F1D', 'stroke-width': 2.2 * u, 'stroke-dasharray': `${7 * u} ${4 * u}`, 'stroke-linejoin': 'round' }, L.up);
     L.all = el('g', {}, svg); G.sites.filter(s => !s.crit).forEach(s => el('circle', { cx: s.x, cy: s.y, r: 2.2 * u, fill: '#3D4C49', 'fill-opacity': .75, stroke: '#FFFFFF', 'stroke-width': .8 * u }, L.all));
@@ -650,12 +702,24 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
       const c = el('circle', { cx: s.x, cy: s.y, r: (i === SEL ? 6 : 4.6) * u, fill: '#C42B2B', stroke: '#FFFFFF', 'stroke-width': 1.8 * u, style: 'cursor:pointer' }, L.crit); c.dataset.i = i; });
     // popup
     const pop = wrap.querySelector('.pop');
-    function place(s) { if (!pop) return; const px = (s.x - vx) * z, py = (s.y - vy) * z; pop.style.left = (px - 125) + 'px'; pop.style.top = (py - pop.offsetHeight - 16) + 'px'; }
-    if (pop) { place(crit[SEL]); L.crit.querySelectorAll('circle[data-i]').forEach(c => c.addEventListener('click', () => { const s = crit[+c.dataset.i]; pop.querySelector('.h b').textContent = 'GRT-0' + (400 + +c.dataset.i * 7); pop.querySelector('.h small').textContent = 'Kec. ' + s.k; place(s); })); }
+    function place(s) { if (!pop) return; pop.style.display = 'grid'; const kc2 = wrap.querySelector('.kcard'); if (kc2) kc2.style.display = 'none'; const px = (s.x - vx) * z, py = (s.y - vy) * z; pop.style.left = (px - 125) + 'px'; pop.style.top = (py - pop.offsetHeight - 16) + 'px'; }
+    if (pop) { L.crit.querySelectorAll('circle[data-i]').forEach(c => c.addEventListener('click', () => { const s = crit[+c.dataset.i]; pop.querySelector('.h b').textContent = 'GRT-0' + (400 + +c.dataset.i * 7); pop.querySelector('.h small').textContent = 'Kec. ' + s.k; place(s); })); }
     // hover tooltip
     const tip = wrap.querySelector('.mtip');
-    if (tip) { L.chor.addEventListener('mousemove', e => { const p = e.target.closest('path'); if (!p) return; const r = wrap.getBoundingClientRect(), sc = r.width / wrap.offsetWidth; tip.style.display = 'block'; tip.innerHTML = `<b>Kec. ${p.dataset.n}</b>Payload MoM ${pct(+p.dataset.v)} · ${p.dataset.s} site`; tip.style.left = ((e.clientX - r.left) / sc + 14) + 'px'; tip.style.top = ((e.clientY - r.top) / sc + 14) + 'px'; L.chor.querySelectorAll('path').forEach(q => q.setAttribute('stroke-width', (q === p ? 2.5 : 1) * u)); p.parentNode.appendChild(p); });
+    if (tip) { L.chor.addEventListener('mousemove', e => { const p = e.target.closest('path'); if (!p) return; const r = wrap.getBoundingClientRect(), sc = r.width / wrap.offsetWidth; tip.style.display = 'block'; tip.innerHTML = `<b>Kec. ${p.dataset.n}</b>${cur.n} ${fmtM(cur, cur.v(p.k))} · ${p.dataset.s} site`; tip.style.left = ((e.clientX - r.left) / sc + 14) + 'px'; tip.style.top = ((e.clientY - r.top) / sc + 14) + 'px'; L.chor.querySelectorAll('path').forEach(q => q.setAttribute('stroke-width', (q === p ? 2.5 : 1) * u)); p.parentNode.appendChild(p); });
       L.chor.addEventListener('mouseleave', () => { tip.style.display = 'none'; }); }
+    // metric switcher + kecamatan card
+    const bar = wrap.querySelector('.mbar'), kc = wrap.querySelector('.kcard');
+    if (bar) { const mb2 = bar.querySelector('.mb2'); let cat = 'perf';
+      function chips() { mb2.innerHTML = M[cat].map((m, i) => `<span class="mchip${m === cur ? ' on' : ''}" data-i="${i}">${m.n}</span>`).join('') + (cat === 'prod' ? '<span class="mchip sub">Tipe site: Semua<svg style="width:12px;height:12px"><use href="#i-chev"/></svg></span>' : '');
+        mb2.querySelectorAll('.mchip[data-i]').forEach(c => c.addEventListener('click', () => { recolor(M[cat][+c.dataset.i]); chips(); })); }
+      bar.querySelectorAll('.cseg button').forEach(b => b.addEventListener('click', () => { cat = b.dataset.c; bar.querySelectorAll('.cseg button').forEach(x => x.classList.toggle('on', x === b)); recolor(M[cat][0]); chips(); }));
+      chips(); }
+    recolor(M.perf[0]);
+    function showK(k) { if (!kc) return; const sec = (t, ms) => `<div class="ks"><span>${t}</span><div class="k3">${ms.slice(0, 3).map(m => `<div><small>${m.s || m.n}</small><b style="color:${m.div ? (m.v(k) < 0 ? '#C42B2B' : '#1F7A3A') : '#0F1F1D'}">${fmtM(m, m.v(k))}</b></div>`).join('')}</div></div>`;
+      kc.innerHTML = `<div class="h"><div><b>Kec. ${k.n}</b><small>Kab. Garut · ${k.sites} site · Okt 2026</small></div><span class="grow"></span><span class="sev ${k.v <= -10 ? 'k' : k.v < -4 ? 'w' : 'n'}">${k.v <= -10 ? 'Kritis' : k.v < -4 ? 'Waspada' : 'Normal'}</span></div>` + sec('Performance', M.perf) + sec('Site productivity', M.prod) + sec('Profile wilayah', M.prof) + '<div class="ac"><span class="a1"><svg><use href="#i-spark"/></svg>Tanya</span><span class="a2"><svg><use href="#i-file"/></svg>Profil lengkap</span></div>';
+      kc.style.display = 'grid'; if (pop) pop.style.display = 'none'; }
+    if (kc) { showK(G.kec.find(k => k.n === 'Tarogong Kidul')); L.chor.addEventListener('click', e => { const p = e.target.closest('path'); if (p) showK(p.k); }); }
     // layer toggles
     document.querySelectorAll('#p-web .lr').forEach(r => { if (!wrap.closest('#p-web')) return; r.addEventListener('click', () => { r.classList.toggle('off'); const g = L[r.dataset.l]; if (g) g.style.display = r.classList.contains('off') ? 'none' : ''; if (r.dataset.l === 'crit' && pop) pop.style.display = r.classList.contains('off') ? 'none' : ''; }); });
   });
