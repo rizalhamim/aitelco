@@ -2,6 +2,7 @@
 import { chatStream } from "./chat-fixture.mjs";
 import { ALERTS, OVERVIEW } from "./dashboard-fixture.mjs";
 import { PERFORMANCE } from "./performance-fixture.mjs";
+import { MAP, UPLOAD, mapAsk } from "./map-fixture.mjs";
 const HISTORY = [
   { session_id: "s1", title: "Revenue West Java vs bulan lalu", message_count: 4, updated_at: "2026-11-01T05:10:00" },
   { session_id: "s2", title: "Site availability East Java minggu ini", message_count: 2, updated_at: "2026-10-31T16:20:00" },
@@ -15,10 +16,13 @@ const STATIC = {
   "/api/dashboard/overview": OVERVIEW,
   "/api/performance": PERFORMANCE,
   "/api/watchlist/alerts": ALERTS,
+  "/api/map/agent": MAP,
+  "/api/map/agent/upload": UPLOAD,
 };
 
-export function fixtureFor(pathname /*, params, method */) {
+export function fixtureFor(pathname, params, method, body) {
   if (pathname === "/api/chat/stream") return { __sse: chatStream() };
+  if (pathname === "/api/map/agent/ask") return mapAsk(body);
   if (pathname in STATIC) return STATIC[pathname];
   return undefined;
 }

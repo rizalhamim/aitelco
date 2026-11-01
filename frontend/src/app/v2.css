@@ -31,7 +31,7 @@
 .v2 .newchat { height: 46px; border: 0; border-radius: 14px; background: linear-gradient(100deg, #0E8579, #15A697 55%, #1597A8); color: #fff; font: 600 14px/1 var(--f-display); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 18px rgba(14,133,121,.28); cursor: pointer; flex: none }
 .v2 .newchat:disabled { opacity: .6; cursor: default }
 .v2 .newchat svg { width: 18px; height: 18px }
-.v2 .search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body); flex: none }
+.v2 .search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body) }
 .v2 .search svg { width: 17px; height: 17px; flex: none }
 .v2 .search input { border: 0; outline: 0; background: transparent; font: inherit; color: #0F1F1D; min-width: 0; flex: 1; padding: 0 }
 .v2 .search input::placeholder { color: #5A6B68 }
@@ -53,7 +53,7 @@
 .v2 .hist button.on { background: #ECF3F1; color: #0F1F1D }
 .v2 .hist svg { width: 15px; height: 15px; flex: none; color: #5A6B68 }
 .v2 .hist .empty { font: 400 12.5px/1.3 var(--f-body); color: #5A6B68; padding: 4px 10px }
-.v2 .side .spacer { flex: 1; min-height: 8px }
+.v2 .side .spacer { flex: 1 }
 .v2 .apk { border-radius: 16px; background: linear-gradient(135deg, #04332E, #0A6A5F); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; flex: none }
 .v2 .apk.on { box-shadow: 0 0 0 2px #C7F25E }
 .v2 .apk .ai { width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.12); display: grid; place-items: center; flex: none }

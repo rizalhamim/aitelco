@@ -61,7 +61,7 @@ async function main() {
       }, USER);
       await page.route("**/api/**", async (route) => {
         const url = new URL(route.request().url());
-        const body = fixtureFor(url.pathname, url.searchParams, route.request().method());
+        const body = fixtureFor(url.pathname, url.searchParams, route.request().method(), route.request().postData() || "");
         if (body === undefined) return route.fulfill({ status: 404, json: { detail: "no fixture" } });
         if (body && body.__sse) return route.fulfill({ status: 200, headers: { "content-type": "text/event-stream" }, body: body.__sse });
         return route.fulfill({ status: 200, json: body });

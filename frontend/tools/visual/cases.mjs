@@ -7,6 +7,7 @@ export const USER = {
 };
 
 import { QUESTION } from "./chat-fixture.mjs";
+import { Q1, Q2 } from "./map-fixture.mjs";
 
 const M = "design/mockup-v2";
 
@@ -44,5 +45,21 @@ export const CASES = [
     prepare: async (page) => {
       await page.waitForSelector(".tchart");
       await page.mouse.move(5, 1580);
+    } },
+  // 05 Peta Agent: Kab. Garut, payload question, SHP upload, area question.
+  { name: "peta-web", route: "/map?kabupaten=GARUT", width: 1440, height: 901, clock: "2026-11-01T06:00:00Z",
+    mockup: `${M}/05-peta-agent/png/Web - Peta Agent@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".mapwrap svg path[data-u]");
+      await page.fill("textarea[aria-label='Pertanyaan peta']", Q1);
+      await page.click(".mcomp .snd");
+      await page.waitForSelector(".lchip");
+      await page.setInputFiles("input[aria-label='File peta']", { name: "area_ekspansi_q1.zip", mimeType: "application/zip", buffer: Buffer.alloc(48 * 1024) });
+      await page.waitForSelector(".mcomp .att");
+      await page.fill("textarea[aria-label='Pertanyaan peta']", Q2);
+      await page.click(".mcomp .snd");
+      await page.waitForSelector(".mstat");
+      await page.mouse.move(5, 890);
+      await page.waitForTimeout(150);
     } },
 ];
