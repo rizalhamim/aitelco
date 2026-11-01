@@ -1,6 +1,6 @@
 # Agent Java · Redesign v2 (dalam review)
 
-Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login sampai 05 Peta Agent disetujui (1 Nov 2026), 06 Laporan menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
+Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login sampai 06 Laporan disetujui (1 Nov 2026), 07 Watchlist dan Alert menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
 
 Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 
@@ -20,6 +20,7 @@ Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 | `04-performance/` | Halaman 04 Performance: `.figcraft` (Web 1440 × 1590, Android 390 × 1990 layar digulir), PNG @2x, halaman review interaktif (drill-down, tren 12 bulan Revenue/Payload/Pelanggan, detail site di baris tabel) |
 | `05-peta-agent/` | Halaman 05 Peta Agent: `.figcraft` (Web 1440 × 900, Android 390 × 844), PNG @2x, halaman review interaktif (hover kecamatan, klik site, layer on/off). Revisi 1 Nov: peta bisa diwarnai Performance, Site productivity, atau Profile wilayah, dan klik kecamatan membuka kartu ringkasan ketiganya. Batas 42 kecamatan Kab. Garut diambil dari `mobile/assets/geo/kecamatan.geojson.gz`; nilai dan titik site ilustrasi |
 | `06-laporan/` | Halaman 06 Laporan: `.figcraft` (Web 1440 × 1040, Android 390 × 1300 layar digulir), PNG @2x, halaman review interaktif (filter, pilih laporan, daftar isi, jadwal kirim). Performance Outlook memuat bagian Performance, Site productivity, dan Profile wilayah |
+| `07-watchlist-alert/` | Halaman 07 Watchlist dan Alert: `.figcraft` (Web 1440 × 1156, Android 390 × 1320 layar digulir), PNG @2x, halaman review interaktif (filter status dan kelompok, tab Riwayat alert). Pantauan dikelompokkan Performance, Site productivity, dan Profile wilayah; pantauan baru bisa dibuat dari kalimat |
 | `tools/` | Konverter HTML ke FigCraft (lihat bawah) |
 
 ## Video login
