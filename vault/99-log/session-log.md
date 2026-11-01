@@ -517,3 +517,10 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Data: `/api/dashboard/overview` plus `/api/watchlist/alerts?status=open`. Shell now passes `onAlerts` and `onPerformance` (tab 2).
 - New `V2Lines` in `ui/v2.dart`: keeps CSS line-box height (Flutter rounds 18.6/17.55/20.8 px lines up, which drifted cards 4 px by the bottom).
 - Gate `test/golden_v2/dashboard_test.dart`: all 7 regions pass (max 1.87% top, 1.23% appbar, rest under 1%).
+
+## 2026-11-01 Redesign v2 page 04 Performance
+
+- Backend `app/performance.py`: `GET /api/performance` (region/kabupaten/kecamatan, status, page), `/api/performance/search`, `/api/performance/site`. Reads the Parquet dump (fresh = green label, stale = yellow, no dump = live BigQuery run of the dump queries cached 6 h). Site status rule: kritis payload MoM <= -10% or availability < 99,0%; waspada payload MoM <= -6% or availability < 99,5%. Site detail cards and "Catatan agent" are written from the numbers (no LLM). Area names compared via `norm()` (strips "KAB."/"KABUPATEN", keeps "KOTA").
+- Web `/performance` (sidebar Performance now points there; old `/site` kept for deep links). Gate performance-web 0.74%.
+- Android Performa tab = `PerformanceScreen` (last payload cached in SharedPreferences, label "offline siap"). Gate: 7 regions, max 1.46%.
+- Fixed a test-order flake in `tests/test_watchlist_dashboard.py` (fixed usernames collided in the persistent default DB when another module imported `app.database` first).

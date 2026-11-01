@@ -8,7 +8,7 @@ import 'chat_screen.dart';
 import 'dashboard_screen.dart';
 import 'map_screen.dart';
 import 'report_list_screen.dart';
-import 'site_performance_screen.dart';
+import 'performance_screen.dart';
 import 'watchlist_screen.dart';
 
 /// The five tabs behind the v2 bottom nav: Agent, Dashboard, Performa, Peta, Laporan.
@@ -90,7 +90,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           child: IndexedStack(index: _tab, children: [
             ChatScreen(key: _chat, onWatch: _openAlerts, onOpenMap: () => _go(3)),
             DashboardScreen(onAsk: _ask, onAlerts: _openAlerts, onPerformance: () => _go(2)),
-            const SitePerformanceScreen(),
+            PerformanceScreen(onAsk: _ask, onOpenMap: (_) => _go(3)),
             MapScreen(onAsk: _ask),
             ReportListScreen(onAsk: _ask),
           ]),

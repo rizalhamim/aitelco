@@ -558,6 +558,27 @@ class ApiClient {
   static Future<Map<String, dynamic>> dashboardOverview({String region = ''}) =>
       _getJson('/api/dashboard/overview', {if (region.isNotEmpty) 'region': region});
 
+  /// Performance drill-down (04): KPIs, 12-month trend, contribution and sites.
+  static Future<Map<String, dynamic>> performance({
+    String region = '',
+    String kabupaten = '',
+    String kecamatan = '',
+    String status = '',
+    int page = 1,
+    int size = 7,
+  }) =>
+      _getJson('/api/performance', {
+        if (region.isNotEmpty) 'region': region,
+        if (kabupaten.isNotEmpty) 'kabupaten': kabupaten,
+        if (kecamatan.isNotEmpty) 'kecamatan': kecamatan,
+        if (status.isNotEmpty) 'status': status,
+        'page': '$page',
+        'size': '$size',
+      });
+
+  static Future<List<dynamic>> performanceSearch(String q) async =>
+      (await _getJson('/api/performance/search', {'q': q}))['results'] as List? ?? [];
+
   static Future<List<dynamic>> watchAlerts({String status = 'all'}) async =>
       (await _getJson('/api/watchlist/alerts', {'status': status}))['alerts'] as List? ?? [];
 

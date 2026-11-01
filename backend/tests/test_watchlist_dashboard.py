@@ -1,6 +1,7 @@
 """Watchlist evaluation and dashboard assembly, with BigQuery stubbed out."""
 import os
 import tempfile
+import uuid
 
 os.environ.setdefault("TELCO_AI_DB", os.path.join(tempfile.mkdtemp(), "t.db"))
 
@@ -15,6 +16,9 @@ init_db()
 
 
 def _user(name):
+    # unique per run: when another test module imported app.database first, TELCO_AI_DB above
+    # is ignored and the (persistent) default database already holds users from earlier runs
+    name = f"{name}-{uuid.uuid4().hex[:8]}"
     db = SessionLocal()
     u = User(username=name, email=f"{name}@x.id", full_name=name.title(), hashed_password="x")
     db.add(u)
