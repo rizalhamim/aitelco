@@ -5,7 +5,9 @@ import { useMounted } from "@/lib/useMounted";
 import { Icon } from "@/app/components/v2/Icon";
 import "./login.css";
 
-type Mode = "login" | "forgot" | "reset";
+type Mode = "login" | "forgot" | "reset" | "request";
+const REGIONS = [["JAVA", "Circle Java"], ["WEST JAVA", "West Java"], ["CENTRAL JAVA", "Central Java"], ["EAST JAVA", "East Java"]];
+const DEPARTMENTS = ["Business Planning", "Sales", "Marketing", "Network", "Finance", "Operations"];
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -16,6 +18,8 @@ export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
+  const [req, setReq] = useState({ full_name: "", email: "", department: "", region: "JAVA" });
+  const [reqSent, setReqSent] = useState(false);
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
@@ -98,6 +102,20 @@ export default function LoginPage() {
     try {
       await postJson("/api/auth/forgot-password", { email: forgotEmail });
       setForgotSent(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRequest(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await postJson("/api/auth/request-access", req);
+      setReqSent(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
@@ -189,6 +207,49 @@ export default function LoginPage() {
           </div>
           {cta("Masuk")}
           <p className={`msg${error ? " err" : ""}`} role="status" aria-live="polite">{error || successMsg}</p>
+          <p className="ask">Belum punya akun? <button type="button" className="link" onClick={() => switchMode("request")}>Minta akses</button></p>
+        </form>
+      )}
+
+      {mode === "request" && (
+        <form className="card" onSubmit={handleRequest} noValidate>
+          <div className="grab" aria-hidden="true" />
+          <div>
+            <h1>Minta akses</h1>
+            <p className="sub">{reqSent ? "Admin akan meninjau. Link untuk membuat password dikirim ke email saat akun disetujui." : "Isi data diri. Admin menyetujui setiap akun baru."}</p>
+          </div>
+          {reqSent ? (
+            <p className="msg">Permintaan untuk <strong>{req.email}</strong> sudah terkirim.</p>
+          ) : (
+            <>
+              <div className="fld">
+                <label htmlFor="rq-name">Nama lengkap</label>
+                <div className="inp"><Icon name="luser" />
+                  <input id="rq-name" value={req.full_name} onChange={(e) => setReq({ ...req, full_name: e.target.value })} autoComplete="name" required autoFocus /></div>
+              </div>
+              <div className="fld">
+                <label htmlFor="rq-mail">Email kantor</label>
+                <div className="inp"><Icon name="mail" />
+                  <input id="rq-mail" type="email" value={req.email} onChange={(e) => setReq({ ...req, email: e.target.value })} placeholder="nama@kantor.co.id" autoComplete="email" required /></div>
+              </div>
+              <div className="fld">
+                <label htmlFor="rq-dept">Departemen</label>
+                <div className="inp"><Icon name="users" />
+                  <input id="rq-dept" list="rq-depts" value={req.department} onChange={(e) => setReq({ ...req, department: e.target.value })} placeholder="Business Planning" /></div>
+                <datalist id="rq-depts">{DEPARTMENTS.map((d) => <option key={d} value={d} />)}</datalist>
+              </div>
+              <div className="fld">
+                <label htmlFor="rq-region">Region</label>
+                <div className="inp"><Icon name="pin" />
+                  <select id="rq-region" value={req.region} onChange={(e) => setReq({ ...req, region: e.target.value })}>
+                    {REGIONS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                  </select></div>
+              </div>
+              {cta("Kirim permintaan", req.full_name.trim().length < 2 || !req.email.includes("@"))}
+              <p className={`msg${error ? " err" : ""}`} role="status" aria-live="polite">{error}</p>
+            </>
+          )}
+          <button type="button" className="link back" onClick={() => switchMode("login")}><Icon name="arrowr" />Kembali ke Masuk</button>
         </form>
       )}
 

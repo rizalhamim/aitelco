@@ -44,6 +44,11 @@ type Props = {
   mainClassName?: string;
 };
 
+/** Routes counted on the admin Statistik page, by feature key. */
+const PAGE_KEYS: Record<string, string> = {
+  "/": "tanya", "/dashboard": "dashboard", "/performance": "performance", "/map": "peta", "/reports": "laporan", "/watchlist": "watchlist",
+};
+
 export default function AppShell({
   children, activeSession, onNewChat, onOpenSession, historyVersion = 0, busy, mainClassName,
 }: Props) {
@@ -86,6 +91,13 @@ export default function AppShell({
       .catch(() => {});
   }, []);
   useEffect(() => { if (ready) loadHistory(); }, [ready, historyVersion, loadHistory]);
+
+  // One "Pemakaian fitur" session per page (the server merges repeats within 30 minutes).
+  useEffect(() => {
+    if (!ready) return;
+    const page = PAGE_KEYS[pathname === "/" ? "/" : "/" + pathname.split("/")[1]];
+    if (page) authFetch("/api/usage/view", { method: "POST", body: JSON.stringify({ page }) }).catch(() => {});
+  }, [ready, pathname]);
 
   function newChat() {
     setOpen(false);

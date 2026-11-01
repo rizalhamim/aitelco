@@ -88,4 +88,11 @@ export const CASES = [
       await page.mouse.move(5, 1260);
       await page.waitForTimeout(400);
     } },
+  { name: "statistik-web", route: "/statistik", width: 1440, height: 1745, clock: "2026-11-01T06:00:00Z",
+    mockup: `${M}/09-statistik-unduh/png/Web - Statistik@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".stx .ut tbody tr");
+      await page.mouse.move(5, 1740);
+      await page.waitForTimeout(400);
+    } },
 ];

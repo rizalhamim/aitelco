@@ -111,3 +111,5 @@
   .lgv2 .inp { height: 52px }
 }
 @media (prefers-reduced-motion: reduce) { .lgv2 .cta, .lgv2 .cta svg, .lgv2 .tgl, .lgv2 .tgl > i { transition: none } .lgv2 .spin { animation-duration: 2s } }
+.lgv2 .ask { margin: -6px 0 0; text-align: center; font: 400 13px/1.3 var(--font-prompt), "Prompt", sans-serif; color: #5A6B68 }
+.lgv2 .inp select { border: 0; outline: 0; flex: 1; min-width: 0; font: 400 15px/1 var(--font-prompt), "Prompt", sans-serif; color: #0F1F1D; background: transparent; padding: 0; appearance: auto }
