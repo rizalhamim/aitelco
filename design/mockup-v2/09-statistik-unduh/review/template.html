@@ -1,0 +1,1138 @@
+<title>Agent Java Statistik Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Prompt:wght@400;500&display=swap">
+<style>
+/* Layout: review chrome (header, tabs, notes) around a scaled, pixel-true mockup stage */
+:root {
+  /* review chrome */
+  --page: #EEF4F2; --panel: #FFFFFF; --ink: #0F1F1D; --ink-2: #3D4C49; --mute: #5A6B68; --rule: #DCE6E3;
+  --chip: #E6F7F5; --chip-ink: #0A6A5F;
+  /* Agent Java palette v2: teal core + fresh accents */
+  --teal-900: #04332E; --teal-700: #0A6A5F; --teal-600: #0E8579; --teal-500: #15A697; --teal-50: #E6F7F5;
+  --lagoon-500: #22B8C9; --lagoon-600: #1597A8; --lagoon-50: #E3F7FA;
+  --lime-400: #C7F25E; --lime-700: #5E8A12; --lime-50: #F4FCE3;
+  --mint-300: #7EE8A2;
+  --coral-500: #FF7A59; --coral-600: #E85D3C; --coral-50: #FFEDE7;
+  --amber-500: #F5A623;
+  --f-display: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Prompt", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--page); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 18px }
+header.top-r { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; justify-content: space-between }
+.brandline { display: flex; align-items: center; gap: 12px; min-width: 0 }
+.brandline svg { width: 44px; height: 44px; flex: none; border-radius: 11px }
+.brandline h1 { font-family: var(--f-display); font-size: 20px; line-height: 1.2; margin: 0; font-weight: 700; text-wrap: balance }
+.brandline p { margin: 0; color: var(--mute); font-size: 13px }
+.chip-r { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--chip); color: var(--chip-ink);
+  font: 600 12px/1 var(--f-display); letter-spacing: .02em }
+.chip-r i { width: 7px; height: 7px; border-radius: 50%; background: var(--amber-500) }
+.steps { display: flex; gap: 6px; flex-wrap: wrap; font: 500 12px/1 var(--f-display); color: var(--mute) }
+.steps span { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--rule) }
+.steps span.on { background: var(--teal-600); border-color: var(--teal-600); color: #fff }
+.tabs { display: inline-flex; padding: 4px; gap: 4px; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; flex-wrap: wrap }
+.tabs button { font: 600 13px/1 var(--f-display); border: 0; background: transparent; color: var(--ink-2); padding: 10px 14px; border-radius: 9px; cursor: pointer }
+.tabs button[aria-selected="true"] { background: var(--teal-600); color: #fff }
+.tabs button:focus-visible { outline: 2px solid var(--lagoon-500); outline-offset: 2px }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start }
+@media (max-width: 980px) { .main { grid-template-columns: minmax(0, 1fr) } }
+.stage { background: repeating-conic-gradient(var(--rule) 0 25%, transparent 0 50%) 0 0/22px 22px, var(--panel); border: 1px solid var(--rule);
+  border-radius: 16px; padding: 18px; min-width: 0; overflow: hidden }
+.stage-label { display: flex; justify-content: space-between; gap: 10px; font: 500 12px/1.3 var(--f-display); color: var(--mute); margin-bottom: 10px; flex-wrap: wrap }
+.fit { position: relative; width: 100%; margin: 0 auto }
+.fit > .frame { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: 0 20px 60px rgba(4,51,46,.28) }
+aside.notes { background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; padding: 18px; display: grid; gap: 14px; min-width: 0 }
+aside.notes h2 { font: 700 14px/1.3 var(--f-display); margin: 0; letter-spacing: .01em }
+aside.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 13.5px }
+aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 13.5px; color: var(--ink-2) }
+.panel { display: none } .panel.on { display: block }
+
+/* ───────────── Mockup frames (fixed design pixels, not theme-aware on purpose) ───────────── */
+.frame { overflow: hidden; color: #0F1F1D; font-family: var(--f-body); background: #F5F9F8; position: relative }
+.tile { background: #fff; border-radius: 28%; display: grid; place-items: center; flex: none; border: 1px solid #E1E9E7 }
+.tile img { width: 84%; height: 84%; object-fit: contain; display: block }
+.ic { width: 20px; height: 20px; flex: none }
+.btn-ic { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: grid; place-items: center; color: #3D4C49; position: relative; cursor: pointer }
+.btn-ic:hover { border-color: #8FDFD7 }
+.badge { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; border-radius: 9px; background: #E04848; color: #fff; font: 700 10px/18px var(--f-display); text-align: center; padding: 0 5px; border: 2px solid #fff }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #15A697, #0A6A5F); color: #fff; display: grid; place-items: center; font: 700 15px/1 var(--f-display); flex: none; cursor: pointer; box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px #C7F25E }
+.chip { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 13px/1 var(--f-display); color: #3D4C49 }
+.chip.teal { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F }
+.chip svg { width: 16px; height: 16px }
+
+/* sidebar */
+.side { position: absolute; left: 0; top: 0; bottom: 0; width: 272px; background: #fff; border-right: 1px solid #E1E9E7; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px }
+.side .brand { display: flex; align-items: center; gap: 12px; padding: 2px 4px 6px }
+.side .brand b { font: 700 17px/1.2 var(--f-display); display: block }
+.side .brand b em { font-style: normal; color: #0E8579 }
+.side .brand small { font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.newchat { height: 46px; border: 0; border-radius: 14px; background: linear-gradient(100deg, #0E8579, #15A697 55%, #1597A8); color: #fff; font: 600 14px/1 var(--f-display); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 18px rgba(14,133,121,.28) }
+.search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body) }
+.search svg { width: 17px; height: 17px }
+.navh { font: 600 11px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; padding: 4px 6px 0 }
+.nav { display: flex; flex-direction: column; gap: 2px }
+.nav a { display: flex; align-items: center; gap: 11px; height: 42px; padding: 0 10px; border-radius: 12px; font: 500 14px/1 var(--f-display); color: #0F1F1D; text-decoration: none; position: relative }
+.nav a .nt { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none }
+.nav a .nt svg { width: 17px; height: 17px }
+.nav a.on { background: #E6F7F5; color: #0A6A5F; font-weight: 600 }
+.nav a.on::before { content: ""; position: absolute; left: -16px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: #0E8579 }
+.nav a .new { margin-left: auto; font: 600 10px/1 var(--f-display); padding: 4px 7px; border-radius: 99px; background: #F4FCE3; color: #5E8A12; border: 1px solid #E2F9A8 }
+.nav a .cnt { margin-left: auto; font: 700 11px/1 var(--f-display); min-width: 22px; height: 20px; border-radius: 10px; background: #E04848; color: #fff; display: grid; place-items: center; padding: 0 6px }
+.hist a { display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 10px; border-radius: 10px; font: 400 13px/1.2 var(--f-body); color: #3D4C49; white-space: nowrap; overflow: hidden }
+.hist a.on { background: #ECF3F1; color: #0F1F1D }
+.hist svg { width: 15px; height: 15px; flex: none; color: #5A6B68 }
+.side .spacer { flex: 1 }
+.apk { border-radius: 16px; background: linear-gradient(135deg, #04332E, #0A6A5F); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 12px }
+.apk .ai { width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.12); display: grid; place-items: center }
+.apk b { font: 600 13px/1.3 var(--f-display); display: block } .apk small { font: 400 11px/1.3 var(--f-body); color: #C0EDE8 }
+.apk svg { width: 18px; height: 18px }
+.me { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; background: #ECF3F1 }
+.me .avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: none }
+.me b { font: 600 13px/1.3 var(--f-display); display: block } .me small { font: 400 11px/1.3 var(--f-body); color: #5A6B68 }
+.me svg { margin-left: auto; width: 18px; height: 18px; color: #5A6B68 }
+
+/* main */
+.top { position: absolute; left: 272px; right: 0; top: 0; height: 76px; background: rgba(255,255,255,.88); border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 28px }
+.top h2 { font: 700 19px/1.25 var(--f-display); margin: 0 } .top p { margin: 0; font: 400 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.top .grow { flex: 1 }
+.conv { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 22px 56px 0; display: flex; flex-direction: column; gap: 16px; overflow: hidden;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(34,184,201,.08), rgba(34,184,201,0)), #F5F9F8 }
+.ubub { align-self: flex-end; max-width: 620px; background: #0E8579; color: #fff; padding: 14px 18px; border-radius: 20px 20px 6px 20px; font: 400 15px/1.5 var(--f-body); box-shadow: 0 6px 16px rgba(14,133,121,.2) }
+.ubub small { display: block; margin-top: 4px; font-size: 11px; color: #C0EDE8 }
+.ans { display: flex; gap: 14px; align-items: flex-start }
+.ans > .tile { width: 40px; height: 40px; border-radius: 12px }
+.acard { flex: 1; min-width: 0; background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 14px rgba(15,31,29,.05) }
+.ahead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.ahead b { font: 600 14px/1 var(--f-display) }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 99px; font: 600 12px/1 var(--f-display) }
+.pill svg { width: 14px; height: 14px }
+.pill.ok { background: #E6F4EA; color: #1F7A3A } .pill.ai { background: #FFEDE7; color: #B5401F } .pill.src { background: #E3F7FA; color: #0E6F7C } .pill.grey { background: #ECF3F1; color: #3D4C49 }
+.ahead .r { margin-left: auto; color: #5A6B68; font: 500 12px/1 var(--f-display); display: flex; align-items: center; gap: 6px }
+.atext { font: 400 15px/1.6 var(--f-body); color: #0F1F1D; margin: 0 }
+.atext b { font-weight: 600 } .atext .dn { color: #C42B2B; font-weight: 600 }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.kpi { border-radius: 16px; background: #F5F9F8; border: 1px solid #ECF3F1; padding: 14px 16px; display: grid; gap: 4px; position: relative }
+.kpi .lb { font: 500 12.5px/1.2 var(--f-display); color: #3D4C49; display: flex; align-items: center; gap: 8px }
+.kpi .lb i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center }
+.kpi .lb i svg { width: 15px; height: 15px }
+.kpi .v { font: 700 24px/1.15 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em }
+.kpi .d { font: 600 12px/1 var(--f-display); display: inline-flex; align-items: center; gap: 4px }
+.kpi .d.dn { color: #C42B2B } .kpi .d.up { color: #1F7A3A }
+.kpi .d span { color: #5A6B68; font-weight: 500 }
+.kpi svg.spark { position: absolute; right: 14px; bottom: 14px }
+.viz { border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px 12px; display: grid; gap: 10px }
+.vhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.vhead h4 { margin: 0; font: 600 14.5px/1.3 var(--f-display) } .vhead p { margin: 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: #ECF3F1; border-radius: 10px; margin-left: auto }
+.seg button { border: 0; background: transparent; font: 600 12px/1 var(--f-display); color: #3D4C49; padding: 7px 11px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
+.seg button svg { width: 14px; height: 14px }
+.seg button.on { background: #fff; color: #0A6A5F; box-shadow: 0 1px 3px rgba(15,31,29,.12) }
+.legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.lg { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49; background: #fff; cursor: pointer }
+.lg i { width: 10px; height: 10px; border-radius: 50% }
+.lg.off { opacity: .45 }
+.chartbox { position: relative }
+.tip { position: absolute; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 500 12px/1.5 var(--f-display); pointer-events: none; box-shadow: 0 10px 24px rgba(0,0,0,.25); min-width: 150px }
+.tip b { display: block; font-weight: 700; margin-bottom: 2px }
+.tip div { display: flex; align-items: center; gap: 7px } .tip div i { width: 8px; height: 8px; border-radius: 50% } .tip div span { margin-left: auto; font-weight: 700; padding-left: 12px; font-variant-numeric: tabular-nums }
+.tbl { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.tbl th { text-align: left; font: 600 11.5px/1.2 var(--f-display); color: #5A6B68; padding: 8px 10px; border-bottom: 1px solid #E1E9E7 }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid #ECF3F1 }
+.tbl td.n, .tbl th.n { text-align: right }
+.tbl .dn { color: #C42B2B; font-weight: 600 } .tbl .up { color: #1F7A3A; font-weight: 600 }
+.tmap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px }
+.tmap div { border-radius: 10px; height: 52px; padding: 6px 8px; font: 600 11px/1.2 var(--f-display); display: flex; flex-direction: column; justify-content: space-between }
+.tmap div span { font-weight: 700; font-size: 12px }
+.vfoot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 2px }
+.act { display: flex; gap: 6px; margin-left: auto }
+.act button { height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid #E1E9E7; background: #fff; font: 500 12px/1 var(--f-display); color: #3D4C49; display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
+.act button svg { width: 15px; height: 15px }
+.act button.pri { background: #0E8579; border-color: #0E8579; color: #fff }
+.sugg { display: flex; gap: 8px; flex-wrap: wrap; padding-left: 54px }
+.sg { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 99px; border: 1px solid #FFC2AF; background: #fff; font: 500 13px/1 var(--f-display); color: #0F1F1D; cursor: pointer }
+.sg svg { width: 16px; height: 16px; color: #FF7A59 }
+.composer { position: absolute; left: 328px; right: 56px; bottom: 34px; background: #fff; border: 1.5px solid #8FDFD7; border-radius: 22px; padding: 14px 14px 12px 18px; box-shadow: 0 16px 40px rgba(4,51,46,.14); display: grid; gap: 10px }
+.composer .ph { font: 400 15px/1.4 var(--f-body); color: #8A9A97 }
+.composer .row { display: flex; align-items: center; gap: 8px }
+.composer .row .grow { flex: 1 }
+.send { width: 46px; height: 46px; border-radius: 14px; border: 0; background: linear-gradient(135deg, #0E8579, #1597A8); color: #fff; display: grid; place-items: center }
+.send svg { width: 20px; height: 20px }
+.disclaim { position: absolute; left: 272px; right: 0; bottom: 10px; text-align: center; font: 400 11.5px/1 var(--f-body); color: #5A6B68 }
+.fade { position: absolute; left: 272px; right: 0; bottom: 0; height: 190px; background: linear-gradient(180deg, rgba(245,249,248,0), #F5F9F8 45%) }
+
+/* Web 1440 x 1080 */
+#webFrame { width: 1440px; height: 1080px; border-radius: 6px }
+
+/* Android 390 x 844 */
+#droidFrame { width: 390px; height: 844px; border-radius: 44px; border: 10px solid #0B1312 }
+#droidFrame .status { position: absolute; top: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 13px/1 var(--f-display); background: #fff }
+#droidFrame .status .cam { width: 12px; height: 12px; border-radius: 50%; background: #0B1312; position: absolute; left: 50%; top: 11px; transform: translateX(-50%) }
+.dbar { position: absolute; top: 34px; left: 0; right: 0; height: 62px; background: #fff; border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 14px }
+.dbar .tile { width: 38px; height: 38px; border-radius: 11px }
+.dbar b { font: 700 16px/1.2 var(--f-display); display: block } .dbar small { font: 400 11.5px/1.2 var(--f-body); color: #5A6B68; display: flex; align-items: center; gap: 5px }
+.dbar small i { width: 7px; height: 7px; border-radius: 50%; background: #2E9E57 }
+.dbar .grow { flex: 1 }
+.dbar .btn-ic { width: 38px; height: 38px; border-radius: 11px }
+.dbar .avatar { width: 34px; height: 34px; font-size: 13px }
+.dconv { position: absolute; top: 96px; left: 0; right: 0; bottom: 0; padding: 14px 14px 0; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+#droidFrame .ubub { max-width: 290px; font-size: 14px; padding: 12px 15px }
+#droidFrame .acard { padding: 14px; gap: 11px; border-radius: 20px }
+#droidFrame .atext { font-size: 14px; line-height: 1.55 }
+#droidFrame .kpis { grid-template-columns: 1fr 1fr; gap: 8px }
+#droidFrame .kpi { padding: 11px 12px }
+#droidFrame .kpi .v { font-size: 19px }
+#droidFrame .viz { padding: 10px 10px 8px; border-radius: 16px; overflow: hidden; min-width: 0 }
+#droidFrame .tmap div { font-size: 10px; height: 46px; padding: 5px 6px; overflow: hidden }
+#droidFrame .seg { margin-left: 0 }
+#droidFrame .seg button { padding: 7px 10px }
+.dsugg { position: absolute; left: 0; right: 0; bottom: 166px; display: flex; gap: 8px; padding: 0 14px; overflow: hidden }
+.dsugg .sg { flex: none; height: 36px; font-size: 12.5px; background: #fff }
+.dcomp { position: absolute; left: 14px; right: 14px; bottom: 94px; height: 58px; background: #fff; border: 1.5px solid #8FDFD7; border-radius: 20px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 16px; box-shadow: 0 10px 26px rgba(4,51,46,.14) }
+.dcomp .ph { flex: 1; font: 400 14px/1 var(--f-body); color: #8A9A97 }
+.dcomp .send { width: 44px; height: 44px; border-radius: 14px }
+.dcomp .mic { width: 36px; height: 36px; display: grid; place-items: center; color: #5A6B68 }
+.dcomp .mic svg { width: 19px; height: 19px }
+.dfade { position: absolute; left: 0; right: 0; bottom: 80px; height: 150px; background: linear-gradient(180deg, rgba(245,249,248,0), #F5F9F8 40%) }
+.bnav { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: #fff; border-top: 1px solid #E1E9E7; display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 6px 14px }
+.bnav a { display: grid; justify-items: center; align-content: start; gap: 4px; font: 500 11px/1.2 var(--f-display); color: #5A6B68; text-decoration: none; position: relative }
+.bnav a i { width: 54px; height: 30px; border-radius: 15px; display: grid; place-items: center }
+.bnav a i svg { width: 20px; height: 20px }
+.bnav a.on { color: #0A6A5F; font-weight: 700 } .bnav a.on i { background: #C0EDE8 }
+.bnav a .dot { position: absolute; top: 0; right: 14px; width: 8px; height: 8px; border-radius: 50%; background: #C7F25E; border: 1.5px solid #fff }
+.homebar { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 118px; height: 4px; border-radius: 4px; background: #0F1F1D; opacity: .75 }
+
+/* ───── 03 Dashboard ───── */
+
+.dash { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 24px 32px; display: flex; flex-direction: column; gap: 18px;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(34,184,201,.08), rgba(34,184,201,0)), #F5F9F8 }
+.dhead { display: flex; align-items: flex-end; gap: 14px }
+.dhead .eb { font: 600 11px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: #0A6A5F }
+.dhead h1 { font: 800 30px/1.15 var(--f-display); margin: 6px 0 4px; letter-spacing: -.01em }
+.dhead p { margin: 0; font: 400 13px/1.3 var(--f-body); color: #5A6B68 }
+.dhead .grow { flex: 1 }
+.hero { border-radius: 24px; padding: 22px 26px; color: #fff; position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr 220px; gap: 24px;
+  background: radial-gradient(420px 260px at 82% 20%, rgba(34,184,201,.45), rgba(34,184,201,0)), radial-gradient(300px 220px at 10% 110%, rgba(199,242,94,.18), rgba(199,242,94,0)), linear-gradient(135deg, #0A6A5F, #04332E 70%) }
+.hero .tag { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); font: 600 12px/1 var(--f-display) }
+.hero .tag svg { width: 14px; height: 14px; color: #FF7A59 }
+.hero p { font: 400 17px/1.55 var(--f-body); margin: 14px 0 16px; max-width: 840px }
+.hero p b { font-weight: 600; color: #C7F25E } .hero p em { font-style: normal; font-weight: 600; color: #FFC2AF }
+.hero .btns { display: flex; gap: 10px }
+.hero .b1 { height: 42px; padding: 0 16px; border-radius: 13px; background: #C7F25E; color: #04332E; font: 600 14px/1 var(--f-display); display: inline-flex; align-items: center; gap: 8px }
+.hero .b2 { height: 42px; padding: 0 16px; border-radius: 13px; border: 1px solid rgba(255,255,255,.35); color: #fff; font: 600 14px/1 var(--f-display); display: inline-flex; align-items: center; gap: 8px }
+.hero .b1 svg, .hero .b2 svg { width: 17px; height: 17px }
+.hero .mini { display: grid; gap: 10px; align-content: center }
+.hero .mini div { border-radius: 16px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.16); padding: 12px 14px }
+.hero .mini small { display: block; font: 500 12px/1.2 var(--f-display); color: #C0EDE8 }
+.hero .mini b { font: 700 24px/1.2 var(--f-display); font-variant-numeric: tabular-nums }
+.krow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px }
+.kc { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #E1E9E7; border-radius: 20px; padding: 16px 18px; display: grid; gap: 6px; box-shadow: 0 4px 14px rgba(15,31,29,.04) }
+.kc .t { display: flex; align-items: center; gap: 10px; font: 500 13px/1.2 var(--f-display); color: #3D4C49 }
+.kc .t i { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center } .kc .t i svg { width: 18px; height: 18px }
+.kc .t .dl { margin-left: auto; font: 600 12px/1 var(--f-display); padding: 5px 8px; border-radius: 99px }
+.dl.up { background: #E6F4EA; color: #1F7A3A } .dl.dn { background: #FDECEC; color: #C42B2B }
+.kc .v { font: 700 30px/1.15 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em }
+.kc .s { font: 400 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.kc .bar { height: 6px; border-radius: 6px; background: #ECF3F1; overflow: hidden } .kc .bar i { display: block; height: 100%; border-radius: 6px }
+.row2 { display: grid; grid-template-columns: 1fr 360px; gap: 14px }
+.card { background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(15,31,29,.04); display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.card .ch { display: flex; align-items: flex-start; gap: 10px }
+.card .ch h3 { margin: 0; font: 600 16px/1.3 var(--f-display) } .card .ch p { margin: 2px 0 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.card .ch .grow { flex: 1 }
+.crumb { display: flex; align-items: center; gap: 6px; font: 600 13px/1 var(--f-display); color: #0A6A5F }
+.crumb span { color: #0F1F1D } .crumb svg { width: 14px; height: 14px; transform: rotate(-90deg); color: #5A6B68 }
+.al { border: 1px solid #E1E9E7; border-radius: 16px; padding: 12px 14px 12px 16px; display: grid; grid-template-columns: 34px 1fr; gap: 4px 12px; position: relative; overflow: hidden }
+.al::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px }
+.al.k::before { background: #C42B2B } .al.w::before { background: #F5A623 }
+.al .ai { grid-row: span 3; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center }
+.al.k .ai { background: #FDECEC; color: #C42B2B } .al.w .ai { background: #FDF3E2; color: #B7791F }
+.al .ai svg { width: 18px; height: 18px }
+.al b { font: 600 13.5px/1.3 var(--f-display); display: flex; gap: 8px } .al b small { margin-left: auto; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; white-space: nowrap }
+.al p { margin: 0; font: 400 12.5px/1.4 var(--f-body); color: #3D4C49 }
+.al .tg { display: flex; gap: 8px; align-items: center; font: 500 11.5px/1 var(--f-display); color: #5A6B68 }
+.sev { padding: 4px 8px; border-radius: 99px; font: 600 11px/1 var(--f-display) }
+.sev.k { background: #FDECEC; color: #C42B2B } .sev.w { background: #FDF3E2; color: #B7791F }
+.addal { height: 44px; border: 1.5px dashed #8FDFD7; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 13px/1 var(--f-display); color: #0A6A5F }
+.addal svg { width: 16px; height: 16px }
+.rt { width: 100%; border-collapse: collapse; font: 400 13.5px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.rt th { text-align: left; font: 600 11px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 10px 12px; background: #F5F9F8; border-bottom: 1px solid #E1E9E7 }
+.rt td { padding: 12px; border-bottom: 1px solid #ECF3F1 }
+.rt .rn { display: flex; align-items: center; gap: 10px; font: 600 14px/1 var(--f-display) } .rt .rn i { width: 10px; height: 10px; border-radius: 3px }
+.rt .n { text-align: right }
+.dchip { font: 600 12px/1 var(--f-display); padding: 5px 8px; border-radius: 99px; display: inline-block }
+.prog { display: flex; align-items: center; gap: 10px } .prog .bar { flex: 1; height: 8px; border-radius: 8px; background: #ECF3F1; overflow: hidden } .prog .bar i { display: block; height: 100%; border-radius: 8px }
+.prog b { font: 700 13px/1 var(--f-display); width: 56px; text-align: right }
+.linkbtn { height: 36px; padding: 0 14px; border-radius: 11px; border: 1px solid #E1E9E7; background: #fff; font: 600 13px/1 var(--f-display); color: #0A6A5F; display: inline-flex; align-items: center; gap: 7px }
+.linkbtn svg { width: 16px; height: 16px }
+.ctip { position: absolute; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 500 12px/1.55 var(--f-display); pointer-events: none; box-shadow: 0 10px 24px rgba(0,0,0,.25); min-width: 170px; white-space: nowrap }
+.ctip b { display: block } .ctip div { display: flex; align-items: center; gap: 7px } .ctip div i { width: 8px; height: 8px; border-radius: 50% } .ctip div span { margin-left: auto; padding-left: 12px; font-weight: 700 }
+
+/* Android dashboard 390 x 1520 */
+
+#droidFrame .ddash { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 14px; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+#droidFrame .hero { grid-template-columns: 1fr; padding: 16px; border-radius: 20px; gap: 0 }
+#droidFrame .hero p { font-size: 14.5px; margin: 10px 0 12px }
+#droidFrame .hero .b1, #droidFrame .hero .b2 { height: 38px; font-size: 13px; padding: 0 12px }
+#droidFrame .krow { grid-template-columns: 1fr 1fr; gap: 10px }
+#droidFrame .kc { padding: 12px; border-radius: 16px; gap: 4px }
+#droidFrame .kc .t i { width: 28px; height: 28px } #droidFrame .kc .t i svg { width: 15px; height: 15px }
+#droidFrame .kc .v { font-size: 21px }
+#droidFrame .card { padding: 14px; border-radius: 18px }
+#droidFrame .seg { margin-left: 0 }
+.rlist { display: grid; gap: 8px }
+.rli { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #ECF3F1 }
+.rli .rn { font: 600 14px/1 var(--f-display); display: flex; align-items: center; gap: 8px } .rli .rn i { width: 10px; height: 10px; border-radius: 3px }
+.rli .rv { font: 700 14px/1 var(--f-display); text-align: right; font-variant-numeric: tabular-nums }
+.rli .prog { grid-column: 1 / -1 }
+.crow { display: flex; align-items: center; gap: 12px } .crow .grow { flex: 1 }
+#droidFrame .ddash > * { flex-shrink: 0 }
+.drow { display: flex; align-items: center; gap: 8px } .drow .grow { flex: 1 }
+.drow .chip { height: 32px; padding: 0 10px; font-size: 12px } .drow .chip svg { width: 14px; height: 14px }
+.ctip.st { position: static; margin-top: 4px; min-width: 0; border-radius: 12px; box-shadow: none }
+
+
+/* ───── 04 Performance ───── */
+
+.dsrc { display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0 14px; border-radius: 12px; background: #F4FCE3; border: 1px solid #DDF3A6; font: 500 12.5px/1 var(--f-display); color: #3D5A0E; white-space: nowrap }
+.dsrc i { width: 8px; height: 8px; border-radius: 50%; background: #5E8A12; box-shadow: 0 0 0 4px rgba(94,138,18,.15); flex: none }
+.dsrc b { font-weight: 700 } .dsrc a { color: #0A6A5F; font-weight: 600; text-decoration: none; margin-left: 4px }
+.filt { display: flex; align-items: center; gap: 10px }
+.filt .grow { flex: 1 }
+.sbox { width: 340px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 12px; font: 400 13.5px/1 var(--f-body); color: #5A6B68 }
+.sbox svg { width: 18px; height: 18px; flex: none } .sbox kbd { margin-left: auto; font: 600 11px/1 var(--f-display); padding: 4px 6px; border-radius: 6px; background: #ECF3F1; color: #5A6B68 }
+.path { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap }
+.path span { height: 34px; padding: 0 13px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--f-display); color: #0A6A5F; background: #E6F7F5; white-space: nowrap; cursor: pointer }
+.path span.cur { background: #0F1F1D; color: #fff }
+.path > svg { width: 14px; height: 14px; color: #8A9A97; flex: none }
+.path .lv { font: 500 11px/1 var(--f-display); opacity: .7; margin-right: 2px }
+.krow.k5 { grid-template-columns: repeat(5, 1fr) }
+.k5 .kc .v { font-size: 25px }
+.kc .yy { font: 400 12px/1.3 var(--f-body); color: #5A6B68 } .kc .yy b { font-weight: 600; font-family: var(--f-display) }
+.yy .p { color: #1F7A3A } .yy .m { color: #C42B2B }
+.row2.pf { grid-template-columns: 1fr 400px }
+.contrib { display: grid; gap: 2px }
+.cb { display: grid; grid-template-columns: 112px 1fr 62px; align-items: center; gap: 10px; height: 30px; font: 500 12.5px/1 var(--f-display); color: #3D4C49; border-radius: 8px; padding: 0 6px; cursor: pointer }
+.cb:hover { background: #F5F9F8 }
+.cb .tr { position: relative; height: 14px }
+.cb .tr::before { content: ""; position: absolute; left: 50%; top: -8px; bottom: -8px; width: 1px; background: #CBD6D3 }
+.cb .tr i { position: absolute; top: 0; height: 14px; border-radius: 4px }
+.cb b { font: 600 12.5px/1 var(--f-display); text-align: right; font-variant-numeric: tabular-nums }
+.cb.oth { color: #5A6B68; font-style: normal } .cb.oth .tr i { opacity: .55 }
+.cfoot { display: flex; justify-content: space-between; font: 400 12px/1.3 var(--f-body); color: #5A6B68; border-top: 1px solid #ECF3F1; padding-top: 10px }
+.cfoot b { font: 700 13px/1.3 var(--f-display); color: #C42B2B }
+.rt.st td { padding: 10px 12px; vertical-align: middle }
+.rt.st tr.row { cursor: pointer } .rt.st tr.row:hover td { background: #F8FBFA }
+.rt.st tr.sel td { background: #EEF9F7 }
+.rt.st tr.sel td:first-child { box-shadow: inset 3px 0 0 #0E8579 }
+.rt .sid { font: 600 13.5px/1.25 var(--f-display) } .rt .sid small { display: block; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.rt th.sort { color: #0A6A5F } .rt th.sort::after { content: " ↑"; }
+.sdet td { background: #EEF9F7; padding: 0 12px 16px !important; border-bottom: 1px solid #DCEFEC }
+.sdet .in { display: grid; grid-template-columns: repeat(4, 1fr) 260px; gap: 10px; padding-top: 2px }
+.mm { background: #fff; border: 1px solid #DCEFEC; border-radius: 14px; padding: 10px 12px; display: grid; gap: 3px }
+.mm small { font: 500 11.5px/1.2 var(--f-display); color: #5A6B68 } .mm b { font: 700 18px/1.25 var(--f-display); font-variant-numeric: tabular-nums } .mm em { font: 600 11.5px/1.2 var(--f-display); font-style: normal }
+.sdet .act { display: grid; gap: 8px; align-content: start }
+.sdet .act span { height: 36px; border-radius: 11px; display: flex; align-items: center; gap: 8px; padding: 0 12px; font: 600 13px/1 var(--f-display) }
+.sdet .act span svg { width: 16px; height: 16px }
+.sdet .act .a1 { background: #0E8579; color: #fff } .sdet .act .a2 { background: #fff; border: 1px solid #DCEFEC; color: #0A6A5F }
+.sdet .why { grid-column: 1 / 5; display: flex; gap: 10px; align-items: flex-start; font: 400 12.5px/1.45 var(--f-body); color: #3D4C49; background: #fff; border: 1px solid #DCEFEC; border-radius: 14px; padding: 10px 12px }
+.sdet .why svg { width: 16px; height: 16px; color: #FF7A59; flex: none; margin-top: 2px } .sdet .why b { font-weight: 600 }
+.pg { display: flex; align-items: center; gap: 8px; font: 400 12.5px/1 var(--f-body); color: #5A6B68 }
+.pg .grow { flex: 1 } .pg span { min-width: 32px; height: 32px; border-radius: 9px; border: 1px solid #E1E9E7; display: grid; place-items: center; font: 600 12.5px/1 var(--f-display); color: #3D4C49; background: #fff }
+.pg span.on { background: #0F1F1D; color: #fff; border-color: #0F1F1D }
+
+/* Android performance */
+
+#droidFrame .sbox { width: auto; height: 42px }
+#droidFrame .path { overflow: hidden }
+#droidFrame .path span { height: 30px; padding: 0 11px; font-size: 12px }
+#droidFrame .dsrc { height: 34px; font-size: 11.5px; padding: 0 11px; justify-content: flex-start }
+#droidFrame .kc .yy { font-size: 11px }
+#droidFrame .cb { grid-template-columns: 96px 1fr 52px; gap: 8px; font-size: 12px }
+.slist { display: grid; gap: 10px }
+.sli { border: 1px solid #E1E9E7; border-radius: 16px; padding: 12px; display: grid; gap: 10px; background: #fff }
+.sli.sel { border-color: #8FDFD7; background: #F2FBFA; box-shadow: inset 3px 0 0 #0E8579 }
+.sli .h { display: flex; align-items: flex-start; gap: 8px } .sli .h .grow { flex: 1 }
+.sli .m3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+.sli .m3 div { background: #F5F9F8; border-radius: 10px; padding: 7px 8px; display: grid; gap: 2px }
+.sli.sel .m3 div { background: #fff }
+.sli .m3 small { font: 500 10.5px/1.2 var(--f-display); color: #5A6B68 } .sli .m3 b { font: 700 14px/1.2 var(--f-display) } .sli .m3 em { font: 600 10.5px/1.2 var(--f-display); font-style: normal }
+.sli .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.sli .acts span { height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 12.5px/1 var(--f-display) }
+.sli .acts span svg { width: 15px; height: 15px }
+.sli .acts .a1 { background: #0E8579; color: #fff } .sli .acts .a2 { background: #fff; border: 1px solid #DCEFEC; color: #0A6A5F }
+.more { height: 42px; border-radius: 13px; border: 1px solid #E1E9E7; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 13px/1 var(--f-display); color: #0A6A5F; background: #fff }
+.more svg { width: 16px; height: 16px }
+.sev.n { background: #E6F4EA; color: #1F7A3A }
+.k5 .kc { padding: 14px 15px } .k5 .kc .t { gap: 8px } .k5 .kc .t i { width: 30px; height: 30px } .k5 .kc .t i svg { width: 16px; height: 16px }
+.kc .t .dl { white-space: nowrap }
+.krow.k5 { grid-template-columns: repeat(4, 1fr) .8fr }
+.k5 .kc .t .dl { font-size: 11px; padding: 4px 6px }
+
+
+/* ───── 06 Laporan ───── */
+
+.btn-p { height: 40px; padding: 0 16px; border-radius: 12px; background: #0E8579; color: #fff; display: inline-flex; align-items: center; gap: 8px; font: 600 13.5px/1 var(--f-display); box-shadow: 0 6px 16px rgba(14,133,121,.25) }
+.btn-p svg { width: 17px; height: 17px }
+.lap { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 20px 24px; display: grid; grid-template-columns: 372px 1fr; gap: 16px; background: #F5F9F8 }
+.lcol { display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.lcol .sbox { width: auto }
+.fchips { display: flex; gap: 6px; flex-wrap: wrap }
+.fchips span { height: 30px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1 var(--f-display); color: #3D4C49; cursor: pointer }
+.fchips span b { font: 700 11px/1 var(--f-display); color: #5A6B68 }
+.fchips span.on { background: #0F1F1D; color: #fff; border-color: #0F1F1D } .fchips span.on b { color: #C7F25E }
+.rlist2 { display: grid; gap: 8px }
+.ri { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 11px 12px; border-radius: 16px; background: #fff; border: 1px solid #E1E9E7; cursor: pointer }
+.ri:hover { border-color: #8FDFD7 }
+.ri.on { border-color: #0E8579; box-shadow: 0 0 0 3px rgba(14,133,121,.12); background: #F7FCFB }
+.ri .ic2 { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center } .ri .ic2 svg { width: 20px; height: 20px }
+.ri b { font: 600 13.5px/1.3 var(--f-display); display: block } .ri small { font: 400 11.5px/1.35 var(--f-body); color: #5A6B68; display: flex; align-items: center; gap: 6px; flex-wrap: wrap }
+.kd { font: 600 10.5px/1 var(--f-display); padding: 4px 7px; border-radius: 99px }
+.kd.t { background: #E6F7F5; color: #0A6A5F } .kd.b { background: #E1ECFA; color: #2C6CB0 } .kd.v { background: #ECE5FA; color: #6A4CB5 } .kd.a { background: #FCEDD3; color: #B7791F } .kd.c { background: #FBE2DA; color: #B5401F } .kd.l { background: #F4FCE3; color: #5E8A12 }
+.ri .pin { color: #B5401F; width: 16px; height: 16px }
+.sched { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px; display: grid; gap: 10px; margin-top: auto }
+.sched .hd { display: flex; align-items: center; gap: 8px } .sched .hd b { font: 600 14px/1.2 var(--f-display) } .sched .hd .grow { flex: 1 } .sched .hd small { font: 500 12px/1 var(--f-display); color: #0A6A5F }
+.sc { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; padding: 8px 0; border-top: 1px solid #ECF3F1 }
+.sc b { font: 600 12.5px/1.3 var(--f-display) } .sc small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 1 }
+.sc .tg2 { grid-row: span 2; width: 34px; height: 20px; border-radius: 10px; background: #0E8579; position: relative }
+.sc .tg2 i { position: absolute; top: 2px; left: 16px; width: 16px; height: 16px; border-radius: 50%; background: #fff }
+.sc .tg2.off { background: #CBD6D3 } .sc .tg2.off i { left: 2px }
+.runs { display: flex; gap: 6px; flex-wrap: wrap; font: 500 11px/1 var(--f-display) }
+.runs span { padding: 5px 8px; border-radius: 99px; background: #E6F4EA; color: #1F7A3A } .runs span.f { background: #FDECEC; color: #C42B2B }
+/* preview */
+.pv { background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; display: flex; flex-direction: column; min-width: 0; overflow: hidden }
+.pv .tb { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid #ECF3F1 }
+.pv .tb .ttl b { font: 600 15px/1.25 var(--f-display); display: block } .pv .tb .ttl small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.pv .tb .grow { flex: 1 }
+.pv .tb .linkbtn { height: 34px; padding: 0 11px; font-size: 12.5px }
+.pv .tb .btn-p { height: 34px; padding: 0 12px; font-size: 12.5px; box-shadow: none }
+.pvb { flex: 1; display: grid; grid-template-columns: 158px 1fr; min-height: 0; background: #EEF3F1 }
+.toc { padding: 14px 10px; display: grid; gap: 2px; align-content: start; background: #F8FBFA; border-right: 1px solid #ECF3F1 }
+.toc .th { font: 600 10.5px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; padding: 4px 8px 8px }
+.toc a { display: grid; grid-template-columns: 20px 1fr; gap: 6px; align-items: center; padding: 7px 8px; border-radius: 9px; font: 500 12px/1.25 var(--f-display); color: #3D4C49; cursor: pointer; text-decoration: none }
+.toc a i { font: 600 10.5px/1 var(--f-display); font-style: normal; color: #5A6B68; width: 20px; height: 20px; border-radius: 6px; background: #ECF3F1; display: grid; place-items: center }
+.toc a.on { background: #E6F7F5; color: #0A6A5F; font-weight: 600 } .toc a.on i { background: #0E8579; color: #fff }
+.toc a .nw { grid-column: 2; font: 600 9.5px/1 var(--f-display); color: #5E8A12 }
+.toc .add { margin-top: 8px; border: 1.5px dashed #8FDFD7; border-radius: 10px; padding: 8px; font: 600 11.5px/1.3 var(--f-display); color: #0A6A5F; display: flex; align-items: center; gap: 6px } .toc .add svg { width: 14px; height: 14px }
+.pgw { overflow: hidden; padding: 16px 12px; display: flex; justify-content: center; position: relative }
+.page { width: 100%; max-width: 560px; background: #fff; border-radius: 6px; box-shadow: 0 6px 22px rgba(15,31,29,.12); padding: 0 0 18px; display: grid; gap: 14px; align-content: start }
+.page .ph { background: linear-gradient(135deg, #0A6A5F, #04332E); color: #fff; padding: 18px 22px; border-radius: 6px 6px 0 0; display: grid; gap: 4px; position: relative; overflow: hidden }
+.page .ph::after { content: ""; position: absolute; right: -40px; top: -60px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(rgba(34,184,201,.5), rgba(34,184,201,0) 70%) }
+.page .ph .eb { font: 600 9.5px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: #C7F25E }
+.page .ph b { font: 700 19px/1.2 var(--f-display) } .page .ph small { font: 400 10.5px/1.3 var(--f-body); color: #C0EDE8 }
+.page .ph .lg2 { position: absolute; right: 18px; top: 16px; width: 34px; height: 34px; border-radius: 10px; background: #fff; display: grid; place-items: center; z-index: 1 } .page .ph .lg2 img { width: 84%; height: 84% ; object-fit: contain }
+.page .sec { padding: 0 22px; display: grid; gap: 8px }
+.page .sec h4 { margin: 0; font: 600 12.5px/1.2 var(--f-display); display: flex; align-items: center; gap: 8px }
+.page .sec h4 i { font-style: normal; font: 700 10px/1 var(--f-display); width: 18px; height: 18px; border-radius: 5px; background: #0E8579; color: #fff; display: grid; place-items: center }
+.page .sec h4 small { margin-left: auto; font: 500 9.5px/1 var(--f-display); color: #5A6B68 }
+.page .sum { font: 400 11px/1.55 var(--f-body); color: #3D4C49; background: #F4FCE3; border: 1px solid #DDF3A6; border-radius: 10px; padding: 8px 10px } .page .sum b { font-weight: 600; color: #0F1F1D }
+.pk { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+.pk div { border: 1px solid #E1E9E7; border-radius: 9px; padding: 7px 8px; display: grid; gap: 2px }
+.pk small { font: 500 9px/1.2 var(--f-display); color: #5A6B68 } .pk b { font: 700 13px/1.2 var(--f-display) } .pk em { font: 600 9px/1.2 var(--f-display); font-style: normal }
+.pt { width: 100%; border-collapse: collapse; font: 400 10.5px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.pt th { font: 600 9px/1.2 var(--f-display); text-transform: uppercase; letter-spacing: .04em; color: #5A6B68; background: #F5F9F8; padding: 6px 7px; text-align: right; border-bottom: 1px solid #E1E9E7 }
+.pt th:first-child, .pt td:first-child { text-align: left }
+.pt td { padding: 6px 7px; border-bottom: 1px solid #ECF3F1; text-align: right } .pt td:first-child { font-weight: 600; font-family: var(--f-display) }
+.pt .bx { display: inline-block; height: 6px; border-radius: 3px; background: #22B8C9; vertical-align: middle; margin-right: 5px }
+.page .note { font: 400 9.5px/1.4 var(--f-body); color: #5A6B68 }
+.pgfoot { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, rgba(238,243,241,0), #EEF3F1 75%); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; font: 600 11.5px/1 var(--f-display); color: #3D4C49; gap: 8px }
+.pgfoot span { background: #fff; border: 1px solid #E1E9E7; border-radius: 99px; padding: 7px 12px }
+/* Android */
+
+.dlap { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 14px; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+.dlap > * { flex-shrink: 0 }
+#droidFrame .fchips { flex-wrap: nowrap; overflow: hidden } #droidFrame .fchips span { flex: none }
+#droidFrame .ri { grid-template-columns: 40px 1fr auto }
+#droidFrame .sched { margin-top: 0 }
+.dfab { position: absolute; right: 16px; bottom: 96px; height: 52px; padding: 0 18px; border-radius: 18px; background: #0E8579; color: #fff; display: inline-flex; align-items: center; gap: 8px; font: 600 14px/1 var(--f-display); box-shadow: 0 10px 24px rgba(14,133,121,.35) }
+.dfab svg { width: 20px; height: 20px }
+.thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+.thumbs div { aspect-ratio: .72; border-radius: 8px; background: #fff; border: 1px solid #E1E9E7; overflow: hidden; display: grid; grid-template-rows: 26% 1fr }
+.thumbs div i { background: linear-gradient(135deg, #0A6A5F, #04332E) } .thumbs div span { padding: 6px; display: grid; gap: 4px; align-content: start }
+.thumbs div span u { display: block; height: 4px; border-radius: 2px; background: #E1E9E7; text-decoration: none } .thumbs div span u.c { background: #8FD6CB; height: 18px }
+.pt td, .pt th { white-space: nowrap }
+.pv .tb .linkbtn, .pv .tb .btn-p { white-space: nowrap }
+
+
+/* ───── 07 Watchlist dan Alert ───── */
+
+.wl { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 20px 24px; display: grid; grid-template-columns: 1fr 352px; gap: 16px; background: #F5F9F8; align-content: start }
+.wl .full { grid-column: 1 / -1 }
+.sstrip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px }
+.ss { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px; display: grid; grid-template-columns: 40px 1fr; gap: 2px 12px; align-items: center; cursor: pointer }
+.ss .ic3 { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center } .ss .ic3 svg { width: 20px; height: 20px }
+.ss b { font: 700 24px/1.1 var(--f-display) } .ss small { font: 500 12px/1.2 var(--f-display); color: #5A6B68 }
+.ss.on { border-color: #0F1F1D; box-shadow: inset 0 0 0 1px #0F1F1D }
+.wtabs { display: flex; gap: 4px; border-bottom: 1px solid #E1E9E7; margin: -4px -20px 0; padding: 0 20px }
+.wtabs span { padding: 12px 12px 11px; font: 600 13.5px/1 var(--f-display); color: #5A6B68; border-bottom: 2.5px solid transparent; display: inline-flex; gap: 7px; align-items: center; cursor: pointer }
+.wtabs span b { font: 700 11px/1 var(--f-display); padding: 3px 6px; border-radius: 99px; background: #ECF3F1; color: #3D4C49 }
+.wtabs span.on { color: #0A6A5F; border-color: #0E8579 } .wtabs span.on b { background: #0E8579; color: #fff }
+.wtabs .grow { flex: 1 }
+.wt { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.wt th { text-align: left; font: 600 10.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 9px 10px; border-bottom: 1px solid #E1E9E7 }
+.wt td { padding: 9px 10px; border-bottom: 1px solid #ECF3F1; vertical-align: middle; white-space: nowrap }
+.wt tr.grp td { background: #F5F9F8; font: 600 11px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #0A6A5F; padding: 8px 10px }
+.wt tr.grp .gl { display: flex; gap: 8px; align-items: baseline } .wt tr.grp td span { font: 500 11px/1 var(--f-display); letter-spacing: 0; text-transform: none; color: #5A6B68 }
+.wt .mn { display: grid; grid-template-columns: 32px 1fr; gap: 0 10px; align-items: center }
+.wt .mn i { grid-row: span 2; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center } .wt .mn i svg { width: 16px; height: 16px }
+.wt .mn b { font: 600 13px/1.25 var(--f-display) } .wt .mn small { font: 400 11.5px/1.25 var(--f-body); color: #5A6B68 }
+.wt .val { font: 700 13.5px/1.2 var(--f-display) } .wt .val small { display: block; font: 500 10.5px/1.2 var(--f-display); color: #B7791F }
+.wt .thr { font: 500 12px/1.3 var(--f-display); color: #3D4C49 } .wt .thr small { display: block; font: 400 11px/1.2 var(--f-body); color: #5A6B68 }
+.st2 { font: 600 11px/1 var(--f-display); padding: 5px 9px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px }
+.st2 i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none }
+.st2.k { background: #FDECEC; color: #C42B2B } .st2.w { background: #FDF3E2; color: #B7791F } .st2.n { background: #E6F4EA; color: #1F7A3A } .st2.o { background: #ECF3F1; color: #5A6B68 }
+.nt { display: inline-flex; gap: 4px } .nt span { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: #E6F7F5; color: #0A6A5F } .nt span svg { width: 14px; height: 14px } .nt span.off { background: #F5F9F8; color: #B9C6C3 }
+.wt .more { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #5A6B68 } .wt .more svg { width: 16px; height: 16px }
+.rcol { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.al .acts2 { grid-column: 2; display: flex; gap: 6px; margin-top: 4px }
+.al .acts2 span { height: 28px; padding: 0 9px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; font: 600 11.5px/1 var(--f-display); border: 1px solid #E1E9E7; color: #0A6A5F; background: #fff }
+.al .acts2 span.p { background: #0E8579; border-color: #0E8579; color: #fff } .al .acts2 span svg { width: 13px; height: 13px }
+.nl { display: grid; gap: 10px }
+.nl .in2 { border: 1.5px solid #8FDFD7; border-radius: 14px; padding: 10px 12px; font: 400 13px/1.45 var(--f-body); color: #0F1F1D; box-shadow: 0 0 0 4px rgba(34,184,201,.08); display: grid; gap: 8px }
+.nl .in2 .row { display: flex; align-items: center; gap: 6px } .nl .in2 .row .grow { flex: 1 } .nl .in2 .row small { font: 500 11px/1 var(--f-display); color: #5A6B68; display: inline-flex; gap: 5px; align-items: center } .nl .in2 .row small svg { width: 13px; height: 13px; color: #FF7A59 }
+.parse { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
+.parse div { background: #F5F9F8; border-radius: 10px; padding: 7px 9px; display: grid; gap: 2px }
+.parse small { font: 500 10.5px/1.2 var(--f-display); color: #5A6B68 } .parse b { font: 600 12.5px/1.25 var(--f-display) }
+.chans { display: flex; gap: 6px; flex-wrap: wrap }
+.chans span { height: 30px; padding: 0 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; font: 600 12px/1 var(--f-display); border: 1px solid #8FDFD7; background: #E6F7F5; color: #0A6A5F } .chans span svg { width: 14px; height: 14px }
+.chans span.off { background: #fff; border-color: #E1E9E7; color: #5A6B68 }
+.nl .save { display: flex; gap: 8px } .nl .save span { flex: 1; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 13px/1 var(--f-display) }
+.nl .save .a1 { background: #0E8579; color: #fff } .nl .save .a2 { border: 1px solid #E1E9E7; color: #3D4C49 } .nl .save svg { width: 15px; height: 15px }
+.hist2 { display: none }
+/* Android */
+
+
+.dwl { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 0 14px 14px; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+.dwl > * { flex-shrink: 0 }
+#droidFrame .wtabs { margin: 0 -14px; padding: 0 14px; background: #fff }
+#droidFrame .wtabs span { font-size: 13px; padding: 13px 8px 12px }
+.dsum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+.dsum div { background: #fff; border: 1px solid #E1E9E7; border-radius: 14px; padding: 10px 12px; display: grid; gap: 2px }
+.dsum b { font: 700 20px/1.1 var(--f-display) } .dsum small { font: 500 11px/1.2 var(--f-display); color: #5A6B68 }
+.wli { background: #fff; border: 1px solid #E1E9E7; border-radius: 16px; padding: 11px 12px; display: grid; grid-template-columns: 32px 1fr auto; gap: 4px 10px; align-items: center }
+.wli > i { grid-row: span 2; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center } .wli > i svg { width: 16px; height: 16px }
+.wli b { font: 600 13px/1.25 var(--f-display) } .wli small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.wli .r { grid-row: span 2; text-align: right; display: grid; gap: 4px; justify-items: end } .wli .r b { font: 700 14px/1.1 var(--f-display) }
+.glab { font: 600 11px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #0A6A5F; padding: 4px 2px 0 }
+.dback { width: 38px; height: 38px; border-radius: 11px; border: 1px solid #E1E9E7; display: grid; place-items: center; color: #3D4C49; flex: none } .dback svg { width: 18px; height: 18px }
+.gbar { display: flex; align-items: center; gap: 10px; padding: 12px 0 6px } .gbar small { font: 500 12px/1 var(--f-display); color: #5A6B68 } .gbar .grow { flex: 1 } .gbar .seg { margin: 0 }
+.wtabs span, .seg button, .al .acts2 span, .st2 { white-space: nowrap }
+.wt th { padding: 9px 7px } .wt td { padding: 9px 7px }
+.nt { gap: 3px } .nt span { width: 22px; height: 22px; border-radius: 7px } .nt span svg { width: 12px; height: 12px }
+.al .acts2 { gap: 5px } .al .acts2 span { padding: 0 8px; font-size: 11px; gap: 4px } .al .acts2 span svg { width: 12px; height: 12px }
+#webFrame .al .acts2 { grid-column: 1 / -1; margin-top: 6px }
+.wfoot { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 12px; margin-top: 14px }
+.wfoot > div { background: #F5F9F8; border-radius: 14px; padding: 12px 14px; display: grid; gap: 4px; align-content: start }
+.wfoot b { font: 600 13.5px/1.25 var(--f-display) } .wfoot small { font: 500 11.5px/1.3 var(--f-display); color: #5A6B68 }
+.wf2 b { font: 700 20px/1.15 var(--f-display) } .wf2 em { font: 400 11.5px/1.35 var(--f-body); font-style: normal; color: #3D4C49 }
+.gstack { display: flex; gap: 3px; height: 10px; margin-top: 6px } .gstack i { border-radius: 3px }
+.glg { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px } .glg span { font: 500 11.5px/1 var(--f-display); color: #3D4C49; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap } .glg span i { width: 8px; height: 8px; border-radius: 2px } .glg b { font: 700 11.5px/1 var(--f-display) }
+#webFrame .al > b { font-size: 13px }
+
+
+/* ───── 08 Profil ───── */
+
+.me.on { background: #E6F7F5; border-color: #8FDFD7; box-shadow: inset 0 0 0 1px #8FDFD7 }
+.avatar.ring { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #0E8579 }
+.pf { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 20px 24px; display: grid; grid-template-columns: 340px 1fr; gap: 16px; background: #F5F9F8; align-items: start }
+.pcol { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.idc { background: linear-gradient(160deg, #0A6A5F, #04332E); color: #fff; border-radius: 22px; padding: 20px; display: grid; gap: 14px; position: relative; overflow: hidden }
+.idc .glow { position: absolute; right: -70px; top: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(rgba(34,184,201,.55), rgba(34,184,201,0) 70%) }
+.idc .who { display: flex; gap: 14px; align-items: center; position: relative }
+.bigav { width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, #C7F25E, #22B8C9); color: #04332E; display: grid; place-items: center; font: 700 26px/1 var(--f-display); position: relative; flex: none }
+.bigav .cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #0A6A5F; display: grid; place-items: center; border: 2px solid #0A6A5F } .bigav .cam svg { width: 13px; height: 13px }
+.idc .who b { font: 700 20px/1.2 var(--f-display); display: block } .idc .who small { font: 400 12.5px/1.4 var(--f-body); color: #C0EDE8; display: block }
+.idc .tags { display: flex; gap: 6px; flex-wrap: wrap; position: relative }
+.idc .tags span { font: 600 11.5px/1 var(--f-display); padding: 6px 10px; border-radius: 99px; background: rgba(255,255,255,.12); color: #fff; white-space: nowrap }
+.idc .tags span.l { background: #C7F25E; color: #04332E }
+.idc .st3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; position: relative }
+.idc .st3 div { background: rgba(255,255,255,.08); border-radius: 12px; padding: 9px 10px; display: grid; gap: 3px }
+.idc .st3 b { font: 700 16px/1.1 var(--f-display) } .idc .st3 small { font: 500 10.5px/1.25 var(--f-display); color: #C0EDE8 }
+.apkc .row2 { display: flex; gap: 14px; align-items: center }
+.qrbox { width: 112px; height: 112px; flex: none; border-radius: 14px; border: 1px solid #E1E9E7; padding: 10px; background: #fff }
+.qrbox svg { width: 92px; height: 92px; display: block }
+.apkc .ver { display: grid; gap: 6px } .apkc .ver b { font: 700 18px/1.15 var(--f-display) } .apkc .ver small { font: 400 12px/1.4 var(--f-body); color: #5A6B68 }
+.okchip { font: 600 11px/1 var(--f-display); padding: 5px 9px; border-radius: 99px; background: #E6F4EA; color: #1F7A3A; display: inline-flex; gap: 5px; align-items: center; justify-self: start; white-space: nowrap } .okchip svg { width: 12px; height: 12px }
+.btnrow { display: flex; gap: 8px } .btnrow > span { flex: 1; justify-content: center; white-space: nowrap }
+.adm .ai2 { display: grid; grid-template-columns: 36px 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-top: 1px solid #ECF3F1 }
+.adm .ai2 i { grid-row: span 2; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center } .adm .ai2 i svg { width: 18px; height: 18px }
+.adm .ai2 b { font: 600 13.5px/1.25 var(--f-display) } .adm .ai2 small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 2 }
+.adm .ai2 .go { grid-row: span 2; grid-column: 3; color: #5A6B68; width: 18px; height: 18px }
+.ctag { font: 600 10.5px/1 var(--f-display); padding: 4px 8px; border-radius: 99px; background: #ECE5FA; color: #6A4CB5; margin-left: auto }
+.pfnav { display: flex; gap: 6px; background: #fff; border: 1px solid #E1E9E7; border-radius: 14px; padding: 5px }
+.pfnav span { flex: 1; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 13px/1 var(--f-display); color: #3D4C49; cursor: pointer; white-space: nowrap } .pfnav span svg { width: 16px; height: 16px }
+.pfnav span.on { background: #E6F7F5; color: #0A6A5F }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px }
+.fld { display: grid; gap: 6px } .fld label { font: 600 11.5px/1 var(--f-display); color: #3D4C49; display: flex; gap: 6px; align-items: center } .fld label em { font: 400 11px/1 var(--f-body); font-style: normal; color: #5A6B68; margin-left: auto }
+.inp { height: 40px; border: 1px solid #D5E0DD; border-radius: 11px; padding: 0 12px; display: flex; align-items: center; gap: 8px; font: 400 13.5px/1 var(--f-body); color: #0F1F1D; background: #fff; white-space: nowrap }
+.inp.ro { background: #F5F9F8; color: #5A6B68 } .inp svg { width: 15px; height: 15px; color: #5A6B68; flex: none } .inp .grow { flex: 1 }
+.foot2 { display: flex; align-items: center; gap: 10px; border-top: 1px solid #ECF3F1; padding-top: 12px } .foot2 small { font: 400 12px/1.3 var(--f-body); color: #5A6B68 } .foot2 .grow { flex: 1 }
+.prow { display: grid; grid-template-columns: 200px 1fr; gap: 14px; align-items: center; padding: 11px 0; border-top: 1px solid #ECF3F1 }
+.prow:first-of-type { border-top: 0 }
+.prow > div:first-child b { font: 600 13.5px/1.25 var(--f-display); display: block } .prow > div:first-child small { font: 400 11.5px/1.35 var(--f-body); color: #5A6B68 }
+.prow .seg { margin: 0; justify-self: start }
+.sws { display: flex; gap: 10px } .sws span { display: grid; justify-items: center; gap: 5px; font: 500 11px/1 var(--f-display); color: #5A6B68 } .sws span i { width: 30px; height: 30px; border-radius: 50%; display: block; box-shadow: inset 0 0 0 2px rgba(255,255,255,.6) }
+.sws span.on { color: #0A6A5F; font-weight: 600 } .sws span.on i { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0E8579 }
+.tgl { width: 38px; height: 22px; border-radius: 11px; background: #0E8579; position: relative; flex: none; justify-self: end } .tgl i { position: absolute; top: 3px; left: 19px; width: 16px; height: 16px; border-radius: 50%; background: #fff }
+.tgl.off { background: #CBD6D3 } .tgl.off i { left: 3px }
+.prow.tg { grid-template-columns: 1fr auto }
+.mini { border: 1px solid #E1E9E7; border-radius: 14px; padding: 12px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; background: #FBFDFC }
+.mini small { font: 500 11px/1.2 var(--f-display); color: #5A6B68 } .mini b { font: 700 18px/1.1 var(--f-display) } .mini em { font: 600 11px/1.2 var(--f-display); font-style: normal; color: #1F7A3A }
+.mini svg { grid-row: span 3; grid-column: 2; width: 100%; height: 56px }
+.nm { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body) }
+.nm th { font: 600 10.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 8px 8px; border-bottom: 1px solid #E1E9E7; text-align: center } .nm th:first-child { text-align: left }
+.nm td { padding: 9px 8px; border-bottom: 1px solid #ECF3F1; text-align: center } .nm td:first-child { text-align: left }
+.nm td b { font: 600 13px/1.25 var(--f-display); display: block } .nm td small { font: 400 11px/1.3 var(--f-body); color: #5A6B68 }
+.cb { width: 22px; height: 22px; border-radius: 7px; background: #0E8579; color: #fff; display: inline-grid; place-items: center } .cb svg { width: 13px; height: 13px } .cb.off { background: #fff; border: 1.5px solid #CBD6D3 }
+.cb.lock { background: #8FD6CB }
+.ses { display: grid; grid-template-columns: 38px 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-top: 1px solid #ECF3F1 }
+.ses i { grid-row: span 2; width: 38px; height: 38px; border-radius: 11px; background: #ECF3F1; color: #3D4C49; display: grid; place-items: center } .ses i svg { width: 18px; height: 18px }
+.ses b { font: 600 13.5px/1.25 var(--f-display); display: flex; gap: 8px; align-items: center } .ses small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 2 }
+.ses .now { font: 600 10.5px/1 var(--f-display); padding: 4px 7px; border-radius: 99px; background: #E6F7F5; color: #0A6A5F }
+.ses .lo { grid-row: span 2; grid-column: 3; font: 600 12px/1 var(--f-display); color: #B5401F; white-space: nowrap }
+.outbtn { height: 40px; border-radius: 12px; border: 1px solid #F3C9BC; background: #FFF6F3; color: #B5401F; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 13.5px/1 var(--f-display); padding: 0 16px; white-space: nowrap } .outbtn svg { width: 16px; height: 16px }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start }
+/* Android */
+
+.dpf { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+.dpf > * { flex-shrink: 0 }
+#droidFrame .idc { padding: 16px; gap: 12px; border-radius: 20px }
+#droidFrame .bigav { width: 58px; height: 58px; font-size: 22px }
+#droidFrame .idc .who b { font-size: 18px }
+.dapk { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 12px 14px; display: grid; grid-template-columns: 40px 1fr auto; gap: 3px 12px; align-items: center }
+.dapk > i { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; background: #E6F7F5; color: #0A6A5F; display: grid; place-items: center } .dapk > i svg { width: 20px; height: 20px }
+.dapk b { font: 600 14px/1.25 var(--f-display) } .dapk small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 2 }
+.dapk .linkbtn { grid-row: span 2; grid-column: 3; height: 34px; padding: 0 12px; font-size: 12.5px; white-space: nowrap }
+.lgrp { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; overflow: hidden }
+.lgrp .gh { font: 600 11px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #0A6A5F; padding: 13px 14px 6px }
+.li { display: grid; grid-template-columns: 34px 1fr auto 16px; gap: 2px 12px; align-items: center; padding: 10px 14px; border-top: 1px solid #ECF3F1 }
+.lgrp .gh + .li { border-top: 0 }
+.li > i { grid-row: span 2; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center } .li > i svg { width: 17px; height: 17px }
+.li b { font: 600 13.5px/1.25 var(--f-display) } .li small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 2 }
+.li .rv { grid-row: span 2; grid-column: 3; font: 500 12px/1 var(--f-display); color: #5A6B68; white-space: nowrap }
+.li .go { grid-row: span 2; grid-column: 4; width: 16px; height: 16px; color: #9AAAA6 }
+.li.lsg { grid-template-columns: 34px 1fr } .li.lsg .seg { grid-column: 1 / -1; margin: 6px 0 2px; display: flex } .li.lsg .seg button { flex: 1; justify-content: center }
+.li .tgl { grid-row: span 2; grid-column: 3 / 5 }
+#droidFrame .outbtn { width: 100%; height: 46px; border-radius: 14px }
+.dver { text-align: center; font: 400 11.5px/1.4 var(--f-body); color: #5A6B68 }
+.tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px }
+.tgrid > div { display: flex; flex-direction: column }
+.tgrid .prow { grid-template-columns: 110px 1fr }
+.tgrid .prow.tg { grid-template-columns: 1fr auto }
+.tgrid .mini { margin-top: 8px }
+.linkbtn { white-space: nowrap }
+.adm .foot2, .card .foot2 { flex-wrap: nowrap }
+
+
+/* ───── 09 Statistik + Unduh APK ───── */
+#webFrame { height: 1744px }
+#dlFrame { width: 1440px; height: 1272px; border-radius: 6px }
+.st9 { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 20px 24px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; background: #F5F9F8; align-content: start }
+.c12 { grid-column: span 12 } .c8 { grid-column: span 8 } .c7 { grid-column: span 7 } .c6 { grid-column: span 6 } .c5 { grid-column: span 5 } .c4 { grid-column: span 4 }
+.k5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px }
+.k9 { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px; display: grid; gap: 6px; min-width: 0 }
+.k9 small { font: 500 12px/1.25 var(--f-display); color: #5A6B68; display: flex; align-items: center; gap: 7px; white-space: nowrap } .k9 small i { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center } .k9 small i svg { width: 14px; height: 14px }
+.k9 b { font: 700 24px/1.1 var(--f-display); white-space: nowrap } .k9 b span { font: 600 14px/1 var(--f-display); color: #5A6B68 }
+.k9 em { font: 500 11.5px/1.3 var(--f-display); font-style: normal; color: #5A6B68; white-space: nowrap } .k9 em.up { color: #1F7A3A } .k9 em.dn { color: #C42B2B }
+.k9 .bar2 { height: 6px; border-radius: 3px; background: #ECF3F1; overflow: hidden; display: flex } .k9 .bar2 i { background: #0E8579 }
+.lg9 { display: flex; gap: 14px; flex-wrap: wrap; font: 500 11.5px/1 var(--f-display); color: #3D4C49 } .lg9 span { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap } .lg9 span i { width: 10px; height: 10px; border-radius: 3px } .lg9 span i.ln { height: 3px; border-radius: 2px }
+.ch9 { width: 100%; display: block }
+.hm { display: grid; grid-template-columns: 34px repeat(24, 1fr); gap: 3px; font: 500 10px/1 var(--f-display); color: #5A6B68; align-items: center }
+.hm i { height: 18px; border-radius: 4px; display: block }
+.hm .hx { text-align: center }
+.fu { display: grid; gap: 9px }
+.fu div { display: grid; grid-template-columns: 120px 1fr 52px; gap: 10px; align-items: center; font: 500 12.5px/1.2 var(--f-display); color: #0F1F1D }
+.fu div span { height: 10px; border-radius: 5px; background: #ECF3F1; overflow: hidden; display: flex } .fu div span i { border-radius: 5px }
+.fu div b { font: 700 12.5px/1 var(--f-display); text-align: right }
+.tp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px }
+.tp div { border-radius: 12px; padding: 10px 12px; display: grid; gap: 3px } .tp b { font: 700 18px/1.1 var(--f-display) } .tp small { font: 500 11.5px/1.25 var(--f-display); color: #3D4C49 }
+.ut { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.ut th { text-align: left; font: 600 10.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 9px 10px; border-bottom: 1px solid #E1E9E7; white-space: nowrap }
+.ut td { padding: 9px 10px; border-bottom: 1px solid #ECF3F1; white-space: nowrap }
+.ut .who2 { display: flex; align-items: center; gap: 10px } .ut .who2 i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--f-display); font-style: normal; color: #fff; flex: none }
+.ut .who2 b { font: 600 13px/1.2 var(--f-display); display: block } .ut .who2 small { font: 400 11px/1.2 var(--f-body); color: #5A6B68 }
+.pl { font: 600 11px/1 var(--f-display); padding: 4px 8px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px } .pl svg { width: 12px; height: 12px }
+.pl.w { background: #E1ECFA; color: #2C6CB0 } .pl.a { background: #F4FCE3; color: #5E8A12 } .pl.o { background: #FDF3E2; color: #B7791F } .pl.g { background: #E6F4EA; color: #1F7A3A } .pl.m { background: #ECF3F1; color: #5A6B68 } .pl.r { background: #FDECEC; color: #C42B2B }
+.tb2 { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap }
+.tb2 .sbox { width: 240px } .tb2 .grow { flex: 1 }
+.pend { display: grid; gap: 8px }
+.pend .pr { display: grid; grid-template-columns: 32px 1fr auto; gap: 2px 10px; align-items: center; padding: 9px 0; border-top: 1px solid #ECF3F1 }
+.pend .pr i { grid-row: span 2; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--f-display); font-style: normal; color: #fff }
+.pend .pr b { font: 600 13px/1.2 var(--f-display) } .pend .pr small { font: 400 11.5px/1.25 var(--f-body); color: #5A6B68; grid-column: 2 }
+.pend .pr .ab { grid-row: span 2; grid-column: 3; display: flex; gap: 6px }
+.pend .pr .ab span { height: 30px; padding: 0 10px; border-radius: 9px; display: inline-flex; align-items: center; font: 600 12px/1 var(--f-display); border: 1px solid #E1E9E7; color: #3D4C49; white-space: nowrap } .pend .pr .ab span.p { background: #0E8579; border-color: #0E8579; color: #fff }
+.sec2 { display: grid; gap: 0 }
+.sec2 .sr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 9px 0; border-top: 1px solid #ECF3F1 } .sec2 .sr:first-child { border-top: 0 }
+.sec2 .sr b { font: 600 13px/1.25 var(--f-display) } .sec2 .sr small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 } .sec2 .sr .pl { grid-row: span 2; align-self: center }
+/* Unduh */
+.dl { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 20px 24px; display: grid; grid-template-columns: 1fr 380px; gap: 16px; background: #F5F9F8; align-content: start }
+.hero9 { grid-column: 1 / -1; background: linear-gradient(135deg, #0A6A5F 0%, #04332E 70%); color: #fff; border-radius: 26px; padding: 30px 34px 0; display: grid; grid-template-columns: 1fr 260px 220px; gap: 28px; position: relative; overflow: hidden; height: 360px }
+.hero9 .glow { position: absolute; right: 120px; top: -140px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(rgba(34,184,201,.45), rgba(34,184,201,0) 70%) }
+.hero9 .tx { display: grid; gap: 12px; align-content: start; position: relative; padding-top: 6px }
+.hero9 .eb { font: 600 12px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: #C7F25E }
+.hero9 h3 { margin: 0; font: 700 34px/1.15 var(--f-display) } .hero9 h3 span { color: #C7F25E }
+.hero9 p { margin: 0; font: 400 14.5px/1.55 var(--f-body); color: #C0EDE8; max-width: 440px }
+.hero9 .meta { display: flex; gap: 8px; flex-wrap: wrap } .hero9 .meta span { font: 600 12px/1 var(--f-display); padding: 7px 11px; border-radius: 99px; background: rgba(255,255,255,.12); white-space: nowrap }
+.hero9 .cta { display: flex; gap: 10px; margin-top: 6px }
+.bigdl { height: 50px; padding: 0 22px; border-radius: 15px; background: #C7F25E; color: #04332E; display: inline-flex; align-items: center; gap: 10px; font: 700 15px/1 var(--f-display); white-space: nowrap; box-shadow: 0 10px 24px rgba(0,0,0,.2) } .bigdl svg { width: 20px; height: 20px }
+.ghost { height: 50px; padding: 0 18px; border-radius: 15px; border: 1px solid rgba(255,255,255,.3); color: #fff; display: inline-flex; align-items: center; gap: 8px; font: 600 14px/1 var(--f-display); white-space: nowrap } .ghost svg { width: 17px; height: 17px }
+.ph9 { position: relative; align-self: end; width: 240px; height: 330px; border-radius: 34px 34px 0 0; border: 8px solid #0B1312; border-bottom: 0; overflow: hidden; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,.35) }
+.ph9 img { width: 100%; display: block }
+.qr9 { position: relative; align-self: start; background: #fff; border-radius: 20px; padding: 16px; display: grid; gap: 10px; justify-items: center; color: #0F1F1D }
+.qr9 svg.qr { width: 150px; height: 150px } .qr9 b { font: 600 13px/1.2 var(--f-display) } .qr9 small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; text-align: center }
+.wn { display: grid; gap: 10px }
+.wn .wi { display: grid; grid-template-columns: 36px 1fr; gap: 2px 12px; align-items: start }
+.wn .wi i { grid-row: span 2; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center } .wn .wi i svg { width: 18px; height: 18px }
+.wn .wi b { font: 600 13.5px/1.3 var(--f-display) } .wn .wi small { font: 400 12px/1.4 var(--f-body); color: #5A6B68 }
+.wn2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px }
+.steps9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.steps9 div { background: #F5F9F8; border-radius: 14px; padding: 14px; display: grid; gap: 6px; align-content: start }
+.steps9 em { font: 700 12px/1 var(--f-display); font-style: normal; width: 26px; height: 26px; border-radius: 8px; background: #0E8579; color: #fff; display: grid; place-items: center }
+.steps9 b { font: 600 13.5px/1.3 var(--f-display) } .steps9 small { font: 400 12px/1.45 var(--f-body); color: #5A6B68 }
+.vh .vr { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; padding: 10px 0; border-top: 1px solid #ECF3F1 } .vh .vr:first-of-type { border-top: 0 }
+.vh .vr b { font: 600 13.5px/1.25 var(--f-display); display: flex; gap: 8px; align-items: center } .vh .vr small { font: 400 11.5px/1.35 var(--f-body); color: #5A6B68; grid-column: 1 } .vh .vr .dlx { grid-row: span 2; align-self: center; color: #0A6A5F; width: 18px; height: 18px }
+.req { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.req div { background: #F5F9F8; border-radius: 12px; padding: 10px 12px; display: grid; gap: 3px } .req small { font: 500 11px/1.2 var(--f-display); color: #5A6B68 } .req b { font: 600 13px/1.25 var(--f-display) }
+.sha { display: flex; align-items: center; gap: 8px; background: #F5F9F8; border-radius: 12px; padding: 10px 12px; font: 500 11.5px/1.3 var(--f-mono, monospace); color: #3D4C49; white-space: nowrap; overflow: hidden } .sha span { flex: 1; overflow: hidden; text-overflow: ellipsis } .sha svg { width: 15px; height: 15px; color: #0A6A5F; flex: none }
+.faq .fq { padding: 11px 0; border-top: 1px solid #ECF3F1; display: grid; gap: 5px } .faq .fq:first-of-type { border-top: 0 }
+.faq .fq b { font: 600 13px/1.3 var(--f-display); display: flex; align-items: center; gap: 8px } .faq .fq b svg { width: 16px; height: 16px; margin-left: auto; color: #5A6B68; flex: none }
+.faq .fq small { font: 400 12px/1.5 var(--f-body); color: #5A6B68 }
+.apk.on { box-shadow: 0 0 0 2px #C7F25E }
+/* Android */
+#droidFrame { height: 2780px }
+.dst { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+.dst > * { flex-shrink: 0 }
+#droidFrame .k5 { grid-template-columns: 1fr 1fr; gap: 8px }
+#droidFrame .k9 { padding: 12px; border-radius: 16px } #droidFrame .k9 b { font-size: 20px }
+#droidFrame .k9 small, #droidFrame .k9 em { white-space: normal }
+#droidFrame .card { padding: 14px; border-radius: 18px }
+#droidFrame .fu div { grid-template-columns: 96px 1fr 44px; font-size: 12px }
+#droidFrame .seg { display: flex } #droidFrame .seg button { flex: 1; justify-content: center }
+.dul { display: grid } .dul .ur { display: grid; grid-template-columns: 32px 1fr auto; gap: 2px 10px; align-items: center; padding: 9px 0; border-top: 1px solid #ECF3F1 } .dul .ur:first-child { border-top: 0 }
+.dul .ur i { grid-row: span 2; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--f-display); font-style: normal; color: #fff }
+.dul .ur b { font: 600 13px/1.2 var(--f-display) } .dul .ur small { font: 400 11.5px/1.25 var(--f-body); color: #5A6B68; grid-column: 2 } .dul .ur .pl { grid-row: span 2; grid-column: 3 }
+.tb2 .sbox { width: 196px; flex: none } .tb2 .sbox span { white-space: nowrap }
+.sec2 .sr small { grid-column: 1 } .sec2 .sr .pl { grid-column: 2; grid-row: 1 / span 2 }
+
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+  <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></g></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></g></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4z"/><path d="M9 4v14M15 6v14"/></g></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></g></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></g></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/></g></symbol>
+  <symbol id="i-line" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M3 21h18"/></g></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M10 9.5v10"/></g></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></g></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></g></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-hist" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6L3.5 8.5"/><path d="M3.5 4v4.5H8M12 7.5V12l3 2"/></g></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4M8.2 13.2l7.6 4"/></g></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.1 5.9 5.9 2.1-5.9 2.1L12 18.5l-2.1-5.9L4 10.5l5.9-2.1L12 2.5zm6.5 12l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></g></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></g></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="m20 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8L9.6 17.3a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></g></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 10v10H4V10h3zm3 10h7.6a2 2 0 0 0 2-1.6l1.3-6.5A2 2 0 0 0 19 9.5h-5l.8-4a1.6 1.6 0 0 0-3-1L10 10v10z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-max" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M16 15h2"/><path d="M6 6V5a2 2 0 0 1 2-2h9"/></g></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/></g></symbol>
+  <symbol id="i-tower" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10 8 21M12 10l4 11M9.5 16h5"/><circle cx="12" cy="8.5" r="1.5"/><path d="M8 5a6 6 0 0 0 0 7M16 5a6 6 0 0 1 0 7"/></g></symbol>
+  <symbol id="i-bellplus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 9-5.2M18 11c.3 4.4 2.5 5.5 2.5 5.5h-17S6 15 6 9"/><path d="M10 20a2 2 0 0 0 4 0M19 2v6M16 5h6"/></g></symbol>
+  </defs>
+</svg>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></g></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></g></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/></g></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></g></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4.2 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4.5M12 17.5h.01"/></g></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></g></symbol>
+  <symbol id="i-chevl" viewBox="0 0 24 24"><path d="m14 7-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></g></symbol>
+  <symbol id="i-chevr" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20.5a8 8 0 0 1 16 0"/></g></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></g></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.5-2-.4-1.3.4-2.5 1.8-2.5H18a3 3 0 0 0 3-3C21 7 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7" r="1.2" fill="currentColor"/><circle cx="15.5" cy="7.5" r="1.2" fill="currentColor"/></g></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8 7.5 9.5 4.3-1.5 7.5-5 7.5-9.5V6z"/><path d="m9 12 2 2 4-4" stroke-linecap="round"/></g></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 20.5H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2h3.5M15.5 16.5 20 12l-4.5-4.5M20 12H9.5"/></g></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l1.5-2.5h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/></g></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/></g></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/></g></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <header class="top-r" style="display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;justify-content:space-between">
+    <div class="brandline">
+      <span style="width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;border:1px solid var(--rule)"><img src="{{OLDLOGO}}" alt="Logo Agent Java" style="width:84%;height:84%;object-fit:contain"></span>
+      <div><h1>Agent Java · Redesign v2</h1><p>Halaman 09 dari 9. Halaman 01 sampai 08 sudah disetujui.</p></div>
+    </div>
+    <div class="steps" aria-label="Urutan review">
+      <span>✓ 01 Login</span><span>✓ 02 Tanya Agent</span><span>✓ 03 Dashboard</span><span>✓ 04 Performance</span><span>✓ 05 Peta Agent</span><span>✓ 06 Laporan</span><span>✓ 07 Alert</span><span>✓ 08 Profil</span><span class="on">09 Statistik</span>
+    </div>
+  </header>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+    <div class="tabs" role="tablist" aria-label="Pilih frame">
+      <button role="tab" aria-selected="true" data-p="web">Web · Statistik</button>
+      <button role="tab" aria-selected="false" data-p="dl">Web · Unduh APK</button>
+      <button role="tab" aria-selected="false" data-p="droid">Android · 390</button>
+    </div>
+    <span class="chip-r"><i></i> Menunggu review Rizal</span>
+  </div>
+
+  <div class="main">
+    <section class="stage" aria-label="Mockup">
+      <div class="panel on" id="p-web">
+        <div class="stage-label"><span>Web · Statistik aplikasi · 1440 × 1744</span><span>Menu Admin, hanya untuk peran Admin</span></div>
+        <div class="fit" data-w="1440" data-h="1744">
+          <div class="frame" id="webFrame">
+                        <aside class="side" data-name="Sidebar">
+              <div class="brand"><span class="tile" style="width:44px;height:44px;border-radius:13px"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><div><b>Agent <em>Java</em></b><small>Circle Java</small></div></div>
+              <div class="newchat"><svg class="ic"><use href="#i-plus"/></svg>Percakapan baru</div>
+              <div class="search"><svg><use href="#i-search"/></svg>Cari percakapan…</div>
+              <div class="navh">Menu</div>
+              <nav class="nav">
+                <a><span class="nt" style="background:#C0EDE8;color:#0A6A5F"><svg><use href="#i-chat"/></svg></span>Tanya Agent</a>
+                <a><span class="nt" style="background:#E1ECFA;color:#2C6CB0"><svg><use href="#i-grid"/></svg></span>Dashboard</a>
+                <a><span class="nt" style="background:#F4FCE3;color:#5E8A12"><svg><use href="#i-pulse"/></svg></span>Performance<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-map"/></svg></span>Peta Agent<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-file"/></svg></span>Laporan</a>
+                <a><span class="nt" style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-bell"/></svg></span>Watchlist dan Alert<span class="cnt">3</span></a>
+              </nav>
+              <div class="navh">Admin</div>
+              <nav class="nav"><a class="on"><span class="nt" style="background:#ECE5FA;color:#6A4CB5"><svg><use href="#i-bars"/></svg></span>Statistik</a></nav>
+              <div class="navh">Riwayat</div>
+              <div class="hist">
+                <a><svg><use href="#i-hist"/></svg>Revenue West Java vs bulan lalu</a>
+                <a><svg><use href="#i-hist"/></svg>Availability East Java minggu ini</a>
+                <a><svg><use href="#i-hist"/></svg>Market share FWA Semarang</a>
+              </div>
+              <div class="spacer"></div>
+              <div class="apk"><span class="ai"><svg><use href="#i-dl"/></svg></span><div><b>Aplikasi Android</b><small>Agent Java 1.50 · Unduh APK</small></div></div>
+              <div class="me"><span class="avatar">R</span><div><b>Rizal</b><small>Admin · Circle Java</small></div><svg><use href="#i-chev"/></svg></div>
+            </aside>
+
+            <header class="top" data-name="Top bar">
+              <div><h2>Statistik aplikasi</h2><p>Admin · siapa yang memakai Agent Java, fitur apa, dan versi berapa.</p></div>
+              <div class="grow"></div>
+              <div class="seg" style="margin:0"><button>Hari ini</button><button class="on">7 hari</button><button>30 hari</button><button>90 hari</button></div>
+              <span class="linkbtn"><svg><use href="#i-dl"/></svg>Ekspor XLSX</span>
+              <span class="btn-ic" aria-label="Alert"><svg class="ic"><use href="#i-bell"/></svg><span class="badge">3</span></span>
+              <span class="avatar" aria-label="Profil">R</span>
+            </header>
+            <div class="st9">
+              <div class="k5 c12" data-name="KPI">
+                <div class="k9"><small><i style="background:#E6F7F5;color:#0A6A5F"><svg><use href="#i-users"/></svg></i>Pengguna aktif</small><b>21 <span>· 48 · 57</span></b><em>DAU · WAU · MAU, DAU/MAU 37%</em></div>
+                <div class="k9"><small><i style="background:#E1ECFA;color:#2C6CB0"><svg><use href="#i-lock"/></svg></i>Login hari ini</small><b>64</b><em>Web 38 · Android 26</em></div>
+                <div class="k9"><small><i style="background:#F4FCE3;color:#5E8A12"><svg><use href="#i-spark"/></svg></i>Pertanyaan ke agent</small><b>1.284</b><em class="up">▲ 12% vs 7 hari sebelumnya</em></div>
+                <div class="k9"><small><i style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-phone"/></svg></i>Adopsi versi 1.50</small><b>41 <span>/ 52</span></b><div class="bar2"><i style="flex:41"></i><i style="flex:11;background:transparent"></i></div><em>perangkat Android · 126 unduhan</em></div>
+                <div class="k9"><small><i style="background:#FDECEC;color:#C42B2B"><svg><use href="#i-shield"/></svg></i>Login gagal</small><b>9</b><em class="dn">1 akun terkunci sementara</em></div>
+              </div>
+              <section class="card c8" data-name="Pengguna aktif harian">
+                <div class="ch"><div><h3>Pengguna aktif harian</h3><p>30 hari terakhir, akun unik yang login di web atau Android</p></div><span class="grow"></span><div class="lg9"><span><i style="background:#0E8579"></i>DAU</span><span><i class="ln" style="background:#22B8C9"></i>WAU (7 hari bergulir)</span></div></div>
+                <svg class="ch9" viewBox="0 0 700 210" width="700" height="210"><line x1="30" x2="692" y1="188" y2="188" stroke="#ECF3F1"/><text x="24" y="191.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">0</text><line x1="30" x2="692" y1="128.7" y2="128.7" stroke="#ECF3F1"/><text x="24" y="132.2" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">20</text><line x1="30" x2="692" y1="69.3" y2="69.3" stroke="#ECF3F1"/><text x="24" y="72.8" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">40</text><line x1="30" x2="692" y1="10" y2="10" stroke="#ECF3F1"/><text x="24" y="13.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">60</text><path d="M30 164.3 L52.8 164.3 L75.7 128.7 L98.5 119.8 L121.3 128.7 L144.1 122.7 L167 119.8 L189.8 167.2 L212.6 161.3 L235.4 119.8 L258.3 128.7 L281.1 122.7 L303.9 119.8 L326.8 122.7 L349.6 155.4 L372.4 164.3 L395.2 122.7 L418.1 125.7 L440.9 119.8 L463.7 113.8 L486.6 116.8 L509.4 152.4 L532.2 158.3 L555 113.8 L577.9 122.7 L600.7 119.8 L623.5 113.8 L646.3 113.8 L669.2 155.4 L692 125.7 L692 188 L30 188 Z" fill="#0E8579" opacity=".10"/><path d="M30 69.3 L52.8 69.3 L75.7 69.3 L98.5 66.4 L121.3 66.4 L144.1 63.4 L167 63.4 L189.8 66.4 L212.6 63.4 L235.4 60.4 L258.3 63.4 L281.1 60.4 L303.9 57.5 L326.8 60.4 L349.6 57.5 L372.4 60.4 L395.2 54.5 L418.1 51.5 L440.9 57.5 L463.7 57.5 L486.6 54.5 L509.4 51.5 L532.2 54.5 L555 51.5 L577.9 48.6 L600.7 45.6 L623.5 48.6 L646.3 48.6 L669.2 45.6 L692 45.6" fill="none" stroke="#22B8C9" stroke-width="2" stroke-dasharray="5 4"/><path d="M30 164.3 L52.8 164.3 L75.7 128.7 L98.5 119.8 L121.3 128.7 L144.1 122.7 L167 119.8 L189.8 167.2 L212.6 161.3 L235.4 119.8 L258.3 128.7 L281.1 122.7 L303.9 119.8 L326.8 122.7 L349.6 155.4 L372.4 164.3 L395.2 122.7 L418.1 125.7 L440.9 119.8 L463.7 113.8 L486.6 116.8 L509.4 152.4 L532.2 158.3 L555 113.8 L577.9 122.7 L600.7 119.8 L623.5 113.8 L646.3 113.8 L669.2 155.4 L692 125.7" fill="none" stroke="#0E8579" stroke-width="2.2" stroke-linejoin="round"/><circle cx="692" cy="125.7" r="4" fill="#0E8579" stroke="#fff" stroke-width="2"/><circle cx="692" cy="45.6" r="3.5" fill="#22B8C9" stroke="#fff" stroke-width="2"/><text x="30" y="205" text-anchor="start" font-size="10" fill="#5A6B68" font-family="Prompt">30 hari lalu</text><text x="212.6" y="205" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">21</text><text x="372.4" y="205" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">14</text><text x="532.2" y="205" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">7</text><text x="692" y="205" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">Hari ini</text></svg>
+              </section>
+              <section class="card c4 pend" data-name="Menunggu persetujuan">
+                <div class="ch"><div><h3>Menunggu persetujuan</h3><p>Akun baru yang mendaftar</p></div><span class="grow"></span><span class="ctag" style="background:#FDF3E2;color:#B7791F">3</span></div>
+                <div class="pr"><i style="background:#2C6CB0">FN</i><b>Fajar Nugroho</b><small>Network · East Java</small><div class="ab"><span>Tolak</span><span class="p">Setujui</span></div></div>
+                <div class="pr"><i style="background:#B7791F">LM</i><b>Lina Marlina</b><small>Sales · West Java</small><div class="ab"><span>Tolak</span><span class="p">Setujui</span></div></div>
+                <div class="pr"><i style="background:#6A4CB5">RH</i><b>Rudi Hartono</b><small>Finance · Circle Java</small><div class="ab"><span>Tolak</span><span class="p">Setujui</span></div></div>
+              </section>
+              <section class="card c7" data-name="Aktivitas login">
+                <div class="ch"><div><h3>Aktivitas login</h3><p>Jumlah login per hari dan jam (WIB), 7 hari</p></div><span class="grow"></span><div class="lg9"><span>Sedikit</span><span><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#8FDFD7"></i><i style="background:#3FBFB1"></i><i style="background:#0E8579"></i></span><span>Banyak</span></div></div>
+                <div class="hm"><span>Sen</span><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#8FDFD7"></i><i style="background:#0E8579"></i><i style="background:#0E8579"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#3FBFB1"></i><i style="background:#3FBFB1"></i><i style="background:#3FBFB1"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><span>Sel</span><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#3FBFB1"></i><i style="background:#0E8579"></i><i style="background:#0E8579"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#3FBFB1"></i><i style="background:#3FBFB1"></i><i style="background:#3FBFB1"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><span>Rab</span><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#8FDFD7"></i><i style="background:#0E8579"></i><i style="background:#0E8579"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#3FBFB1"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><span>Kam</span><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#3FBFB1"></i><i style="background:#0E8579"></i><i style="background:#0E8579"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#3FBFB1"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><span>Jum</span><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#8FDFD7"></i><i style="background:#0E8579"></i><i style="background:#0E8579"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#3FBFB1"></i><i style="background:#3FBFB1"></i><i style="background:#8FDFD7"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><span>Sab</span><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><span>Min</span><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#C0EDE8"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><i style="background:#ECF3F1"></i><span></span><span class="hx">0</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx">6</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx">12</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx">18</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span></div>
+                <div class="lg9" style="color:#5A6B68">Puncak Senin sampai Jumat pukul 09.00 dan 14.00. Akhir pekan sepi.</div>
+              </section>
+              <section class="card c5" data-name="Pemakaian fitur">
+                <div class="ch"><div><h3>Pemakaian fitur</h3><p>Sesi per halaman, 7 hari</p></div></div>
+                <div class="fu">
+                  <div>Tanya Agent<span><i style="flex:412;background:#0E8579"></i><i style="flex:0"></i></span><b>412</b></div>
+                  <div>Dashboard<span><i style="flex:344;background:#0E8579"></i><i style="flex:68"></i></span><b>344</b></div>
+                  <div>Performance<span><i style="flex:231;background:#0E8579"></i><i style="flex:181"></i></span><b>231</b></div>
+                  <div>Peta Agent<span><i style="flex:158;background:#0E8579"></i><i style="flex:254"></i></span><b>158</b></div>
+                  <div>Laporan<span><i style="flex:126;background:#0E8579"></i><i style="flex:286"></i></span><b>126</b></div>
+                  <div>Watchlist dan Alert<span><i style="flex:97;background:#0E8579"></i><i style="flex:315"></i></span><b>97</b></div>
+                </div>
+                <div class="ch" style="margin-top:4px"><div><h3 style="font-size:13.5px">Topik pertanyaan ke agent</h3></div></div>
+                <div class="tp"><div style="background:#E6F7F5"><b>58%</b><small>Performance</small></div><div style="background:#F4FCE3"><b>27%</b><small>Site productivity</small></div><div style="background:#E1ECFA"><b>15%</b><small>Profile wilayah</small></div></div>
+              </section>
+              <section class="card c6" data-name="Adopsi versi">
+                <div class="ch"><div><h3>Adopsi versi aplikasi</h3><p>Perangkat Android per versi, per minggu</p></div><span class="grow"></span><div class="lg9"><span><i style="background:#0E8579"></i>1.50</span><span><i style="background:#8FD6CB"></i>1.49.x</span><span><i style="background:#9AAAA6"></i>Lebih lama</span></div></div>
+                <svg class="ch9" viewBox="0 0 470 190" width="470" height="190"><line x1="30" x2="462" y1="168" y2="168" stroke="#ECF3F1"/><text x="24" y="171.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">0</text><line x1="30" x2="462" y1="96.2" y2="96.2" stroke="#ECF3F1"/><text x="24" y="99.7" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">25</text><line x1="30" x2="462" y1="24.4" y2="24.4" stroke="#ECF3F1"/><text x="24" y="27.9" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">50</text><path d="M30 110.5 L102 130.7 L174 145 L246 153.6 L318 156.5 L390 159.4 L462 162.3 L462 168 L390 168 L318 168 L246 168 L174 168 L102 168 L30 168 Z" fill="#9AAAA6" opacity=".9"/><path d="M30 24.4 L102 21.5 L174 18.6 L246 18.6 L318 70.3 L390 113.4 L462 136.4 L462 162.3 L390 159.4 L318 156.5 L246 153.6 L174 145 L102 130.7 L30 110.5 Z" fill="#8FD6CB" opacity=".9"/><path d="M30 24.4 L102 21.5 L174 18.6 L246 18.6 L318 18.6 L390 18.6 L462 18.6 L462 136.4 L390 113.4 L318 70.3 L246 18.6 L174 18.6 L102 21.5 L30 24.4 Z" fill="#0E8579" opacity=".9"/><text x="30" y="185" text-anchor="start" font-size="10" fill="#5A6B68" font-family="Prompt">6 mg lalu</text><text x="102" y="185" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">5</text><text x="174" y="185" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">4</text><text x="246" y="185" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">3</text><text x="318" y="185" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">2</text><text x="390" y="185" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">1</text><text x="462" y="185" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">Minggu ini</text></svg>
+              </section>
+              <section class="card c6" data-name="Unduhan vs instal update">
+                <div class="ch"><div><h3>Unduhan vs instal update</h3><p>Harian, 14 hari terakhir</p></div><span class="grow"></span><div class="lg9"><span><i style="background:#D98E0B"></i>Unduhan baru</span><span><i style="background:#0E8579"></i>Instal update</span></div></div>
+                <svg class="ch9" viewBox="0 0 470 190" width="470" height="190"><line x1="30" x2="462" y1="168" y2="168" stroke="#ECF3F1"/><text x="24" y="171.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">0</text><line x1="30" x2="462" y1="89" y2="89" stroke="#ECF3F1"/><text x="24" y="92.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">8</text><line x1="30" x2="462" y1="10" y2="10" stroke="#ECF3F1"/><text x="24" y="13.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">16</text><rect x="35.6" y="148.2" width="9.3" height="19.8" rx="2" fill="#D98E0B"/><rect x="46.3" y="168" width="9.3" height="0" rx="2" fill="#0E8579"/><rect x="66.4" y="158.1" width="9.3" height="9.9" rx="2" fill="#D98E0B"/><rect x="77.2" y="168" width="9.3" height="0" rx="2" fill="#0E8579"/><rect x="97.3" y="138.4" width="9.3" height="29.6" rx="2" fill="#D98E0B"/><rect x="108" y="168" width="9.3" height="0" rx="2" fill="#0E8579"/><rect x="128.1" y="158.1" width="9.3" height="9.9" rx="2" fill="#D98E0B"/><rect x="138.9" y="168" width="9.3" height="0" rx="2" fill="#0E8579"/><rect x="159" y="168" width="9.3" height="0" rx="2" fill="#D98E0B"/><rect x="169.7" y="168" width="9.3" height="0" rx="2" fill="#0E8579"/><rect x="189.8" y="168" width="9.3" height="0" rx="2" fill="#D98E0B"/><rect x="200.6" y="168" width="9.3" height="0" rx="2" fill="#0E8579"/><rect x="220.7" y="148.2" width="9.3" height="19.8" rx="2" fill="#D98E0B"/><rect x="231.5" y="168" width="9.3" height="0" rx="2" fill="#0E8579"/><rect x="251.6" y="158.1" width="9.3" height="9.9" rx="2" fill="#D98E0B"/><rect x="262.3" y="79.1" width="9.3" height="88.9" rx="2" fill="#0E8579"/><rect x="282.4" y="148.2" width="9.3" height="19.8" rx="2" fill="#D98E0B"/><rect x="293.2" y="29.8" width="9.3" height="138.2" rx="2" fill="#0E8579"/><rect x="313.3" y="158.1" width="9.3" height="9.9" rx="2" fill="#D98E0B"/><rect x="324" y="108.8" width="9.3" height="59.2" rx="2" fill="#0E8579"/><rect x="344.1" y="158.1" width="9.3" height="9.9" rx="2" fill="#D98E0B"/><rect x="354.9" y="128.5" width="9.3" height="39.5" rx="2" fill="#0E8579"/><rect x="375" y="168" width="9.3" height="0" rx="2" fill="#D98E0B"/><rect x="385.7" y="158.1" width="9.3" height="9.9" rx="2" fill="#0E8579"/><rect x="405.8" y="158.1" width="9.3" height="9.9" rx="2" fill="#D98E0B"/><rect x="416.6" y="138.4" width="9.3" height="29.6" rx="2" fill="#0E8579"/><rect x="436.7" y="148.2" width="9.3" height="19.8" rx="2" fill="#D98E0B"/><rect x="447.5" y="118.6" width="9.3" height="49.4" rx="2" fill="#0E8579"/><text x="45.4" y="185" text-anchor="start" font-size="10" fill="#5A6B68" font-family="Prompt">14 hari lalu</text><text x="261.4" y="185" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">7</text><text x="446.6" y="185" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">Hari ini</text></svg>
+              </section>
+              <section class="card c8" data-name="Akses pengguna">
+                <div class="ch"><div><h3>Akses pengguna</h3><p>63 akun · 57 aktif 30 hari · 11 perangkat masih versi lama</p></div></div>
+                <div class="tb2"><div class="sbox"><svg><use href="#i-search"/></svg><span>Cari nama atau email</span></div><div class="seg" style="margin:0"><button class="on">Semua</button><button>Aktif</button><button>Tidak aktif</button><button>Versi lama</button></div><span class="grow"></span><span class="linkbtn" style="height:34px;font-size:12.5px"><svg><use href="#i-bell"/></svg>Ingatkan update (11)</span></div>
+                <table class="ut"><thead><tr><th>Pengguna</th><th>Departemen</th><th>Platform</th><th>Versi</th><th>Terakhir aktif</th><th>Status</th></tr></thead><tbody>
+                  <tr><td><div class="who2"><i style="background:#0E8579">R</i><div><b>Rizal</b><small>Admin · Circle Java</small></div></div></td><td>Business Planning</td><td><span class="pl w">Web</span> <span class="pl a">Android</span></td><td>1.50.0</td><td>5 menit lalu</td><td><span class="pl g">Aktif</span></td></tr>
+                  <tr><td><div class="who2"><i style="background:#2C6CB0">DA</i><div><b>Dewi Anggraini</b><small>West Java</small></div></div></td><td>Business Planning</td><td><span class="pl a">Android</span></td><td>1.50.0</td><td>32 menit lalu</td><td><span class="pl g">Aktif</span></td></tr>
+                  <tr><td><div class="who2"><i style="background:#5E8A12">BP</i><div><b>Bayu Pratama</b><small>East Java</small></div></div></td><td>Network</td><td><span class="pl w">Web</span></td><td>-</td><td>1 jam lalu</td><td><span class="pl g">Aktif</span></td></tr>
+                  <tr><td><div class="who2"><i style="background:#B33A5B">SW</i><div><b>Sari Wulandari</b><small>Central Java</small></div></div></td><td>Sales</td><td><span class="pl w">Web</span> <span class="pl a">Android</span></td><td>1.49.1</td><td>Kemarin</td><td><span class="pl o">Versi lama</span></td></tr>
+                  <tr><td><div class="who2"><i style="background:#0E6F7C">AS</i><div><b>Andi Saputra</b><small>Circle Java</small></div></div></td><td>Business Planning</td><td><span class="pl a">Android</span></td><td>1.50.0</td><td>2 hari lalu</td><td><span class="pl g">Aktif</span></td></tr>
+                  <tr><td><div class="who2"><i style="background:#9AAAA6">HG</i><div><b>Hendra Gunawan</b><small>West Java</small></div></div></td><td>Marketing</td><td><span class="pl a">Android</span></td><td>1.48.3</td><td>12 hari lalu</td><td><span class="pl m">Tidak aktif</span></td></tr>
+                </tbody></table>
+                <div class="foot2"><small>Menampilkan 1 sampai 6 dari 63</small><span class="grow"></span><span class="linkbtn" style="height:32px;font-size:12.5px">Sebelumnya</span><span class="linkbtn" style="height:32px;font-size:12.5px">Berikutnya</span></div>
+              </section>
+              <div class="pcol c4">
+                <section class="card" data-name="Login per platform">
+                  <div class="ch"><div><h3>Login per platform</h3><p>7 hari</p></div></div>
+                  <div class="fu">
+                    <div>Web<span><i style="flex:251;background:#2C6CB0"></i><i style="flex:159"></i></span><b>251</b></div>
+                    <div>Android<span><i style="flex:187;background:#5E8A12"></i><i style="flex:223"></i></span><b>187</b></div>
+                  </div>
+                </section>
+                <section class="card" data-name="Login gagal dan keamanan">
+                  <div class="ch"><div><h3>Login gagal dan keamanan</h3><p>7 hari</p></div></div>
+                  <div class="sec2">
+                    <div class="sr"><b>lina.m · 5 kali salah password</b><small>Hari ini 07.12 · akun dikunci 15 menit</small><span class="pl r">Terkunci</span></div>
+                    <div class="sr"><b>bayu.p · OTP kedaluwarsa 2 kali</b><small>Kemarin 13.40 · berhasil di percobaan ketiga</small><span class="pl o">Pantau</span></div>
+                    <div class="sr"><b>Akun tidak dikenal · 2 kali</b><small>Rabu 22.05 · username tidak terdaftar</small><span class="pl m">Diblokir</span></div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-dl">
+        <div class="stage-label"><span>Web · Unduh APK · 1440 × 1272</span><span>Dari kartu Aplikasi Android di sidebar dan dari Profil</span></div>
+        <div class="fit" data-w="1440" data-h="1272">
+          <div class="frame" id="dlFrame">
+                        <aside class="side" data-name="Sidebar">
+              <div class="brand"><span class="tile" style="width:44px;height:44px;border-radius:13px"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><div><b>Agent <em>Java</em></b><small>Circle Java</small></div></div>
+              <div class="newchat"><svg class="ic"><use href="#i-plus"/></svg>Percakapan baru</div>
+              <div class="search"><svg><use href="#i-search"/></svg>Cari percakapan…</div>
+              <div class="navh">Menu</div>
+              <nav class="nav">
+                <a><span class="nt" style="background:#C0EDE8;color:#0A6A5F"><svg><use href="#i-chat"/></svg></span>Tanya Agent</a>
+                <a><span class="nt" style="background:#E1ECFA;color:#2C6CB0"><svg><use href="#i-grid"/></svg></span>Dashboard</a>
+                <a><span class="nt" style="background:#F4FCE3;color:#5E8A12"><svg><use href="#i-pulse"/></svg></span>Performance<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-map"/></svg></span>Peta Agent<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-file"/></svg></span>Laporan</a>
+                <a><span class="nt" style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-bell"/></svg></span>Watchlist dan Alert<span class="cnt">3</span></a>
+              </nav>
+              <div class="navh">Admin</div>
+              <nav class="nav"><a><span class="nt" style="background:#ECE5FA;color:#6A4CB5"><svg><use href="#i-bars"/></svg></span>Statistik</a></nav>
+              <div class="navh">Riwayat</div>
+              <div class="hist">
+                <a><svg><use href="#i-hist"/></svg>Revenue West Java vs bulan lalu</a>
+                <a><svg><use href="#i-hist"/></svg>Availability East Java minggu ini</a>
+                <a><svg><use href="#i-hist"/></svg>Market share FWA Semarang</a>
+              </div>
+              <div class="spacer"></div>
+              <div class="apk on"><span class="ai"><svg><use href="#i-dl"/></svg></span><div><b>Aplikasi Android</b><small>Agent Java 1.50 · Unduh APK</small></div></div>
+              <div class="me"><span class="avatar">R</span><div><b>Rizal</b><small>Admin · Circle Java</small></div><svg><use href="#i-chev"/></svg></div>
+            </aside>
+
+            <header class="top" data-name="Top bar">
+              <div><h2>Unduh aplikasi Android</h2><p>Hanya untuk pengguna yang sudah login. Link dan QR berlaku untuk akun internal.</p></div>
+              <div class="grow"></div>
+              <span class="btn-ic" aria-label="Alert"><svg class="ic"><use href="#i-bell"/></svg><span class="badge">3</span></span>
+              <span class="avatar" aria-label="Profil">R</span>
+            </header>
+            <div class="dl">
+              <div class="hero9" data-name="Hero unduh">
+                <span class="glow"></span>
+                <div class="tx">
+                  <span class="eb">Agent Java untuk Android</span>
+                  <h3>Semua yang kamu pakai di web, <span>kini di saku</span></h3>
+                  <p>Tanya agent, dashboard, Performance, Peta, laporan, dan alert push. Satu akun dengan web.</p>
+                  <div class="meta"><span>Versi 1.50.0 (69)</span><span>24 MB</span><span>Android 8 ke atas</span></div>
+                  <div class="cta"><span class="bigdl"><svg><use href="#i-dl"/></svg>Unduh APK 1.50.0</span><span class="ghost"><svg><use href="#i-mail"/></svg>Kirim ke email saya</span></div>
+                </div>
+                <div class="ph9"><img src="data:image/jpeg;base64,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" alt="Layar Dashboard Agent Java di Android"></div>
+                <div class="qr9"><svg class="qr" viewBox="0 0 29 29" shape-rendering="crispEdges"><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM11 0h1v1h-1zM12 0h1v1h-1zM14 0h1v1h-1zM17 0h1v1h-1zM18 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM25 0h1v1h-1zM26 0h1v1h-1zM27 0h1v1h-1zM28 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h1v1h-1zM10 1h1v1h-1zM17 1h1v1h-1zM18 1h1v1h-1zM19 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM15 2h1v1h-1zM16 2h1v1h-1zM17 2h1v1h-1zM20 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM8 3h1v1h-1zM10 3h1v1h-1zM14 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM19 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM25 3h1v1h-1zM26 3h1v1h-1zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM10 4h1v1h-1zM13 4h1v1h-1zM14 4h1v1h-1zM15 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM26 4h1v1h-1zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM13 5h1v1h-1zM14 5h1v1h-1zM16 5h1v1h-1zM18 5h1v1h-1zM19 5h1v1h-1zM20 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM25 6h1v1h-1zM26 6h1v1h-1zM27 6h1v1h-1zM28 6h1v1h-1zM8 7h1v1h-1zM9 7h1v1h-1zM10 7h1v1h-1zM11 7h1v1h-1zM12 7h1v1h-1zM14 7h1v1h-1zM15 7h1v1h-1zM17 7h1v1h-1zM18 7h1v1h-1zM19 7h1v1h-1zM20 7h1v1h-1zM0 8h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM9 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM20 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM28 8h1v1h-1zM1 9h1v1h-1zM5 9h1v1h-1zM8 9h1v1h-1zM10 9h1v1h-1zM15 9h1v1h-1zM16 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM25 9h1v1h-1zM26 9h1v1h-1zM27 9h1v1h-1zM28 9h1v1h-1zM0 10h1v1h-1zM1 10h1v1h-1zM2 10h1v1h-1zM3 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM10 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM15 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM28 10h1v1h-1zM3 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM11 11h1v1h-1zM13 11h1v1h-1zM15 11h1v1h-1zM17 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM24 11h1v1h-1zM25 11h1v1h-1zM27 11h1v1h-1zM28 11h1v1h-1zM1 12h1v1h-1zM3 12h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM13 12h1v1h-1zM17 12h1v1h-1zM19 12h1v1h-1zM20 12h1v1h-1zM27 12h1v1h-1zM0 13h1v1h-1zM2 13h1v1h-1zM5 13h1v1h-1zM7 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM18 13h1v1h-1zM22 13h1v1h-1zM23 13h1v1h-1zM24 13h1v1h-1zM25 13h1v1h-1zM26 13h1v1h-1zM27 13h1v1h-1zM28 13h1v1h-1zM0 14h1v1h-1zM1 14h1v1h-1zM3 14h1v1h-1zM4 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM11 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM17 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM28 14h1v1h-1zM0 15h1v1h-1zM3 15h1v1h-1zM5 15h1v1h-1zM12 15h1v1h-1zM14 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM20 15h1v1h-1zM21 15h1v1h-1zM27 15h1v1h-1zM28 15h1v1h-1zM1 16h1v1h-1zM2 16h1v1h-1zM6 16h1v1h-1zM7 16h1v1h-1zM9 16h1v1h-1zM10 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM20 16h1v1h-1zM21 16h1v1h-1zM27 16h1v1h-1zM0 17h1v1h-1zM2 17h1v1h-1zM4 17h1v1h-1zM7 17h1v1h-1zM8 17h1v1h-1zM11 17h1v1h-1zM12 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM18 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM24 17h1v1h-1zM25 17h1v1h-1zM27 17h1v1h-1zM28 17h1v1h-1zM2 18h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM9 18h1v1h-1zM10 18h1v1h-1zM11 18h1v1h-1zM12 18h1v1h-1zM13 18h1v1h-1zM14 18h1v1h-1zM15 18h1v1h-1zM18 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM24 18h1v1h-1zM26 18h1v1h-1zM28 18h1v1h-1zM4 19h1v1h-1zM10 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM17 19h1v1h-1zM21 19h1v1h-1zM27 19h1v1h-1zM28 19h1v1h-1zM0 20h1v1h-1zM1 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM13 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM28 20h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM11 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM16 21h1v1h-1zM18 21h1v1h-1zM20 21h1v1h-1zM24 21h1v1h-1zM28 21h1v1h-1zM0 22h1v1h-1zM1 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM9 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM15 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM25 22h1v1h-1zM26 22h1v1h-1zM28 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM10 23h1v1h-1zM14 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM24 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM12 24h1v1h-1zM13 24h1v1h-1zM14 24h1v1h-1zM15 24h1v1h-1zM17 24h1v1h-1zM19 24h1v1h-1zM20 24h1v1h-1zM21 24h1v1h-1zM22 24h1v1h-1zM23 24h1v1h-1zM24 24h1v1h-1zM25 24h1v1h-1zM27 24h1v1h-1zM0 25h1v1h-1zM2 25h1v1h-1zM3 25h1v1h-1zM4 25h1v1h-1zM6 25h1v1h-1zM9 25h1v1h-1zM10 25h1v1h-1zM11 25h1v1h-1zM12 25h1v1h-1zM15 25h1v1h-1zM17 25h1v1h-1zM18 25h1v1h-1zM19 25h1v1h-1zM21 25h1v1h-1zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM6 26h1v1h-1zM9 26h1v1h-1zM11 26h1v1h-1zM13 26h1v1h-1zM15 26h1v1h-1zM18 26h1v1h-1zM20 26h1v1h-1zM21 26h1v1h-1zM25 26h1v1h-1zM26 26h1v1h-1zM27 26h1v1h-1zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h1v1h-1zM12 27h1v1h-1zM15 27h1v1h-1zM17 27h1v1h-1zM18 27h1v1h-1zM19 27h1v1h-1zM20 27h1v1h-1zM21 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM28 27h1v1h-1zM0 28h1v1h-1zM1 28h1v1h-1zM2 28h1v1h-1zM3 28h1v1h-1zM4 28h1v1h-1zM5 28h1v1h-1zM6 28h1v1h-1zM8 28h1v1h-1zM9 28h1v1h-1zM15 28h1v1h-1zM17 28h1v1h-1zM20 28h1v1h-1zM21 28h1v1h-1zM24 28h1v1h-1zM25 28h1v1h-1zM27 28h1v1h-1z" fill="#0F1F1D"/></svg><b>Pindai untuk unduh</b><small>Buka kamera HP, arahkan ke kode ini</small></div>
+              </div>
+              <div class="pcol">
+                <section class="card" data-name="Apa yang baru">
+                  <div class="ch"><div><h3>Apa yang baru di 1.50</h3><p>Redesign v2, nama baru Agent Java</p></div><span class="grow"></span><span class="ctag" style="background:#F4FCE3;color:#5E8A12">Terbaru</span></div>
+                  <div class="wn2">
+                    <div class="wn"><div class="wi"><i style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-map"/></svg></i><b>Peta Agent</b><small>Tanya lewat chat, jawaban muncul di peta. Warnai dengan Performance, Site productivity, atau Profile wilayah.</small></div></div>
+                    <div class="wn"><div class="wi"><i style="background:#F4FCE3;color:#5E8A12"><svg><use href="#i-pulse"/></svg></i><b>Performance kembali</b><small>Drill-down Circle Java sampai site, data dari dump Parquet jadi lebih cepat.</small></div></div>
+                    <div class="wn"><div class="wi"><i style="background:#FBE2E8;color:#B33A5B"><svg><use href="#i-bell"/></svg></i><b>Watchlist dan alert push</b><small>Pantau KPI dengan kalimat biasa, notifikasi masuk saat lewat ambang.</small></div></div>
+                    <div class="wn"><div class="wi"><i style="background:#E6F7F5;color:#0A6A5F"><svg><use href="#i-user"/></svg></i><b>Profil dari semua tab</b><small>Avatar di app bar membuka profil, tema, notifikasi, dan unduhan.</small></div></div>
+                  </div>
+                </section>
+                <section class="card" data-name="Cara instal">
+                  <div class="ch"><div><h3>Cara instal</h3><p>Tiga langkah, kurang dari satu menit</p></div></div>
+                  <div class="steps9">
+                    <div><em>1</em><b>Unduh file APK</b><small>Pindai QR atau ketuk Unduh APK di HP.</small></div>
+                    <div><em>2</em><b>Izinkan sumber tidak dikenal</b><small>Android meminta izin sekali untuk aplikasi di luar Play Store.</small></div>
+                    <div><em>3</em><b>Buka file, lalu masuk</b><small>Pakai akun yang sama dengan web. OTP dikirim ke email.</small></div>
+                  </div>
+                </section>
+                <section class="card faq" data-name="Pertanyaan">
+                  <div class="ch"><div><h3>Pertanyaan yang sering diajukan</h3></div></div>
+                  <div class="fq"><b>Kenapa harus izinkan sumber tidak dikenal?<svg><use href="#i-chev"/></svg></b><small>Agent Java dibagikan langsung sebagai APK internal, bukan lewat Play Store. Izin ini hanya untuk file yang kamu buka sendiri.</small></div>
+                  <div class="fq"><b>Apakah update otomatis?<svg><use href="#i-chev"/></svg></b></div>
+                  <div class="fq"><b>Data saya aman?<svg><use href="#i-chev"/></svg></b></div>
+                </section>
+              </div>
+              <div class="pcol">
+                <section class="card" data-name="Keaslian file">
+                  <div class="ch"><div><h3>Keaslian file</h3><p>Cocokkan sebelum instal</p></div></div>
+                  <div class="sha"><svg><use href="#i-shield"/></svg><span>SHA-256 7c41e09a 3b2f8d6e … 4e7f2a83</span><svg><use href="#i-copy"/></svg></div>
+                  <div class="req"><div><small>Android</small><b>8.0 Oreo ke atas</b></div><div><small>Ruang kosong</small><b>80 MB</b></div><div><small>Koneksi</small><b>4G atau Wi-Fi</b></div><div><small>Ditandatangani</small><b>Kunci yang sama sejak 1.0</b></div></div>
+                </section>
+                <section class="card vh" data-name="Riwayat versi">
+                  <div class="ch"><div><h3>Riwayat versi</h3><p>Versi lama tetap bisa diunduh</p></div></div>
+                  <div class="vr"><b>1.50.0 (69) <span class="pl g">Terbaru</span></b><small>Redesign v2, Agent Java</small><svg class="dlx"><use href="#i-dl"/></svg></div>
+                  <div class="vr"><b>1.49.1 (68)</b><small>Sesi kedaluwarsa kembali ke login</small><svg class="dlx"><use href="#i-dl"/></svg></div>
+                  <div class="vr"><b>1.49.0 (67)</b><small>Redesign v1, 5 tab, unduh APK setelah login</small><svg class="dlx"><use href="#i-dl"/></svg></div>
+                  <div class="vr"><b>1.48.3 (66)</b><small>Versi sebelum Redesign v1</small><svg class="dlx"><use href="#i-dl"/></svg></div>
+                </section>
+                <section class="card" data-name="Bagikan">
+                  <div class="ch"><div><h3>Bagikan ke rekan</h3><p>Link butuh login akun internal</p></div></div>
+                  <div class="sha"><svg><use href="#i-dl"/></svg><span>agent.bizplan-java.com/unduh</span><svg><use href="#i-copy"/></svg></div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-droid">
+        <div class="stage-label"><span>Android · Statistik aplikasi · 390 × 2780 (layar digulir)</span><span>Dibuka dari Profil, bagian Admin</span></div>
+        <div class="fit" data-w="390" data-h="2780" data-max="1">
+          <div class="frame" id="droidFrame">
+            <div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮▮▮ 86%</span></div>
+            <div class="dbar" data-name="App bar">
+              <span class="dback"><svg><use href="#i-chevl"/></svg></span>
+              <div><b>Statistik aplikasi</b><small>Admin · 7 hari terakhir</small></div>
+              <span class="grow"></span>
+              <span class="avatar" aria-label="Profil">R</span>
+            </div>
+            <div class="dst">
+              <div class="seg"><button>Hari ini</button><button class="on">7 hari</button><button>30 hari</button><button>90 hari</button></div>
+              <div class="k5" data-name="KPI">
+                <div class="k9"><small>Pengguna aktif</small><b>21 <span>· 48 · 57</span></b><em>DAU · WAU · MAU</em></div>
+                <div class="k9"><small>Login hari ini</small><b>64</b><em>Web 38 · Android 26</em></div>
+                <div class="k9"><small>Pertanyaan ke agent</small><b>1.284</b><em class="up">▲ 12%</em></div>
+                <div class="k9"><small>Login gagal</small><b>9</b><em class="dn">1 akun terkunci</em></div>
+                <div class="k9" style="grid-column:span 2"><small>Adopsi versi 1.50</small><b>41 <span>/ 52 perangkat</span></b><em>126 unduhan APK sejak rilis</em><div class="bar2"><i style="flex:41"></i><i style="flex:11;background:transparent"></i></div></div>
+              </div>
+              <section class="card" data-name="Pengguna aktif harian">
+                <div class="ch"><div><h3>Pengguna aktif harian</h3><p>30 hari terakhir</p></div></div>
+                <div class="lg9"><span><i style="background:#0E8579"></i>DAU</span><span><i class="ln" style="background:#22B8C9"></i>WAU</span></div>
+                <svg class="ch9" viewBox="0 0 330 160" width="330" height="160"><line x1="30" x2="322" y1="138" y2="138" stroke="#ECF3F1"/><text x="24" y="141.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">0</text><line x1="30" x2="322" y1="95.3" y2="95.3" stroke="#ECF3F1"/><text x="24" y="98.8" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">20</text><line x1="30" x2="322" y1="52.7" y2="52.7" stroke="#ECF3F1"/><text x="24" y="56.2" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">40</text><line x1="30" x2="322" y1="10" y2="10" stroke="#ECF3F1"/><text x="24" y="13.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">60</text><path d="M30 120.9 L40.1 120.9 L50.1 95.3 L60.2 88.9 L70.3 95.3 L80.3 91.1 L90.4 88.9 L100.5 123.1 L110.6 118.8 L120.6 88.9 L130.7 95.3 L140.8 91.1 L150.8 88.9 L160.9 91.1 L171 114.5 L181 120.9 L191.1 91.1 L201.2 93.2 L211.2 88.9 L221.3 84.7 L231.4 86.8 L241.4 112.4 L251.5 116.7 L261.6 84.7 L271.7 91.1 L281.7 88.9 L291.8 84.7 L301.9 84.7 L311.9 114.5 L322 93.2 L322 138 L30 138 Z" fill="#0E8579" opacity=".10"/><path d="M30 52.7 L40.1 52.7 L50.1 52.7 L60.2 50.5 L70.3 50.5 L80.3 48.4 L90.4 48.4 L100.5 50.5 L110.6 48.4 L120.6 46.3 L130.7 48.4 L140.8 46.3 L150.8 44.1 L160.9 46.3 L171 44.1 L181 46.3 L191.1 42 L201.2 39.9 L211.2 44.1 L221.3 44.1 L231.4 42 L241.4 39.9 L251.5 42 L261.6 39.9 L271.7 37.7 L281.7 35.6 L291.8 37.7 L301.9 37.7 L311.9 35.6 L322 35.6" fill="none" stroke="#22B8C9" stroke-width="2" stroke-dasharray="5 4"/><path d="M30 120.9 L40.1 120.9 L50.1 95.3 L60.2 88.9 L70.3 95.3 L80.3 91.1 L90.4 88.9 L100.5 123.1 L110.6 118.8 L120.6 88.9 L130.7 95.3 L140.8 91.1 L150.8 88.9 L160.9 91.1 L171 114.5 L181 120.9 L191.1 91.1 L201.2 93.2 L211.2 88.9 L221.3 84.7 L231.4 86.8 L241.4 112.4 L251.5 116.7 L261.6 84.7 L271.7 91.1 L281.7 88.9 L291.8 84.7 L301.9 84.7 L311.9 114.5 L322 93.2" fill="none" stroke="#0E8579" stroke-width="2.2" stroke-linejoin="round"/><circle cx="322" cy="93.2" r="4" fill="#0E8579" stroke="#fff" stroke-width="2"/><circle cx="322" cy="35.6" r="3.5" fill="#22B8C9" stroke="#fff" stroke-width="2"/><text x="30" y="155" text-anchor="start" font-size="10" fill="#5A6B68" font-family="Prompt">30 hari lalu</text><text x="110.6" y="155" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">21</text><text x="181" y="155" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">14</text><text x="251.5" y="155" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">7</text><text x="322" y="155" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">Hari ini</text></svg>
+              </section>
+              <section class="card pend" data-name="Menunggu persetujuan">
+                <div class="ch"><div><h3>Menunggu persetujuan</h3></div><span class="grow"></span><span class="ctag" style="background:#FDF3E2;color:#B7791F">3</span></div>
+                <div class="pr"><i style="background:#2C6CB0">FN</i><b>Fajar Nugroho</b><small>Network · East Java</small><div class="ab"><span>Tolak</span><span class="p">Setujui</span></div></div>
+                <div class="pr"><i style="background:#B7791F">LM</i><b>Lina Marlina</b><small>Sales · West Java</small><div class="ab"><span>Tolak</span><span class="p">Setujui</span></div></div>
+                <div class="pr"><i style="background:#6A4CB5">RH</i><b>Rudi Hartono</b><small>Finance · Circle Java</small><div class="ab"><span>Tolak</span><span class="p">Setujui</span></div></div>
+              </section>
+              <section class="card" data-name="Pemakaian fitur">
+                <div class="ch"><div><h3>Pemakaian fitur</h3><p>Sesi per halaman</p></div></div>
+                <div class="fu">
+                  <div>Tanya Agent<span><i style="flex:412;background:#0E8579"></i><i style="flex:0"></i></span><b>412</b></div>
+                  <div>Dashboard<span><i style="flex:344;background:#0E8579"></i><i style="flex:68"></i></span><b>344</b></div>
+                  <div>Performance<span><i style="flex:231;background:#0E8579"></i><i style="flex:181"></i></span><b>231</b></div>
+                  <div>Peta Agent<span><i style="flex:158;background:#0E8579"></i><i style="flex:254"></i></span><b>158</b></div>
+                  <div>Laporan<span><i style="flex:126;background:#0E8579"></i><i style="flex:286"></i></span><b>126</b></div>
+                  <div>Watchlist<span><i style="flex:97;background:#0E8579"></i><i style="flex:315"></i></span><b>97</b></div>
+                </div>
+                <div class="tp"><div style="background:#E6F7F5"><b>58%</b><small>Performance</small></div><div style="background:#F4FCE3"><b>27%</b><small>Site productivity</small></div><div style="background:#E1ECFA"><b>15%</b><small>Profile wilayah</small></div></div>
+              </section>
+              <section class="card" data-name="Aktivitas login">
+                <div class="ch"><div><h3>Aktivitas login</h3><p>Per hari dan jam (WIB)</p></div></div>
+                <div class="hm" style="grid-template-columns:28px repeat(24,1fr);gap:2px"><span>Sen</span><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><span>Sel</span><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><span>Rab</span><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><span>Kam</span><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><span>Jum</span><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#0E8579;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#3FBFB1;height:12px"></i><i style="background:#8FDFD7;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><span>Sab</span><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><span>Min</span><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#C0EDE8;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><i style="background:#ECF3F1;height:12px"></i><span></span><span class="hx">0</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx">6</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx">12</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx">18</span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span><span class="hx"></span></div>
+              </section>
+              <section class="card" data-name="Adopsi versi">
+                <div class="ch"><div><h3>Adopsi versi aplikasi</h3><p>Perangkat per versi, per minggu</p></div></div>
+                <div class="lg9"><span><i style="background:#0E8579"></i>1.50</span><span><i style="background:#8FD6CB"></i>1.49.x</span><span><i style="background:#9AAAA6"></i>Lebih lama</span></div>
+                <svg class="ch9" viewBox="0 0 330 150" width="330" height="150"><line x1="30" x2="322" y1="128" y2="128" stroke="#ECF3F1"/><text x="24" y="131.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">0</text><line x1="30" x2="322" y1="74.4" y2="74.4" stroke="#ECF3F1"/><text x="24" y="77.9" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">25</text><line x1="30" x2="322" y1="20.7" y2="20.7" stroke="#ECF3F1"/><text x="24" y="24.2" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">50</text><path d="M30 85.1 L78.7 100.1 L127.3 110.8 L176 117.3 L224.7 119.4 L273.3 121.6 L322 123.7 L322 128 L273.3 128 L224.7 128 L176 128 L127.3 128 L78.7 128 L30 128 Z" fill="#9AAAA6" opacity=".9"/><path d="M30 20.7 L78.7 18.6 L127.3 16.4 L176 16.4 L224.7 55.1 L273.3 87.2 L322 104.4 L322 123.7 L273.3 121.6 L224.7 119.4 L176 117.3 L127.3 110.8 L78.7 100.1 L30 85.1 Z" fill="#8FD6CB" opacity=".9"/><path d="M30 20.7 L78.7 18.6 L127.3 16.4 L176 16.4 L224.7 16.4 L273.3 16.4 L322 16.4 L322 104.4 L273.3 87.2 L224.7 55.1 L176 16.4 L127.3 16.4 L78.7 18.6 L30 20.7 Z" fill="#0E8579" opacity=".9"/><text x="30" y="145" text-anchor="start" font-size="10" fill="#5A6B68" font-family="Prompt">6 mg</text><text x="78.7" y="145" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">5</text><text x="127.3" y="145" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">4</text><text x="176" y="145" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">3</text><text x="224.7" y="145" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">2</text><text x="273.3" y="145" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">1</text><text x="322" y="145" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">Kini</text></svg>
+              </section>
+              <section class="card" data-name="Unduhan vs instal update">
+                <div class="ch"><div><h3>Unduhan vs instal update</h3><p>Harian, 14 hari</p></div></div>
+                <div class="lg9"><span><i style="background:#D98E0B"></i>Unduhan baru</span><span><i style="background:#0E8579"></i>Instal update</span></div>
+                <svg class="ch9" viewBox="0 0 330 140" width="330" height="140"><line x1="30" x2="322" y1="118" y2="118" stroke="#ECF3F1"/><text x="24" y="121.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">0</text><line x1="30" x2="322" y1="64" y2="64" stroke="#ECF3F1"/><text x="24" y="67.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">8</text><line x1="30" x2="322" y1="10" y2="10" stroke="#ECF3F1"/><text x="24" y="13.5" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">16</text><rect x="33.8" y="104.5" width="6.3" height="13.5" rx="2" fill="#D98E0B"/><rect x="41.5" y="118" width="6.3" height="0" rx="2" fill="#0E8579"/><rect x="54.6" y="111.2" width="6.3" height="6.8" rx="2" fill="#D98E0B"/><rect x="62.4" y="118" width="6.3" height="0" rx="2" fill="#0E8579"/><rect x="75.5" y="97.8" width="6.3" height="20.2" rx="2" fill="#D98E0B"/><rect x="83.2" y="118" width="6.3" height="0" rx="2" fill="#0E8579"/><rect x="96.3" y="111.2" width="6.3" height="6.8" rx="2" fill="#D98E0B"/><rect x="104.1" y="118" width="6.3" height="0" rx="2" fill="#0E8579"/><rect x="117.2" y="118" width="6.3" height="0" rx="2" fill="#D98E0B"/><rect x="124.9" y="118" width="6.3" height="0" rx="2" fill="#0E8579"/><rect x="138" y="118" width="6.3" height="0" rx="2" fill="#D98E0B"/><rect x="145.8" y="118" width="6.3" height="0" rx="2" fill="#0E8579"/><rect x="158.9" y="104.5" width="6.3" height="13.5" rx="2" fill="#D98E0B"/><rect x="166.7" y="118" width="6.3" height="0" rx="2" fill="#0E8579"/><rect x="179.8" y="111.2" width="6.3" height="6.8" rx="2" fill="#D98E0B"/><rect x="187.5" y="57.2" width="6.3" height="60.8" rx="2" fill="#0E8579"/><rect x="200.6" y="104.5" width="6.3" height="13.5" rx="2" fill="#D98E0B"/><rect x="208.4" y="23.5" width="6.3" height="94.5" rx="2" fill="#0E8579"/><rect x="221.5" y="111.2" width="6.3" height="6.8" rx="2" fill="#D98E0B"/><rect x="229.2" y="77.5" width="6.3" height="40.5" rx="2" fill="#0E8579"/><rect x="242.3" y="111.2" width="6.3" height="6.8" rx="2" fill="#D98E0B"/><rect x="250.1" y="91" width="6.3" height="27" rx="2" fill="#0E8579"/><rect x="263.2" y="118" width="6.3" height="0" rx="2" fill="#D98E0B"/><rect x="270.9" y="111.2" width="6.3" height="6.8" rx="2" fill="#0E8579"/><rect x="284" y="111.2" width="6.3" height="6.8" rx="2" fill="#D98E0B"/><rect x="291.8" y="97.8" width="6.3" height="20.2" rx="2" fill="#0E8579"/><rect x="304.9" y="104.5" width="6.3" height="13.5" rx="2" fill="#D98E0B"/><rect x="312.7" y="84.2" width="6.3" height="33.8" rx="2" fill="#0E8579"/><text x="40.4" y="135" text-anchor="start" font-size="10" fill="#5A6B68" font-family="Prompt">14 hari lalu</text><text x="186.4" y="135" text-anchor="middle" font-size="10" fill="#5A6B68" font-family="Prompt">7</text><text x="311.6" y="135" text-anchor="end" font-size="10" fill="#5A6B68" font-family="Prompt">Hari ini</text></svg>
+              </section>
+              <section class="card" data-name="Pengguna">
+                <div class="ch"><div><h3>Akses pengguna</h3><p>63 akun · 11 perangkat versi lama</p></div></div>
+                <div class="dul">
+                  <div class="ur"><i style="background:#0E8579">R</i><b>Rizal</b><small>Web, Android 1.50.0 · 5 menit lalu</small><span class="pl g">Aktif</span></div>
+                  <div class="ur"><i style="background:#2C6CB0">DA</i><b>Dewi Anggraini</b><small>Android 1.50.0 · 32 menit lalu</small><span class="pl g">Aktif</span></div>
+                  <div class="ur"><i style="background:#5E8A12">BP</i><b>Bayu Pratama</b><small>Web · 1 jam lalu</small><span class="pl g">Aktif</span></div>
+                  <div class="ur"><i style="background:#B33A5B">SW</i><b>Sari Wulandari</b><small>Android 1.49.1 · kemarin</small><span class="pl o">Versi lama</span></div>
+                  <div class="ur"><i style="background:#9AAAA6">HG</i><b>Hendra Gunawan</b><small>Android 1.48.3 · 12 hari lalu</small><span class="pl m">Tidak aktif</span></div>
+                </div>
+                <span class="linkbtn" style="justify-content:center"><svg><use href="#i-bell"/></svg>Ingatkan update (11)</span>
+              </section>
+              <section class="card" data-name="Login gagal">
+                <div class="ch"><div><h3>Login gagal dan keamanan</h3></div></div>
+                <div class="sec2">
+                  <div class="sr"><b>lina.m · 5 kali salah</b><small>Hari ini 07.12 · dikunci 15 menit</small><span class="pl r">Terkunci</span></div>
+                  <div class="sr"><b>bayu.p · OTP kedaluwarsa 2 kali</b><small>Kemarin 13.40</small><span class="pl o">Pantau</span></div>
+                  <div class="sr"><b>Akun tidak dikenal · 2 kali</b><small>Rabu 22.05</small><span class="pl m">Diblokir</span></div>
+                </div>
+              </section>
+            </div>
+            <nav class="bnav" data-name="Bottom nav">
+              <a><i><svg><use href="#i-spark"/></svg></i>Agent</a>
+              <a><i><svg><use href="#i-grid"/></svg></i>Dashboard</a>
+              <a><i><svg><use href="#i-pulse"/></svg></i>Performa</a>
+              <a><i><svg><use href="#i-map"/></svg></i>Peta</a>
+              <a><i><svg><use href="#i-file"/></svg></i>Laporan</a>
+            </nav>
+            <div class="homebar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="notes">
+      <div>
+        <h2>Yang baru di Statistik dan Unduh APK</h2>
+        <ul>
+          <li>Semua isi Statistik yang sekarang tetap ada: pengguna aktif (DAU, WAU, MAU), aktivitas login per jam, login per platform, adopsi versi, unduhan vs instal update, akses pengguna, dan login gagal.</li>
+          <li>Tambahan: pemakaian per fitur dan topik pertanyaan ke agent (Performance, Site productivity, Profile wilayah), plus persetujuan akun baru langsung dari halaman ini.</li>
+          <li>Tombol Ingatkan update mengirim push ke 11 perangkat yang masih memakai versi lama.</li>
+          <li>Unduh APK tetap hanya setelah login. Halaman ini memakai QR asli, nomor versi, ukuran, SHA-256, riwayat versi, dan cara instal.</li>
+          <li>Gambar HP di halaman unduh adalah mockup Dashboard Android yang sudah disetujui, jadi tidak ada logo IOH.</li>
+          <li>Di Android, Statistik dibuka dari Profil bagian Admin, dengan isi yang sama dalam satu kolom.</li>
+        </ul>
+      </div>
+      <div class="q"><b>Yang perlu kamu cek:</b> isi Statistik, alur persetujuan akun, dan halaman Unduh APK. Setelah disetujui, semua halaman 01 sampai 09 siap diimplementasikan.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  const fits = [...document.querySelectorAll('.fit')];
+  function layout() { fits.forEach(f => { if (!f.offsetParent) return; const w = +f.dataset.w, h = +f.dataset.h, avail = f.parentElement.clientWidth; const s = Math.min(f.dataset.max ? 1 : 9, avail / w); f.style.height = (h * s) + 'px'; f.style.width = (w * s) + 'px'; f.firstElementChild.style.transform = 'scale(' + s + ')'; }); }
+  new ResizeObserver(layout).observe(document.querySelector('.stage')); layout();
+  const tabs = document.querySelectorAll('[role=tab]');
+  tabs.forEach(t => t.addEventListener('click', () => { tabs.forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false')); document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p)); layout(); }));
+  const web = document.getElementById('webFrame');
+  web.querySelectorAll('.seg').forEach(sg => sg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => sg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)))));
+  document.querySelectorAll('.tgl').forEach(t => t.addEventListener('click', () => t.classList.toggle('off')));
+  document.querySelectorAll('.cb:not(.lock)').forEach(c => c.addEventListener('click', () => { c.classList.toggle('off'); c.innerHTML = c.classList.contains('off') ? '' : '<svg><use href="#i-check"/></svg>'; }));
+  web.querySelectorAll('.sws span').forEach(s => s.addEventListener('click', () => web.querySelectorAll('.sws span').forEach(x => x.classList.toggle('on', x === s))));
+  web.querySelectorAll('.pfnav span').forEach(s => s.addEventListener('click', () => web.querySelectorAll('.pfnav span').forEach(x => x.classList.toggle('on', x === s))));
+})();
+</script>
