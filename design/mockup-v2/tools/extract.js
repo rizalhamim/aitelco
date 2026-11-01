@@ -64,6 +64,7 @@ const path = require('path');
           const id = 'r' + (rid++); rasters.push({ id, html: el.outerHTML, w: r.width, h: r.height, color: cs.color, radius: n.radius });
           n.raster = id; n.bg = 'rgba(0, 0, 0, 0)'; n.bgImage = 'none'; return n;
         }
+        if (el.tagName === 'IMG') { n.img = el.getAttribute('src'); return n; }
         if (el.tagName === 'VIDEO') { n.video = el.getAttribute('src'); return n; }
         if (el.tagName === 'INPUT') {
           if (el.type === 'checkbox') return null;

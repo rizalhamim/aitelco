@@ -4,15 +4,17 @@ Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per
 
 Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 
+**Logo (keputusan Rizal, 1 Nov 2026):** logo elang lama (`design/mockup/assets/brand/icon_circle_java.png`) tetap logo resmi di login, web, dan di dalam app. Yang berubah hanya ikon app Android di layar HP (tulisan "Agent Java") dan nama app menjadi Agent Java. Tidak ada logo bergambar baru.
+
 ## Isi
 
 | Path | Isi |
 |---|---|
-| `01-login/Agent Java - Redesign v2 - 01 Login.figcraft` | File FigCraft: frame Web · Login (1440 × 900), Android · Login (390 × 844), Brand · Logo dan warna |
+| `01-login/Agent Java - Redesign v2 - 01 Login.figcraft` | File FigCraft: frame Web · Login (1440 × 900), Android · Login (390 × 844), Brand · Logo dan warna (1200 × 860) |
 | `01-login/png/` | Ekspor PNG @2x tiap frame |
 | `01-login/review/agent-java-login.html` | Halaman review interaktif; video latar benar-benar diputar (`media/login.mp4`, H.264 720p) |
-| `01-login/review/template.html` | Sumber halaman review (placeholder `{{POSTER}}`, `{{ELANG}}`, `{{CHAT}}` diisi saat build) |
-| `brand/` | Logo opsi A (Elang Java, rekomendasi) dan B (Chat Insight), SVG + PNG 1024 |
+| `01-login/review/template.html` | Sumber halaman review (placeholder `{{POSTER}}` dan `{{OLDLOGO}}` diisi saat build) |
+| `01-login/app-icon/` | Ikon app Android baru berupa tulisan "Agent Java": PNG 1024 (bulat dan kotak) + layer adaptive icon 432 (foreground, background) |
 | `tools/` | Konverter HTML ke FigCraft (lihat bawah) |
 
 ## Video login

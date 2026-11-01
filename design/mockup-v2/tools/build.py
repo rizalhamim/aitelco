@@ -211,6 +211,14 @@ def build(n, parent, raster_files, poster_hash, ox=0.0, oy=0.0):
                           "opacity": 1.0, "visible": True, "blend": "normal"}]
         node['annotations'] = [{"label": "VIDEO: media/login-1080-h264.mp4 (H.264, 15 dtk, 7,8 MB). <video autoplay muted loop playsinline>, object-fit: cover, poster = frame ini. "
                                          "FigCraft tidak bisa memutar video; lihat versi yang jalan di halaman review HTML. Hormati prefers-reduced-motion (tampilkan poster saja)."}]
+    if n.get('img', '').startswith('data:'):
+        import base64, tempfile
+        raw = base64.b64decode(n['img'].split(',', 1)[1])
+        tf = tempfile.NamedTemporaryFile(delete=False, suffix='.png'); tf.write(raw); tf.close()
+        node['fills'] = [{"type": "image", "image": add_image(tf.name), "scale_mode": "fit", "scale": 1.0, "rotation": 0, "crop": None,
+                          "filters": {k: 0.0 for k in ("exposure", "contrast", "saturation", "temperature", "tint", "highlights", "shadows")},
+                          "opacity": 1.0, "visible": True, "blend": "normal"}]
+        node['name'] = 'Logo resmi Elang Java'
     if n.get('raster'):
         h = add_image(raster_files[n['raster']])
         node['fills'] = [{"type": "image", "image": h, "scale_mode": "fit", "scale": 1.0, "rotation": 0, "crop": None,

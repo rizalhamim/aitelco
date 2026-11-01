@@ -62,7 +62,13 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
 .frame video, .frame .poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -3 }
 .frame .shade { position: absolute; inset: 0; z-index: -2 }
 .wlogo { display: flex; align-items: center; gap: 12px }
-.wlogo svg { border-radius: 24%; box-shadow: 0 8px 24px rgba(0,0,0,.25) }
+.tile { background: #fff; border-radius: 28%; display: grid; place-items: center; flex: none; box-shadow: 0 8px 24px rgba(0,0,0,.25); border: 2px solid rgba(255,255,255,.5) }
+.tile img { width: 84%; height: 84%; object-fit: contain; display: block }
+.appicon { border-radius: 22.5%; background: radial-gradient(circle at 85% 10%, rgba(34,184,201,.55), rgba(34,184,201,0) 55%), linear-gradient(150deg, #0E8579, #04332E 80%);
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0; flex: none; box-shadow: 0 10px 24px rgba(4,51,46,.28) }
+.appicon .a1 { font-family: var(--f-display); font-weight: 600; color: #fff; line-height: 1.05; letter-spacing: -.01em }
+.appicon .a2 { font-family: var(--f-display); font-weight: 800; color: var(--lime-400); line-height: 1; letter-spacing: -.03em }
+.appicon .a3 { background: var(--coral-500); border-radius: 99px }
 .wlogo b { font: 700 22px/1 var(--f-display); letter-spacing: -.01em }
 .wlogo b em { font-style: normal; color: var(--lime-400) }
 .tagline { font: 800 104px/.98 var(--f-display); letter-spacing: -.03em; margin: 0 }
@@ -146,14 +152,18 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
 #droidFrame .nav { height: 4px; width: 120px; border-radius: 4px; background: #0F1F1D; opacity: .8; margin: 4px auto 0 }
 
 /* Brand board 1200 x 760 */
-#brandFrame { width: 1200px; height: 760px; background: #F5F9F8; color: #0F1F1D; border-radius: 6px; padding: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px }
+#brandFrame { width: 1200px; height: 860px; background: #F5F9F8; color: #0F1F1D; border-radius: 6px; padding: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px }
 #brandFrame h4 { font: 700 13px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; margin: 0 0 16px }
-.logos { display: grid; grid-template-columns: 1fr 1fr; gap: 18px }
-.lg { background: #fff; border: 1px solid #E1E9E7; border-radius: 20px; padding: 22px; display: grid; gap: 14px; justify-items: start }
+.logos { display: grid; gap: 18px }
+.lg { background: #fff; border: 1px solid #E1E9E7; border-radius: 20px; padding: 22px; display: grid; grid-template-columns: 150px 1fr; gap: 14px 22px; align-items: start }
+.lg .info { display: grid; gap: 10px; justify-items: start }
+.launcher { grid-column: 1 / -1; border-radius: 16px; background: linear-gradient(160deg, #1d3b37, #0b1a18); padding: 16px 20px; display: flex; gap: 26px; justify-content: space-around }
+.launcher div { display: grid; justify-items: center; gap: 6px; font: 500 11px/1.2 var(--f-body); color: #fff }
+.launcher .ph { width: 52px; height: 52px; border-radius: 22.5%; background: rgba(255,255,255,.16) }
 .lg.rec { border: 2px solid var(--teal-600) }
-.lg .big { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 14px 30px rgba(4,51,46,.22) }
+
 .lg .sizes { display: flex; gap: 10px; align-items: end }
-.lg .sizes svg { border-radius: 24% }
+
 .lg b { font: 700 16px/1.2 var(--f-display) } .lg p { margin: 0; font-size: 13px; color: #3D4C49 }
 .lg .tag { font: 600 11px/1 var(--f-display); padding: 5px 9px; border-radius: 99px; background: var(--teal-50); color: var(--teal-700) }
 .sw-grid { display: grid; gap: 12px }
@@ -167,8 +177,6 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="logo-elang" viewBox="0 0 1024 1024">{{ELANG}}</symbol>
-  <symbol id="logo-chat" viewBox="0 0 1024 1024">{{CHAT}}</symbol>
   <symbol id="i-user" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></g></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></g></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g></symbol>
@@ -181,7 +189,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
 <div class="wrap">
   <header class="top">
     <div class="brandline">
-      <svg viewBox="0 0 1024 1024" aria-hidden="true"><use href="#logo-elang"/></svg>
+      <span class="tile" style="width:44px;height:44px;box-shadow:none;border:1px solid var(--rule)"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span>
       <div><h1>Agent Java · Redesign v2</h1><p>Review halaman satu per satu. Ini halaman pertama.</p></div>
     </div>
     <div class="steps" aria-label="Urutan review">
@@ -208,7 +216,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
             <img class="poster" src="{{POSTER}}" alt="">
             <video class="bgv" autoplay muted loop playsinline preload="auto" poster="{{POSTER}}" src="media/login.mp4"></video>
             <div class="shade"></div><div class="glow"></div>
-            <div class="top wlogo"><svg width="52" height="52" viewBox="0 0 1024 1024" aria-hidden="true"><use href="#logo-elang"/></svg><b>Agent <em>Java</em></b></div>
+            <div class="top wlogo"><span class="tile" style="width:56px;height:56px"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><b>Agent <em>Java</em></b></div>
             <div class="hero">
               <h2 class="tagline">Winning<br>Every <span>Second</span></h2>
               <div class="sec-bar" aria-hidden="true"><i></i></div>
@@ -243,7 +251,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
             <video class="bgv" autoplay muted loop playsinline preload="auto" poster="{{POSTER}}" src="media/login.mp4"></video>
             <div class="shade"></div>
             <div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮▮▮ 86%</span></div>
-            <div class="top wlogo"><svg width="40" height="40" viewBox="0 0 1024 1024" aria-hidden="true"><use href="#logo-elang"/></svg><b>Agent <em>Java</em></b></div>
+            <div class="top wlogo"><span class="tile" style="width:42px;height:42px"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><b>Agent <em>Java</em></b></div>
             <button type="button" class="vctl" aria-label="Jeda video"><svg><use href="#i-pause"/></svg><span>Jeda</span></button>
             <div class="hero">
               <h2 class="tagline">Winning<br>Every <span>Second</span></h2>
@@ -270,25 +278,32 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
       </div>
       <!-- BRAND -->
       <div class="panel" id="p-brand">
-        <div class="stage-label"><span>Logo app dan palet warna fresh</span><span>Pilih satu logo</span></div>
-        <div class="fit" data-w="1200" data-h="760">
+        <div class="stage-label"><span>Logo resmi, ikon app Android, dan palet warna fresh</span><span>Revisi 2</span></div>
+        <div class="fit" data-w="1200" data-h="860">
           <div class="frame" id="brandFrame">
             <div>
               <h4>Logo Agent Java</h4>
               <div class="logos">
-                <div class="lg rec">
-                  <span class="tag">Rekomendasi · A</span>
-                  <svg class="big" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg>
-                  <b>Elang Java</b>
-                  <p>Elang Jawa dari video login. Jambulnya tiga batang naik seperti grafik tumbuh, bintang koral = AI agent.</p>
-                  <div class="sizes"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg><svg width="40" height="40" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg><svg width="24" height="24" viewBox="0 0 1024 1024"><use href="#logo-elang"/></svg></div>
-                </div>
                 <div class="lg">
-                  <span class="tag">Alternatif · B</span>
-                  <svg class="big" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg>
-                  <b>Chat Insight</b>
-                  <p>Bubble chat berisi garis performa yang naik. Lebih generik, tapi langsung terbaca "agent yang menjawab data".</p>
-                  <div class="sizes"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg><svg width="40" height="40" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg><svg width="24" height="24" viewBox="0 0 1024 1024"><use href="#logo-chat"/></svg></div>
+                  <span class="tile" style="width:150px;height:150px;box-shadow:0 14px 30px rgba(4,51,46,.22);border:1px solid #E1E9E7"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span>
+                  <div class="info">
+                    <span class="tag">Logo resmi · tetap</span>
+                    <b>Elang Java</b>
+                    <p>Logo lama tetap jadi logo resmi. Dipakai di login, header web, di dalam app Android, laporan PDF, dan email.</p>
+                    <div class="sizes"><span class="tile" style="width:64px;height:64px;box-shadow:none;border:1px solid #E1E9E7"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><span class="tile" style="width:40px;height:40px;box-shadow:none;border:1px solid #E1E9E7"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><span class="tile" style="width:24px;height:24px;box-shadow:none;border:1px solid #E1E9E7"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span></div>
+                  </div>
+                </div>
+                <div class="lg rec">
+                  <span class="appicon" style="width:150px;height:150px;padding-left:22.5px"><span class="a1" style="font-size:28.5px">Agent</span><span class="a2" style="font-size:46.5px">Java</span><span class="a3" style="width:30.0px;height:5.3px;margin-top:7.5px"></span></span>
+                  <div class="info">
+                    <span class="tag">Ikon app Android · baru</span>
+                    <b>Tulisan Agent Java</b>
+                    <p>Hanya untuk ikon di layar HP dan nama app. Teks saja: "Agent" putih, "Java" lime, garis coral kecil.</p>
+                    <div class="sizes"><span class="appicon" style="width:64px;height:64px;padding-left:9.6px"><span class="a1" style="font-size:12.2px">Agent</span><span class="a2" style="font-size:19.8px">Java</span><span class="a3" style="width:12.8px;height:2.2px;margin-top:3.2px"></span></span><span class="appicon" style="width:48px;height:48px;padding-left:7.2px"><span class="a1" style="font-size:9.1px">Agent</span><span class="a2" style="font-size:14.9px">Java</span><span class="a3" style="width:9.6px;height:1.7px;margin-top:2.4px"></span></span><span class="appicon" style="width:32px;height:32px;padding-left:4.8px"><span class="a1" style="font-size:6.1px">Agent</span><span class="a2" style="font-size:9.9px">Java</span><span class="a3" style="width:6.4px;height:1.5px;margin-top:1.6px"></span></span></div>
+                  </div>
+                  <div class="launcher" aria-label="Contoh di layar utama HP">
+                    <div><span class="ph"></span>Kamera</div><div><span class="appicon" style="width:52px;height:52px;padding-left:7.8px"><span class="a1" style="font-size:9.9px">Agent</span><span class="a2" style="font-size:16.1px">Java</span><span class="a3" style="width:10.4px;height:1.8px;margin-top:2.6px"></span></span>Agent Java</div><div><span class="ph"></span>Pesan</div><div><span class="ph"></span>Galeri</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -322,7 +337,8 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
       <div>
         <h2>Yang baru di Login v2</h2>
         <ul>
-          <li>Nama jadi <b>Agent Java</b> dengan logo baru (pilih A atau B di tab Logo dan warna).</li>
+          <li>Nama app jadi <b>Agent Java</b>. Logo elang lama tetap jadi logo resmi di login, web, dan di dalam app.</li>
+          <li>Ikon app Android di layar HP berupa tulisan "Agent Java" (lihat tab Logo dan warna).</li>
           <li>Tidak ada logo atau teks Indosat Ooredoo Hutchison.</li>
           <li>Video latar diputar otomatis. Video yang sekarang live berformat HEVC, sehingga tidak jalan di Firefox dan di banyak laptop Chrome. Di v2 diubah ke H.264 (28,6 MB jadi 7,8 MB di 1080p). Login Android juga dapat video yang sama.</li>
           <li>Garis lime di bawah tagline berjalan mengikuti detik video, cocok dengan "Every Second".</li>
@@ -330,7 +346,7 @@ aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size
           <li>Tambahan "Ingat saya". Tagline tetap, tanpa statistik atau teks fitur.</li>
         </ul>
       </div>
-      <div class="q"><b>Yang perlu kamu putuskan:</b> logo A atau B, aksen lime/lagoon/coral oke atau mau diganti, dan apakah layout ini disetujui sebelum lanjut ke halaman 02 Tanya Agent.</div>
+      <div class="q"><b>Yang perlu kamu putuskan:</b> ikon tulisan Agent Java sudah pas, aksen lime/lagoon/coral oke atau mau diganti, dan apakah layout ini disetujui sebelum lanjut ke halaman 02 Tanya Agent.</div>
     </aside>
   </div>
 </div>
