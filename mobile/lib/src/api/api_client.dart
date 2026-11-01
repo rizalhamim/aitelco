@@ -640,6 +640,13 @@ class ApiClient {
   static Future<Map<String, dynamic>> mapKabupatenDetail(String kabupaten, String provinsi) =>
       _getJson('/api/map/kabupaten/detail', {'kabupaten': kabupaten, 'provinsi': provinsi});
 
+  /// Laporan library items (Redesign v2 page 06).
+  static Future<Map<String, dynamic>> reportLibrary() => _getJson('/api/report-docs/library');
+
+  /// A report document as typed sections: kind outlook, bulanan or profile.
+  static Future<Map<String, dynamic>> reportDoc(String kind, {String region = '', String kabupaten = ''}) =>
+      _getJson('/api/report-docs/doc', {'kind': kind, 'region': region, 'kabupaten': kabupaten});
+
   static Future<List<dynamic>> reportSchedules() async {
     final res = await _authGet(Uri.parse('$base/api/report-schedules'));
     if (res.statusCode != 200) return [];

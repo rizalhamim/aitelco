@@ -252,7 +252,7 @@ class ChatScreenState extends State<ChatScreen> {
         backgroundColor: p.surface,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
         builder: (_) => ReportExportSheet(
-          item: ReportItem(id: 'adhoc:${saved.id}', kind: 'adhoc', title: saved.title, format: 'XLSX', date: saved.savedAt, adhoc: saved),
+          item: ReportItem(id: 'adhoc:${saved.id}', kind: 'adhoc', title: saved.title, format: 'XLSX', adhoc: saved),
         ),
       );
     } catch (e) {

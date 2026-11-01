@@ -6,7 +6,7 @@ const bar = (v, w, c = "#22B8C9") => ({ v, bar: { w, c } });
 export const LIBRARY = {
   month_id: 202610, month_label: "Oktober 2026", month_short: "Okt 2026",
   lead: [
-    { id: "doc:outlook:", kind: "analis", title: "Performance Outlook Circle Java", meta: "9 bagian · termasuk Site productivity", doc: { kind: "outlook", region: "" } },
+    { id: "doc:outlook:", kind: "analis", title: "Performance Outlook Circle Java", meta: "9 bagian · termasuk Site productivity", doc: { kind: "outlook", region: "" }, pages: 6, sections: 9 },
     { id: "doc:bulanan:WEST JAVA", kind: "bulanan", title: "Performa Bulanan West Java", meta: "PDF 2 hlm · Okt 2026", doc: { kind: "bulanan", region: "WEST JAVA" } },
     { id: "doc:profile:GARUT", kind: "profile", title: "Profile Kab. Garut", meta: "24 bagian · revenue, site, FWA, 5G", doc: { kind: "profile", kabupaten: "GARUT" } },
     { id: "perf:GARUT", kind: "performance", title: "Site Performance Kab. Garut", meta: "214 site · dari dump Parquet", href: "/performance?kabupaten=GARUT" },

@@ -8,6 +8,9 @@ import '../ui/chart.dart' show monthsId;
 import '../ui/ds.dart';
 import '../ui/icons.dart';
 import '../ui/kit.dart';
+import '../ui/mock_icons.dart';
+import '../ui/v2.dart';
+import 'report_doc_screen.dart';
 
 /// One row of the Laporan library.
 class ReportItem {
@@ -16,29 +19,48 @@ class ReportItem {
     required this.kind,
     required this.title,
     required this.format,
-    this.date,
-    this.dateLabel,
+    this.meta = '',
     this.region,
     this.adhoc,
-    this.route,
+    this.doc,
+    this.kabupaten,
+    this.pages,
+    this.sections,
   });
   final String id;
 
-  /// bulanan, mingguan, adhoc or analis.
+  /// analis, bulanan, mingguan, profile, performance or adhoc.
   final String kind;
-  final String title, format;
-  final DateTime? date;
-  final String? dateLabel;
+  final String title, format, meta;
 
-  /// Region of a live performance report ("" = all of Java); null for ad-hoc.
+  /// Region of a live performance report ("" = Circle Java); null for ad-hoc.
   final String? region;
   final AdhocReport? adhoc;
 
-  /// Opens another screen instead of exporting (Performance Outlook).
-  final String? route;
+  /// Report document to preview ({kind, region, kabupaten}), from /api/report-docs.
+  final Map<String, dynamic>? doc;
+
+  /// Site Performance item: opens the Performa tab on this kabupaten.
+  final String? kabupaten;
+  final int? pages, sections;
 }
 
-const _kindLabel = {'bulanan': 'Bulanan', 'mingguan': 'Mingguan', 'adhoc': 'Ad-hoc', 'analis': 'Analis'};
+class _Kind {
+  const _Kind(this.label, this.bg, this.fg, this.icon);
+  final String label, icon;
+  final Color bg, fg;
+}
+
+const _kinds = {
+  'analis': _Kind('Analis', Color(0xFFFCEDD3), Color(0xFFB7791F), 'bars'),
+  'bulanan': _Kind('Bulanan', Color(0xFFE6F7F5), Color(0xFF0A6A5F), 'file'),
+  'mingguan': _Kind('Mingguan', Color(0xFFE1ECFA), Color(0xFF2C6CB0), 'file'),
+  'profile': _Kind('Profile wilayah', Color(0xFFFBE2DA), Color(0xFFB5401F), 'pin'),
+  'performance': _Kind('Performance', Color(0xFFF4FCE3), Color(0xFF5E8A12), 'pulse'),
+  'adhoc': _Kind('Ad-hoc', Color(0xFFECE5FA), Color(0xFF6A4CB5), 'table'),
+};
+// The phone shows the first five filters on screen; Mingguan and Ad-hoc scroll in.
+const _filters = ['semua', 'analis', 'bulanan', 'profile', 'performance', 'mingguan', 'adhoc'];
 const _weekdays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 const _monthsFull = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
@@ -49,53 +71,58 @@ String _titleCase(String s) => s
     .join(' ')
     .replaceAll('Diy', 'DIY');
 
-/// "Revenue Jawa Barat vs Sep" → "Revenue Jawa Barat vs September".
+/// "Revenue West Java vs Sep" → "Revenue West Java vs September".
 String expandMonth(String s) => s.replaceAllMapped(RegExp(r'\b(Jan|Feb|Mar|Apr|Mei|Jun|Jul|Agu|Sep|Okt|Nov|Des)\b$'),
     (m) => _monthsFull[monthsId.indexOf(m[1]!)]);
 
-/// Android · Laporan: the scheduled report on a hero card, then live
-/// performance reports, emailed runs and agent answers saved as ad-hoc
-/// reports. Each exports to PDF or XLSX, or to a 7-day share link.
+/// WIB wall clock of an API timestamp.
+DateTime _wib(String iso) => (DateTime.tryParse(iso) ?? DateTime.now()).toUtc().add(const Duration(hours: 7));
+
+/// Android · Laporan (Redesign v2 page 06): the Performance Outlook on a
+/// featured card, the library list, then the auto-send schedules. Tapping a
+/// report opens its full-screen preview; ad-hoc answers export to PDF or XLSX.
 class ReportListScreen extends StatefulWidget {
   const ReportListScreen({
     super.key,
-    this.previewOverview,
+    this.previewLibrary,
     this.previewSchedules,
     this.previewRuns,
     this.previewAdhoc,
     this.previewNow,
     this.onAsk,
+    this.onOpenPerformance,
   });
 
-  final Map<String, dynamic>? previewOverview;
+  final Map<String, dynamic>? previewLibrary;
   final List<Map<String, dynamic>>? previewSchedules;
   final List<Map<String, dynamic>>? previewRuns;
   final List<AdhocReport>? previewAdhoc;
   final DateTime? previewNow;
   final void Function(String question)? onAsk;
+  final void Function(String kabupaten)? onOpenPerformance;
 
   @override
   State<ReportListScreen> createState() => ReportListScreenState();
 }
 
 class ReportListScreenState extends State<ReportListScreen> {
-  Map<String, dynamic>? _overview;
+  Map<String, dynamic>? _lib;
+  String? _error;
   List<Map<String, dynamic>> _schedules = [];
   List<Map<String, dynamic>> _runs = [];
   List<AdhocReport> _adhoc = [];
   String _filter = 'semua';
-  bool _searching = false;
   final _query = TextEditingController();
   bool _loading = false;
 
-  bool get _preview => widget.previewOverview != null;
-  DateTime get _now => widget.previewNow ?? DateTime.now();
+  bool get _preview => widget.previewLibrary != null;
+  DateTime get _now => (widget.previewNow ?? DateTime.now()).toUtc().add(const Duration(hours: 7));
 
   @override
   void initState() {
     super.initState();
     if (_preview) {
-      _overview = widget.previewOverview;
+      _lib = widget.previewLibrary;
       _schedules = widget.previewSchedules ?? [];
       _runs = widget.previewRuns ?? [];
       _adhoc = widget.previewAdhoc ?? [];
@@ -114,15 +141,16 @@ class ReportListScreenState extends State<ReportListScreen> {
     if (_preview) return;
     setState(() => _loading = true);
     final results = await Future.wait<Object?>([
-      ApiClient.dashboardOverview().then<Object?>((v) => v).catchError((_) => null),
+      ApiClient.reportLibrary().then<Object?>((v) => v).catchError((Object e) => e.toString()),
       ApiClient.reportSchedules().then<Object?>((v) => v).catchError((_) => <dynamic>[]),
       ApiClient.reportRuns().then<Object?>((v) => v).catchError((_) => <dynamic>[]),
       AdhocStore.load(),
     ]);
     if (!mounted) return;
     setState(() {
-      final ov = results[0] as Map<String, dynamic>?;
-      _overview = ov == null || ov['error'] != null ? null : ov;
+      final lib = results[0];
+      _lib = lib is Map<String, dynamic> && lib['lead'] != null ? lib : _lib;
+      _error = lib is Map<String, dynamic> && lib['lead'] != null ? null : 'Pustaka laporan belum bisa dimuat.';
       _schedules = (results[1] as List).cast<Map<String, dynamic>>();
       _runs = (results[2] as List).cast<Map<String, dynamic>>();
       _adhoc = results[3] as List<AdhocReport>;
@@ -130,218 +158,483 @@ class ReportListScreenState extends State<ReportListScreen> {
     });
   }
 
-  List<ReportItem> get _items {
-    final month = _overview?['month_label']?.toString() ?? '';
-    final regions = ((_overview?['scope'] as Map?)?['regions'] as List?)?.map((e) => e.toString()).toList() ?? [];
-    final dated = <ReportItem>[
-      for (final r in _runs)
-        ReportItem(
-          id: 'run:${r['id']}',
-          kind: r['kind'] == 'bulanan' ? 'bulanan' : 'mingguan',
-          title: r['title'].toString(),
-          format: 'PDF',
-          date: DateTime.tryParse(r['created_at']?.toString() ?? '')?.toLocal(),
-          region: (r['region'] ?? '').toString(),
-        ),
-      for (final a in _adhoc)
-        ReportItem(id: 'adhoc:${a.id}', kind: 'adhoc', title: a.title, format: a.format, date: a.savedAt, adhoc: a),
-    ]..sort((a, b) => (b.date ?? DateTime(2000)).compareTo(a.date ?? DateTime(2000)));
-    return [
-      ...dated,
-      ReportItem(id: 'live:', kind: 'bulanan', title: 'Performa Bulanan Region Jawa', format: 'PDF', dateLabel: month, region: ''),
-      for (final r in regions)
-        ReportItem(id: 'live:$r', kind: 'bulanan', title: 'Performa Bulanan ${_titleCase(r)}', format: 'PDF', dateLabel: month, region: r),
-      const ReportItem(id: 'outlook', kind: 'analis', title: 'Performance Outlook', format: 'Komprehensif', dateLabel: 'revenue · benchmark', route: '/reports'),
-    ];
+  List<String> get _regions => [
+        for (final i in [...?(_lib?['lead'] as List?), ...?(_lib?['rest'] as List?)])
+          if ((i as Map)['doc']?['kind'] == 'bulanan' && (i['doc']['region'] ?? '').toString().isNotEmpty) i['doc']['region'].toString(),
+      ];
+
+  ReportItem _libItem(Map m) => ReportItem(
+        id: m['id'].toString(),
+        kind: m['kind'].toString(),
+        title: m['title'].toString(),
+        format: 'PDF',
+        meta: (m['meta'] ?? '').toString(),
+        region: (m['doc'] as Map?)?['region']?.toString() ?? '',
+        doc: (m['doc'] as Map?)?.cast<String, dynamic>(),
+        kabupaten: m['kabupaten']?.toString(),
+        pages: (m['pages'] as num?)?.toInt(),
+        sections: (m['sections'] as num?)?.toInt(),
+      );
+
+  String _sent(String iso) {
+    final t = _wib(iso);
+    final hm = '${t.hour.toString().padLeft(2, '0')}.${t.minute.toString().padLeft(2, '0')}';
+    return _now.difference(t).inHours < 7 * 24 ? '${_weekdays[t.weekday - 1]} $hm' : '${t.day} ${monthsId[t.month - 1]} $hm';
   }
 
-  String _when(ReportItem it) {
-    if (it.date == null) return it.dateLabel ?? '';
-    final d = DateTime(it.date!.year, it.date!.month, it.date!.day);
-    final days = DateTime(_now.year, _now.month, _now.day).difference(d).inDays;
-    if (days == 0) return 'hari ini';
-    if (days == 1) return 'kemarin';
-    return '${it.date!.day} ${monthsId[it.date!.month - 1]}';
+  /// lead[0] is the featured Outlook; then the lead rows, the latest sent run,
+  /// ad-hoc answers; [rest] goes under "Laporan lainnya" below the schedules.
+  ({ReportItem? featured, List<ReportItem> main, List<ReportItem> rest}) get _groups {
+    final lead = [for (final m in (_lib?['lead'] as List?) ?? const []) _libItem(m as Map)];
+    final seen = <String>{};
+    final runs = <ReportItem>[];
+    for (final r in _runs) {
+      final title = r['title'].toString();
+      if (!seen.add(title)) continue;
+      final outlook = title.toLowerCase().contains('outlook');
+      final region = (r['region'] ?? '').toString();
+      runs.add(ReportItem(
+        id: 'run:${r['id']}',
+        kind: r['kind'] == 'bulanan' ? 'bulanan' : r['kind'] == 'adhoc' ? 'adhoc' : 'mingguan',
+        title: title,
+        format: 'PDF',
+        region: region,
+        meta: r['status'] == 'gagal' ? 'Gagal terkirim · ${_sent(r['created_at'].toString())}' : 'Terkirim ${_sent(r['created_at'].toString())} · ${r['recipients']} penerima',
+        doc: {'kind': outlook ? 'outlook' : 'bulanan', 'region': region},
+      ));
+    }
+    final adhoc = [
+      for (final a in _adhoc)
+        ReportItem(id: 'adhoc:${a.id}', kind: 'adhoc', title: a.title, format: a.format, meta: '${a.format} ${a.rows.length} baris · dari chat', adhoc: a),
+    ];
+    return (
+      featured: lead.isEmpty ? null : lead.first,
+      main: [...lead.skip(1), ...runs.take(1), ...adhoc],
+      rest: [for (final m in (_lib?['rest'] as List?) ?? const []) _libItem(m as Map), ...runs.skip(1)],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final p = Pal.of(context);
     final top = MediaQuery.of(context).padding.top;
-    final items = _items;
+    final scope = V2Scope.maybeOf(context);
+    final g = _groups;
+    final all = [if (g.featured != null) g.featured!, ...g.main, ...g.rest];
     final q = _query.text.trim().toLowerCase();
-    final shown = items.where((i) {
-      if (q.isNotEmpty && !i.title.toLowerCase().contains(q)) return false;
-      return _filter == 'semua' || i.kind == _filter;
-    }).toList();
-    final active = _schedules.where((s) => s['active'] != false).toList();
+    final filtering = q.isNotEmpty || _filter != 'semua';
+    bool keep(ReportItem i) =>
+        (_filter == 'semua' || i.kind == _filter) &&
+        (q.isEmpty || '${i.title} ${i.meta} ${_kinds[i.kind]?.label ?? ''}'.toLowerCase().contains(q));
+    final active = _schedules.where((s) => s['active'] != false).length;
+    final shown = all.where(keep).toList();
     return ColoredBox(
-      color: p.bg,
-      child: RefreshIndicator(
-        color: p.teal600,
-        onRefresh: reload,
-        child: ListView(
-          padding: EdgeInsets.only(top: top, bottom: 24),
-          children: [
-            SizedBox(
-              height: 64,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 12, 0),
-                child: Row(children: [
-                  Expanded(
-                    child: _searching
-                        ? TextField(
-                            controller: _query,
-                            autofocus: true,
-                            onChanged: (_) => setState(() {}),
-                            style: ts(15, w500, p.ink),
-                            cursorColor: p.teal600,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: 'Cari laporan…',
-                              hintStyle: ts(15, w400, p.mute),
-                            ),
-                          )
-                        : Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('Laporan', style: ts(18, w700, p.ink, lh: 1.35)),
-                            Text('${items.length} laporan · ${active.length} terjadwal', style: ts(12, w400, p.mute)),
-                          ]),
-                  ),
-                  SquareIconButton(_searching ? Icx.x : Icx.search, bordered: false, iconSize: 24, tooltip: 'Cari', color: p.text2, onTap: () {
-                    setState(() {
-                      _searching = !_searching;
-                      if (!_searching) _query.clear();
-                    });
-                  }),
-                  const SizedBox(width: 10),
-                  SquareIconButton(Icx.sliders, bordered: false, iconSize: 24, tooltip: 'Jadwal laporan', color: p.text2, onTap: _manageSchedules),
-                ]),
-              ),
-            ),
-            const SizedBox(height: 4),
-            SizedBox(
-              height: 36,
-              child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16), children: [
-                for (final (k, l) in const [('semua', 'Semua'), ('bulanan', 'Bulanan'), ('mingguan', 'Mingguan'), ('adhoc', 'Ad-hoc')]) ...[
-                  PillChip(l, selected: _filter == k, onTap: () => setState(() => _filter = k)),
-                  const SizedBox(width: 8),
-                ],
-              ]),
-            ),
-            const SizedBox(height: 14),
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: _hero(p, active.isEmpty ? null : active.first)),
-            const SizedBox(height: 14),
-            if (_loading && _overview == null)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Column(children: [Skeleton(height: 74, radius: 16), SizedBox(height: 14), Skeleton(height: 74, radius: 16)]),
-              ),
-            for (final it in shown)
-              Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 14), child: _row(p, it)),
-            if (shown.isEmpty && !_loading)
-              Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(
-                  _filter == 'adhoc' ? 'Belum ada laporan ad-hoc. Tekan Export di jawaban agent untuk menyimpannya di sini.' : 'Tidak ada laporan yang cocok.',
-                  textAlign: TextAlign.center,
-                  style: ts(13, w400, p.mute, lh: 1.5),
-                ),
-              ),
-          ],
+      color: V2.bg,
+      child: Column(children: [
+        SizedBox(height: top),
+        V2AppBar(
+          title: 'Laporan',
+          subtitle: _lib == null ? (_error ?? 'Memuat…') : '${all.length} laporan · $active jadwal aktif',
+          subtitleDot: _lib == null ? const Color(0xFFE0A100) : const Color(0xFF2E9E57),
+          alertCount: scope?.alerts ?? 0,
+          onBell: scope == null ? null : () => scope.openAlerts(),
         ),
-      ),
+        Expanded(
+          child: Stack(children: [
+            RefreshIndicator(
+              color: V2.teal600,
+              onRefresh: reload,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
+                children: [
+                  _searchBox(),
+                  const SizedBox(height: 12),
+                  _chips(all.length),
+                  const SizedBox(height: 12),
+                  if (_lib == null && _error == null && _loading)
+                    Container(height: 316, decoration: BoxDecoration(color: V2.rule2, borderRadius: BorderRadius.circular(18)))
+                  else if (_lib == null && _error != null)
+                    _note(_error!)
+                  else if (filtering) ...[
+                    for (final it in shown) ...[_row(it), const SizedBox(height: 8)],
+                    if (shown.isEmpty)
+                      _note(_filter == 'adhoc'
+                          ? 'Belum ada laporan ad-hoc. Tekan Export di jawaban agent untuk menyimpannya di sini.'
+                          : 'Tidak ada laporan yang cocok.'),
+                  ] else ...[
+                    if (g.featured != null) ...[_featured(g.featured!), const SizedBox(height: 12)],
+                    for (final it in g.main) ...[_row(it), const SizedBox(height: 8)],
+                    const SizedBox(height: 4),
+                    _sched(),
+                    if (g.rest.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 2, bottom: 8),
+                        child: Text('Laporan lainnya', style: V2.d(13, FontWeight.w600, V2.ink2, lh: 1.2)),
+                      ),
+                      for (final it in g.rest) ...[_row(it), const SizedBox(height: 8)],
+                    ],
+                  ],
+                ],
+              ),
+            ),
+            Positioned(right: 16, bottom: 16, child: _fab()),
+          ]),
+        ),
+      ]),
     );
   }
 
-  Widget _hero(Pal p, Map<String, dynamic>? s) {
-    final when = s == null
-        ? 'BELUM ADA JADWAL'
-        : s['frequency'] == 'bulanan'
-            ? 'TERJADWAL · TANGGAL ${s['monthday']}'
-            : 'TERJADWAL · SETIAP ${_weekdays[(s['weekday'] as num? ?? 0).toInt().clamp(0, 6)].toUpperCase()}';
-    final last = DateTime.tryParse(s?['last_sent_on']?.toString() ?? '');
-    final meta = s == null
-        ? 'Ketuk untuk kirim laporan ke email otomatis'
-        : 'PDF · 2 hlm · ${last == null ? 'belum terkirim' : '${last.day} ${monthsId[last.month - 1]}'}';
-    return Material(
-      color: const Color(0xFF04332E),
-      borderRadius: BorderRadius.circular(20),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: s == null ? _manageSchedules : () => _scheduleActions(s),
-        child: SizedBox(
-          height: 119,
-          child: Stack(children: [
-            const Positioned(left: 160, top: -100, width: 300, height: 260, child: Glow(color: Color(0xFF33BCAD), alpha: .3)),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              child: Row(children: [
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text(when, style: ts(11, w600, const Color(0xFF8FDFD7), lh: 1.3, ls: .08)),
-                    const SizedBox(height: 6),
-                    Text(s == null ? 'Jadwalkan laporan performa' : s['name'].toString(),
-                        maxLines: 2, overflow: TextOverflow.ellipsis, style: ts(16, w600, Colors.white)),
-                    const SizedBox(height: 6),
-                    Text(meta, maxLines: 1, overflow: TextOverflow.ellipsis, style: ts(12, w400, const Color(0xFFC0EDE8))),
-                  ]),
-                ),
-                const SizedBox(width: 12),
-                Image.asset('assets/img/empty_reports.webp', width: 96, height: 72),
-              ]),
+  Widget _note(String t) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+        child: Text(t, textAlign: TextAlign.center, style: V2.b(13, FontWeight.w400, V2.mute, lh: 1.5)),
+      );
+
+  Widget _searchBox() {
+    return Container(
+      height: 42,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: V2.rule)),
+      child: Row(children: [
+        const MIcon('search', size: 18, color: V2.mute),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Stack(alignment: Alignment.centerLeft, children: [
+            if (_query.text.isEmpty) IgnorePointer(child: Text('Cari laporan', style: V2.b(13.5, FontWeight.w400, V2.mute, lh: 1))),
+            TextField(
+              controller: _query,
+              onChanged: (_) => setState(() {}),
+              textInputAction: TextInputAction.search,
+              style: V2.b(13.5, FontWeight.w400, V2.ink, lh: 1.2),
+              cursorColor: V2.teal600,
+              decoration: const InputDecoration(isCollapsed: true, border: InputBorder.none, contentPadding: EdgeInsets.zero),
             ),
           ]),
         ),
-      ),
+      ]),
     );
   }
 
-  Widget _row(Pal p, ReportItem it) {
-    final sheet = it.format == 'XLSX';
-    final (bg, fg) = sheet ? (p.green50, p.green600) : (p.teal50, p.teal700);
+  Widget _chips(int total) {
+    return SizedBox(
+      height: 30,
+      child: ListView(scrollDirection: Axis.horizontal, children: [
+        for (final f in _filters) ...[
+          GestureDetector(
+            onTap: () => setState(() => _filter = f),
+            child: Container(
+              height: 30,
+              padding: const EdgeInsets.symmetric(horizontal: 11),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: _filter == f ? V2.ink : Colors.white,
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: _filter == f ? V2.ink : V2.rule),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(f == 'semua' ? 'Semua' : _kinds[f]!.label, style: V2.d(12, FontWeight.w500, _filter == f ? Colors.white : V2.ink2, lh: 1)),
+                if (f == 'semua') ...[
+                  const SizedBox(width: 6),
+                  Text('$total', style: V2.d(11, FontWeight.w700, _filter == f ? V2.lime : V2.mute, lh: 1)),
+                ],
+              ]),
+            ),
+          ),
+          const SizedBox(width: 6),
+        ],
+      ]),
+    );
+  }
+
+  Widget _kd(String label, Color bg, Color fg) => Container(
+        padding: const EdgeInsets.fromLTRB(7, 4, 7, 4),
+        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(99)),
+        child: Text(label, style: V2.d(10.5, FontWeight.w600, fg, lh: 1)),
+      );
+
+  Widget _texts(ReportItem it) {
+    final k = _kinds[it.kind] ?? _kinds['bulanan']!;
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(
+        height: 17.5,
+        child: Text(it.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: V2.d(13.5, FontWeight.w600, V2.ink, lh: 1.3)),
+      ),
+      Wrap(spacing: 6, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        _kd(k.label, k.bg, k.fg),
+        Text(it.meta, style: V2.b(11.5, FontWeight.w400, V2.mute, lh: 1.35)),
+      ]),
+    ]);
+  }
+
+  Widget _ic2(ReportItem it) {
+    final k = _kinds[it.kind] ?? _kinds['bulanan']!;
+    return Container(
+      width: 40,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: k.bg, borderRadius: BorderRadius.circular(12)),
+      child: MIcon(k.icon, size: 20, color: k.fg),
+    );
+  }
+
+  Widget _row(ReportItem it) {
     return Material(
-      color: p.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: p.rule)),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: V2.rule)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => _open(it),
         onLongPress: it.adhoc == null ? null : () => _removeAdhoc(it.adhoc!),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(15, 15, 15, 15),
+          padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
           child: Row(children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
-              alignment: Alignment.center,
-              child: sheet ? SheetIcon(size: 20, color: fg) : Ic(it.kind == 'analis' ? Icx.barChart : Icx.fileText, size: 20, color: fg),
-            ),
+            _ic2(it),
             const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(it.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: ts(13, w600, p.ink)),
-                const SizedBox(height: 4),
-                Row(children: [
-                  StatusBadge(_kindLabel[it.kind] ?? it.kind, kind: BadgeKind.neutral),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text('${it.format} · ${_when(it)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: ts(12, w400, p.mute)),
-                  ),
-                ]),
-              ]),
-            ),
+            Expanded(child: _texts(it)),
             const SizedBox(width: 12),
-            SquareIconButton(it.route != null ? Icx.chevronRight : Icx.download,
-                bordered: false, color: p.teal700, tooltip: it.route != null ? 'Buka' : 'Unduh', onTap: () => _open(it)),
+            it.adhoc != null ? const MIcon('pin', size: 16, color: Color(0xFFB5401F)) : const MIcon('chevr', size: 16, color: Color(0xFF8A9A97)),
           ]),
         ),
       ),
     );
   }
 
+  Widget _thumb(int hi) {
+    Widget u(bool c) => Container(
+          height: c ? 18 : 4,
+          margin: const EdgeInsets.only(bottom: 4),
+          decoration: BoxDecoration(color: c ? const Color(0xFF8FD6CB) : V2.rule, borderRadius: BorderRadius.circular(2)),
+        );
+    return Expanded(
+      child: Container(
+        height: 137,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: V2.rule)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          LayoutBuilder(
+            builder: (context, c) => Container(
+              height: 35.1,
+              decoration: BoxDecoration(gradient: cssLinear(135, const [V2.teal700, V2.teal900], Size(c.maxWidth, 35.1))),
+            ),
+          ),
+          Padding(padding: const EdgeInsets.all(6), child: Column(children: [for (var i = 0; i < 4; i++) u(i == hi)])),
+        ]),
+      ),
+    );
+  }
+
+  Widget _featured(ReportItem it) {
+    final pages = it.pages ?? 6;
+    final month = (_lib?['month_short'] ?? '').toString();
+    final secs = it.sections ?? 9;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: V2.rule),
+        boxShadow: [cssShadow(const Color(0x0A0F1F1D), 0, 4, 14)],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        GestureDetector(
+          onTap: () => _open(it),
+          child: Row(children: [
+            _ic2(it),
+            const SizedBox(width: 12),
+            Expanded(child: _texts(ReportItem(id: it.id, kind: it.kind, title: it.title, format: it.format, meta: '$month · $pages hlm'))),
+          ]),
+        ),
+        const SizedBox(height: 10),
+        GestureDetector(
+          onTap: () => _open(it),
+          child: Row(children: [_thumb(2), const SizedBox(width: 8), _thumb(1), const SizedBox(width: 8), _thumb(3)]),
+        ),
+        const SizedBox(height: 10),
+        Wrap(spacing: 6, runSpacing: 6, children: [
+          _kd('Performance', const Color(0xFFE6F7F5), const Color(0xFF0A6A5F)),
+          _kd('Site productivity', const Color(0xFFF4FCE3), const Color(0xFF5E8A12)),
+          _kd('Profile wilayah', const Color(0xFFFBE2DA), const Color(0xFFB5401F)),
+          _kd('+${secs - 3} bagian', const Color(0xFFE1ECFA), const Color(0xFF2C6CB0)),
+        ]),
+        const SizedBox(height: 10),
+        Row(children: [
+          Expanded(child: _btn('Buka pratinjau', 'file', true, () => _open(it))),
+          const SizedBox(width: 8),
+          Expanded(child: _btn('Bagikan', 'share', false, () => _share(it))),
+        ]),
+      ]),
+    );
+  }
+
+  Widget _btn(String label, String icon, bool primary, VoidCallback onTap) {
+    final fg = primary ? Colors.white : V2.teal700;
+    return Material(
+      color: primary ? V2.teal600 : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(11),
+        side: primary ? BorderSide.none : const BorderSide(color: Color(0xFFDCEFEC)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(11),
+        onTap: onTap,
+        child: SizedBox(
+          height: 36,
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            MIcon(icon, size: 15, color: fg),
+            const SizedBox(width: 7),
+            Text(label, style: V2.d(12.5, FontWeight.w600, fg, lh: 1)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  String _schedLine(Map<String, dynamic> s) {
+    final monthly = s['frequency'] == 'bulanan';
+    final when = monthly ? 'Tgl ${s['monthday']}' : _weekdays[((s['weekday'] as num?) ?? 0).toInt().clamp(0, 6)];
+    final n = ((s['recipients'] as List?) ?? const []).length;
+    if (s['active'] == false) return '$when · dijeda';
+    return monthly ? '$when tiap bulan · $n penerima' : '$when ${((s['hour'] as num?) ?? 7).toInt().toString().padLeft(2, '0')}.00 · $n penerima';
+  }
+
+  Widget _sched() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: V2.rule)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        SizedBox(
+          height: 18,
+          child: Row(children: [
+            const MIcon('mail', size: 18, color: V2.teal700),
+            const SizedBox(width: 8),
+            Text('Jadwal kirim', style: V2.d(14, FontWeight.w600, V2.ink, lh: 1.2)),
+            const Spacer(),
+            GestureDetector(onTap: _manageSchedules, child: Text('+ Baru', style: V2.d(12, FontWeight.w500, V2.teal700, lh: 1))),
+          ]),
+        ),
+        if (_schedules.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text('Belum ada jadwal. Agent bisa mengirim laporan lewat email tiap minggu atau tiap bulan.',
+                style: V2.b(12, FontWeight.w400, V2.mute, lh: 1.4)),
+          ),
+        for (final s in _schedules) ...[
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () => _scheduleActions(s),
+            child: Container(
+              // CSS border-top sits outside the 8 px padding
+              padding: const EdgeInsets.fromLTRB(0, 9, 0, 8),
+              decoration: const BoxDecoration(border: Border(top: BorderSide(color: V2.rule2))),
+              child: Row(children: [
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(s['name'].toString(), maxLines: 1, overflow: TextOverflow.ellipsis, style: V2.d(12.5, FontWeight.w600, V2.ink, lh: 1.3)),
+                    const SizedBox(height: 2),
+                    Text(_schedLine(s), maxLines: 1, overflow: TextOverflow.ellipsis, style: V2.b(11.5, FontWeight.w400, V2.mute, lh: 1.3)),
+                  ]),
+                ),
+                const SizedBox(width: 10),
+                _toggle(s),
+              ]),
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  Widget _toggle(Map<String, dynamic> s) {
+    final on = s['active'] != false;
+    return GestureDetector(
+      onTap: () async {
+        setState(() => s['active'] = !on);
+        if (!_preview) await ApiClient.updateSchedule(s['id'] as int, {'active': !on}).catchError((_) => <String, dynamic>{});
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 34,
+        height: 20,
+        decoration: BoxDecoration(color: on ? V2.teal600 : const Color(0xFFCBD6D3), borderRadius: BorderRadius.circular(10)),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 150),
+          alignment: on ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 16,
+            height: 16,
+            margin: const EdgeInsets.all(2),
+            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _fab() {
+    return Container(
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(18), boxShadow: [cssShadow(const Color(0x590E8579), 0, 10, 24)]),
+      child: Material(
+        color: V2.teal600,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: _create,
+          child: Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const MIcon('plus', size: 20, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('Buat laporan', style: V2.d(14, FontWeight.w600, Colors.white, lh: 1)),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _create() async {
+    final p = Pal.of(context);
+    final pick = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: p.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            const Center(child: SheetHandle()),
+            const SizedBox(height: 16),
+            Text('Buat laporan', style: ts(18, w700, p.ink, lh: 1.35)),
+            const SizedBox(height: 16),
+            PrimaryButton('Minta agent (ad-hoc)', icon: Icx.send, onTap: () => Navigator.pop(ctx, 'ask')),
+            const SizedBox(height: 10),
+            PrimaryButton('Jadwalkan kirim otomatis', color: p.surfaceMuted, fg: p.ink, onTap: () => Navigator.pop(ctx, 'sched')),
+          ]),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (pick == 'ask') widget.onAsk?.call('Buatkan laporan ');
+    if (pick == 'sched') _manageSchedules();
+  }
+
+  Future<void> _share(ReportItem it) async {
+    try {
+      final url = await ApiClient.createReportLink(it.title, region: it.region ?? '');
+      await Clipboard.setData(ClipboardData(text: url));
+      await SharePlus.instance.share(ShareParams(text: '${it.title}\n$url', subject: it.title));
+    } catch (e) {
+      if (mounted) showToast(context, e.toString().replaceFirst('Exception: ', ''), ok: false);
+    }
+  }
+
   Future<void> _open(ReportItem it) async {
-    if (it.route != null) {
-      Navigator.of(context).pushNamed(it.route!);
+    if (it.kabupaten != null) {
+      widget.onOpenPerformance?.call(it.kabupaten!);
+      return;
+    }
+    if (it.doc != null) {
+      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReportDocScreen(item: it)));
       return;
     }
     final p = Pal.of(context);
@@ -350,7 +643,7 @@ class ReportListScreenState extends State<ReportListScreen> {
       isScrollControlled: true,
       backgroundColor: p.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (_) => ReportExportSheet(item: it, overview: it.region == '' ? _overview : null),
+      builder: (_) => ReportExportSheet(item: it),
     );
     if (it.adhoc != null) reload();
   }
@@ -421,7 +714,7 @@ class ReportListScreenState extends State<ReportListScreen> {
 
   Future<void> _manageSchedules() async {
     final p = Pal.of(context);
-    final regions = ((_overview?['scope'] as Map?)?['regions'] as List?)?.map((e) => e.toString()).toList() ?? [];
+    final regions = _regions;
     final body = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
@@ -616,7 +909,7 @@ class _ScheduleSheetState extends State<_ScheduleSheet> {
                   ),
                   Switch(
                     value: s['active'] != false,
-                    activeColor: Colors.white,
+                    activeThumbColor: Colors.white,
                     activeTrackColor: p.teal600,
                     onChanged: (v) async {
                       await ApiClient.updateSchedule(s['id'] as int, {'active': v}).catchError((_) => <String, dynamic>{});
@@ -663,7 +956,7 @@ class _ScheduleSheetState extends State<_ScheduleSheet> {
             label('Wilayah'),
             Wrap(spacing: 8, runSpacing: 8, children: [
               for (final r in ['', ...widget.regions])
-                PillChip(r.isEmpty ? 'Jawa' : _titleCase(r), selected: _region == r, onTap: () => setState(() => _region = r)),
+                PillChip(r.isEmpty ? 'Circle Java' : _titleCase(r), selected: _region == r, onTap: () => setState(() => _region = r)),
             ]),
             label('Penerima (pisahkan dengan koma)'),
             TextField(

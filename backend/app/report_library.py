@@ -519,7 +519,8 @@ def library(region: str = "") -> dict:
     worst = min((r for r in ov.get("regions") or [] if r.get("mom_pct") is not None), key=lambda r: r["mom_pct"], default=None)
     order = ([worst["region"]] if worst else []) + [r for r in regs if not worst or r != worst["region"]]
     items = [{"id": "doc:outlook:", "kind": "analis", "title": "Performance Outlook Circle Java",
-              "meta": f"{len(OUTLOOK_TOC)} bagian · termasuk Site productivity", "doc": {"kind": "outlook", "region": ""}}]
+              "meta": f"{len(OUTLOOK_TOC)} bagian · termasuk Site productivity", "doc": {"kind": "outlook", "region": ""},
+              "pages": len(OUTLOOK_PAGES), "sections": len(OUTLOOK_TOC)}]
     bul = [{"id": f"doc:bulanan:{r}", "kind": "bulanan", "title": f"Performa Bulanan {region_name(r)}",
             "meta": f"PDF 2 hlm · {short}", "doc": {"kind": "bulanan", "region": r}} for r in order]
     bul.append({"id": "doc:bulanan:", "kind": "bulanan", "title": "Performa Bulanan Circle Java", "meta": f"PDF 2 hlm · {short}",

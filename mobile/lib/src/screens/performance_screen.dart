@@ -36,7 +36,7 @@ class PerformanceScreen extends StatefulWidget {
   final Map<String, String>? initialScope;
 
   @override
-  State<PerformanceScreen> createState() => _PerformanceScreenState();
+  State<PerformanceScreen> createState() => PerformanceScreenState();
 }
 
 const _green = Color(0xFF1F7A3A);
@@ -74,7 +74,7 @@ String _people(num? v) {
 
 String _chg(num v, {bool pp = false}) => '${(pp ? _f2 : _f1).format(v.abs())}${pp ? ' pp' : '%'}';
 
-class _PerformanceScreenState extends State<PerformanceScreen> {
+class PerformanceScreenState extends State<PerformanceScreen> {
   Map<String, dynamic>? _data;
   String? _error;
   bool _loading = false;
@@ -184,6 +184,9 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
     });
     if (widget.preview == null) _load();
   }
+
+  /// Opens a scope from another tab (Laporan "Site Performance Kab. X").
+  void openScope(Map<String, String> scope) => _go({'region': '', 'kabupaten': '', 'kecamatan': '', ...scope});
 
   void _drill(String key) {
     final child = (_data?['child_level'] ?? '').toString();
