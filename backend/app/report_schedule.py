@@ -130,7 +130,7 @@ def send(db: Session, s: ReportSchedule, user: Optional[User] = None) -> dict:
     subject = f"{s.name} · {ov['month_label']}"
     sent = sum(1 for addr in to if email_service._send(addr, subject, body))
     run = ReportRun(user_id=s.user_id, schedule_id=s.id, title=s.name, kind=s.frequency, region=s.region,
-                    recipients=sent, status="terkirim" if sent else "gagal")
+                    recipients=sent, failed=len(to) - sent, status="terkirim" if sent else "gagal")
     db.add(run)
     s.last_sent_on = _now_wib().date().isoformat()
     db.commit()
@@ -251,7 +251,7 @@ def list_runs(user: User = Depends(get_current_user), db: Session = Depends(get_
             .order_by(ReportRun.created_at.desc()).limit(30).all())
     return {"runs": [{
         "id": r.id, "schedule_id": r.schedule_id, "title": r.title, "kind": r.kind, "region": r.region,
-        "recipients": r.recipients, "status": r.status,
+        "recipients": r.recipients, "failed": r.failed or 0, "status": r.status,
         "created_at": r.created_at.isoformat() + "Z" if r.created_at else None,
     } for r in rows]}
 

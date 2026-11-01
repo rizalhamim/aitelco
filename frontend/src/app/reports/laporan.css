@@ -1,0 +1,147 @@
+/* 06 Laporan v2, ported from design/mockup-v2/06-laporan (Web 1440 x 1040).
+   Everything is scoped to .v2 .lap so the class names of the mockup can be kept. */
+.v2 .main.lmain { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden }
+.v2 .lap { flex: 1; min-height: 0; padding: 20px 24px; display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 16px; background: #F5F9F8 }
+:where(.v2 .lap) :where(button) { border: 0; background: none; padding: 0; cursor: pointer; text-align: left; font: inherit; color: inherit }
+.v2 .lap .lcol { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0 }
+.v2 .lap .sbox { height: 40px; flex: none; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 12px; color: #5A6B68 }
+.v2 .lap .sbox:focus-within { border-color: #8FDFD7 }
+.v2 .lap .sbox svg { width: 18px; height: 18px; flex: none }
+.v2 .lap .sbox input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 400 13.5px/1 var(--f-body); color: #0F1F1D; padding: 0 }
+.v2 .lap .sbox input::placeholder { color: #5A6B68; opacity: 1 }
+.v2 .lap .fchips { display: flex; gap: 6px; flex-wrap: wrap; flex: none }
+.v2 .lap .fchips button { height: 30px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1 var(--f-display); color: #3D4C49; cursor: pointer }
+.v2 .lap .fchips button b { font: 700 11px/1 var(--f-display); color: #5A6B68 }
+.v2 .lap .fchips button.on { background: #0F1F1D; color: #fff; border-color: #0F1F1D }
+.v2 .lap .fchips button.on b { color: #C7F25E }
+.v2 .lap .rlist2 { display: grid; gap: 8px; align-content: start; overflow-y: auto; min-height: 0; flex: 0 1 auto; scrollbar-width: none; margin: -3px; padding: 3px }
+.v2 .lap .rlist2:hover { scrollbar-width: thin }
+.v2 .lap .rlist2 .empty { font: 400 12.5px/1.45 var(--f-body); color: #5A6B68; padding: 12px; background: #fff; border: 1px dashed #CBD6D3; border-radius: 14px }
+.v2 .lap .ri { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 11px 12px; border-radius: 16px; background: #fff; border: 1px solid #E1E9E7; cursor: pointer; width: 100% }
+.v2 .lap .ri:hover { border-color: #8FDFD7 }
+.v2 .lap .ri:focus-visible { outline: 2px solid #0E8579; outline-offset: 2px }
+.v2 .lap .ri.on { border-color: #0E8579; box-shadow: 0 0 0 3px rgba(14,133,121,.12); background: #F7FCFB }
+.v2 .lap .ri .ic2 { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center }
+.v2 .lap .ri .ic2 svg { width: 20px; height: 20px }
+.v2 .lap .ri b { font: 600 13.5px/1.3 var(--f-display); display: block; color: #0F1F1D }
+.v2 .lap .ri small { font: 400 11.5px/1.35 var(--f-body); color: #5A6B68; display: flex; align-items: center; gap: 6px; flex-wrap: wrap }
+.v2 .lap .ri .chev { width: 16px; height: 16px; color: #8A9A97 }
+.v2 .lap .ri .pin { color: #B5401F; width: 16px; height: 16px }
+.v2 .lap .kd { font: 600 10.5px/1 var(--f-display); padding: 4px 7px; border-radius: 99px }
+.v2 .lap .kd.t { background: #E6F7F5; color: #0A6A5F } .v2 .lap .kd.b { background: #E1ECFA; color: #2C6CB0 }
+.v2 .lap .kd.v { background: #ECE5FA; color: #6A4CB5 } .v2 .lap .kd.a { background: #FCEDD3; color: #B7791F }
+.v2 .lap .kd.c { background: #FBE2DA; color: #B5401F } .v2 .lap .kd.l { background: #F4FCE3; color: #5E8A12 }
+.v2 .lap .sched { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px; display: grid; gap: 10px; margin-top: auto; flex: none }
+.v2 .lap .sched .hd { display: flex; align-items: center; gap: 8px }
+.v2 .lap .sched .hd > svg { width: 18px; height: 18px; color: #0A6A5F }
+.v2 .lap .sched .hd b { font: 600 14px/1.2 var(--f-display) }
+.v2 .lap .sched .hd .grow { flex: 1 }
+.v2 .lap .sched .hd button { font: 500 12px/1 var(--f-display); color: #0A6A5F }
+.v2 .lap .sched .none { font: 400 12px/1.4 var(--f-body); color: #5A6B68; padding-top: 8px; border-top: 1px solid #ECF3F1 }
+.v2 .lap .sc { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; padding: 8px 0; border-top: 1px solid #ECF3F1; position: relative }
+.v2 .lap .sc > .nm { font: 600 12.5px/1.3 var(--f-display); color: #0F1F1D; grid-column: 1 }
+.v2 .lap .sc small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 1 }
+.v2 .lap .sc .acts { position: absolute; right: 44px; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; padding: 2px; border-radius: 10px; background: #fff; box-shadow: 0 4px 14px rgba(4,51,46,.12); opacity: 0; pointer-events: none; transition: opacity .15s }
+.v2 .lap .sc:hover .acts, .v2 .lap .sc:focus-within .acts { opacity: 1; pointer-events: auto }
+.v2 .lap .sc .acts button { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: #5A6B68 }
+.v2 .lap .sc .acts button:hover { background: #ECF3F1; color: #0A6A5F }
+.v2 .lap .sc .acts svg { width: 15px; height: 15px }
+.v2 .lap .sc .tg2 { grid-column: 2; grid-row: 1 / span 2; width: 34px; height: 20px; border-radius: 10px; background: #0E8579; position: relative; transition: background .15s }
+.v2 .lap .sc .tg2 i { position: absolute; top: 2px; left: 16px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s }
+.v2 .lap .sc .tg2.off { background: #CBD6D3 } .v2 .lap .sc .tg2.off i { left: 2px }
+.v2 .lap .runs { display: flex; gap: 6px; flex-wrap: wrap; font: 500 11px/1 var(--f-display) }
+.v2 .lap .runs span, .v2 .lap .runs button { padding: 5px 8px; border-radius: 99px; background: #E6F4EA; color: #1F7A3A; font: 500 11px/1 var(--f-display) }
+.v2 .lap .runs .f { background: #FDECEC; color: #C42B2B }
+/* preview */
+.v2 .lap .pv { background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden }
+.v2 .lap .pv .tb { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid #ECF3F1; position: relative }
+.v2 .lap .pv .tb .ttl { min-width: 0 }
+.v2 .lap .pv .tb .ttl b { font: 600 15px/1.25 var(--f-display); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.v2 .lap .pv .tb .ttl small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .lap .pv .tb .grow { flex: 1 }
+.v2 .lap .pv .tb .linkbtn { height: 34px; padding: 0 11px; font-size: 12.5px }
+.v2 .lap .pv .tb .btn-p { height: 34px; padding: 0 12px; font-size: 12.5px; box-shadow: none }
+.v2 .lap .pv .tb .linkbtn:disabled, .v2 .lap .pv .tb .btn-p:disabled { opacity: .5; cursor: default }
+.v2 .lap .pvb { flex: 1; display: grid; grid-template-columns: 158px minmax(0, 1fr); min-height: 0; background: #EEF3F1 }
+.v2 .lap .toc { padding: 14px 10px; display: grid; gap: 2px; align-content: start; background: #F8FBFA; border-right: 1px solid #ECF3F1; overflow-y: auto; position: relative }
+.v2 .lap .toc .th { font: 600 10.5px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; padding: 4px 8px 8px }
+.v2 .lap .toc a { display: grid; grid-template-columns: 20px 1fr; gap: 6px; align-items: center; padding: 7px 8px; border-radius: 9px; font: 500 12px/1.25 var(--f-display); color: #3D4C49; cursor: pointer; text-decoration: none; transition: background .15s, color .15s }
+.v2 .lap .toc a:hover { background: #ECF3F1 }
+.v2 .lap .toc a i { font: 600 10.5px/1 var(--f-display); font-style: normal; color: #5A6B68; width: 20px; height: 20px; border-radius: 6px; background: #ECF3F1; display: grid; place-items: center }
+.v2 .lap .toc a.on { background: #E6F7F5; color: #0A6A5F; font-weight: 600 }
+.v2 .lap .toc a.on i { background: #0E8579; color: #fff }
+.v2 .lap .toc a.off { opacity: .45 }
+.v2 .lap .toc .add { margin-top: 8px; border: 1.5px dashed #8FDFD7; border-radius: 10px; padding: 8px; font: 600 11.5px/1.3 var(--f-display); color: #0A6A5F; display: flex; align-items: center; gap: 6px; width: 100% }
+.v2 .lap .toc .add svg { width: 14px; height: 14px; flex: none }
+.v2 .lap .toc .menu { margin-top: 6px; background: #fff; border: 1px solid #E1E9E7; border-radius: 10px; padding: 6px; display: grid; gap: 2px; box-shadow: 0 10px 24px rgba(4,51,46,.12) }
+.v2 .lap .toc .menu label { display: flex; gap: 6px; align-items: center; font: 500 11.5px/1.3 var(--f-display); color: #3D4C49; padding: 4px; cursor: pointer }
+.v2 .lap .toc .menu input { accent-color: #0E8579 }
+.v2 .lap .pgw { position: relative; min-height: 0; overflow: hidden }
+.v2 .lap .pgs { position: absolute; inset: 0; overflow-y: auto; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 16px; scrollbar-width: none; scroll-behavior: smooth }
+.v2 .lap .lpage { width: 100%; max-width: 560px; flex: none; background: #fff; border-radius: 6px; box-shadow: 0 6px 22px rgba(15,31,29,.12); padding: 0 0 18px; display: grid; gap: 14px; align-content: start; min-height: 100%; animation: lp-in .25s ease-out both }
+.v2 .lap .lpage.cont { padding-top: 18px }
+.v2 .lap .lpage:last-child { margin-bottom: 80px }
+@keyframes lp-in { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+@media (prefers-reduced-motion: reduce) { .v2 .lap .lpage { animation: none } .v2 .lap .pgs { scroll-behavior: auto } }
+.v2 .lap .lpage .ph { min-height: 0; box-shadow: none; background: linear-gradient(135deg, #0A6A5F, #04332E); color: #fff; padding: 18px 22px; border-radius: 6px 6px 0 0; display: grid; gap: 4px; position: relative; overflow: hidden }
+.v2 .lap .lpage .ph::after { content: ""; position: absolute; right: -40px; top: -60px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(rgba(34,184,201,.5), rgba(34,184,201,0) 70%) }
+.v2 .lap .lpage .ph .eb { font: 600 9.5px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: #C7F25E }
+.v2 .lap .lpage .ph b { font: 700 19px/1.2 var(--f-display) }
+.v2 .lap .lpage .ph small { font: 400 10.5px/1.3 var(--f-body); color: #C0EDE8 }
+.v2 .lap .lpage .ph .lg2 { position: absolute; right: 18px; top: 16px; width: 34px; height: 34px; border-radius: 10px; background: #fff; display: grid; place-items: center; z-index: 1 }
+.v2 .lap .lpage .ph .lg2 img { width: 84%; height: 84%; object-fit: contain }
+.v2 .lap .lpage .sec { padding: 0 22px; display: grid; gap: 8px; scroll-margin-top: 16px; min-width: 0 }
+.v2 .lap .lpage .sec h4 { margin: 0; font: 600 12.5px/1.2 var(--f-display); display: flex; align-items: center; gap: 8px }
+.v2 .lap .lpage .sec h4 i { font-style: normal; font: 700 10px/1 var(--f-display); width: 18px; height: 18px; border-radius: 5px; background: #0E8579; color: #fff; display: grid; place-items: center }
+.v2 .lap .lpage .sec h4 small { margin-left: auto; font: 500 9.5px/1 var(--f-display); color: #5A6B68 }
+.v2 .lap .lpage .sum { font: 400 11px/1.55 var(--f-body); color: #3D4C49; background: #F4FCE3; border: 1px solid #DDF3A6; border-radius: 10px; padding: 8px 10px }
+.v2 .lap .lpage .sum b { font-weight: 600; color: #0F1F1D }
+.v2 .lap .pk { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+.v2 .lap .pk div { border: 1px solid #E1E9E7; border-radius: 9px; padding: 7px 8px; display: grid; gap: 2px }
+.v2 .lap .pk small { font: 500 9px/1.2 var(--f-display); color: #5A6B68 }
+.v2 .lap .pk b { font: 700 13px/1.2 var(--f-display) }
+.v2 .lap .pk em { font: 600 9px/1.2 var(--f-display); font-style: normal }
+.v2 .lap .tw { overflow-x: auto; min-width: 0 }
+.v2 .lap .pt { width: 100%; border-collapse: collapse; font: 400 10.5px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.v2 .lap .pt th { font: 600 9px/1.2 var(--f-display); text-transform: uppercase; letter-spacing: .04em; color: #5A6B68; background: #F5F9F8; padding: 6px 7px; text-align: right; border-bottom: 1px solid #E1E9E7; white-space: nowrap }
+.v2 .lap .pt th:first-child, .v2 .lap .pt td:first-child { text-align: left }
+.v2 .lap .pt td { padding: 6px 7px; border-bottom: 1px solid #ECF3F1; text-align: right; white-space: nowrap }
+.v2 .lap .pt td:first-child { font-weight: 600; font-family: var(--f-display) }
+.v2 .lap .pt td.na { color: #8A9A97 }
+.v2 .lap .pt .bx { display: inline-block; height: 6px; border-radius: 3px; background: #22B8C9; vertical-align: middle; margin-right: 5px }
+.v2 .lap .lpage .note { font: 400 9.5px/1.4 var(--f-body); color: #5A6B68 }
+.v2 .lap .lpage .ntext { font: 400 11px/1.5 var(--f-body); color: #3D4C49; background: #F5F9F8; border: 1px dashed #CBD6D3; border-radius: 10px; padding: 8px 10px }
+.v2 .lap .lpage ul.li { margin: 0; padding-left: 18px; display: grid; gap: 4px; font: 400 11px/1.5 var(--f-body); color: #3D4C49 }
+.v2 .lap .lpage .q { font: 500 11.5px/1.45 var(--f-body); color: #3D4C49; background: #F5F9F8; border-radius: 10px; padding: 8px 10px }
+.v2 .lap .up { color: #1F7A3A } .v2 .lap .down { color: #C42B2B }
+.v2 .lap .skel { height: 14px; border-radius: 6px; background: linear-gradient(90deg, #ECF3F1, #F5F9F8, #ECF3F1); background-size: 200% 100%; animation: lp-sk 1.2s linear infinite }
+@keyframes lp-sk { to { background-position: -200% 0 } }
+.v2 .lap .pgfoot { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, rgba(238,243,241,0), #EEF3F1 75%); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; font: 600 11.5px/1 var(--f-display); color: #3D4C49; gap: 8px; pointer-events: none }
+.v2 .lap .pgfoot span, .v2 .lap .pgfoot button { background: #fff; border: 1px solid #E1E9E7; border-radius: 99px; padding: 7px 12px; pointer-events: auto; font: 600 11.5px/1 var(--f-display); color: #3D4C49 }
+.v2 .lap .pgfoot button { cursor: pointer }
+.v2 .lap .pv .tb .linkbtn, .v2 .lap .pv .tb .btn-p { white-space: nowrap }
+.v2 .top .lmenu { position: relative }
+.v2 .top .lmenu .menu { position: absolute; right: 0; top: 46px; z-index: 30; min-width: 240px; background: #fff; border: 1px solid #E1E9E7; border-radius: 12px; box-shadow: 0 10px 26px rgba(4,51,46,.14); padding: 6px; display: grid }
+.v2 .top .lmenu .menu button, .v2 .top .lmenu .menu a { display: flex; gap: 8px; align-items: center; border: 0; background: none; text-align: left; padding: 9px 10px; border-radius: 8px; font: 500 13px/1.3 var(--f-display); color: #0F1F1D; cursor: pointer; text-decoration: none }
+.v2 .top .lmenu .menu button:hover, .v2 .top .lmenu .menu a:hover { background: #F5F9F8 }
+.v2 .top .lmenu .menu svg { width: 16px; height: 16px; color: #0A6A5F }
+.v2 .ltoast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 14px; font: 500 13px/1.4 var(--f-body); box-shadow: 0 10px 24px rgba(0,0,0,.25); animation: lp-in .2s ease-out both }
+@media (max-width: 1100px) {
+  .v2 .main.lmain { height: auto; overflow: visible }
+  .v2 .lap { grid-template-columns: 1fr; padding: 16px }
+  .v2 .lap .rlist2 { max-height: none !important; overflow: visible }
+  .v2 .lap .pv { min-height: 80vh }
+  .v2 .lap .pv .tb { flex-wrap: wrap }
+  .v2 .lap .pvb { grid-template-columns: 1fr }
+  .v2 .lap .toc { display: none }
+}
+@media print {
+  @page { size: A4; margin: 10mm }
+  body * { visibility: hidden !important }
+  .v2 .lap .pgs, .v2 .lap .pgs * { visibility: visible !important }
+  .v2 .main.lmain, .v2 .lap, .v2 .lap .pv, .v2 .lap .pvb, .v2 .lap .pgw { display: block !important; height: auto !important; overflow: visible !important; border: 0 !important; background: none !important; padding: 0 !important }
+  .v2 .lap .pgs { position: absolute; left: 0; top: 0; width: 100%; overflow: visible; padding: 0; gap: 0; display: block }
+  .v2 .lap .lpage { max-width: none; min-height: 0; box-shadow: none; break-after: page; animation: none; margin: 0 }
+  .v2 .lap .lpage:last-child { break-after: auto; margin-bottom: 0 }
+  .v2 .lap .pgfoot, .v2 .lap .toc { display: none !important }
+}

@@ -277,6 +277,7 @@ class ReportRun(Base):
     kind = Column(String(20), nullable=False, default="mingguan")  # mingguan, bulanan, adhoc
     region = Column(String(120), nullable=False, default="")
     recipients = Column(Integer, nullable=False, default=0)
+    failed = Column(Integer, nullable=False, default=0)  # addresses the mail server refused
     status = Column(String(20), nullable=False, default="terkirim")  # terkirim, gagal
     created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
 
@@ -298,10 +299,26 @@ class ReportLink(Base):
 
 # ── Database Init ──
 
+def _add_missing_columns():
+    """Additive columns on tables that already exist (create_all never alters a table)."""
+    from sqlalchemy import inspect, text
+    wanted = {"report_runs": [("failed", "INTEGER NOT NULL DEFAULT 0")]}
+    insp = inspect(engine)
+    with engine.begin() as conn:
+        for table, cols in wanted.items():
+            if not insp.has_table(table):
+                continue
+            have = {c["name"] for c in insp.get_columns(table)}
+            for name, ddl in cols:
+                if name not in have:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+
+
 def init_db():
     """Create tables if they don't exist, and seed default admin user."""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     Base.metadata.create_all(bind=engine)
+    _add_missing_columns()
 
     # Auto-create default admin if no users exist
     db = SessionLocal()

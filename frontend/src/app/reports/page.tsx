@@ -1,274 +1,315 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+// 06 Laporan v2: library list, live preview with table of contents, and auto-send schedules.
+// Report documents come from /api/report-docs as typed sections, the same JSON the Android app renders.
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  CalendarDays, ChevronLeft, ChevronRight, Download, FileBarChart, FileSpreadsheet, FileText, MoreHorizontal,
-  Pin, PinOff, Plus, Search, Send, Sparkles, Trash2, TrendingDown, TrendingUp, ZoomIn, ZoomOut,
-} from "lucide-react";
-import AppShell from "../components/shell/AppShell";
-import PageHero from "../components/ui/PageHero";
+import { Trash2 } from "lucide-react";
+import AppShell, { TopBar } from "../components/shell/AppShell";
+import { Icon } from "../components/v2/Icon";
 import SmartChart, { type ChartSpec } from "../components/charts/SmartChart";
 import ResultTable from "../components/ResultTable";
 import ScheduleDialog, { type Schedule } from "./ScheduleDialog";
 import { authFetch, getUser } from "@/lib/auth";
-import { byFormat, count, gb, idr, MONTHS_FULL, pct } from "@/lib/format";
 import { downloadXlsx, logExport } from "@/lib/xlsx";
 import "../watchlist/watchlist.css";
 import "./reports.css";
+import "./laporan.css";
 
-type Kpi = { key: string; label: string; format: string; value: number | null; pct_change: number | null; change_unit?: string; target?: number; below_sla?: number | null };
-type Region = { region: string; revenue: number; mom_pct: number | null; subs: number; payload_gb: number; availability: number | null; achievement_pct: number | null; share_pct: number | null };
-type Overview = {
-  month_id: number; month_label: string; prev_label: string; data_as_of?: string;
-  scope: { region: string | null; regions: string[] };
-  kpis: Kpi[]; regions: Region[]; has_targets: boolean;
-  revenue_by_region: { labels: string[]; series: { name: string; values: number[] }[] };
-  summary: { text: string }; error?: string;
+type Tone = "up" | "down";
+type Cell = string | null | { v: string | null; tone?: Tone; bar?: { w: number; c: string } };
+type Kpi = { label: string; value: string | null; delta: string | null; tone: Tone | null };
+type Sec = {
+  n: number; title: string; sub?: string; type: "summary" | "table" | "note" | "list";
+  text?: string; kpis?: Kpi[]; cols?: string[]; rows?: Cell[][]; note?: string; items?: string[];
 };
+type Doc = {
+  kind: string; kind_label: string; title: string; meta: string; eyebrow: string; heading: string; byline: string;
+  month_short: string; toc: { n: number; title: string }[]; pages: Sec[][];
+};
+type DocRef = { kind: "outlook" | "bulanan" | "profile"; region?: string; kabupaten?: string };
+type Kind = "analis" | "bulanan" | "mingguan" | "profile" | "performance" | "adhoc";
+type LibItem = { id: string; kind: Kind; title: string; meta: string; doc?: DocRef; href?: string };
+type Lib = { month_short: string; month_label: string; lead: LibItem[]; rest: LibItem[] };
 type PinItem = { id: string; question: string; title: string; chart: ChartSpec; columns: string[]; rows: Record<string, unknown>[]; pinned_at: string };
-type Run = { id: number; title: string; kind: string; region: string; recipients: number; status: string; created_at: string };
-type Kind = "bulanan" | "mingguan" | "adhoc" | "analis";
-type Item = { id: string; kind: Kind; title: string; meta: string; region?: string; pin?: PinItem; href?: string };
-type Filter = "semua" | "bulanan" | "mingguan" | "adhoc" | "pinned";
+type Run = { id: number; schedule_id: number | null; title: string; kind: string; region: string; recipients: number; failed?: number; status: string; created_at: string };
+type Item = LibItem & { pin?: PinItem; run?: Run };
 
-const KIND: Record<Kind, { label: string; tone: string; icon: typeof FileText }> = {
-  bulanan: { label: "Bulanan", tone: "teal", icon: FileText },
-  mingguan: { label: "Mingguan", tone: "blue", icon: FileText },
-  adhoc: { label: "Ad-hoc", tone: "violet", icon: FileSpreadsheet },
-  analis: { label: "Analis", tone: "amber", icon: FileBarChart },
+const KIND: Record<Kind, { label: string; kd: string; bg: string; fg: string; icon: string }> = {
+  analis: { label: "Analis", kd: "a", bg: "#FCEDD3", fg: "#B7791F", icon: "bars" },
+  bulanan: { label: "Bulanan", kd: "t", bg: "#E6F7F5", fg: "#0A6A5F", icon: "file" },
+  mingguan: { label: "Mingguan", kd: "b", bg: "#E1ECFA", fg: "#2C6CB0", icon: "file" },
+  profile: { label: "Profile wilayah", kd: "c", bg: "#FBE2DA", fg: "#B5401F", icon: "pin" },
+  performance: { label: "Performance", kd: "l", bg: "#F4FCE3", fg: "#5E8A12", icon: "pulse" },
+  adhoc: { label: "Ad-hoc", kd: "v", bg: "#ECE5FA", fg: "#6A4CB5", icon: "table" },
 };
-const FILTERS: { key: Filter; label: string }[] = [
-  { key: "semua", label: "Semua" }, { key: "bulanan", label: "Bulanan" }, { key: "mingguan", label: "Mingguan" },
-  { key: "adhoc", label: "Ad-hoc dari agent" }, { key: "pinned", label: "Disematkan" },
-];
-
-const title = (s: string) => s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\bDiy\b/, "DIY");
-const shortDate = (iso: string) => new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+const FILTERS: (Kind | "semua")[] = ["semua", "analis", "bulanan", "mingguan", "profile", "performance", "adhoc"];
+const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 const userKey = (k: string) => `${k}::${getUser()?.username || "anon"}`;
+const docKey = (d: DocRef) => `${d.kind}|${d.region ?? ""}|${d.kabupaten ?? ""}`;
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try { return JSON.parse(localStorage.getItem(userKey(key)) || "null") ?? fallback; } catch { return fallback; }
 }
 
+/** Date parts in WIB, whatever the browser time zone is. */
+function wib(iso: string) {
+  const t = new Date(new Date(iso).getTime() + 7 * 3600e3);
+  return { d: t.getUTCDate(), m: t.getUTCMonth(), wd: (t.getUTCDay() + 6) % 7, hm: `${String(t.getUTCHours()).padStart(2, "0")}.${String(t.getUTCMinutes()).padStart(2, "0")}`, ms: t.getTime() };
+}
+function sentLabel(iso: string): string {
+  const t = wib(iso);
+  const recent = Date.now() + 7 * 3600e3 - t.ms < 7 * 86400e3;
+  return recent ? `${DAYS[t.wd]} ${t.hm}` : `${t.d} ${MONTHS[t.m]} ${t.hm}`;
+}
+function runKind(r: Run): Kind { return r.kind === "bulanan" ? "bulanan" : r.kind === "adhoc" ? "adhoc" : "mingguan"; }
+function runDoc(r: Run): DocRef { return /outlook/i.test(r.title) ? { kind: "outlook", region: r.region } : { kind: "bulanan", region: r.region }; }
+function runLabel(r: Run): string { return /outlook/i.test(r.title) ? "Outlook" : KIND[runKind(r)].label; }
+function schedLine(s: Schedule): string {
+  const when = s.frequency === "bulanan" ? `Tanggal ${s.monthday} tiap bulan` : `Setiap ${DAYS[s.weekday % 7]}`;
+  const n = `${s.recipients.length} penerima`;
+  return s.active ? `${when}, ${String(s.hour).padStart(2, "0")}.00 · ${n}` : `${when} · ${n} · dijeda`;
+}
+
 function Bold({ text }: { text: string }) {
-  return <>{text.split(/(\*\*[^*]+\*\*)/g).map((p, i) => (p.startsWith("**") ? <b key={i}>{p.slice(2, -2)}</b> : <span key={i}>{p}</span>))}</>;
+  return <>{text.split(/(\*\*[^*]+\*\*)/g).map((p, i) => (p.startsWith("**") ? <b key={i}>{p.slice(2, -2)}</b> : <Fragment key={i}>{p}</Fragment>))}</>;
 }
 
-function Delta({ v, unit }: { v: number | null; unit?: string }) {
-  if (v == null) return null;
-  const up = v >= 0;
+function CellView({ c }: { c: Cell }) {
+  const o = c && typeof c === "object" ? c : { v: c };
+  if (o.v == null) return <td className="na" title="Belum ada di dump Parquet">-</td>;
   return (
-    <span className={`rp-delta ${up ? "up" : "down"}`}>
-      {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-      {Math.abs(v).toLocaleString("id-ID", { minimumFractionDigits: unit === "pp" ? 2 : 1, maximumFractionDigits: unit === "pp" ? 2 : 1 })}{unit === "pp" ? " pp" : "%"}
-    </span>
+    <td className={"tone" in o && o.tone ? o.tone : undefined}>
+      {"bar" in o && o.bar && <span className="bx" style={{ width: o.bar.w, background: o.bar.c }} />}{o.v}
+    </td>
   );
 }
 
-function PageHead({ eyebrow, heading }: { eyebrow: string; heading: string }) {
+function Section({ s }: { s: Sec }) {
   return (
-    <header className="rp-doc-head">
-      <div><span className="rp-doc-eyebrow">{eyebrow}</span><h2>{heading}</h2></div>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/icon_circle_java.png" alt="Logo Agent Java" height={34} />
-    </header>
-  );
-}
-
-/** Pages of the live performance report built from the dashboard overview. */
-function liveReportPages(ov: Overview, kind: Kind): React.ReactNode[] {
-  const scope = ov.scope.region ? title(ov.scope.region) : "Circle Java";
-  const month = `${MONTHS_FULL[(ov.month_id % 100) - 1]} ${Math.floor(ov.month_id / 100)}`;
-  const eyebrow = kind === "mingguan" ? "Laporan performa mingguan" : "Laporan performa bulanan";
-  const rows: Record<string, unknown>[] = [];
-  ov.revenue_by_region.labels.forEach((m, i) => ov.revenue_by_region.series.forEach((s) => rows.push({ bulan: m, region: title(s.name), revenue: s.values[i] })));
-  const spec: ChartSpec = {
-    type: "bar", x: "bulan", y: ["revenue"], y2: [], series_by: "region", label: null, formats: { revenue: "currency" },
-    sort: null, top_n: null, map_key: null, alternatives: ["stacked_bar", "line"], title: "Revenue per region",
-  };
-  const avail = ov.kpis.find((k) => k.key === "availability");
-  return [
-    <>
-      <PageHead eyebrow={eyebrow} heading={`${scope} · ${month}`} />
-      <div className="rp-doc-kpis">
-        {ov.kpis.filter((k) => k.key !== "availability").slice(0, 3).map((k) => (
-          <div key={k.key} className="rp-doc-kpi">
-            <span>{k.key === "subs" ? "Pelanggan" : k.key === "payload" ? "Payload" : k.label}</span>
-            <b>{byFormat(k.format, k.value)}</b>
-            <Delta v={k.pct_change} unit={k.change_unit} />
-          </div>
-        ))}
-      </div>
-      <SmartChart spec={spec} rows={rows} height={190} bare subtitle="" className="rp-doc-chart" />
-      <div className="rp-doc-summary">
-        <span><Sparkles size={14} /> Ringkasan oleh agent</span>
-        <p><Bold text={ov.summary.text} /></p>
-      </div>
-    </>,
-    <>
-      <PageHead eyebrow={eyebrow} heading="Performa per region" />
-      <table className="rp-doc-table">
-        <thead><tr><th>Region</th><th>Revenue</th><th>MoM</th><th>Pelanggan</th><th>Payload</th><th>{ov.has_targets ? "Target" : "Kontribusi"}</th></tr></thead>
-        <tbody>
-          {ov.regions.map((r) => (
-            <tr key={r.region}>
-              <td>{title(r.region)}</td><td>{idr(r.revenue)}</td><td><Delta v={r.mom_pct} /></td>
-              <td>{count(r.subs)}</td><td>{gb(r.payload_gb)}</td><td>{pct(ov.has_targets ? r.achievement_pct : r.share_pct)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {avail && (
-        <div className="rp-doc-note">
-          <b>Site availability 4G {pct(avail.value, 2)}</b>
-          <span>
-            Target {pct(avail.target ?? 99.5)} · {avail.pct_change != null ? `${avail.pct_change >= 0 ? "naik" : "turun"} ${Math.abs(avail.pct_change).toLocaleString("id-ID", { maximumFractionDigits: 2 })} pp dari ${ov.prev_label}` : ""}
-            {avail.below_sla ? ` · ${avail.below_sla} site di bawah SLA 99%` : ""}
-          </span>
+    <div className="sec" id={`sec-${s.n}`} data-n={s.n}>
+      <h4><i>{s.n}</i>{s.title}{s.sub && <small>{s.sub}</small>}</h4>
+      {s.type === "summary" && (
+        <>
+          {s.text && <div className="sum"><Bold text={s.text} /></div>}
+          {!!s.kpis?.length && (
+            <div className="pk">
+              {s.kpis.map((k) => (
+                <div key={k.label}><small>{k.label}</small><b>{k.value ?? "-"}</b>
+                  {k.delta && <em className={k.tone ?? undefined}>{k.delta}</em>}</div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+      {s.type === "table" && (
+        <div className="tw">
+          <table className="pt">
+            <thead><tr>{s.cols?.map((c, i) => <th key={i}>{c}</th>)}</tr></thead>
+            <tbody>{s.rows?.map((r, i) => <tr key={i}>{r.map((c, j) => <CellView key={j} c={c} />)}</tr>)}</tbody>
+          </table>
+          {!s.rows?.length && <div className="note">Belum ada baris untuk bagian ini.</div>}
         </div>
       )}
-      <p className="rp-doc-foot">
-        Angka month-to-date dibandingkan periode yang sama bulan lalu. Sumber: rham_mkt_highlevel_mtd dan rham_avail_stat_territory_monthly (BigQuery).
-      </p>
-    </>,
-  ];
+      {s.type === "note" && <div className="ntext">{s.text}</div>}
+      {s.type === "list" && <ul className="li">{s.items?.map((t, i) => <li key={i}>{t}</li>)}</ul>}
+      {s.note && s.type !== "note" && <div className="note">{s.note}</div>}
+    </div>
+  );
 }
 
-function pinPages(p: PinItem): React.ReactNode[] {
-  return [
-    <>
-      <PageHead eyebrow="Hasil ad-hoc dari agent" heading={p.title} />
-      <p className="rp-doc-q"><Sparkles size={14} /> {p.question}</p>
-      {p.chart && p.chart.type !== "none" && <SmartChart spec={p.chart} rows={p.rows} height={230} bare subtitle="" className="rp-doc-chart" />}
-      <p className="rp-doc-foot">Disematkan {new Date(p.pinned_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })} · {p.rows.length} baris data</p>
-    </>,
-    <>
-      <PageHead eyebrow="Hasil ad-hoc dari agent" heading="Data" />
-      <ResultTable columns={p.columns} rows={p.rows} spec={p.chart} initialRows={14} />
-    </>,
-  ];
-}
+function cellText(c: Cell): string | null { return c && typeof c === "object" ? c.v : c; }
 
 export default function ReportsPage() {
   const router = useRouter();
-  const [overview, setOverview] = useState<Overview | null>(null);
-  const [regions, setRegions] = useState<string[]>([]);
+  const [lib, setLib] = useState<Lib | null>(null);
+  const [libError, setLibError] = useState("");
   const [runs, setRuns] = useState<Run[]>([]);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[] | null>(null);
   const [pins] = useState<PinItem[]>(() => readJson<PinItem[]>("dash_pins", []).filter((p) => p?.rows));
-  const [stars, setStars] = useState<string[]>(() => readJson<string[]>("report_stars", ["live:"]));
-  const [filter, setFilter] = useState<Filter>("semua");
+  const [docs, setDocs] = useState<Record<string, Doc | { error: string }>>({});
+  const [filter, setFilter] = useState<Kind | "semua">("semua");
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState("live:");
-  const [page, setPage] = useState(0);
-  const [zoom, setZoom] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [schedDialog, setSchedDialog] = useState<{ edit?: Schedule | null } | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [active, setActive] = useState(1);
+  const [pageNo, setPageNo] = useState(1);
+  const [hidden, setHidden] = useState<Record<string, number[]>>(() => readJson("report_hidden_sections", {}));
+  const [arrange, setArrange] = useState(false);
   const [createMenu, setCreateMenu] = useState(false);
-  const [itemMenu, setItemMenu] = useState<string | null>(null);
-  const [sending, setSending] = useState<Schedule | null>(null);
+  const [schedDialog, setSchedDialog] = useState<{ edit?: Schedule | null } | null>(null);
   const [notice, setNotice] = useState("");
   const [version, setVersion] = useState(0);
-  const docRef = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const colRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    authFetch("/api/report-schedules").then((r) => (r.ok ? r.json() : null)).then((d) => d?.schedules && setSchedules(d.schedules)).catch(() => {});
+    authFetch("/api/report-docs/library").then(async (r) => {
+      const d = await r.json().catch(() => null);
+      if (r.ok && d?.lead) setLib(d); else setLibError(d?.detail || "Pustaka laporan belum bisa dimuat.");
+    }).catch(() => setLibError("Pustaka laporan belum bisa dimuat."));
+  }, []);
+  useEffect(() => {
+    authFetch("/api/report-schedules").then((r) => (r.ok ? r.json() : null)).then((d) => setSchedules(d?.schedules ?? [])).catch(() => setSchedules([]));
     authFetch("/api/report-schedules/runs").then((r) => (r.ok ? r.json() : null)).then((d) => d?.runs && setRuns(d.runs)).catch(() => {});
   }, [version]);
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(""), 4000);
+    return () => clearTimeout(t);
+  }, [notice]);
 
   const items = useMemo<Item[]>(() => {
-    const month = overview?.month_label ?? "";
-    const live: Item[] = [{ id: "live:", kind: "bulanan", title: "Performa Bulanan Circle Java", meta: `PDF · 2 hlm${month ? ` · ${month}` : ""}`, region: "" }];
-    regions.forEach((r) => live.push({ id: `live:${r}`, kind: "bulanan", title: `Performa Bulanan ${title(r)}`, meta: `PDF · 2 hlm${month ? ` · ${month}` : ""}`, region: r }));
-    const sent: Item[] = runs.map((r) => ({
-      id: `run:${r.id}`, kind: r.kind === "bulanan" ? "bulanan" : "mingguan", title: r.title, region: r.region,
-      meta: `${r.status === "gagal" ? "Gagal terkirim" : `Email · ${r.recipients} penerima`} · ${shortDate(r.created_at)}`,
-    }));
-    const adhoc: Item[] = pins.map((p) => ({ id: `pin:${p.id}`, kind: "adhoc", title: p.title, meta: `XLSX · ${p.rows.length} baris · ${shortDate(p.pinned_at)}`, pin: p }));
-    const outlook: Item = { id: "outlook", kind: "analis", title: "Performance Outlook", meta: "Komprehensif · data revenue · benchmark", href: "/reports/outlook" };
-    return [...live.slice(0, 1), ...sent, ...adhoc, ...live.slice(1), outlook];
-  }, [overview?.month_label, regions, runs, pins]);
+    const seen = new Set<string>();
+    const runItems: Item[] = [];
+    for (const r of runs) {
+      if (seen.has(r.title)) continue;
+      seen.add(r.title);
+      runItems.push({
+        id: `run:${r.id}`, kind: runKind(r), title: r.title, run: r, doc: runDoc(r),
+        meta: r.status === "gagal" ? `Gagal terkirim · ${sentLabel(r.created_at)}` : `Terkirim ${sentLabel(r.created_at)} · ${r.recipients} penerima`,
+      });
+    }
+    const pinItems: Item[] = pins.map((p) => ({ id: `pin:${p.id}`, kind: "adhoc", title: p.title, meta: `XLSX ${p.rows.length} baris · dari chat`, pin: p }));
+    return [...(lib?.lead ?? []), ...runItems.slice(0, 1), ...pinItems, ...(lib?.rest ?? []), ...runItems.slice(1)];
+  }, [lib, runs, pins]);
 
-  const shown = items.filter((i) => {
-    if (query.trim() && !i.title.toLowerCase().includes(query.trim().toLowerCase())) return false;
-    if (filter === "pinned") return stars.includes(i.id);
-    if (filter === "adhoc") return i.kind === "adhoc";
-    if (filter === "semua") return true;
-    return i.kind === filter;
-  });
-  const current = items.find((i) => i.id === selected) ?? items[0];
-  const region = current?.pin ? null : current?.region ?? "";
+  const shown = items.filter((i) => (filter === "semua" || i.kind === filter)
+    && (!query.trim() || `${i.title} ${i.meta} ${KIND[i.kind].label}`.toLowerCase().includes(query.trim().toLowerCase())));
+  // Wait for the library before choosing a default, so a pinned answer does not flash first.
+  const current = items.find((i) => i.id === selected) ?? (lib || libError ? items.find((i) => !i.href) : null) ?? null;
+  const ref = current?.doc;
+  const key = ref ? docKey(ref) : "";
+  const loaded = key ? docs[key] : undefined;
+  const doc = loaded && "pages" in loaded ? loaded : null;
 
-  // Live report data for the selected region.
-  const [loadedFor, setLoadedFor] = useState<string | null>(null);
   useEffect(() => {
-    if (region == null) return;
-    let alive = true;
-    authFetch(`/api/dashboard/overview?region=${encodeURIComponent(region)}&months=6`).then((r) => r.json())
-      .then((d) => {
-        if (!alive) return;
-        setOverview(d.error ? null : d);
-        if (!d.error && !region) setRegions(d.scope.regions);
-        setLoadedFor(region);
-      }).catch(() => { if (alive) setLoadedFor(region); });
-    return () => { alive = false; };
-  }, [region]);
+    if (!ref || docs[key]) return;
+    const q = new URLSearchParams({ kind: ref.kind, region: ref.region ?? "", kabupaten: ref.kabupaten ?? "" });
+    authFetch(`/api/report-docs/doc?${q}`).then(async (r) => {
+      const d = await r.json().catch(() => null);
+      setDocs((cur) => ({ ...cur, [key]: r.ok && d?.pages ? d : { error: d?.detail || "Laporan belum bisa disusun." } }));
+    }).catch(() => setDocs((cur) => ({ ...cur, [key]: { error: "Laporan belum bisa disusun." } })));
+  }, [key, ref, docs]);
 
-  const pages = useMemo(() => {
-    if (current?.pin) return pinPages(current.pin);
-    if (overview && loadedFor === region && current?.kind !== "analis") return liveReportPages(overview, current.kind);
-    return [];
-  }, [current, overview, loadedFor, region]);
-  const loading = !current?.pin && loadedFor !== region;
+  // Sections the user switched off with "Atur bagian laporan", per report kind.
+  const hiddenNow = useMemo(() => (doc ? hidden[doc.kind] ?? [] : []), [doc, hidden]);
+  const pages = useMemo(() => (doc ? doc.pages.map((p) => p.filter((s) => !hiddenNow.includes(s.n))).filter((p) => p.length) : []), [doc, hiddenNow]);
 
-  function select(id: string) {
-    const it = items.find((i) => i.id === id);
-    if (it?.href) { router.push(it.href); return; }
-    setSelected(id);
-    setPage(0);
-    setMobileOpen(true);
-    docRef.current?.scrollTo({ top: 0 });
+  // Pin (ad-hoc agent answer) previews are built here; they never had a server document.
+  const pinView = current?.pin;
+  const title = pinView ? pinView.title : doc?.title ?? current?.title ?? "Laporan";
+  const meta = pinView
+    ? `Ad-hoc · ${pinView.rows.length} baris · disematkan ${new Date(pinView.pinned_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`
+    : doc ? (current?.run ? `${KIND[current.kind].label} · terkirim ${sentLabel(current.run.created_at)} · ${current.run.recipients} penerima` : doc.meta)
+    : loaded && "error" in loaded ? loaded.error : "Menyusun pratinjau…";
+  const toc = pinView ? [{ n: 1, title: "Pertanyaan" }, { n: 2, title: "Data" }] : doc?.toc ?? [];
+  const totalPages = pinView ? 2 : pages.length;
+
+  // Keep only whole list items visible above the schedule card; the rest scroll.
+  const fitList = useCallback(() => {
+    const list = listRef.current, col = colRef.current;
+    if (!list || !col) return;
+    if (window.innerWidth <= 1100) { list.style.maxHeight = ""; return; }
+    const others = [...col.children].filter((c) => c !== list).reduce((a, c) => a + (c as HTMLElement).offsetHeight, 0);
+    const gaps = (col.children.length - 1) * 12;
+    list.style.maxHeight = "";
+    const avail = col.clientHeight - others - gaps;
+    let h = 0;
+    for (const el of [...list.children] as HTMLElement[]) {
+      const bottom = el.offsetTop - list.offsetTop + el.offsetHeight + 3;
+      if (bottom <= avail) h = bottom; else break;
+    }
+    list.style.maxHeight = `${Math.max(h, Math.min(avail, 120))}px`;
+  }, []);
+  useLayoutEffect(() => {
+    fitList();
+    const ro = new ResizeObserver(fitList);
+    if (colRef.current) ro.observe(colRef.current);
+    return () => ro.disconnect();
+  }, [fitList, shown.length, schedules, runs]);
+
+  function select(it: Item) {
+    if (it.href) { router.push(it.href); return; }
+    setSelected(it.id);
+    setActive(1);
+    setPageNo(1);
+    setArrange(false);
+    scroller.current?.scrollTo({ top: 0, behavior: "auto" });
   }
-  function toggleStar(id: string) {
-    const next = stars.includes(id) ? stars.filter((s) => s !== id) : [...stars, id];
-    setStars(next);
-    try { localStorage.setItem(userKey("report_stars"), JSON.stringify(next)); } catch { /* ignore */ }
+  function goSection(n: number) {
+    setActive(n);
+    const el = scroller.current?.querySelector<HTMLElement>(`#sec-${n}`);
+    if (el && scroller.current) scroller.current.scrollTo({ top: el.offsetTop - 16 });
   }
-  function goPage(n: number) {
-    const p = Math.max(0, Math.min(pages.length - 1, n));
-    setPage(p);
-    const el = docRef.current?.querySelectorAll<HTMLElement>(".rp-sheet")[p];
-    if (el && docRef.current) docRef.current.scrollTo({ top: el.offsetTop - 24, behavior: "smooth" });
+  function onScroll() {
+    const sc = scroller.current;
+    if (!sc) return;
+    const top = sc.scrollTop + 40;
+    let a = toc[0]?.n ?? 1;
+    sc.querySelectorAll<HTMLElement>(".sec").forEach((s) => { if (s.offsetTop <= top) a = Number(s.dataset.n); });
+    let p = 1;
+    sc.querySelectorAll<HTMLElement>(".lpage").forEach((s, i) => { if (s.offsetTop <= sc.scrollTop + sc.clientHeight / 2) p = i + 1; });
+    if (a !== active) setActive(a);
+    if (p !== pageNo) setPageNo(p);
   }
+  function toggleSection(n: number) {
+    if (!doc) return;
+    const cur = hidden[doc.kind] ?? [];
+    const next = { ...hidden, [doc.kind]: cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n] };
+    setHidden(next);
+    try { localStorage.setItem(userKey("report_hidden_sections"), JSON.stringify(next)); } catch { /* ignore */ }
+  }
+
   function exportXlsx() {
-    if (current?.pin) {
-      downloadXlsx(`bizplan-${current.pin.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40)}`, current.pin.columns, current.pin.rows, "Hasil", current.pin.title);
-    } else if (overview) {
-      downloadXlsx(`laporan-performa-${overview.scope.region ? overview.scope.region.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "jawa"}-${overview.month_id}`,
-        ["region", "revenue", "mom_pct", "pelanggan_rgu90", "payload_gb", "availability_4g", overview.has_targets ? "pencapaian_target_pct" : "kontribusi_pct"],
-        overview.regions.map((r) => ({
-          region: title(r.region), revenue: r.revenue, mom_pct: r.mom_pct, pelanggan_rgu90: r.subs, payload_gb: r.payload_gb,
-          availability_4g: r.availability, [overview.has_targets ? "pencapaian_target_pct" : "kontribusi_pct"]: overview.has_targets ? r.achievement_pct : r.share_pct,
-        })), "Performa region", `Laporan performa ${overview.scope.region ? title(overview.scope.region) : "Jawa"}`);
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50);
+    if (pinView) { downloadXlsx(`agent-java-${slug}`, pinView.columns, pinView.rows, "Hasil", pinView.title); return; }
+    if (!doc) return;
+    const width = Math.max(1, ...pages.flat().map((s) => s.cols?.length ?? 1));
+    const cols = ["Bagian", ...Array.from({ length: width }, (_, i) => `Kolom ${i + 1}`)];
+    const rows: Record<string, unknown>[] = [];
+    for (const s of pages.flat()) {
+      if (s.type === "table" && s.cols) {
+        rows.push({ Bagian: `${s.n}. ${s.title}`, ...Object.fromEntries(s.cols.map((c, i) => [`Kolom ${i + 1}`, c])) });
+        s.rows?.forEach((r) => rows.push({ Bagian: "", ...Object.fromEntries(r.map((c, i) => [`Kolom ${i + 1}`, cellText(c) ?? "-"])) }));
+      } else if (s.type === "summary") {
+        rows.push({ Bagian: `${s.n}. ${s.title}`, "Kolom 1": (s.text ?? "").replace(/\*\*/g, "") });
+        s.kpis?.forEach((k) => rows.push({ Bagian: "", "Kolom 1": k.label, "Kolom 2": k.value, "Kolom 3": k.delta }));
+      } else {
+        rows.push({ Bagian: `${s.n}. ${s.title}`, "Kolom 1": s.text ?? s.items?.join(" ") ?? "" });
+      }
+    }
+    downloadXlsx(`agent-java-${slug}`, cols, rows, "Laporan", title);
+  }
+  async function share() {
+    const body = pinView ? { title: pinView.title, columns: pinView.columns, rows: pinView.rows.slice(0, 2000) }
+      : { title, region: ref?.region ?? "" };
+    try {
+      const r = await authFetch("/api/report-links", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.detail);
+      const url = `${window.location.origin}${d.path}`;
+      await navigator.clipboard?.writeText(url).catch(() => {});
+      setNotice(`Tautan disalin, berlaku 7 hari: ${url}`);
+    } catch (e) {
+      setNotice((e as Error).message || "Tautan belum bisa dibuat.");
     }
   }
   async function sendNow(s: Schedule) {
-    setSending(s);
-    setNotice("");
+    setNotice(`Agent menyusun ${s.name}…`);
     try {
       const r = await authFetch(`/api/report-schedules/${s.id}/send-now`, { method: "POST" });
       const d = await r.json();
-      setNotice(r.ok ? `Laporan "${s.name}" terkirim ke ${d.sent} penerima.` : d.detail || "Laporan gagal dikirim.");
+      setNotice(r.ok ? `${s.name} terkirim ke ${d.sent} dari ${d.recipients} penerima.` : d.detail || "Laporan gagal dikirim.");
     } catch {
       setNotice("Laporan gagal dikirim.");
     }
-    setSending(null);
     setVersion((v) => v + 1);
   }
   async function patchSchedule(s: Schedule, body: Partial<Schedule>) {
-    setSchedules((cur) => cur.map((x) => (x.id === s.id ? { ...x, ...body } : x)));
+    setSchedules((cur) => (cur ?? []).map((x) => (x.id === s.id ? { ...x, ...body } : x)));
     await authFetch(`/api/report-schedules/${s.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => {});
   }
   async function deleteSchedule(s: Schedule) {
@@ -278,181 +319,180 @@ export default function ReportsPage() {
   }
 
   useEffect(() => {
-    if (!createMenu && !itemMenu) return;
-    const close = () => { setCreateMenu(false); setItemMenu(null); };
+    if (!createMenu) return;
+    const close = () => setCreateMenu(false);
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
-  }, [createMenu, itemMenu]);
+  }, [createMenu]);
 
-  const docTitle = current?.title ?? "Laporan";
-  const docSub = current?.pin ? `Agent · ${new Date(current.pin.pinned_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}`
-    : overview ? `Agent · data ${overview.month_label}` : "Agent";
+  const regions = useMemo(() => [...new Set((lib ? [...lib.lead, ...lib.rest] : []).map((i) => i.doc?.kind === "bulanan" ? i.doc.region : "").filter(Boolean) as string[])], [lib]);
+  const okRuns = runs.filter((r) => r.status !== "gagal").slice(0, 2);
+  const failedRun = runs.slice(0, 5).find((r) => (r.failed ?? 0) > 0 || r.status === "gagal");
+  const failedSched = failedRun ? schedules?.find((s) => s.id === failedRun.schedule_id) : undefined;
 
   return (
-    <AppShell>
-      <div className="ui-page rp">
-        <PageHero
-          icon="/illustrations/duo_report.svg"
-          art="/illustrations/iso_dashboard.svg"
-          eyebrow="Pustaka laporan"
-          title="Laporan"
-          sub="Laporan terjadwal dan hasil percakapan agent, siap diekspor PDF atau XLSX."
-          actions={
-            <>
-              <label className="rp-search">
-                <Search size={18} aria-hidden="true" />
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari laporan…" aria-label="Cari laporan" />
-              </label>
-              <div className="rp-create">
-                <button className="ph-cta" onClick={(e) => { e.stopPropagation(); setCreateMenu((v) => !v); }} aria-expanded={createMenu}>
-                  <Plus size={18} /> Buat laporan
-                </button>
-                {createMenu && (
-                  <div className="ui-popover rp-create-menu" role="menu">
-                    <button role="menuitem" onClick={() => router.push("/?new=1")}><Sparkles size={16} /> Minta agent (ad-hoc)</button>
-                    <button role="menuitem" onClick={() => setSchedDialog({})}><CalendarDays size={16} /> Jadwalkan otomatis</button>
-                    <Link role="menuitem" href="/reports/outlook"><FileBarChart size={16} /> Performance Outlook</Link>
-                  </div>
-                )}
-              </div>
-            </>
-          }
-        />
-
-        <div className="rp-filters" role="group" aria-label="Filter laporan">
-          {FILTERS.map((f) => (
-            <button key={f.key} className={`ui-chip ${filter === f.key ? "teal" : ""}`} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>{f.label}</button>
-          ))}
-        </div>
-
-        <div className="rp-body">
-          <div className="rp-list">
-            {shown.length === 0 && (
-              <div className="ui-card ui-empty rp-empty">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/illustrations/empty_reports.svg" alt="" />
-                <span>
-                  {filter === "pinned" ? "Belum ada laporan yang disematkan. Klik ikon pin di sebuah laporan."
-                    : filter === "adhoc" ? "Belum ada hasil dari agent. Klik \"Pin ke dashboard\" di jawaban Tanya Agent."
-                    : filter === "mingguan" ? "Belum ada laporan mingguan. Atur jadwal agar agent mengirimkannya otomatis."
-                    : "Tidak ada laporan yang cocok."}
-                </span>
-              </div>
+    <AppShell mainClassName="lmain">
+      <TopBar title="Laporan" subtitle="Pustaka laporan, pratinjau, dan jadwal kirim" ringAvatar
+        actions={
+          <>
+            <span className="chip"><Icon name="cal" />{lib?.month_short ?? "Bulan ini"}</span>
+            <div className="lmenu">
+              <button className="btn-p" onClick={(e) => { e.stopPropagation(); setCreateMenu((v) => !v); }} aria-expanded={createMenu}>
+                <Icon name="plus" />Buat laporan
+              </button>
+              {createMenu && (
+                <div className="menu" role="menu">
+                  <button role="menuitem" onClick={() => router.push("/?new=1")}><Icon name="spark" />Minta agent (ad-hoc)</button>
+                  <button role="menuitem" onClick={() => setSchedDialog({})}><Icon name="mail" />Jadwalkan kirim otomatis</button>
+                  <Link role="menuitem" href="/reports/outlook"><Icon name="bars" />Performance Outlook lengkap</Link>
+                </div>
+              )}
+            </div>
+          </>
+        } />
+      <div className="lap">
+        <div className="lcol" ref={colRef}>
+          <label className="sbox">
+            <Icon name="search" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari laporan, wilayah, atau isi" aria-label="Cari laporan" />
+          </label>
+          <div className="fchips" role="group" aria-label="Filter jenis laporan">
+            {FILTERS.map((f) => (
+              <button key={f} className={filter === f ? "on" : undefined} aria-pressed={filter === f} onClick={() => setFilter(f)}>
+                {f === "semua" ? <>Semua <b>{items.length}</b></> : KIND[f].label}
+              </button>
+            ))}
+          </div>
+          <div className="rlist2" ref={listRef}>
+            {!lib && !libError && [0, 1, 2].map((i) => <div key={i} className="ri"><span className="skel" style={{ height: 40 }} /><span className="skel" /><span /></div>)}
+            {libError && <div className="empty">{libError}</div>}
+            {lib && shown.length === 0 && (
+              <div className="empty">{filter === "adhoc" ? "Belum ada hasil dari agent. Klik \"Pin ke dashboard\" di jawaban Tanya Agent." : "Tidak ada laporan yang cocok."}</div>
             )}
             {shown.map((it) => {
               const k = KIND[it.kind];
-              const Icon = k.icon;
-              const starred = stars.includes(it.id);
               return (
-                <div key={it.id} className={`rp-item ${it.id === current?.id ? "active" : ""}`}>
-                  <button className="rp-item-main" onClick={() => select(it.id)}>
-                    <span className="ui-tile rp-item-ico" data-tone={k.tone}><Icon size={22} strokeWidth={1.6} /></span>
-                    <span className="rp-item-text">
-                      <b>{it.title}</b>
-                      <span><span className={`rp-kind ${k.tone}`}>{k.label}</span>{it.meta}</span>
-                    </span>
-                  </button>
-                  {it.kind !== "analis" && (
-                    starred || it.id === current?.id ? (
-                      <button className={`ui-iconbtn ghost sm rp-star ${starred ? "on" : ""}`} onClick={() => toggleStar(it.id)} aria-label={starred ? "Lepas sematan" : "Sematkan"} aria-pressed={starred}>
-                        {starred ? <Pin size={18} /> : <PinOff size={18} />}
-                      </button>
-                    ) : (
-                      <div className="rp-item-more">
-                        <button className="ui-iconbtn ghost sm" aria-label="Aksi" onClick={(e) => { e.stopPropagation(); setItemMenu(itemMenu === it.id ? null : it.id); }}><MoreHorizontal size={18} /></button>
-                        {itemMenu === it.id && (
-                          <div className="ui-popover rp-item-menu" role="menu">
-                            <button role="menuitem" onClick={() => select(it.id)}><FileText size={16} /> Buka</button>
-                            <button role="menuitem" onClick={() => toggleStar(it.id)}><Pin size={16} /> Sematkan</button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  )}
-                </div>
+                <button key={it.id} className={`ri ${it.id === current?.id ? "on" : ""}`} onClick={() => select(it)} aria-current={it.id === current?.id || undefined}>
+                  <span className="ic2" style={{ background: k.bg, color: k.fg }}><Icon name={k.icon} /></span>
+                  <div><b>{it.title}</b><small><span className={`kd ${k.kd}`}>{k.label}</span>{it.meta}</small></div>
+                  {it.pin ? <Icon name="pin" className="pin" /> : <Icon name="chevr" className="chev" />}
+                </button>
               );
             })}
-
-            {sending && (
-              <div className="rp-item rp-progress">
-                <span className="rp-ring" aria-hidden="true"><span /></span>
-                <span className="rp-item-text">
-                  <b>Agent menyusun: {sending.name}</b>
-                  <span className="rp-bar"><span /></span>
+          </div>
+          <div className="sched">
+            <div className="hd"><Icon name="mail" /><b>Jadwal kirim otomatis</b><span className="grow" /><button onClick={() => setSchedDialog({})}>+ Jadwal baru</button></div>
+            {schedules && schedules.length === 0 && <div className="none">Belum ada jadwal. Agent bisa menyusun dan mengirim laporan lewat email tiap minggu atau tiap bulan.</div>}
+            {schedules?.map((s) => (
+              <div key={s.id} className="sc">
+                <b className="nm">{s.name}</b>
+                <small>{schedLine(s)}</small>
+                <span className="acts">
+                  <button title="Kirim sekarang" aria-label={`Kirim ${s.name} sekarang`} onClick={() => sendNow(s)}><Icon name="send" /></button>
+                  <button title="Ubah jadwal" aria-label={`Ubah ${s.name}`} onClick={() => setSchedDialog({ edit: s })}><Icon name="cal" /></button>
+                  <button title="Hapus jadwal" aria-label={`Hapus ${s.name}`} onClick={() => deleteSchedule(s)}><Trash2 /></button>
                 </span>
+                <button className={`tg2 ${s.active ? "" : "off"}`} role="switch" aria-checked={s.active} aria-label={`Aktifkan ${s.name}`}
+                  onClick={() => patchSchedule(s, { active: !s.active })}><i /></button>
+              </div>
+            ))}
+            {(okRuns.length > 0 || failedRun) && (
+              <div className="runs">
+                {okRuns.map((r) => { const t = wib(r.created_at); return <span key={r.id}>✓ {t.d} {MONTHS[t.m]}, {runLabel(r)}: {r.recipients} terkirim</span>; })}
+                {failedRun && (
+                  <button className="f" onClick={() => failedSched && sendNow(failedSched)} disabled={!failedSched}
+                    title={failedSched ? `Kirim ulang ${failedSched.name}` : "Jadwalnya sudah dihapus"}>
+                    {failedRun.status === "gagal" && !failedRun.failed ? "Pengiriman gagal" : `${failedRun.failed} email gagal`}, kirim ulang
+                  </button>
+                )}
               </div>
             )}
-            {notice && <p className="rp-notice" role="status">{notice}</p>}
+          </div>
+        </div>
 
-            <div className="rp-schedule">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/illustrations/iso_dashboard.svg" alt="" />
-              <div>
-                <b>Jadwalkan laporan otomatis</b>
-                <p>{schedules.length
-                  ? `${schedules.filter((s) => s.active).length} jadwal aktif. Agent menyusun dan mengirim laporan lewat email.`
-                  : "Agent menyusun dan mengirim laporan performa tiap Senin 08.00, atau sesuai jadwal Anda."}</p>
-                {schedules.map((s) => (
-                  <div key={s.id} className="rp-sched">
-                    <button className="ui-switch wl-switch" role="switch" aria-checked={s.active} aria-label={`Aktifkan ${s.name}`} onClick={() => patchSchedule(s, { active: !s.active })} />
-                    <span className="rp-sched-text"><b>{s.name}</b><small>{s.description} · {s.recipients.length} penerima</small></span>
-                    <button className="ui-iconbtn ghost sm" title="Kirim sekarang" aria-label={`Kirim ${s.name} sekarang`} onClick={() => sendNow(s)} disabled={!!sending}><Send size={16} /></button>
-                    <button className="ui-iconbtn ghost sm" title="Ubah" aria-label={`Ubah ${s.name}`} onClick={() => setSchedDialog({ edit: s })}><CalendarDays size={16} /></button>
-                    <button className="ui-iconbtn ghost sm" title="Hapus" aria-label={`Hapus ${s.name}`} onClick={() => deleteSchedule(s)}><Trash2 size={16} /></button>
-                  </div>
-                ))}
-                <button className="ui-btn lg" onClick={() => setSchedDialog({})}><CalendarDays size={20} strokeWidth={1.6} /> Atur jadwal</button>
+        <section className="pv" aria-label="Pratinjau laporan">
+          <div className="tb">
+            <div className="ttl"><b>{title}</b><small>{meta}</small></div>
+            <span className="grow" />
+            <button className="linkbtn" onClick={() => { logExport("PDF", title); window.print(); }} disabled={!doc && !pinView}><Icon name="dl" />PDF</button>
+            <button className="linkbtn" onClick={exportXlsx} disabled={!doc && !pinView}><Icon name="table" />XLSX</button>
+            <button className="linkbtn" onClick={share} disabled={!doc && !pinView}><Icon name="link" />Bagikan</button>
+            <button className="btn-p" onClick={() => setSchedDialog({})}><Icon name="mail" />Jadwalkan</button>
+          </div>
+          <div className="pvb">
+            <nav className="toc" aria-label="Daftar isi">
+              <div className="th">Daftar isi</div>
+              {toc.map((t) => (
+                <a key={t.n} className={`${active === t.n ? "on" : ""} ${hiddenNow.includes(t.n) ? "off" : ""}`.trim() || undefined}
+                  onClick={() => !hiddenNow.includes(t.n) && goSection(t.n)} aria-current={active === t.n || undefined}><i>{t.n}</i>{t.title}</a>
+              ))}
+              {doc && (
+                <button className="add" onClick={() => setArrange((v) => !v)} aria-expanded={arrange}><Icon name="plus" />Atur bagian laporan</button>
+              )}
+              {doc && arrange && (
+                <div className="menu">
+                  {doc.toc.map((t) => (
+                    <label key={t.n}><input type="checkbox" checked={!hiddenNow.includes(t.n)} onChange={() => toggleSection(t.n)} />{t.n}. {t.title}</label>
+                  ))}
+                </div>
+              )}
+            </nav>
+            <div className="pgw">
+              <div className="pgs" ref={scroller} onScroll={onScroll}>
+                {pinView ? (
+                  <>
+                    <article className="lpage">
+                      <div className="ph">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <span className="lg2"><img src="/brand/icon_circle_java.png" alt="" /></span>
+                        <span className="eb">Hasil ad-hoc dari agent</span><b>{pinView.title}</b>
+                        <small>Disematkan dari Tanya Agent · {pinView.rows.length} baris</small>
+                      </div>
+                      <div className="sec" id="sec-1" data-n={1}>
+                        <h4><i>1</i>Pertanyaan</h4>
+                        <div className="q">{pinView.question}</div>
+                        {pinView.chart && pinView.chart.type !== "none" && <SmartChart spec={pinView.chart} rows={pinView.rows} height={230} bare subtitle="" />}
+                      </div>
+                    </article>
+                    <article className="lpage cont">
+                      <div className="sec" id="sec-2" data-n={2}>
+                        <h4><i>2</i>Data</h4>
+                        <ResultTable columns={pinView.columns} rows={pinView.rows} spec={pinView.chart} initialRows={14} />
+                      </div>
+                    </article>
+                  </>
+                ) : doc ? (
+                  pages.map((p, i) => (
+                    <article key={`${key}-${i}`} className={`lpage ${i ? "cont" : ""}`}>
+                      {i === 0 && (
+                        <div className="ph">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <span className="lg2"><img src="/brand/icon_circle_java.png" alt="" /></span>
+                          <span className="eb">{doc.eyebrow}</span><b>{doc.heading}</b><small>{doc.byline}</small>
+                        </div>
+                      )}
+                      {p.map((s) => <Section key={s.n} s={s} />)}
+                    </article>
+                  ))
+                ) : loaded && "error" in loaded ? (
+                  <article className="lpage cont"><div className="sec"><div className="ntext">{loaded.error}</div></div></article>
+                ) : (
+                  <article className="lpage cont"><div className="sec"><span className="skel" style={{ height: 60 }} /><span className="skel" /><span className="skel" style={{ width: "70%" }} /><span className="skel" style={{ height: 120 }} /></div></article>
+                )}
               </div>
+              {totalPages > 0 && (
+                <div className="pgfoot">
+                  <span>Hal {Math.min(pageNo, totalPages)} dari {totalPages}</span>
+                  {pageNo < totalPages
+                    ? <button onClick={() => { const pg = scroller.current?.querySelectorAll<HTMLElement>(".lpage")[pageNo]; if (pg) scroller.current?.scrollTo({ top: pg.offsetTop - 16 }); }}>↓ Gulir untuk halaman berikutnya</button>
+                    : <button onClick={() => scroller.current?.scrollTo({ top: 0 })}>↑ Kembali ke awal</button>}
+                </div>
+              )}
             </div>
           </div>
-
-          <section className={`rp-preview ${mobileOpen ? "open" : ""}`} aria-label="Pratinjau laporan">
-            <div className="rp-toolbar">
-              <button className="ui-iconbtn ghost rp-back" onClick={() => setMobileOpen(false)} aria-label="Kembali ke daftar"><ChevronLeft size={20} /></button>
-              <div className="rp-toolbar-title"><b>{docTitle}</b><span>{docSub}</span></div>
-              <div className="rp-pager">
-                <button onClick={() => goPage(page - 1)} disabled={page === 0} aria-label="Halaman sebelumnya"><ChevronLeft size={16} /></button>
-                <span>{pages.length ? page + 1 : 0} / {pages.length}</span>
-                <button onClick={() => goPage(page + 1)} disabled={page >= pages.length - 1} aria-label="Halaman berikutnya"><ChevronRight size={16} /></button>
-              </div>
-              <button className="ui-iconbtn rp-zoom" onClick={() => setZoom((z) => !z)} aria-label={zoom ? "Perkecil" : "Perbesar"} aria-pressed={zoom}>
-                {zoom ? <ZoomOut size={20} /> : <ZoomIn size={20} />}
-              </button>
-              <button className="ui-btn lg" onClick={exportXlsx} disabled={!pages.length}><FileSpreadsheet size={20} strokeWidth={1.6} /> XLSX</button>
-              <button className="ui-btn lg primary" onClick={() => { logExport("PDF", current?.title ?? "Laporan"); window.print(); }} disabled={!pages.length}><Download size={20} /> Export PDF</button>
-            </div>
-            <div className={`rp-canvas ${zoom ? "zoomed" : ""}`} ref={docRef}
-              onScroll={(e) => {
-                const sheets = e.currentTarget.querySelectorAll<HTMLElement>(".rp-sheet");
-                const top = e.currentTarget.scrollTop + 120;
-                let p = 0;
-                sheets.forEach((s, i) => { if (s.offsetTop <= top) p = i; });
-                if (p !== page) setPage(p);
-              }}>
-              <div className="rp-doc">
-                {loading && (
-                  <article className="rp-sheet">
-                    <span className="ui-skel" style={{ height: 28, width: "60%" }} />
-                    <span className="ui-skel" style={{ height: 80 }} />
-                    <span className="ui-skel" style={{ height: 200 }} />
-                    <span className="ui-skel" style={{ height: 70 }} />
-                  </article>
-                )}
-                {!loading && pages.length === 0 && (
-                  <article className="rp-sheet rp-sheet-empty"><span>Data laporan belum tersedia. Coba muat ulang beberapa saat lagi.</span></article>
-                )}
-                {!loading && pages.map((p, i) => (
-                  <article key={`${current?.id}-${i}`} className="rp-sheet">
-                    {p}
-                    <span className="rp-sheet-no">{i + 1} / {pages.length}</span>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-        </div>
+        </section>
       </div>
-
+      {notice && <div className="ltoast" role="status">{notice}</div>}
       {schedDialog && (
         <ScheduleDialog regions={regions} edit={schedDialog.edit} onClose={() => setSchedDialog(null)}
           onSaved={() => { setSchedDialog(null); setVersion((v) => v + 1); }} />

@@ -143,14 +143,5 @@
   .rp-toolbar .ui-btn.lg { flex: 1; }
 }
 
-@media print {
-  @page { size: A4; margin: 12mm; }
-  body * { visibility: hidden !important; }
-  .rp-doc, .rp-doc * { visibility: visible !important; }
-  .rp-preview, .rp-canvas { position: static !important; height: auto !important; overflow: visible !important; border: 0 !important; background: none !important; }
-  .rp-doc { position: absolute; left: 0; top: 0; width: 100%; max-width: none !important; gap: 0; }
-  .rp-sheet { box-shadow: none; border-radius: 0; padding: 0; min-height: 0; break-after: page; }
-  .rp-sheet:last-child { break-after: auto; }
-}
 .rp-doc-chart .sc-title { font-size: 0.875rem; }
 .rp-doc-head img { height: 34px; }

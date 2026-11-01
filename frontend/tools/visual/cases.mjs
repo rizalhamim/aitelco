@@ -8,6 +8,7 @@ export const USER = {
 
 import { QUESTION } from "./chat-fixture.mjs";
 import { Q1, Q2 } from "./map-fixture.mjs";
+import { PINS } from "./report-fixture.mjs";
 
 const M = "design/mockup-v2";
 
@@ -61,5 +62,14 @@ export const CASES = [
       await page.waitForSelector(".mstat");
       await page.mouse.move(5, 890);
       await page.waitForTimeout(150);
+    } },
+  // 06 Laporan: Performance Outlook selected, one pinned agent answer in the library.
+  { name: "laporan-web", route: "/reports", width: 1440, height: 1041, clock: "2026-11-01T06:00:00Z",
+    storage: { "dash_pins::rizal": JSON.stringify(PINS) },
+    mockup: `${M}/06-laporan/png/Web - Laporan@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".lpage .pk");
+      await page.mouse.move(5, 1030);
+      await page.waitForTimeout(400);
     } },
 ];

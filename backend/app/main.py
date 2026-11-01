@@ -34,6 +34,7 @@ from .routes_stats import router as stats_router, usage_router
 from .dashboard import router as dashboard_router
 from .performance import router as performance_router
 from .map_agent import router as map_agent_router
+from .report_library import router as report_docs_router
 from .watchlist import router as watchlist_router, evaluate_all as evaluate_watchlist
 from .report_schedule import links_router as report_links_router, router as report_schedule_router, run_due as run_due_reports
 from .map_overview import router as map_router
@@ -73,6 +74,7 @@ app.include_router(usage_router)
 app.include_router(dashboard_router)
 app.include_router(performance_router)
 app.include_router(map_agent_router)
+app.include_router(report_docs_router)
 app.include_router(watchlist_router)
 app.include_router(report_schedule_router)
 app.include_router(report_links_router)
