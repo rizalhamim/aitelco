@@ -1,6 +1,6 @@
 # Agent Java · Redesign v2 (dalam review)
 
-Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login dan 02 Tanya Agent disetujui (1 Nov 2026), 03 Dashboard menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
+Mockup v2 untuk rebrand ke **Agent Java** dan rework Flutter. Rizal mereview per halaman, mulai dari Login. Status: 01 Login, 02 Tanya Agent, dan 03 Dashboard disetujui (1 Nov 2026), 04 Performance menunggu review. Halaman yang belum disetujui **belum boleh** diimplementasikan. Plan lengkap ada di Claude Doc "Agent Java Redesign v2: Plan".
 
 Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 
@@ -17,6 +17,7 @@ Mockup v1 yang disetujui sebelumnya tetap di `design/mockup/` sebagai referensi.
 | `01-login/app-icon/` | Ikon app Android baru berupa tulisan "Agent Java": PNG 1024 (bulat dan kotak) + layer adaptive icon 432 (foreground, background) |
 | `02-tanya-agent/` | Halaman 02 Tanya Agent: `.figcraft` (Web 1440 × 1080, Android 390 × 844), PNG @2x, halaman review interaktif (tab Grafik/Tabel/Peta) |
 | `03-dashboard/` | Halaman 03 Dashboard: `.figcraft` (Web 1440 × 1420, Android 390 × 1720 layar digulir), PNG @2x, halaman review interaktif (tooltip, legenda, Batang/Garis) |
+| `04-performance/` | Halaman 04 Performance: `.figcraft` (Web 1440 × 1590, Android 390 × 1990 layar digulir), PNG @2x, halaman review interaktif (drill-down, tren 12 bulan Revenue/Payload/Pelanggan, detail site di baris tabel) |
 | `tools/` | Konverter HTML ke FigCraft (lihat bawah) |
 
 ## Video login
