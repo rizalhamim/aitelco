@@ -16,6 +16,7 @@ from .auth import (
     hash_password, verify_password,
     create_access_token, create_refresh_token, decode_token,
     get_current_user, require_admin, get_current_user_optional,
+    device_signed_out, clear_device_signout,
 )
 from . import email_service
 
@@ -76,6 +77,7 @@ def login(req: LoginReq, request: Request, db: Session = Depends(get_db)):
     user.login_count = (user.login_count or 0) + 1
     db.add(UsageLog(user_id=user.id, action="login"))
     _audit(db, user, "login", request)
+    clear_device_signout(db, user, request.headers)
 
     access = create_access_token({"sub": user.username, "role": user.role})
     refresh = create_refresh_token({"sub": user.username})
@@ -163,6 +165,7 @@ def verify_login_token(req: VerifyTokenReq, request: Request, db: Session = Depe
 
     db.add(UsageLog(user_id=user.id, action="login"))
     _audit(db, user, "login", request)
+    clear_device_signout(db, user, request.headers)
 
     access = create_access_token({"sub": user.username, "role": user.role})
     refresh = create_refresh_token({"sub": user.username})
@@ -175,7 +178,7 @@ def verify_login_token(req: VerifyTokenReq, request: Request, db: Session = Depe
 
 
 @router.post("/refresh")
-def refresh_token(body: dict, db: Session = Depends(get_db)):
+def refresh_token(body: dict, request: Request, db: Session = Depends(get_db)):
     token = body.get("refresh_token", "")
     payload = decode_token(token)
     if not payload or payload.get("type") != "refresh":
@@ -185,6 +188,8 @@ def refresh_token(body: dict, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
     if not user or not user.is_active:
         raise HTTPException(401, "User not found or inactive")
+    if device_signed_out(db, user, request.headers, payload):
+        raise HTTPException(401, "Perangkat ini sudah dikeluarkan dari akun. Silakan masuk lagi.")
 
     access = create_access_token({"sub": user.username, "role": user.role})
     return {"access_token": access, "token_type": "bearer"}
@@ -209,6 +214,7 @@ def change_password(
     if not verify_password(req.old_password, user.hashed_password):
         raise HTTPException(400, "Old password is incorrect")
     user.hashed_password = hash_password(req.new_password)
+    user.password_changed_at = utcnow()
     db.commit()
     return {"ok": True}
 
@@ -289,6 +295,7 @@ def reset_password(req: ResetPasswordReq, db: Session = Depends(get_db)):
         raise HTTPException(400, "User not found")
 
     user.hashed_password = hash_password(req.new_password)
+    user.password_changed_at = utcnow()
     reset.used = True
     db.commit()
 
@@ -921,6 +928,7 @@ def _user_dict(u: User) -> dict:
         "email": u.email,
         "full_name": u.full_name,
         "role": u.role,
+        "department": u.department,
         "is_active": u.is_active,
         "created_at": u.created_at.isoformat() if u.created_at else None,
         "last_login": u.last_login.isoformat() if u.last_login else None,

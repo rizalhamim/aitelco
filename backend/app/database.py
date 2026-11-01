@@ -44,6 +44,8 @@ class User(Base):
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     last_login = Column(DateTime, nullable=True)
     login_count = Column(Integer, default=0, nullable=False)
+    password_changed_at = Column(DateTime, nullable=True)
+    preferences = Column(Text, nullable=True)  # JSON from the Profil page (display, notifications, default region)
 
     # Relationships
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
@@ -176,6 +178,8 @@ class AppClient(Base):
     app_build = Column(Integer, nullable=True)
     first_seen = Column(DateTime, default=utcnow, nullable=False)
     last_seen = Column(DateTime, default=utcnow, nullable=False, index=True)
+    # "Keluarkan" on the Profil page: tokens issued before this are refused from this device.
+    signed_out_at = Column(DateTime, nullable=True)
 
     __table_args__ = (Index("ix_app_clients_user_device", "user_id", "platform", "device_model", unique=True),)
 
@@ -304,7 +308,9 @@ def _add_missing_columns():
     """Additive columns on tables that already exist (create_all never alters a table)."""
     from sqlalchemy import inspect, text
     wanted = {"report_runs": [("failed", "INTEGER NOT NULL DEFAULT 0")],
-              "watch_rules": [("notify_push", "BOOLEAN NOT NULL DEFAULT 0")]}
+              "watch_rules": [("notify_push", "BOOLEAN NOT NULL DEFAULT 0")],
+              "users": [("password_changed_at", "DATETIME"), ("preferences", "TEXT")],
+              "app_clients": [("signed_out_at", "DATETIME")]}
     insp = inspect(engine)
     with engine.begin() as conn:
         for table, cols in wanted.items():

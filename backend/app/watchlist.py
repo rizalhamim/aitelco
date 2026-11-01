@@ -368,7 +368,10 @@ def _notify(db: Session, rule: WatchRule, alert: WatchAlert) -> None:
         db.commit()
     if rule.notify_email and alert.severity != "pulih":
         user = db.get(User, rule.user_id)
-        if user and user.email:
+        # Profil > Notifikasi can turn email off per alert level for all watches.
+        from .profile_api import wants
+        kind = "alert_kritis" if alert.severity == "kritis" else "alert_peringatan"
+        if user and user.email and wants(user, kind, "email"):
             try:
                 email_service.send_notification(user.email, f"[Alert] {alert.title}", alert.message)
             except Exception as e:
