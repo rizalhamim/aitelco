@@ -30,4 +30,12 @@ export const CASES = [
       const box = await page.locator(".chartbox").boundingBox();
       await page.mouse.move(box.x + 44 + ((box.width - 56) * 15) / 30, box.y + 60);
     } },
+  // 03 Dashboard: Circle Java, Oktober 2026, region chart hovered on Agu.
+  { name: "dashboard-web", route: "/dashboard", width: 1440, height: 1420, clock: "2026-11-01T06:00:00Z",
+    mockup: `${M}/03-dashboard/png/Web - Dashboard@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".rchart");
+      const box = await page.locator(".rchart").boundingBox();
+      await page.mouse.move(box.x + 46 + ((box.width - 52) / 6) * 3.5, box.y + 200);
+    } },
 ];

@@ -57,10 +57,6 @@
 .v2 .vhead h4 { margin: 0; font: 600 14.5px/1.3 var(--f-display) } .v2 .vhead p { margin: 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
 .v2 .vhead .seg { margin-left: auto }
 .v2 .answer-chart { display: grid; gap: 0; min-width: 0 }
-.v2 .legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
-.v2 .legend .lg { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49; background: #fff; cursor: pointer }
-.v2 .legend .lg i { width: 10px; height: 10px; border-radius: 50% }
-.v2 .legend .lg.off { opacity: .45 }
 .v2 .chartbox { position: relative; min-width: 0 }
 .v2 .chartbox svg { display: block }
 .v2 .tip { position: absolute; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 500 12px/1.5 var(--f-display); pointer-events: none; box-shadow: 0 10px 24px rgba(0,0,0,.25); min-width: 150px; z-index: 2 }
@@ -94,9 +90,6 @@
 .v2 .sg:hover { border-color: #FF7A59 }
 .v2 .sg:disabled { opacity: .55; cursor: default }
 .v2 .sg svg { width: 16px; height: 16px; color: #FF7A59 }
-.v2 .chip { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 13px/1 var(--f-display); color: #3D4C49; white-space: nowrap }
-.v2 .chip.teal { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F }
-.v2 .chip svg { width: 16px; height: 16px }
 .v2 .top .btn-ic:disabled { opacity: .55; cursor: default }
 
 /* composer dock: sticks to the bottom of the window over a fade */

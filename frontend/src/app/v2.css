@@ -85,6 +85,15 @@
 .v2 .card .ch h3 { margin: 0; font: 600 16px/1.3 var(--f-display) } .v2 .card .ch p { margin: 2px 0 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
 .v2 .card .ch .grow { flex: 1 }
 
+/* chips and legend chips (top bars, charts) */
+.v2 .legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.v2 .legend .lg { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49; background: #fff; cursor: pointer }
+.v2 .legend .lg i { width: 10px; height: 10px; border-radius: 50% }
+.v2 .legend .lg.off { opacity: .45 }
+.v2 .chip { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 13px/1 var(--f-display); color: #3D4C49; white-space: nowrap }
+.v2 .chip.teal { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F }
+.v2 .chip svg { width: 16px; height: 16px }
+
 /* main column + top bar */
 .v2 .main { min-width: 0; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh }
 .v2 .top { position: sticky; top: 0; z-index: 15; height: 76px; flex: none; background: rgba(255,255,255,.88); backdrop-filter: blur(10px); border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 28px }

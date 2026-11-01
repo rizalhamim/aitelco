@@ -24,7 +24,7 @@ def test_queries_use_literal_partitions_and_probed_columns():
     assert set(q) == {"kec_month", "avail_month", "region_daily", "site_month"}
     assert "BETWEEN 202410 AND 202610" in q["kec_month"]
     assert "ANY_VALUE(z.kecamatan) AS kecamatan" in q["kec_month"]
-    assert "DATE '2026-10-18' AND DATE '2026-10-31'" in q["region_daily"]
+    assert "DATE '2026-08-23' AND DATE '2026-10-31'" in q["region_daily"]
     # the daily table lacks rgu_90d and gross_add: only the measures it has are summed
     assert "rgu_90d" not in q["region_daily"] and "SUM(x.usg_data_gb) AS payload_gb" in q["region_daily"]
     assert "IN (202610, 202609, 202510)" in q["site_month"] and "SUM(rev_total) AS revenue" in q["site_month"]
@@ -70,6 +70,9 @@ def test_label_and_daily_spark(dump_root):
     vals, labels = dashboard._daily_spark(days, ["EAST JAVA"], "revenue")
     assert vals == [float(d) for d in range(22, 32)] and labels[0] == "22 Okt" and labels[-1] == "31 Okt"
     assert dashboard._daily_spark(days, ["EAST JAVA"], "subs") == (None, None)
+    wk, wl = dashboard._weekly_spark(days, ["EAST JAVA"], "revenue")
+    # 18 Okt is a Sunday: weeks start 12, 19 and 26 Okt
+    assert wl == ["12 Okt", "19 Okt", "26 Okt"] and wk == [18.0, sum(range(19, 26)), sum(range(26, 32))]
 
 
 def test_stale_dump_is_not_used(dump_root, monkeypatch):
@@ -96,3 +99,12 @@ def test_due_runs_once_after_five_wib(dump_root):
     _write_dump(dump_root, datetime(2026, 11, 1, 5, 2, tzinfo=wib), [_kec(202610, "EAST JAVA", 1.0)])
     assert perf_dump.due(datetime(2026, 11, 1, 9, 0, tzinfo=wib)) is False
     assert perf_dump.due(datetime(2026, 11, 2, 5, 30, tzinfo=wib)) is True
+
+
+def test_kabupaten_drill_down(dump_root):
+    rows = [_kec(202610, "EAST JAVA", 100.0), _kec(202609, "EAST JAVA", 80.0), _kec(202610, "WEST JAVA", 50.0, "K2")]
+    rows[0]["kabupaten"] = "KAB MALANG"
+    _write_dump(dump_root, datetime.now(timezone.utc), rows)
+    out = dashboard._kabupaten_series("East Java", [202609, 202610])
+    assert out["labels"] == ["Sep", "Okt"] and out["total"] == 2
+    assert out["series"][0] == {"name": "Kab Malang", "values": [0.0, 100.0]}

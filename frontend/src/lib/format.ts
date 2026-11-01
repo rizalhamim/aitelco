@@ -2,6 +2,7 @@ import { shortNum } from "@/app/components/charts/SmartChart";
 
 const id1 = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const id2 = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
+const id2f = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export const MONTHS_FULL = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
@@ -9,7 +10,7 @@ export const MONTHS_FULL = ["Januari", "Februari", "Maret", "April", "Mei", "Jun
 export function idr(v: number | null | undefined): string {
   if (v == null || !Number.isFinite(v)) return "–";
   const a = Math.abs(v);
-  if (a >= 1e12) return `Rp ${id2.format(+(v / 1e12).toFixed(2))} T`;
+  if (a >= 1e12) return `Rp ${id2f.format(v / 1e12)} T`;
   if (a >= 1e9) return `Rp ${id1.format(v / 1e9)} M`;
   if (a >= 1e6) return `Rp ${id1.format(v / 1e6)} jt`;
   return `Rp ${id2.format(v)}`;

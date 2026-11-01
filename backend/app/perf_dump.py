@@ -16,7 +16,7 @@ Tables (all Circle Java):
     kec_month     kecamatan x month, 25 months (YoY needs 13): revenue, subs, payload_gb,
                   gross_add plus region / kabupaten / provinsi / kecamatan names
     avail_month   4G availability per territory (circle, region, kabkot) and month
-    region_daily  region x day, last 14 days, when the daily KPI table has the same
+    region_daily  region x day, last 70 days (10 weeks), when the daily KPI table has the same
                   measures (probed from the table schema, skipped otherwise)
     site_month    site x month for this month, last month and the same month last year:
                   payload, revenue when present, 4G availability
@@ -124,7 +124,7 @@ GROUP BY level, name, month_id
     day_col = _pick(dly, "dt_id")
     dsums = ",\n  ".join(f"SUM(x.{c}) AS {m}" for m, c in MEASURES.items() if c in dly)
     if latest_day and day_col and "kec_id" in dly and dsums:
-        start = latest_day - timedelta(days=13)
+        start = latest_day - timedelta(days=69)
         q["region_daily"] = f"""
 SELECT x.dt_id AS dt_id, t.region AS region,
   {dsums}

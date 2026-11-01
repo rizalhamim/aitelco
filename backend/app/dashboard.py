@@ -161,6 +161,43 @@ def _daily_spark(daily: list[dict], scope: list[str], key: str, n: int = 10):
     return [by[d] for d in days], [f"{int(d[8:10])} {MONTHS_ID[int(d[5:7]) - 1]}" for d in days]
 
 
+def _weekly_spark(daily: list[dict], scope: list[str], key: str, n: int = 10):
+    """Last n weeks (Monday start, the current week so far) of one KPI: (values, labels)."""
+    vals, _ = _daily_spark(daily, scope, key, n=10_000)
+    if not vals:
+        return None, None
+    col = _DUMP_KEYS[key]
+    scope_u = {s.upper() for s in scope}
+    by: dict = {}
+    for r in daily:
+        if str(r.get("region") or "").upper() in scope_u and r.get(col) is not None:
+            d = date.fromisoformat(str(r["dt_id"])[:10])
+            wk = d - timedelta(days=d.weekday())
+            by[wk] = by.get(wk, 0.0) + float(r[col])
+    weeks = sorted(by)[-n:]
+    if len(weeks) < 2:
+        return None, None
+    return [by[w] for w in weeks], [f"{w.day} {MONTHS_ID[w.month - 1]}" for w in weeks]
+
+
+def _kabupaten_series(region: str, months: list[int], top: int = 6) -> Optional[dict]:
+    """Drill-down of the region chart: revenue of the region's largest kabupaten per month."""
+    kec = perf_dump.load("kec_month") or []
+    by: dict = {}
+    for r in kec:
+        if str(r.get("region") or "").upper() != region.upper() or not r.get("kabupaten"):
+            continue
+        m = int(r["month_id"])
+        if m in months:
+            k = by.setdefault(str(r["kabupaten"]).title(), {mm: 0.0 for mm in months})
+            k[m] += float(r.get("revenue") or 0)
+    if not by:
+        return None
+    names = sorted(by, key=lambda n: by[n][months[-1]], reverse=True)[:top]
+    return {"months": months, "labels": [month_label(m) for m in months],
+            "series": [{"name": n, "values": [by[n][m] for m in months]} for n in names], "total": len(by)}
+
+
 def build_overview(region: str = "", months_back: int = 6) -> dict:
     spark_n = 12
     dump = _from_dump(spark_n)
@@ -194,11 +231,13 @@ def build_overview(region: str = "", months_back: int = 6) -> dict:
         tg = all_targets.get(k["key"]) or {}
         tvals = [tg.get(rg) or tg.get(rg.upper()) for rg in scope]
         dvals, dlabels = _daily_spark(daily, scope, k["key"])
+        wvals, wlabels = _weekly_spark(daily, scope, k["key"])
         kpis.append({
             "key": k["key"], "label": k["label"], "format": k["format"], "icon": k["icon"],
             "value": cur, "prev": last, "pct_change": _pct(cur, last),
             "spark": [total(m, k["key"]) for m in months],
             "spark_daily": dvals, "spark_daily_labels": dlabels,
+            "spark_weekly": wvals, "spark_weekly_labels": wlabels,
             "target": sum(tvals) if tvals and all(tvals) else None,
             "note_prev_label": month_label(prev),
         })
@@ -256,6 +295,7 @@ def build_overview(region: str = "", months_back: int = 6) -> dict:
         "has_targets": bool(targets),
         "summary": _summary(kpis, region_rows, region),
         "source": source,
+        "revenue_by_kabupaten": _kabupaten_series(region, chart_months) if region and dump else None,
         "kabupaten_count": len({(r.get("kabupaten"), r.get("provinsi")) for r in (perf_dump.load("kec_month") or [])
                                 if int(r["month_id"]) == latest and r.get("kabupaten")}) or None,
     }
@@ -263,6 +303,18 @@ def build_overview(region: str = "", months_back: int = 6) -> dict:
 
 def _fmt_pct(p: Optional[float]) -> str:
     return "–" if p is None else f"{abs(p):.1f}".replace(".", ",") + "%"
+
+
+def _rp(v: Optional[float]) -> str:
+    """Rp 1,84 T / Rp 412,6 M, like the web idr() helper."""
+    if v is None:
+        return "–"
+    a = abs(v)
+    if a >= 1e12:
+        return f"Rp {v / 1e12:.2f} T".replace(".", ",")
+    if a >= 1e9:
+        return f"Rp {v / 1e9:.1f} M".replace(".", ",")
+    return f"Rp {v / 1e6:.1f} jt".replace(".", ",")
 
 
 def _summary(kpis: list[dict], regions: list[dict], region: str) -> dict:
@@ -278,7 +330,7 @@ def _summary(kpis: list[dict], regions: list[dict], region: str) -> dict:
         if movers and not region:
             pick = max(movers, key=lambda r: r["mom_pct"]) if up else min(movers, key=lambda r: r["mom_pct"])
             lead = f", ditopang {pick['region'].title()}" if up else f", terutama dari {pick['region'].title()}"
-        parts.append(f"Revenue {scope} **{verb} {_fmt_pct(rev['pct_change'])} MoM**{lead}.")
+        parts.append(f"Revenue {scope} **{verb} {_fmt_pct(rev['pct_change'])} MoM** ke {_rp(rev['value'])}{lead}.")
     weak = [k for k in kpis if k["key"] != "revenue" and k["pct_change"] is not None and k["pct_change"] < 0]
     if weak:
         names = " dan ".join(
