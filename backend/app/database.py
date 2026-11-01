@@ -46,6 +46,8 @@ class User(Base):
     login_count = Column(Integer, default=0, nullable=False)
     password_changed_at = Column(DateTime, nullable=True)
     preferences = Column(Text, nullable=True)  # JSON from the Profil page (display, notifications, default region)
+    # "approved" for every account an admin made; "pending" or "rejected" for access requests from the login page.
+    approval_status = Column(String(20), default="approved", nullable=True)
 
     # Relationships
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
@@ -103,6 +105,17 @@ class LoginAudit(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     user = relationship("User", back_populates="login_audits")
+
+
+class UnknownLogin(Base):
+    """Sign-in attempts with a username that does not exist (LoginAudit needs a user)."""
+    __tablename__ = "unknown_logins"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(100), nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
 
 
 class UsageLog(Base):
@@ -309,7 +322,7 @@ def _add_missing_columns():
     from sqlalchemy import inspect, text
     wanted = {"report_runs": [("failed", "INTEGER NOT NULL DEFAULT 0")],
               "watch_rules": [("notify_push", "BOOLEAN NOT NULL DEFAULT 0")],
-              "users": [("password_changed_at", "DATETIME"), ("preferences", "TEXT")],
+              "users": [("password_changed_at", "DATETIME"), ("preferences", "TEXT"), ("approval_status", "VARCHAR(20)")],
               "app_clients": [("signed_out_at", "DATETIME")]}
     insp = inspect(engine)
     with engine.begin() as conn:

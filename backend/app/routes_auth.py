@@ -10,7 +10,7 @@ from sqlalchemy import func
 
 from .database import (
     get_db, User, ChatSession, ChatMessage, UsageLog, LoginAudit,
-    PasswordReset, Notification, utcnow,
+    PasswordReset, Notification, UnknownLogin, utcnow,
 )
 from .auth import (
     hash_password, verify_password,
@@ -61,13 +61,63 @@ def _audit(db: Session, user: User, action: str, request: Request | None) -> Non
     db.commit()
 
 
+# Wrong passwords before an account is locked, and for how long (the Statistik page shows locks).
+LOCK_AFTER = 5
+LOCK_MINUTES = 15
+
+
+def _client(request: Request | None) -> tuple[str | None, str | None]:
+    if request is None:
+        return None, None
+    fwd = request.headers.get("x-forwarded-for", "")
+    ip = (fwd.split(",")[0].strip() or (request.client.host if request.client else None))
+    return (ip[:45] if ip else None), (request.headers.get("user-agent") or "")[:500] or None
+
+
+def _unknown(db: Session, username: str, request: Request | None) -> None:
+    ip, ua = _client(request)
+    db.add(UnknownLogin(username=(username or "")[:100], ip_address=ip, user_agent=ua))
+    db.commit()
+
+
+def locked_until(db: Session, user: User) -> datetime | None:
+    """End of the lock when the last LOCK_AFTER wrong passwords since the last good
+    login all fell within LOCK_MINUTES, otherwise None."""
+    since = utcnow().replace(tzinfo=None) - timedelta(minutes=LOCK_MINUTES)
+    rows = (db.query(LoginAudit.action, LoginAudit.created_at)
+            .filter(LoginAudit.user_id == user.id, LoginAudit.created_at >= since,
+                    LoginAudit.action.in_(("login", "failed_login")))
+            .order_by(LoginAudit.created_at.desc()).limit(LOCK_AFTER).all())
+    if len(rows) < LOCK_AFTER or any(a == "login" for a, _ in rows):
+        return None
+    last = rows[0][1]
+    last = last.astimezone(timezone.utc).replace(tzinfo=None) if last.tzinfo else last
+    return last + timedelta(minutes=LOCK_MINUTES)
+
+
+def _check_access(db: Session, user: User, request: Request | None) -> None:
+    """Refuses accounts that wait for approval and accounts locked after wrong passwords."""
+    if (user.approval_status or "approved") == "pending":
+        raise HTTPException(403, "Permintaan akses Anda masih menunggu persetujuan Admin.")
+    if (user.approval_status or "approved") == "rejected":
+        raise HTTPException(403, "Permintaan akses Anda tidak disetujui. Hubungi Admin.")
+    until = locked_until(db, user)
+    if until is not None:
+        _audit(db, user, "failed_locked", request)
+        mins = max(1, int((until - utcnow().replace(tzinfo=None)).total_seconds() // 60) + 1)
+        raise HTTPException(423, f"Akun dikunci sementara setelah {LOCK_AFTER} kali salah password. Coba lagi dalam {mins} menit.")
+
+
 @router.post("/login", response_model=TokenResp)
 def login(req: LoginReq, request: Request, db: Session = Depends(get_db)):
     """Direct username+password login. Returns access+refresh tokens immediately."""
     user = db.query(User).filter(User.username == req.username).first()
-    if not user or not verify_password(req.password, user.hashed_password):
-        if user:
-            _audit(db, user, "failed_login", request)
+    if not user:
+        _unknown(db, req.username, request)
+        raise HTTPException(401, "Invalid username or password")
+    _check_access(db, user, request)
+    if not verify_password(req.password, user.hashed_password):
+        _audit(db, user, "failed_login", request)
         raise HTTPException(401, "Invalid username or password")
     if not user.is_active:
         _audit(db, user, "failed_inactive", request)
@@ -89,9 +139,14 @@ def login(req: LoginReq, request: Request, db: Session = Depends(get_db)):
 
 
 @router.post("/login/request-token")
-def request_login_token(req: LoginReq, bg: BackgroundTasks, db: Session = Depends(get_db)):
+def request_login_token(req: LoginReq, bg: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == req.username).first()
-    if not user or not verify_password(req.password, user.hashed_password):
+    if not user:
+        _unknown(db, req.username, request)
+        raise HTTPException(401, "Invalid username or password")
+    _check_access(db, user, request)
+    if not verify_password(req.password, user.hashed_password):
+        _audit(db, user, "failed_login", request)
         raise HTTPException(401, "Invalid username or password")
     if not user.is_active:
         raise HTTPException(403, "Account is deactivated")
@@ -259,6 +314,49 @@ class ResetPasswordReq(BaseModel):
     new_password: str = Field(min_length=6)
 
 
+# ── Access requests (login page "Minta akses", approved on the Statistik page) ──
+
+class AccessRequestReq(BaseModel):
+    full_name: str = Field(min_length=2, max_length=120)
+    email: str = Field(min_length=5, max_length=200)
+    department: str = Field(default="", max_length=100)
+    region: str = Field(default="JAVA", max_length=20)
+
+
+@router.post("/request-access")
+def request_access(req: AccessRequestReq, request: Request, db: Session = Depends(get_db)):
+    """Creates an inactive account that waits for an admin. The answer is the same
+    whether or not the email is known, so it cannot be used to probe accounts."""
+    import json
+    import re
+
+    email = req.email.strip().lower()
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+        raise HTTPException(400, "Email tidak valid")
+    done = {"ok": True, "message": "Permintaan terkirim. Admin akan meninjau dan mengirim email saat akun aktif."}
+    if db.query(User).filter(func.lower(User.email) == email).first():
+        return done
+    since = utcnow() - timedelta(days=1)
+    if db.query(func.count(User.id)).filter(User.approval_status == "pending", User.created_at >= since).scalar() >= 50:
+        raise HTTPException(429, "Terlalu banyak permintaan hari ini. Coba lagi besok.")
+    base = re.sub(r"[^a-z0-9._]", "", email.split("@")[0])[:40] or "user"
+    username, n = base, 1
+    while db.query(User.id).filter(User.username == username).first():
+        n += 1
+        username = f"{base}{n}"
+    region = req.region if req.region in ("JAVA", "WEST JAVA", "CENTRAL JAVA", "EAST JAVA") else "JAVA"
+    user = User(username=username, email=email, full_name=req.full_name.strip(), department=req.department.strip() or None,
+                hashed_password=hash_password(secrets.token_urlsafe(32)), role="end_user", is_active=False,
+                approval_status="pending", preferences=json.dumps({"default_region": region}))
+    db.add(user)
+    db.flush()
+    for admin in db.query(User).filter(User.role == "admin", User.is_active == True).all():  # noqa: E712
+        db.add(Notification(user_id=admin.id, kind="info", title="Permintaan akses baru",
+                            message=f"{user.full_name} ({email}) meminta akses. Tinjau di halaman Statistik."))
+    db.commit()
+    return done
+
+
 @router.post("/forgot-password")
 def forgot_password(req: ForgotPasswordReq, bg: BackgroundTasks, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email).first()
@@ -287,7 +385,8 @@ def reset_password(req: ResetPasswordReq, db: Session = Depends(get_db)):
     ).first()
     if not reset:
         raise HTTPException(400, "Invalid or expired reset token")
-    if reset.expires_at < datetime.now(timezone.utc):
+    expires = reset.expires_at if reset.expires_at.tzinfo else reset.expires_at.replace(tzinfo=timezone.utc)
+    if expires < datetime.now(timezone.utc):
         raise HTTPException(400, "Reset token has expired")
 
     user = db.query(User).filter(User.id == reset.user_id).first()

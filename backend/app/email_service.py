@@ -151,6 +151,20 @@ def send_reset_link(to: str, username: str, token: str) -> bool:
     return _send(to, "Reset Password — Bizplan Java Agent", html)
 
 
+def send_access_approved(to: str, username: str, full_name: str, token: str) -> bool:
+    """Access request approved: the username and a link to set the first password (3 days)."""
+    url = f"{APP_URL}/login?reset={token}"
+    html = _base_html(f"""
+<h2>Akses Agent Java disetujui</h2>
+<p>Halo <strong>{full_name or username}</strong>, permintaan akses Anda sudah disetujui Admin.</p>
+<p>Username: <strong>{username}</strong>. Buat password pertama lewat tombol di bawah. Link berlaku <strong>3 hari</strong>.</p>
+<p style="text-align:center;margin:28px 0"><a href="{url}" class="btn">Buat password</a></p>
+<hr class="divider">
+<p class="muted">Atau copy link berikut:<br><a href="{url}" style="word-break:break-all">{url}</a></p>
+""")
+    return _send(to, "Akses Agent Java disetujui", html)
+
+
 def send_welcome(to: str, username: str, full_name: str) -> bool:
     html = _base_html(f"""
 <h2>Selamat Datang, {full_name or username}!</h2>
