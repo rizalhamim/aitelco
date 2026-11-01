@@ -95,4 +95,11 @@ export const CASES = [
       await page.mouse.move(5, 1740);
       await page.waitForTimeout(400);
     } },
+  { name: "unduh-web", route: "/unduh", width: 1440, height: 1273, clock: "2026-11-01T06:00:00Z",
+    mockup: `${M}/09-statistik-unduh/png/Web - Unduh APK@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".dlx .vh .vr");
+      await page.mouse.move(5, 1270);
+      await page.waitForTimeout(400);
+    } },
 ];

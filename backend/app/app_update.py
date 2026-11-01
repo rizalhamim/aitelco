@@ -4,6 +4,7 @@ Exposes:
   GET /api/app/version        -> latest version metadata (JSON)
   GET /api/app/download       -> the latest APK binary (FileResponse)
   GET /api/app/releases       -> release history for the web "Unduh APK" page
+  POST /api/app/send-link     -> email the signed-in user the download link
 
 The latest-release metadata lives in data/app_release.json so it can be
 updated without touching code. The APK is served from a fixed path on the
@@ -15,10 +16,12 @@ import hashlib
 import json
 import os
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 
 from . import telemetry
+from .auth import get_current_user
+from .database import User
 
 router = APIRouter(prefix="/api/app", tags=["app-update"])
 
@@ -104,6 +107,10 @@ def app_version():
         "apk_filename": rel.get("apk_filename") or _DEFAULT_RELEASE["apk_filename"],
         "sha256": _sha256(apk) if size else None,
         "min_android": rel.get("min_android", "8.0"),
+        # Unduh APK page: one line per release and the "Apa yang baru" items
+        # ([{icon, title, text}]); both optional in data/app_release.json.
+        "summary": rel.get("summary") or (_notes_list(rel.get("notes")) or [""])[0],
+        "highlights": rel.get("highlights") or [],
     }, headers={"Cache-Control": "no-store, max-age=0"})
 
 
@@ -112,28 +119,31 @@ def app_releases():
     """Newest first: the current release, then `history` from data/app_release.json
     ([{version_name, released_at, notes, mandatory}])."""
     rel = _load_release()
-    out = [{
-        "version_name": rel.get("version_name"),
-        "released_at": rel.get("released_at"),
-        "notes": _notes_list(rel.get("notes")),
-        "mandatory": bool(rel.get("mandatory", False)),
-        "latest": True,
-    }]
+    def row(r: dict, latest: bool) -> dict:
+        notes = _notes_list(r.get("notes"))
+        return {
+            "version_name": r.get("version_name"),
+            "version_code": r.get("version_code"),
+            "released_at": r.get("released_at"),
+            "notes": notes,
+            "summary": r.get("summary") or (notes[0] if notes else ""),
+            "mandatory": bool(r.get("mandatory", False)),
+            "latest": latest,
+            # Older APKs stay downloadable while their file is kept next to the current one.
+            "available": os.path.exists(_apk_path(r)) if latest or r.get("apk_filename") else False,
+            "download_url": "/api/app/download" if latest else f"/api/app/download?version={r.get('version_name')}",
+        }
+
+    out = [row(rel, True)]
     for h in rel.get("history") or []:
         if not h.get("version_name") or h.get("version_name") == rel.get("version_name"):
             continue
-        out.append({
-            "version_name": h["version_name"],
-            "released_at": h.get("released_at"),
-            "notes": _notes_list(h.get("notes")),
-            "mandatory": bool(h.get("mandatory", False)),
-            "latest": False,
-        })
+        out.append(row(h, False))
     return {"releases": out}
 
 
 @router.get("/download")
-def app_download(request: Request, src: str | None = None):
+def app_download(request: Request, src: str | None = None, version: str | None = None):
     """Serve the latest APK binary and log the download.
 
     Stays reachable without a token: installed apps older than the telemetry
@@ -141,6 +151,11 @@ def app_download(request: Request, src: str | None = None):
     update. The web app only links to it from pages behind login.
     """
     rel = _load_release()
+    if version and version != rel.get("version_name"):
+        old = next((h for h in rel.get("history") or [] if h.get("version_name") == version and h.get("apk_filename")), None)
+        if old is None:
+            return JSONResponse({"error": "apk not available"}, status_code=404)
+        rel = {**old, "version_code": old.get("version_code") or 0}
     apk = _apk_path(rel)
     if not os.path.exists(apk):
         return JSONResponse({"error": "apk not available"}, status_code=404)
@@ -152,3 +167,17 @@ def app_download(request: Request, src: str | None = None):
         media_type="application/vnd.android.package-archive",
         filename=rel.get("apk_filename") or "Bizplan-Java-Agent.apk",
     )
+
+
+@router.post("/send-link")
+def send_link(bg: BackgroundTasks, user: User = Depends(get_current_user)):
+    """Unduh APK "Kirim ke email saya": the download page link to the user's own email."""
+    from . import email_service
+    if not user.email or "@" not in user.email:
+        raise HTTPException(400, "Email akun belum diisi. Lengkapi di Profil.")
+    rel = _load_release()
+    url = f"{email_service.APP_URL}/unduh"
+    bg.add_task(email_service.send_notification, user.email, f"Unduh Agent Java {rel.get('version_name') or ''} untuk Android".strip(),
+                f"Buka link ini di HP Android untuk mengunduh Agent Java: {url}")
+    name, _, domain = user.email.partition("@")
+    return {"ok": True, "to": f"{name[:2]}***@{domain}"}

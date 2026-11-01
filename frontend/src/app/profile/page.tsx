@@ -2,11 +2,11 @@
 // Redesign v2 page 08: Profil dan pengaturan. Identity and usage, Android app (QR and APK),
 // admin shortcuts, security and devices, account form, display settings shared with Android,
 // and notification channels per kind.
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
-import qrcode from "qrcode-generator";
 import AppShell, { TopBar } from "../components/shell/AppShell";
 import { Icon } from "../components/v2/Icon";
+import { PUBLIC_ORIGIN, Qr } from "../components/v2/Qr";
 import { authFetch, logout, updateStoredUser } from "@/lib/auth";
 import { setPrefs, type AccentPref, type DensityPref, type ThemePref } from "@/lib/prefs";
 import "./profil.css";
@@ -45,7 +45,6 @@ const SECTIONS = [
   { key: "notifikasi", label: "Notifikasi", icon: "bell" }, { key: "keamanan", label: "Keamanan", icon: "shield" },
 ] as const;
 // The QR and the emailed link always point at the public site (a phone cannot open a dev host).
-const PUBLIC_ORIGIN = "https://agent.bizplan-java.com";
 
 const hm = (iso: string) => new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 const dmy = (iso: string) => new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
@@ -55,22 +54,6 @@ function dayWord(iso: string): string {
   return days === 0 ? "hari ini" : days === 1 ? "kemarin" : d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 }
 
-function Qr({ text }: { text: string }) {
-  const { n, cells } = useMemo(() => {
-    const q = qrcode(0, "M");
-    q.addData(text);
-    q.make();
-    const size = q.getModuleCount();
-    const out: string[] = [];
-    for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) if (q.isDark(r, c)) out.push(`M${c} ${r}h1v1h-1z`);
-    return { n: size, cells: out.join("") };
-  }, [text]);
-  return (
-    <svg viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" role="img" aria-label="Kode QR halaman unduh aplikasi Android">
-      <path d={cells} fill="#0F1F1D" />
-    </svg>
-  );
-}
 
 const Toggle = ({ on, label, onChange }: { on: boolean; label: string; onChange: (v: boolean) => void }) => (
   <button className={`tgl${on ? "" : " off"}`} role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)}><i /></button>

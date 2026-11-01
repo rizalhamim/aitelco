@@ -15,7 +15,21 @@ const HISTORY = [
 
 const STATIC = {
   "/api/history/sessions": HISTORY,
-  "/api/app/version": { version_name: "1.50.0", version_code: 69, size_bytes: 24 * 1024 * 1024, available: true, min_android: "8.0", download_url: "/api/app/download" },
+  "/api/app/version": { version_name: "1.50.0", version_code: 69, size_bytes: 24 * 1024 * 1024, available: true, min_android: "8.0", download_url: "/api/app/download",
+    notes: "", mandatory: false, released_at: "2026-11-01", apk_filename: "AgentJava-1.50.0.apk",
+    sha256: "7c41e09a3b2f8d6e0d1c5a9b7e3f40c2a6d8e1f9b0c3d5a7e9f1b2c4d6e84e7f2a83", summary: "Redesign v2, nama baru Agent Java",
+    highlights: [
+      { icon: "map", title: "Peta Agent", text: "Tanya lewat chat, jawaban muncul di peta. Warnai dengan Performance, Site productivity, atau Profile wilayah." },
+      { icon: "pulse", title: "Performance kembali", text: "Drill-down Circle Java sampai site, data dari dump Parquet jadi lebih cepat." },
+      { icon: "bell", title: "Watchlist dan alert push", text: "Pantau KPI dengan kalimat biasa, notifikasi masuk saat lewat ambang." },
+      { icon: "user", title: "Profil dari semua tab", text: "Avatar di app bar membuka profil, tema, notifikasi, dan unduhan." },
+    ] },
+  "/api/app/releases": { releases: [
+    { version_name: "1.50.0", version_code: 69, released_at: "2026-11-01", notes: [], summary: "Redesign v2, Agent Java", mandatory: false, latest: true, available: true, download_url: "/api/app/download" },
+    { version_name: "1.49.1", version_code: 68, released_at: "2026-10-31", notes: [], summary: "Sesi kedaluwarsa kembali ke login", mandatory: false, latest: false, available: true, download_url: "/api/app/download?version=1.49.1" },
+    { version_name: "1.49.0", version_code: 67, released_at: "2026-10-31", notes: [], summary: "Redesign v1, 5 tab, unduh APK setelah login", mandatory: false, latest: false, available: true, download_url: "/api/app/download?version=1.49.0" },
+    { version_name: "1.48.3", version_code: 66, released_at: "2026-10-20", notes: [], summary: "Versi sebelum Redesign v1", mandatory: false, latest: false, available: true, download_url: "/api/app/download?version=1.48.3" },
+  ] },
   "/api/watchlist/alerts/count": { active: 3 },
   "/api/dashboard/overview": OVERVIEW,
   "/api/performance": PERFORMANCE,
