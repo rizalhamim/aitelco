@@ -258,7 +258,7 @@ page = {"id": page_id, "name": page_name, "type": "page", "background": {"r": 0.
         "flows": [], "prototype": {"device": "None", "background": {"r": 0.11764706, "g": 0.11764706, "b": 0.11764706, "a": 1.0}, "rotation": "portrait"},
         "guides": [], "width": 0.0, "height": 0.0, "children": []}
 nodes[str(page_id)] = page
-FRAME_NAMES = {'#webFrame': 'Web · Login', '#droidFrame': 'Android · Login', '#brandFrame': 'Brand · Logo dan warna'}
+FRAME_NAMES = json.loads(sys.argv[7]) if len(sys.argv) > 7 else {'#webFrame': 'Web · Login', '#droidFrame': 'Android · Login', '#brandFrame': 'Brand · Logo dan warna'}
 cursor = 0.0
 for f in frames:
     raster_files = {r['id']: r['file'] for r in f['rasters']}

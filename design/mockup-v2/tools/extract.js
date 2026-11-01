@@ -110,8 +110,8 @@ const path = require('path');
     // rasterise svgs in isolation (2x)
     const rp = await b.newPage({ viewport: { width: 400, height: 400 }, deviceScaleFactor: 2 });
     for (const ra of tree.rasters) {
-      await rp.setContent(`<html><body style="margin:0;background:transparent">${sprite}<div id="h" style="display:inline-block;color:${ra.color};line-height:0;border-radius:${ra.radius[0]}px;overflow:hidden">${ra.html.replace(/\s(width|height)="[^"]*"/g, '').replace(/<svg(\s|>)/, `<svg width="${ra.w}" height="${ra.h}"$1`)}</div></body></html>`);
-      await rp.waitForTimeout(50);
+      await rp.setContent(`<html><head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"></head><body style="margin:0;background:transparent">${sprite}<div id="h" style="display:inline-block;color:${ra.color};line-height:0;border-radius:${ra.radius[0]}px;overflow:hidden">${ra.html.replace(/\s(width|height)="[^"]*"/g, '').replace(/<svg(\s|>)/, `<svg width="${ra.w}" height="${ra.h}"$1`)}</div></body></html>`);
+      await rp.evaluate(() => document.fonts.ready); await rp.waitForTimeout(80);
       const file = path.join(outDir, `${frames.length}_${ra.id}.png`);
       await (await rp.$('#h')).screenshot({ path: file, omitBackground: true });
       ra.file = file; delete ra.html;
