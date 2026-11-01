@@ -80,4 +80,12 @@ export const CASES = [
       await page.mouse.move(5, 1150);
       await page.waitForTimeout(400);
     } },
+  { name: "profil-web", route: "/profile", width: 1440, height: 1267, clock: "2026-11-01T06:00:00Z",
+    mockup: `${M}/08-profil/png/Web - Profil@2x.png`,
+    prepare: async (page) => {
+      await page.waitForSelector(".nm .cb");
+      await page.waitForSelector(".ses");
+      await page.mouse.move(5, 1260);
+      await page.waitForTimeout(400);
+    } },
 ];

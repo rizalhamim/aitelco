@@ -4,6 +4,7 @@ import { ALERTS, OVERVIEW } from "./dashboard-fixture.mjs";
 import { PERFORMANCE } from "./performance-fixture.mjs";
 import { MAP, UPLOAD, mapAsk } from "./map-fixture.mjs";
 import { LIBRARY, OUTLOOK, RUNS, SCHEDULES } from "./report-fixture.mjs";
+import { NOTIFS, PROFILE } from "./profile-fixture.mjs";
 import { RULES, WATCH_ALERTS, WATCH_META, WATCH_PARSE, WATCH_STATS } from "./watchlist-fixture.mjs";
 const HISTORY = [
   { session_id: "s1", title: "Revenue West Java vs bulan lalu", message_count: 4, updated_at: "2026-11-01T05:10:00" },
@@ -13,7 +14,7 @@ const HISTORY = [
 
 const STATIC = {
   "/api/history/sessions": HISTORY,
-  "/api/app/version": { version_name: "1.50.0", version_code: 69 },
+  "/api/app/version": { version_name: "1.50.0", version_code: 69, size_bytes: 24 * 1024 * 1024, available: true, min_android: "8.0", download_url: "/api/app/download" },
   "/api/watchlist/alerts/count": { active: 3 },
   "/api/dashboard/overview": OVERVIEW,
   "/api/performance": PERFORMANCE,
@@ -28,6 +29,8 @@ const STATIC = {
   "/api/watchlist/stats": WATCH_STATS,
   "/api/watchlist/meta": WATCH_META,
   "/api/watchlist/parse": WATCH_PARSE,
+  "/api/profile": PROFILE,
+  "/api/auth/me/notifications": NOTIFS,
 };
 
 export function fixtureFor(pathname, params, method, body) {

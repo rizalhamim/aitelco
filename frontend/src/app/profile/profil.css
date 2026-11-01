@@ -1,0 +1,104 @@
+/* Redesign v2 page 08: Profil dan pengaturan (web). Reuses v2.css .card/.seg/.btn-p/.linkbtn. */
+.v2 .pf { flex: 1; min-width: 0; padding: 20px 24px; display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; background: #F5F9F8; align-items: start }
+:where(.v2 .pf) :where(button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer }
+.v2 .pf .pcol { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.v2 .pf .msg { font: 500 12px/1.3 var(--f-display); color: #1F7A3A } .v2 .pf .msg.err { color: #C42B2B }
+
+.v2 .idc { background: linear-gradient(160deg, #0A6A5F, #04332E); color: #fff; border-radius: 22px; padding: 20px; display: grid; gap: 14px; position: relative; overflow: hidden }
+.v2 .idc .glow { position: absolute; right: -70px; top: -80px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(rgba(34,184,201,.55), rgba(34,184,201,0) 70%) }
+.v2 .idc .who { display: flex; gap: 14px; align-items: center; position: relative }
+.v2 .bigav { width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, #C7F25E, #22B8C9); color: #04332E; display: grid; place-items: center; font: 700 26px/1 var(--f-display); position: relative; flex: none }
+.v2 .bigav .cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #0A6A5F; display: grid; place-items: center; border: 2px solid #0A6A5F }
+.v2 .bigav .cam svg { width: 13px; height: 13px }
+.v2 .idc .who b { font: 700 20px/1.2 var(--f-display); display: block } .v2 .idc .who small { font: 400 12.5px/1.4 var(--f-body); color: #C0EDE8; display: block }
+.v2 .idc .tags { display: flex; gap: 6px; flex-wrap: wrap; position: relative }
+.v2 .idc .tags span { font: 600 11.5px/1 var(--f-display); padding: 6px 10px; border-radius: 99px; background: rgba(255,255,255,.12); color: #fff; white-space: nowrap }
+.v2 .idc .tags span.l { background: #C7F25E; color: #04332E }
+.v2 .idc .st3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; position: relative }
+.v2 .idc .st3 div { background: rgba(255,255,255,.08); border-radius: 12px; padding: 9px 10px; display: grid; gap: 3px }
+.v2 .idc .st3 b { font: 700 16px/1.1 var(--f-display) } .v2 .idc .st3 small { font: 500 10.5px/1.25 var(--f-display); color: #C0EDE8 }
+
+.v2 .apkc .row2 { display: flex; gap: 14px; align-items: center }
+.v2 .qrbox { width: 112px; height: 112px; flex: none; border-radius: 14px; border: 1px solid #E1E9E7; padding: 10px; background: #fff }
+.v2 .qrbox svg { width: 92px; height: 92px; display: block }
+.v2 .apkc .ver { display: grid; gap: 6px } .v2 .apkc .ver b { font: 700 18px/1.15 var(--f-display) } .v2 .apkc .ver small { font: 400 12px/1.4 var(--f-body); color: #5A6B68 }
+.v2 .okchip { font: 600 11px/1 var(--f-display); padding: 5px 9px; border-radius: 99px; background: #E6F4EA; color: #1F7A3A; display: inline-flex; gap: 5px; align-items: center; justify-self: start; white-space: nowrap }
+.v2 .okchip svg { width: 12px; height: 12px } .v2 .okchip.no { background: #ECF3F1; color: #5A6B68 }
+.v2 .btnrow { display: flex; gap: 8px } .v2 .btnrow > * { flex: 1; justify-content: center; white-space: nowrap; text-decoration: none }
+
+.v2 .adm .ai2 { display: grid; grid-template-columns: 36px 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-top: 1px solid #ECF3F1; text-decoration: none; color: #0F1F1D }
+.v2 .adm .ai2 i { grid-row: span 2; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center } .v2 .adm .ai2 i svg { width: 18px; height: 18px }
+.v2 .adm .ai2 b { font: 600 13.5px/1.25 var(--f-display) } .v2 .adm .ai2 small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 2 }
+.v2 .adm .ai2 .go { grid-row: span 2; grid-column: 3; color: #5A6B68; width: 18px; height: 18px }
+.v2 .ctag { font: 600 10.5px/1 var(--f-display); padding: 4px 8px; border-radius: 99px; background: #ECE5FA; color: #6A4CB5; margin-left: auto }
+
+.v2 .pfnav { display: flex; gap: 6px; background: #fff; border: 1px solid #E1E9E7; border-radius: 14px; padding: 5px }
+.v2 .pfnav button { flex: 1; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 13px/1 var(--f-display); color: #3D4C49; white-space: nowrap }
+.v2 .pfnav button svg { width: 16px; height: 16px } .v2 .pfnav button.on { background: #E6F7F5; color: #0A6A5F }
+
+.v2 .pf .chlink { margin-left: auto; font: 600 12px/1 var(--f-display); color: #0A6A5F; text-decoration: none; white-space: nowrap; padding-top: 3px }
+.v2 .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px }
+.v2 .fld { display: grid; gap: 6px } .v2 .fld label { font: 600 11.5px/1 var(--f-display); color: #3D4C49; display: flex; gap: 6px; align-items: center }
+.v2 .fld label em { font: 400 11px/1 var(--f-body); font-style: normal; color: #5A6B68; margin-left: auto }
+.v2 .inp { height: 40px; border: 1px solid #D5E0DD; border-radius: 11px; padding: 0 12px; display: flex; align-items: center; gap: 8px; font: 400 13.5px/1 var(--f-body); color: #0F1F1D; background: #fff; white-space: nowrap; position: relative }
+.v2 .inp:focus-within { border-color: #0E8579; box-shadow: 0 0 0 3px rgba(14,133,121,.12) }
+.v2 .inp.ro { background: #F5F9F8; color: #5A6B68 } .v2 .inp svg { width: 15px; height: 15px; color: #5A6B68; flex: none }
+.v2 .inp input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; padding: 0; font: inherit; color: inherit; height: 100% }
+.v2 .inp select { position: absolute; inset: 0; opacity: 0; cursor: pointer; font: inherit }
+.v2 .inp .grow { flex: 1 }
+.v2 .pf .foot2 { display: flex; align-items: center; gap: 10px; border-top: 1px solid #ECF3F1; padding-top: 12px; flex-wrap: nowrap }
+.v2 .pf .foot2 small { font: 400 12px/1.3 var(--f-body); color: #5A6B68 } .v2 .pf .foot2 .grow { flex: 1 }
+.v2 .pf .foot2 .btn-p:disabled, .v2 .pf .foot2 .linkbtn:disabled { opacity: .55; cursor: default }
+
+.v2 .prow { display: grid; grid-template-columns: 200px 1fr; gap: 14px; align-items: center; padding: 11px 0; border-top: 1px solid #ECF3F1 }
+.v2 .prow:first-of-type { border-top: 0 }
+.v2 .prow > div:first-child b { font: 600 13.5px/1.25 var(--f-display); display: block } .v2 .prow > div:first-child small { font: 400 11.5px/1.35 var(--f-body); color: #5A6B68 }
+.v2 .prow .seg { margin: 0; justify-self: start }
+.v2 .prow .seg button:disabled { color: #9AAAA6; cursor: not-allowed }
+.v2 .sws { display: flex; gap: 10px }
+.v2 .sws button { display: grid; justify-items: center; gap: 5px; font: 500 11px/1 var(--f-display); color: #5A6B68 }
+.v2 .sws button i { width: 30px; height: 30px; border-radius: 50%; display: block; box-shadow: inset 0 0 0 2px rgba(255,255,255,.6) }
+.v2 .sws button.on { color: #0A6A5F; font-weight: 600 } .v2 .sws button.on i { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0E8579 }
+.v2 .tgl { width: 38px; height: 22px; border-radius: 11px; background: #0E8579; position: relative; flex: none; justify-self: end; transition: background .15s }
+.v2 .tgl i { position: absolute; top: 3px; left: 19px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s }
+.v2 .tgl.off { background: #CBD6D3 } .v2 .tgl.off i { left: 3px }
+.v2 .prow.tg { grid-template-columns: 1fr auto }
+.v2 .mini { border: 1px solid #E1E9E7; border-radius: 14px; padding: 12px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; background: #FBFDFC }
+.v2 .mini small { font: 500 11px/1.2 var(--f-display); color: #5A6B68 } .v2 .mini b { font: 700 18px/1.1 var(--f-display) } .v2 .mini em { font: 600 11px/1.2 var(--f-display); font-style: normal; color: #1F7A3A }
+.v2 .mini svg { grid-row: span 3; grid-column: 2; width: 100%; height: 56px }
+.v2 .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px }
+.v2 .tgrid > div { display: flex; flex-direction: column }
+.v2 .tgrid .prow { grid-template-columns: 110px 1fr } .v2 .tgrid .prow.tg { grid-template-columns: 1fr auto }
+.v2 .tgrid .mini { margin-top: 8px }
+
+.v2 .nm { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body) }
+.v2 .nm th { font: 600 10.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 8px 8px; border-bottom: 1px solid #E1E9E7; text-align: center } .v2 .nm th:first-child { text-align: left }
+.v2 .nm td { padding: 9px 8px; border-bottom: 1px solid #ECF3F1; text-align: center } .v2 .nm td:first-child { text-align: left }
+.v2 .nm td b { font: 600 13px/1.25 var(--f-display); display: block } .v2 .nm td small { font: 400 11px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .cb { width: 22px; height: 22px; border-radius: 7px; background: #0E8579; color: #fff; display: inline-grid; place-items: center; vertical-align: middle }
+.v2 .cb svg { width: 13px; height: 13px } .v2 .cb.off { background: #fff; border: 1.5px solid #CBD6D3 } .v2 .cb.lock { background: #8FD6CB; cursor: default }
+.v2 .inbox { display: grid; gap: 8px; border-top: 1px solid #ECF3F1; padding-top: 12px }
+.v2 .inbox .ih { display: flex; align-items: center; gap: 8px; font: 600 13px/1 var(--f-display) } .v2 .inbox .ih button { margin-left: auto; font: 600 12px/1 var(--f-display); color: #0A6A5F }
+.v2 .inbox .it { background: #F5F9F8; border-radius: 12px; padding: 9px 12px; display: grid; gap: 3px }
+.v2 .inbox .it b { font: 600 13px/1.3 var(--f-display) } .v2 .inbox .it small { font: 400 12px/1.4 var(--f-body); color: #3D4C49 } .v2 .inbox .it em { font: 400 11px/1 var(--f-body); font-style: normal; color: #5A6B68 }
+
+.v2 .ses { display: grid; grid-template-columns: 38px 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-top: 1px solid #ECF3F1 }
+.v2 .ses i { grid-row: span 2; width: 38px; height: 38px; border-radius: 11px; background: #ECF3F1; color: #3D4C49; display: grid; place-items: center } .v2 .ses i svg { width: 18px; height: 18px }
+.v2 .ses b { font: 600 13.5px/1.25 var(--f-display); display: flex; gap: 8px; align-items: center } .v2 .ses small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 2 }
+.v2 .ses .now { font: 600 10.5px/1 var(--f-display); padding: 4px 7px; border-radius: 99px; background: #E6F7F5; color: #0A6A5F }
+.v2 .ses .lo { grid-row: span 2; grid-column: 3; font: 600 12px/1 var(--f-display); color: #B5401F; white-space: nowrap }
+.v2 .outbtn { height: 40px; border-radius: 12px; border: 1px solid #F3C9BC; background: #FFF6F3; color: #B5401F; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 13.5px/1 var(--f-display); padding: 0 16px; white-space: nowrap }
+.v2 .outbtn svg { width: 16px; height: 16px }
+
+.v2 .pwd { position: fixed; inset: 0; background: rgba(4,51,46,.35); display: grid; place-items: center; z-index: 60; padding: 16px }
+.v2 .pwd form { background: #fff; border-radius: 20px; padding: 20px; width: min(400px, 100%); display: grid; gap: 12px; box-shadow: 0 24px 60px rgba(4,51,46,.25) }
+.v2 .pwd h3 { margin: 0; font: 600 17px/1.3 var(--f-display) }
+.v2 .pwd .row { display: flex; gap: 8px; justify-content: flex-end }
+
+@media (max-width: 1100px) { .v2 .pf { grid-template-columns: minmax(0, 1fr) } }
+@media (max-width: 720px) {
+  .v2 .pf { padding: 16px }
+  .v2 .fgrid, .v2 .tgrid { grid-template-columns: 1fr }
+  .v2 .prow, .v2 .tgrid .prow { grid-template-columns: 1fr }
+  .v2 .pfnav { overflow-x: auto }
+}
