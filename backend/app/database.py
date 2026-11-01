@@ -211,6 +211,7 @@ class WatchRule(Base):
     days = Column(Integer, nullable=False, default=1)      # consecutive daily checks in breach before alerting
     notify_inapp = Column(Boolean, nullable=False, default=True)
     notify_email = Column(Boolean, nullable=False, default=False)
+    notify_push = Column(Boolean, nullable=False, default=False)  # Android system notification
     active = Column(Boolean, nullable=False, default=True)
     source_question = Column(Text, nullable=True)          # chat question it was created from
     last_value = Column(Float, nullable=True)              # value compared against the threshold
@@ -302,7 +303,8 @@ class ReportLink(Base):
 def _add_missing_columns():
     """Additive columns on tables that already exist (create_all never alters a table)."""
     from sqlalchemy import inspect, text
-    wanted = {"report_runs": [("failed", "INTEGER NOT NULL DEFAULT 0")]}
+    wanted = {"report_runs": [("failed", "INTEGER NOT NULL DEFAULT 0")],
+              "watch_rules": [("notify_push", "BOOLEAN NOT NULL DEFAULT 0")]}
     insp = inspect(engine)
     with engine.begin() as conn:
         for table, cols in wanted.items():
