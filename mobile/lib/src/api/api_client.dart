@@ -755,6 +755,14 @@ class ApiClient {
   }
 
   // ── Profile / account ──
+  // ── Profil (Redesign v2 page 08) ──
+  static Future<Map<String, dynamic>> profile() => _getJson('/api/profile');
+
+  static Future<Map<String, dynamic>> saveProfilePrefs(Map<String, dynamic> patch) =>
+      _sendJson('PUT', '/api/profile/prefs', {'prefs': patch});
+
+  static Future<Map<String, dynamic>> signOutDevice(int id) => _sendJson('POST', '/api/profile/devices/$id/sign-out');
+
   static Future<Map<String, dynamic>> getMe() async {
     final res = await _authGet(Uri.parse('$base/api/auth/me'));
     final data = jsonDecode(res.body) as Map<String, dynamic>;

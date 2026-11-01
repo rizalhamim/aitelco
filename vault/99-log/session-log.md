@@ -541,3 +541,9 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - "Ditangani" = acknowledge. Push Android is stored per rule; real push while the app is closed still needs FCM.
 - Web `/watchlist` rebuilt (gate watchlist-web 0.12%), Peta links open `/map?kabupaten=X&metric=Y`. Android Alert dan Watchlist (from the bell) rebuilt with bottom nav; "Pantauan teratas" sorts Kritis, Peringatan, then Mendekati ambang (closest first), so rows 3 and 4 are swapped against the mockup on purpose. Golden watchlist max 1.41%.
 - Region values for rules are the canonical `WEST JAVA` / `CENTRAL JAVA` / `EAST JAVA`; UI says Circle Java, never "Jawa".
+
+## 2026-11-01 Redesign v2 page 08 Profil on Android
+- `mobile/lib/src/screens/profile_screen.dart` rewritten to the 08 mockup: identity card, installed app card (Bagikan link to /unduh), grouped rows Akun / Preferensi / Admin / Tentang opening sheets (account form, default region, security with device Keluarkan and password change, language, notification matrix plus inbox, about with update check).
+- Theme and animation are saved locally (AppState) and on the server via PUT /api/profile/prefs, shared with web.
+- `openProfile` now returns the profile result: a tab index from the bottom nav or 'alerts' from the bell, handled through `V2Scope.goTab` / `openAlerts`.
+- Golden `test/golden_v2/profil_test.dart`: all regions under 2%. Admin row shows "N akun · M nonaktif" where the mockup said "menunggu persetujuan" (no pending-approval state in the user table).

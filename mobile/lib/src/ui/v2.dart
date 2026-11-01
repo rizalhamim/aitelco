@@ -47,7 +47,15 @@ class V2 {
 }
 
 /// Opens the profile from any tab (brief point 6: profile reachable everywhere).
-void openProfile(BuildContext context) => Navigator.of(context).pushNamed('/profile');
+/// The profile pops with a tab index (bottom nav) or 'alerts' (bell); the shell
+/// in [V2Scope] acts on it so both work from the profile too.
+Future<void> openProfile(BuildContext context) async {
+  final scope = V2Scope.maybeOf(context);
+  final r = await Navigator.of(context).pushNamed('/profile', arguments: scope?.alerts);
+  if (scope == null) return;
+  if (r is int && r >= 0) scope.goTab?.call(r);
+  if (r == 'alerts') scope.openAlerts();
+}
 
 /// Gradient initial avatar with the lime ring from the mockup.
 class V2Avatar extends StatelessWidget {
@@ -294,9 +302,10 @@ class V2BottomNav extends StatelessWidget {
 /// Gives every tab screen the alert count and a way to open Watchlist dan Alert,
 /// so its [V2AppBar] bell works wherever the screen is shown.
 class V2Scope extends InheritedWidget {
-  const V2Scope({super.key, required this.alerts, required this.openAlerts, required super.child});
+  const V2Scope({super.key, required this.alerts, required this.openAlerts, this.goTab, required super.child});
   final int alerts;
   final Future<void> Function([String? question]) openAlerts;
+  final ValueChanged<int>? goTab;
 
   static V2Scope? maybeOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<V2Scope>();
 
