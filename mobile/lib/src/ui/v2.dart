@@ -2,6 +2,8 @@
 // the app bar with the alert bell and the profile avatar, and the five-tab
 // bottom nav. Sizes and colors are taken from design/mockup-v2 so screens
 // match the approved mockup PNGs.
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
@@ -35,10 +37,13 @@ class V2 {
 
   // letterSpacing is always explicit: Material 3 text themes add 0.25 to 0.5 px
   // that the mockups (CSS default 0) do not have. [ls] is in em, like CSS.
-  static TextStyle d(double size, FontWeight w, Color c, {double? lh, double ls = 0}) =>
-      TextStyle(fontFamily: display, fontSize: size, fontWeight: w, color: c, height: lh, letterSpacing: ls * size);
-  static TextStyle b(double size, FontWeight w, Color c, {double? lh, double ls = 0}) =>
-      TextStyle(fontFamily: body, fontSize: size, fontWeight: w, color: c, height: lh, letterSpacing: ls * size);
+  // Leading is split evenly above and below the glyphs, as CSS line-height does.
+  static TextStyle d(double size, FontWeight w, Color c, {double? lh, double ls = 0}) => TextStyle(
+      fontFamily: display, fontSize: size, fontWeight: w, color: c, height: lh, letterSpacing: ls * size,
+      leadingDistribution: TextLeadingDistribution.even);
+  static TextStyle b(double size, FontWeight w, Color c, {double? lh, double ls = 0}) => TextStyle(
+      fontFamily: body, fontSize: size, fontWeight: w, color: c, height: lh, letterSpacing: ls * size,
+      leadingDistribution: TextLeadingDistribution.even);
 }
 
 /// Opens the profile from any tab (brief point 6: profile reachable everywhere).
@@ -298,3 +303,23 @@ class V2Scope extends InheritedWidget {
   @override
   bool updateShouldNotify(V2Scope old) => old.alerts != alerts;
 }
+
+/// CSS `linear-gradient(<deg>deg, ...)` on a box of [size]: same angle and the same
+/// gradient line length as the browser, so mockup gradients land on the same pixels.
+LinearGradient cssLinear(double deg, List<Color> colors, Size size, {List<double>? stops}) {
+  final a = deg * math.pi / 180;
+  final dx = math.sin(a), dy = -math.cos(a);
+  final len = (size.width * dx).abs() + (size.height * dy).abs();
+  final ex = size.width == 0 ? 0.0 : (dx * len / 2) / (size.width / 2);
+  final ey = size.height == 0 ? 0.0 : (dy * len / 2) / (size.height / 2);
+  return LinearGradient(begin: Alignment(-ex, -ey), end: Alignment(ex, ey), colors: colors, stops: stops);
+}
+
+/// CSS `box-shadow: dx dy blur spread color`. CSS blur radius r is a Gaussian with
+/// sigma r / 2; Flutter turns blurRadius b into sigma 0.57735 b + 0.5, so convert.
+BoxShadow cssShadow(Color color, double dx, double dy, double blur, [double spread = 0]) => BoxShadow(
+      color: color,
+      offset: Offset(dx, dy),
+      blurRadius: blur <= 1 ? 0 : (blur / 2 - 0.5) / 0.57735,
+      spreadRadius: spread,
+    );

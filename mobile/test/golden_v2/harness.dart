@@ -73,8 +73,18 @@ Future<void> matchMockup(
   required List<Region> regions,
   ThemeData? theme,
   List<String> precache = const [],
+  // Login draws a transparent 36 px status bar with white text, and its home
+  // indicator sits inside the card (120 px wide, 26 px from the bottom).
+  double statusHeight = statusH,
+  bool statusLight = false,
+  double homeBottom = 5,
+  double homeWidth = 118,
+  double homeOpacity = .75,
 }) async {
   await loadFonts();
+  // flutter_test paints shadows as solid shapes unless told otherwise; the flag is
+  // restored before the test ends because the binding checks it then.
+  debugDisableShadows = false;
   final mockFile = File('../$mockup');
   final mockBytes = mockFile.readAsBytesSync();
   final mock = (await tester.runAsync(() => _decode(mockBytes)))!;
@@ -83,8 +93,8 @@ Future<void> matchMockup(
 
   tester.view.physicalSize = Size(frameW * 2, screenH * 2);
   tester.view.devicePixelRatio = 2;
-  tester.view.padding = const FakeViewPadding(top: statusH * 2);
-  tester.view.viewPadding = const FakeViewPadding(top: statusH * 2);
+  tester.view.padding = FakeViewPadding(top: statusHeight * 2);
+  tester.view.viewPadding = FakeViewPadding(top: statusHeight * 2);
   addTearDown(tester.view.reset);
 
   final key = GlobalKey();
@@ -100,14 +110,14 @@ Future<void> matchMockup(
         borderRadius: BorderRadius.circular(34),
         child: Stack(children: [
         Positioned.fill(child: screen),
-        const Positioned(left: 0, right: 0, top: 0, height: statusH, child: _StatusBar()),
+        Positioned(left: 0, right: 0, top: 0, height: statusHeight, child: _StatusBar(light: statusLight)),
         Positioned(
-          left: (frameW - 118) / 2,
-          bottom: 5,
+          left: (frameW - homeWidth) / 2,
+          bottom: homeBottom,
           child: Container(
-            width: 118,
+            width: homeWidth,
             height: 4,
-            decoration: BoxDecoration(color: const Color(0xFF0F1F1D).withValues(alpha: .75), borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(color: const Color(0xFF0F1F1D).withValues(alpha: homeOpacity), borderRadius: BorderRadius.circular(4)),
           ),
         ),
       ]),
@@ -141,6 +151,7 @@ Future<void> matchMockup(
       results.add('${ok ? 'pass' : 'FAIL'} ${res.score.toStringAsFixed(2)}% $name.${r.name} (limit ${r.threshold}%)');
     }
   });
+  debugDisableShadows = true;
   for (final l in results) {
     // ignore: avoid_print
     print(l);
@@ -229,29 +240,31 @@ Future<_Result> _compare(_Rgba mock, _Rgba app, Region r) async {
 
 /// The mockup status bar: 9:41, camera dot, "5G ▮▮▮ 86%".
 class _StatusBar extends StatelessWidget {
-  const _StatusBar();
+  const _StatusBar({this.light = false});
+  final bool light;
 
   @override
   Widget build(BuildContext context) {
-    const style = TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F1F1D), height: 1, letterSpacing: 0);
+    final ink = light ? Colors.white : const Color(0xFF0F1F1D);
+    final style = TextStyle(fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.w600, color: ink, height: 1, letterSpacing: 0);
     return Material(
-      color: Colors.white,
+      color: light ? Colors.transparent : Colors.white,
       child: Stack(children: [
         Positioned.fill(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 22),
             child: Row(children: [
-              const Text('9:41', style: style),
+              Text('9:41', style: style),
               const Spacer(),
-              const Text('5G', style: style),
+              Text('5G', style: style),
               const SizedBox(width: 5.5),
               // the mockup draws three U+25AE glyphs; Poppins has none, so draw the bars
               for (var i = 0; i < 3; i++) ...[
                 if (i > 0) const SizedBox(width: 2.25),
-                Container(width: 5, height: 9.5, margin: const EdgeInsets.only(top: 2.5), color: const Color(0xFF0F1F1D)),
+                Container(width: 5, height: 9.5, margin: const EdgeInsets.only(top: 2.5), color: ink),
               ],
               const SizedBox(width: 5.5),
-              const Text('86%', style: style),
+              Text('86%', style: style),
             ]),
           ),
         ),

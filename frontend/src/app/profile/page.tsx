@@ -5,7 +5,7 @@ import { UserRound } from "lucide-react";
 import AppShell from "../components/shell/AppShell";
 import PageHero from "../components/ui/PageHero";
 import Link from "next/link";
-import { authFetch, getUser, isAdmin, isLoggedIn, logout, UserInfo } from "@/lib/auth";
+import { authFetch, getUser, isAdmin, isLoggedIn, logout, updateStoredUser, UserInfo } from "@/lib/auth";
 
 const IOH = {
   red: "#15A697", pink: "#0E8579", yellow: "#F5A623", teal: "#15A697",
@@ -81,7 +81,7 @@ export default function ProfilePage() {
       setUser(updated);
       const stored = getUser();
       if (stored) {
-        localStorage.setItem("user", JSON.stringify({ ...stored, ...updated }));
+        updateStoredUser({ ...stored, ...updated });
       }
       setMsg("Profile berhasil diupdate");
     } catch (e: unknown) {

@@ -31,6 +31,7 @@ dependencies:
   archive: ^4.0.9
   share_plus: ^12.0.2
   flutter_svg: ^2.0.17
+  video_player: ^2.9.2
 
 dev_dependencies:
   flutter_test:
@@ -43,6 +44,7 @@ flutter:
     - assets/
     - assets/geo/
     - assets/img/
+    - assets/video/
   fonts:
     - family: Poppins
       fonts:

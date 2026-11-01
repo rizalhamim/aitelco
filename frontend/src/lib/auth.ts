@@ -24,28 +24,48 @@ export interface AuthTokens {
 
 // ── Token Storage ──
 
-export function saveTokens(tokens: AuthTokens) {
-  localStorage.setItem("access_token", tokens.access_token);
-  localStorage.setItem("refresh_token", tokens.refresh_token);
-  localStorage.setItem("user", JSON.stringify(tokens.user));
+// "Ingat saya" on the login card: on keeps the session in localStorage (survives a
+// browser restart), off keeps it in sessionStorage (ends with the tab).
+const AUTH_KEYS = ["access_token", "refresh_token", "user"] as const;
+
+function readAuth(key: (typeof AUTH_KEYS)[number]): string | null {
+  return sessionStorage.getItem(key) ?? localStorage.getItem(key);
+}
+
+function authStore(): Storage {
+  return sessionStorage.getItem("access_token") ? sessionStorage : localStorage;
+}
+
+export function saveTokens(tokens: AuthTokens, remember = true) {
+  clearAuth();
+  const store = remember ? localStorage : sessionStorage;
+  store.setItem("access_token", tokens.access_token);
+  store.setItem("refresh_token", tokens.refresh_token);
+  store.setItem("user", JSON.stringify(tokens.user));
 }
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token");
+  return readAuth("access_token");
 }
 
 export function getUser(): UserInfo | null {
   if (typeof window === "undefined") return null;
-  const raw = localStorage.getItem("user");
+  const raw = readAuth("user");
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
+/** Updates the stored user after a profile edit, in whichever store holds the session. */
+export function updateStoredUser(user: UserInfo) {
+  authStore().setItem("user", JSON.stringify(user));
+}
+
 export function clearAuth() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  localStorage.removeItem("user");
+  for (const k of AUTH_KEYS) {
+    localStorage.removeItem(k);
+    sessionStorage.removeItem(k);
+  }
 }
 
 export function isLoggedIn(): boolean {
@@ -99,7 +119,7 @@ export async function authFetch(path: string, options: RequestInit = {}): Promis
 }
 
 async function tryRefresh(): Promise<boolean> {
-  const rt = localStorage.getItem("refresh_token");
+  const rt = readAuth("refresh_token");
   if (!rt) return false;
   try {
     const res = await fetch(`${API}/api/auth/refresh`, {
@@ -109,7 +129,7 @@ async function tryRefresh(): Promise<boolean> {
     });
     if (!res.ok) return false;
     const data = await res.json();
-    localStorage.setItem("access_token", data.access_token);
+    authStore().setItem("access_token", data.access_token);
     return true;
   } catch {
     return false;
@@ -118,7 +138,7 @@ async function tryRefresh(): Promise<boolean> {
 
 // ── Auth Actions ──
 
-export async function login(username: string, password: string): Promise<AuthTokens> {
+export async function login(username: string, password: string, remember = true): Promise<AuthTokens> {
   const res = await fetch(`${API}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -129,7 +149,7 @@ export async function login(username: string, password: string): Promise<AuthTok
     throw new Error(err.detail || "Login failed");
   }
   const tokens: AuthTokens = await res.json();
-  saveTokens(tokens);
+  saveTokens(tokens, remember);
   return tokens;
 }
 

@@ -49,8 +49,9 @@ async function main() {
     for (const c of cases) {
       const mock = join(ROOT, c.mockup);
       if (!existsSync(mock)) { console.log(`skip  ${c.name} (no mockup ${c.mockup})`); continue; }
-      const page = await browser.newPage({ viewport: { width: c.width, height: c.height }, deviceScaleFactor: 2 });
-      await page.addInitScript((u) => {
+      const page = await browser.newPage({ viewport: { width: c.width, height: c.height }, deviceScaleFactor: 2,
+        reducedMotion: c.reducedMotion ? "reduce" : "no-preference" });
+      if (!c.anonymous) await page.addInitScript((u) => {
         localStorage.setItem("access_token", "visual-test");
         localStorage.setItem("refresh_token", "visual-test");
         localStorage.setItem("user", JSON.stringify(u));
