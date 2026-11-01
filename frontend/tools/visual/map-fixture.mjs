@@ -108,7 +108,7 @@ export const ANSWER2 = {
     { label: "Payload Okt", short: "Payload", value: "392 TB", sub: "▼ 12,6% MoM", tone: "down" },
   ],
   actions: ["sites", "geojson", "png"], site_ids: areaSites.map((x) => x.id),
-  focus: [390.92, 209.0, 607.08, 399.88],
+  focus: [390.93, 217.46, 607.07, 391.42],
   suggestions: ["Site productivity per kecamatan", "Profile Kec. Tarogong Kidul", "Revenue MoM di area ini"],
   suggestions_short: ["Site productivity", "Profile area", "Revenue MoM"],
 };

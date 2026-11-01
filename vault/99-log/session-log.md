@@ -524,3 +524,9 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Web `/performance` (sidebar Performance now points there; old `/site` kept for deep links). Gate performance-web 0.74%.
 - Android Performa tab = `PerformanceScreen` (last payload cached in SharedPreferences, label "offline siap"). Gate: 7 regions, max 1.46%.
 - Fixed a test-order flake in `tests/test_watchlist_dashboard.py` (fixed usernames collided in the persistent default DB when another module imported `app.database` first).
+
+## 2026-11-01 Redesign v2: 05 Peta Agent (web + Android)
+- Backend `app/map_agent.py` (`/api/map/agent`, `/ask`, `/upload`, `/export`, `/scopes`): kabupaten frame projected once (748x824, same formula as the mockup) so web and Android draw the same SVG paths; metrics per kecamatan for Performance, Site productivity and Profile wilayah from the Performance dump. VLR/site, market share and FWA penetration are not in the dump yet: the API marks them `available: false` and the UI says so instead of hiding them.
+- Map chat is rule based (metric words, "turun lebih dari N%", coordinates, area questions on an uploaded shape). Upload takes SHP (.zip), GeoJSON, KML, CSV lat/long as base64 JSON (no python-multipart on the server). Export: Shapefile zip, GeoJSON, CSV.
+- Boundaries: `data/geo/java_compact.json.gz` is built once in a subprocess from `data/geo/kecamatan.geojson.gz` (parsing the source needs ~400 MB). Deploy can prebuild it: `venv/bin/python -m app.map_agent --build-geo`.
+- Web `/map` rebuilt (visual gate peta-web 1.23%); Android Peta tab rebuilt with a draggable chat sheet (golden map: appbar 1.19, map 1.91, sheet 1.43, nav 0.79). Android adds the `file_picker` plugin for uploads; check `flutter build apk` on the server.

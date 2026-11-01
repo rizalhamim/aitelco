@@ -27,6 +27,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _alerts = 0;
   Timer? _poll;
   final _chat = GlobalKey<ChatScreenState>();
+  final _map = GlobalKey<MapScreenState>();
 
   @override
   void initState() {
@@ -90,8 +91,11 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           child: IndexedStack(index: _tab, children: [
             ChatScreen(key: _chat, onWatch: _openAlerts, onOpenMap: () => _go(3)),
             DashboardScreen(onAsk: _ask, onAlerts: _openAlerts, onPerformance: () => _go(2)),
-            PerformanceScreen(onAsk: _ask, onOpenMap: (_) => _go(3)),
-            MapScreen(onAsk: _ask),
+            PerformanceScreen(onAsk: _ask, onOpenMap: (site) {
+              _go(3);
+              _map.currentState?.focusSite(site);
+            }),
+            MapScreen(key: _map, onAsk: _ask),
             ReportListScreen(onAsk: _ask),
           ]),
         ),
