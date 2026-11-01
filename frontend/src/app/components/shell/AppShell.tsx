@@ -1,12 +1,10 @@
 "use client";
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Activity, Bell, Download, FileText, History, LayoutGrid, LogOut, Map as MapIcon, Menu,
-  MessageSquare, MoreHorizontal, Palette, Plus, Search, Smartphone, User, Users, X,
-} from "lucide-react";
-import { authFetch, getUser, isAdmin, isLoggedIn, logout } from "@/lib/auth";
+import { Menu } from "lucide-react";
+import { authFetch, getUser, isAdmin, isLoggedIn } from "@/lib/auth";
+import { Icon } from "@/app/components/v2/Icon";
 import { applyPrefs, getPrefs } from "@/lib/prefs";
 import { useMounted } from "@/lib/useMounted";
 
@@ -15,22 +13,23 @@ export type HistoryItem = { session_id: string; title: string; message_count: nu
 type NavItem = {
   href: string;
   label: string;
-  icon: typeof Activity;
-  tone: "teal" | "blue" | "rose" | "amber" | "violet" | "green" | "grey";
-  badge?: number;
-  admin?: boolean;
+  icon: string;
+  bg: string;
+  fg: string;
+  isNew?: boolean;
 };
 
+/* Same order, colors and labels as the approved v2 sidebar (design/mockup-v2). */
 const MENU: NavItem[] = [
-  { href: "/", label: "Tanya Agent", icon: MessageSquare, tone: "teal" },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, tone: "blue" },
-  { href: "/watchlist", label: "Watchlist & Alert", icon: Bell, tone: "rose" },
-  { href: "/reports", label: "Laporan", icon: FileText, tone: "amber" },
-  { href: "/map", label: "Peta & Site", icon: MapIcon, tone: "violet" },
+  { href: "/", label: "Tanya Agent", icon: "chat", bg: "#C0EDE8", fg: "#0A6A5F" },
+  { href: "/dashboard", label: "Dashboard", icon: "grid", bg: "#E1ECFA", fg: "#2C6CB0" },
+  { href: "/performance", label: "Performance", icon: "pulse", bg: "#F4FCE3", fg: "#5E8A12", isNew: true },
+  { href: "/map", label: "Peta Agent", icon: "map", bg: "#E3F7FA", fg: "#0E6F7C", isNew: true },
+  { href: "/reports", label: "Laporan", icon: "file", bg: "#FCEDD3", fg: "#B7791F" },
+  { href: "/watchlist", label: "Watchlist dan Alert", icon: "bell", bg: "#FBE2E8", fg: "#C23A5B" },
 ];
 const ADMIN: NavItem[] = [
-  { href: "/statistik", label: "Statistik", icon: Activity, tone: "teal", admin: true },
-  { href: "/unduh", label: "Unduh APK", icon: Download, tone: "green" },
+  { href: "/statistik", label: "Statistik", icon: "bars", bg: "#ECE5FA", fg: "#6A4CB5" },
 ];
 
 type Props = {
@@ -43,6 +42,11 @@ type Props = {
   historyVersion?: number;
   busy?: boolean;
   mainClassName?: string;
+};
+
+/** Routes counted on the admin Statistik page, by feature key. */
+const PAGE_KEYS: Record<string, string> = {
+  "/": "tanya", "/dashboard": "dashboard", "/performance": "performance", "/map": "peta", "/reports": "laporan", "/watchlist": "watchlist",
 };
 
 export default function AppShell({
@@ -58,8 +62,6 @@ export default function AppShell({
   const [query, setQuery] = useState("");
   const [alertCount, setAlertCount] = useState(0);
   const [apkVersion, setApkVersion] = useState<string | null>(null);
-  const [userMenu, setUserMenu] = useState(false);
-  const userRef = useRef<HTMLDivElement>(null);
   const user = mounted ? getUser() : null;
   const admin = mounted && isAdmin();
 
@@ -90,14 +92,12 @@ export default function AppShell({
   }, []);
   useEffect(() => { if (ready) loadHistory(); }, [ready, historyVersion, loadHistory]);
 
+  // One "Pemakaian fitur" session per page (the server merges repeats within 30 minutes).
   useEffect(() => {
-    if (!userMenu) return;
-    const close = (e: MouseEvent) => {
-      if (!userRef.current?.contains(e.target as Node)) setUserMenu(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [userMenu]);
+    if (!ready) return;
+    const page = PAGE_KEYS[pathname === "/" ? "/" : "/" + pathname.split("/")[1]];
+    if (page) authFetch("/api/usage/view", { method: "POST", body: JSON.stringify({ page }) }).catch(() => {});
+  }, [ready, pathname]);
 
   function newChat() {
     setOpen(false);
@@ -118,116 +118,118 @@ export default function AppShell({
   const initial = (name.trim()[0] || "U").toUpperCase();
 
   const navLink = (it: NavItem) => {
-    const Icon = it.icon;
     const active = isActive(it.href);
-    const badge = it.href === "/watchlist" ? alertCount : it.badge;
+    const badge = it.href === "/watchlist" ? alertCount : 0;
     return (
-      <Link key={it.href} href={it.href} className={`ui-nav ${active ? "active" : ""}`} data-tone={it.tone}
-        aria-current={active ? "page" : undefined}>
-        <span className="ui-nav-tile"><Icon size={active ? 17 : 22} strokeWidth={active ? 2 : 1.6} /></span>
-        <span className="ui-nav-label">{it.label}</span>
-        {!!badge && <span className="ui-badge">{badge}</span>}
+      <Link key={it.href} href={it.href} className={active ? "on" : ""} aria-current={active ? "page" : undefined}>
+        <span className="nt" style={{ background: it.bg, color: it.fg }}><Icon name={it.icon} /></span>
+        {it.label}
+        {it.isNew && !badge && <span className="new">Baru</span>}
+        {!!badge && <span className="cnt">{badge}</span>}
       </Link>
     );
   };
 
   if (!ready) return <div className="ui-boot" />;
 
+  const roleLabel = user?.role === "admin" ? "Admin" : "Pengguna";
+  const onProfile = isActive("/profile");
+  const onApk = isActive("/unduh");
+
   return (
-    <div className="ui-app">
-      <header className="ui-mobilebar">
-        <button className="ui-iconbtn" onClick={() => setOpen(true)} aria-label="Buka menu"><Menu size={20} /></button>
-        <div className="ui-mobilebar-brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/icon_circle_java.png" alt="" width={32} height={32} />
-          <span>Bizplan Java Agent</span>
-        </div>
-        <button className="ui-iconbtn" onClick={newChat} aria-label="Percakapan baru" disabled={busy}><Plus size={20} /></button>
+    <div className="v2 app">
+      <header className="mbar">
+        <button className="btn-ic" onClick={() => setOpen(true)} aria-label="Buka menu"><Menu size={20} /></button>
+        <b>Agent <em>Java</em></b>
+        <span className="grow" />
+        <Link href="/watchlist" className="btn-ic" aria-label="Alert">
+          <Icon name="bell" />{alertCount > 0 && <span className="badge">{alertCount}</span>}
+        </Link>
+        <Link href="/profile" className="avatar" aria-label="Profil" style={{ width: 34, height: 34, fontSize: 13 }}>{initial}</Link>
       </header>
 
-      {open && <div className="ui-scrim" onClick={() => setOpen(false)} />}
+      <div className={`scrim ${open ? "open" : ""}`} onClick={() => setOpen(false)} />
 
-      <aside className={`ui-sidebar ${open ? "open" : ""}`} aria-label="Navigasi utama">
-        <div className="ui-brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="ui-brand-logo" src="/brand/icon_circle_java.png" alt="Circle Java" width={52} height={52} />
-          <div className="ui-brand-text">
-            <span className="ui-brand-name">Bizplan Java Agent</span>
-            <span className="ui-brand-sub">Business Planning Circle Java</span>
-          </div>
-          <button className="ui-iconbtn ui-sidebar-close" onClick={() => setOpen(false)} aria-label="Tutup menu"><X size={18} /></button>
-        </div>
+      <aside className={`side ${open ? "open" : ""}`} aria-label="Navigasi utama">
+        <Link href="/" className="brand">
+          <span className="tile" style={{ width: 44, height: 44, borderRadius: 13 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/icon_circle_java.png" alt="Logo Agent Java" />
+          </span>
+          <div><b>Agent <em>Java</em></b><small>Circle Java</small></div>
+        </Link>
 
-        <button className="ui-btn-primary ui-newchat" onClick={newChat} disabled={busy}>
-          <Plus size={18} strokeWidth={2.2} /> Percakapan baru
-        </button>
+        <button className="newchat" onClick={newChat} disabled={busy}><Icon name="plus" />Percakapan baru</button>
 
-        <label className="ui-search">
-          <Search size={18} aria-hidden="true" />
+        <label className="search">
+          <Icon name="search" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari percakapan…" aria-label="Cari percakapan" />
         </label>
 
-        <nav className="ui-menu">
-          <span className="ui-overline">Menu</span>
-          {MENU.map(navLink)}
-          <span className="ui-overline">Admin</span>
-          {ADMIN.filter((i) => !i.admin || admin).map(navLink)}
-        </nav>
+        <div className="navh">Menu</div>
+        <nav className="nav">{MENU.map(navLink)}</nav>
+        {admin && (<>
+          <div className="navh">Admin</div>
+          <nav className="nav">{ADMIN.map(navLink)}</nav>
+        </>)}
 
-        <div className="ui-history">
-          <span className="ui-overline">Riwayat</span>
-          {filtered.length === 0 && <span className="ui-history-empty">{query ? "Tidak ada yang cocok" : "Belum ada percakapan"}</span>}
-          <div className="ui-history-list">
-            {filtered.slice(0, 30).map((h) => (
-              <button key={h.session_id} className={`ui-history-item ${pathname === "/" && h.session_id === activeSession ? "active" : ""}`}
-                onClick={() => openSession(h.session_id)} disabled={busy} title={h.title}>
-                <History size={16} aria-hidden="true" />
-                <span>{h.title || "Percakapan tanpa judul"}</span>
-              </button>
-            ))}
-          </div>
+        <div className="navh">Riwayat</div>
+        <div className="hist">
+          {filtered.length === 0 && <span className="empty">{query ? "Tidak ada yang cocok" : "Belum ada percakapan"}</span>}
+          {filtered.slice(0, 30).map((h) => (
+            <button key={h.session_id} className={pathname === "/" && h.session_id === activeSession ? "on" : ""}
+              onClick={() => openSession(h.session_id)} disabled={busy} title={h.title}>
+              <Icon name="hist" />
+              <span>{h.title || "Percakapan tanpa judul"}</span>
+            </button>
+          ))}
         </div>
 
-        <Link href="/unduh" className="ui-promo">
-          <span className="ui-promo-ico"><Smartphone size={18} /></span>
-          <span className="ui-promo-text">
-            <b>Aplikasi Android</b>
-            <span>{apkVersion ? `v${apkVersion} · ` : ""}Unduh APK</span>
-          </span>
-          <Download size={18} />
+        <div className="spacer" />
+        <Link href="/unduh" className={`apk ${onApk ? "on" : ""}`}>
+          <span className="ai"><Icon name="dl" /></span>
+          <div><b>Aplikasi Android</b><small>Agent Java {apkVersion ? shortVersion(apkVersion) : ""}{apkVersion ? " · " : ""}Unduh APK</small></div>
         </Link>
-
-        <Link href="/tampilan" className={`ui-nav ${isActive("/tampilan") ? "active" : ""}`} data-tone="grey">
-          <span className="ui-nav-tile"><Palette size={isActive("/tampilan") ? 17 : 22} strokeWidth={isActive("/tampilan") ? 2 : 1.6} /></span>
-          <span className="ui-nav-label">Tampilan</span>
+        <Link href="/profile" className={`me ${onProfile ? "on" : ""}`} aria-current={onProfile ? "page" : undefined}>
+          <span className="avatar">{initial}</span>
+          <div><b>{name}</b><small>{roleLabel} · Circle Java</small></div>
+          <Icon name="chev" />
         </Link>
-
-        <div className="ui-user" ref={userRef}>
-          <span className="ui-avatar">{initial}</span>
-          <span className="ui-user-text">
-            <b>{name}</b>
-            <span>{user?.role === "admin" ? "Administrator" : "Bizplan"} · Region Jawa</span>
-          </span>
-          <button className="ui-iconbtn ghost" onClick={() => setUserMenu((v) => !v)} aria-label="Menu akun" aria-expanded={userMenu}>
-            <MoreHorizontal size={18} />
-          </button>
-          {userMenu && (
-            <div className="ui-popover ui-user-menu" role="menu">
-              <Link href="/profile" role="menuitem"><User size={16} /> Profil</Link>
-              {admin && <Link href="/admin" role="menuitem"><Users size={16} /> Kelola pengguna</Link>}
-              <button role="menuitem" onClick={() => logout()}><LogOut size={16} /> Keluar</button>
-            </div>
-          )}
-        </div>
-
-        <div className="ui-ioh">
-          <span>Didukung oleh</span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-ioh-color.png" alt="Indosat Ooredoo Hutchison" height={30} />
-        </div>
       </aside>
 
-      <main className={`ui-main ${mainClassName ?? ""}`}>{children}</main>
+      <div className={`main ${mainClassName ?? ""}`}>{children}</div>
     </div>
+  );
+}
+
+/** "1.50.0" -> "1.50", the way the sidebar card shows it. */
+function shortVersion(v: string) {
+  const m = v.match(/^(\d+)\.(\d+)/);
+  return m ? `${m[1]}.${m[2]}` : v;
+}
+
+type TopBarProps = { title: string; subtitle?: ReactNode; actions?: ReactNode; ringAvatar?: boolean };
+
+/** Page top bar from the v2 mockups: title, subtitle, page actions, alert bell and avatar. */
+export function TopBar({ title, subtitle, actions, ringAvatar }: TopBarProps) {
+  const mounted = useMounted();
+  const user = mounted ? getUser() : null;
+  const [alertCount, setAlertCount] = useState(0);
+  useEffect(() => {
+    authFetch("/api/watchlist/alerts/count").then((r) => (r.ok ? r.json() : null))
+      .then((d) => typeof d?.active === "number" && setAlertCount(d.active)).catch(() => {});
+  }, []);
+  const name = user?.full_name || user?.username || "";
+  const initial = (name.trim()[0] || "U").toUpperCase();
+  return (
+    <header className="top">
+      <div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div>
+      <div className="grow" />
+      {actions}
+      <Link href="/watchlist" className="btn-ic" aria-label="Alert">
+        <Icon name="bell" className="ic" />{alertCount > 0 && <span className="badge">{alertCount}</span>}
+      </Link>
+      <Link href="/profile" className={`avatar ${ringAvatar ? "ring" : ""}`} aria-label="Profil">{initial}</Link>
+    </header>
   );
 }

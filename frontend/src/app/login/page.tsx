@@ -1,11 +1,13 @@
 "use client";
-import { useState, FormEvent, useEffect } from "react";
-import { Users, Lock, Eye, EyeOff, Mail, ArrowLeft } from "lucide-react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import { login, isLoggedIn } from "@/lib/auth";
 import { useMounted } from "@/lib/useMounted";
+import { Icon } from "@/app/components/v2/Icon";
 import "./login.css";
 
-type Mode = "login" | "forgot" | "reset";
+type Mode = "login" | "forgot" | "reset" | "request";
+const REGIONS = [["JAVA", "Circle Java"], ["WEST JAVA", "West Java"], ["CENTRAL JAVA", "Central Java"], ["EAST JAVA", "East Java"]];
+const DEPARTMENTS = ["Business Planning", "Sales", "Marketing", "Network", "Finance", "Operations"];
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -16,13 +18,21 @@ export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
+  const [req, setReq] = useState({ full_name: "", email: "", department: "", region: "JAVA" });
+  const [reqSent, setReqSent] = useState(false);
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [readUrl, setReadUrl] = useState(false);
+  const [remember, setRemember] = useState(true);
+  // Video: plays unless the user prefers reduced motion or pressed pause. The poster
+  // stays underneath until the first frame plays, and the bar follows the seconds.
+  const [paused, setPaused] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const mounted = useMounted();
-  const reduceMotion = mounted && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // A reset link opens the page as /login?reset=<token>.
   if (mounted && !readUrl) {
@@ -38,6 +48,21 @@ export default function LoginPage() {
     if (isLoggedIn()) window.location.href = "/";
   }, []);
 
+  useEffect(() => {
+    if (!mounted) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // starting playback is a sync with the browser, done once after mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!reduce) setPaused(false);
+  }, [mounted]);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (paused) v.pause();
+    else v.play().catch(() => setPaused(true));
+  }, [paused]);
+
   function switchMode(m: Mode) {
     setMode(m);
     setError("");
@@ -50,7 +75,7 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login(username, password);
+      await login(username, password, remember);
       window.location.href = "/";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
@@ -84,6 +109,20 @@ export default function LoginPage() {
     }
   }
 
+  async function handleRequest(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await postJson("/api/auth/request-access", req);
+      setReqSent(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleReset(e: FormEvent) {
     e.preventDefault();
     setError("");
@@ -105,125 +144,159 @@ export default function LoginPage() {
     }
   }
 
+  const pwField = (id: string, value: string, set: (v: string) => void, auto: string, label: string, extra?: { autoFocus?: boolean; minLength?: number }) => (
+    <div className="fld">
+      <label htmlFor={id}>{label}</label>
+      <div className="inp">
+        <Icon name="llock" />
+        <input id={id} type={showPw ? "text" : "password"} value={value} onChange={(e) => set(e.target.value)}
+          placeholder="••••••••••" autoComplete={auto} required {...extra} />
+        <button type="button" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "Sembunyikan password" : "Tampilkan password"}>
+          <Icon name={showPw ? "leyeoff" : "leye"} size={19} />
+        </button>
+      </div>
+    </div>
+  );
+
+  const cta = (label: string, disabled = false) => (
+    <button className="cta" type="submit" disabled={loading || disabled}>
+      {loading ? <span className="spin" aria-label="Memproses" /> : <><span>{label}</span><Icon name="arrowr" /></>}
+    </button>
+  );
+
   return (
-    <main className="lg-root">
-      {reduceMotion ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="lg-media" src="/media/login-bg-poster.jpg" alt="" />
-      ) : (
-        <video className="lg-media" src="/media/login-bg.mp4" poster="/media/login-bg-poster.jpg"
-          autoPlay muted loop playsInline preload="auto" aria-hidden="true" />
-      )}
-      <div className="lg-shade" aria-hidden="true" />
-      <div className="lg-glow" aria-hidden="true" />
+    <main className="lgv2">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="media" src="/media/login-bg-poster.jpg" alt="" />
+      <video ref={videoRef} className="media" src="/media/login-bg.mp4" muted loop playsInline preload={paused && !playing ? "none" : "auto"} aria-hidden="true"
+        style={{ opacity: playing ? 1 : 0 }}
+        onPlaying={() => setPlaying(true)}
+        onTimeUpdate={(e) => { const v = e.currentTarget; if (v.duration) setProgress(v.currentTime / v.duration); }} />
+      <div className="shade" aria-hidden="true" />
+      <div className="glow" aria-hidden="true" />
 
-      <div className="lg-layout">
-        <section className="lg-brand">
-          <div className="lg-product">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="lg-logo" src="/brand/icon_circle_java.png" alt="Circle Java" width={72} height={72} />
-            <span className="lg-product-name">Bizplan Java Agent</span>
+      <div className="wlogo">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <span className="tile"><img src="/brand/icon_circle_java.png" alt="Logo Agent Java" /></span>
+        <b>Agent <em>Java</em></b>
+      </div>
+      <div className="hero">
+        <h2 className="tagline">Winning<br />Every <span>Second</span></h2>
+        <div className="sec-bar" aria-hidden="true"><i style={{ width: `${progress * 100}%` }} /></div>
+      </div>
+
+      {mode === "login" && (
+        <form className="card" onSubmit={handleSubmit} noValidate>
+          <div className="grab" aria-hidden="true" />
+          <div><h1>Masuk</h1><p className="sub">Selamat datang kembali.</p></div>
+          <div className="fld">
+            <label htmlFor="lg-user">Username</label>
+            <div className="inp">
+              <Icon name="luser" />
+              <input id="lg-user" value={username} onChange={(e) => setUsername(e.target.value)}
+                placeholder="nama.pengguna" autoComplete="username" required />
+            </div>
           </div>
-          <h1 className="lg-headline">Winning<br />Every Second</h1>
-          <span className="lg-accent" aria-hidden="true" />
-        </section>
+          {pwField("lg-pass", password, setPassword, "current-password", "Password")}
+          <div className="row">
+            <label className="remember">
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              <span className="tgl"><i /></span>Ingat saya
+            </label>
+            <button type="button" className="link" onClick={() => switchMode("forgot")}>Lupa password?</button>
+          </div>
+          {cta("Masuk")}
+          <p className={`msg${error ? " err" : ""}`} role="status" aria-live="polite">{error || successMsg}</p>
+          <p className="ask">Belum punya akun? <button type="button" className="link" onClick={() => switchMode("request")}>Minta akses</button></p>
+        </form>
+      )}
 
-        <section className="lg-card" aria-live="polite">
-          {mode === "login" && (
-            <form onSubmit={handleSubmit} className="lg-form">
-              <h2 className="lg-title">Masuk</h2>
-              {successMsg && <p className="lg-msg ok">{successMsg}</p>}
-              <label className="lg-group">
-                <span className="lg-label">Username</span>
-                <span className="lg-field">
-                  <Users size={18} aria-hidden="true" />
-                  <input value={username} onChange={(e) => setUsername(e.target.value)}
-                    placeholder="nama.pengguna" autoComplete="username" required />
-                </span>
-              </label>
-              <label className="lg-group">
-                <span className="lg-label">Password</span>
-                <span className="lg-field">
-                  <Lock size={18} aria-hidden="true" />
-                  <input type={showPw ? "text" : "password"} value={password}
-                    onChange={(e) => setPassword(e.target.value)} placeholder="••••••••••"
-                    autoComplete="current-password" required />
-                  <button type="button" className="lg-eye" onClick={() => setShowPw((v) => !v)}
-                    aria-label={showPw ? "Sembunyikan password" : "Tampilkan password"}>
-                    {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </span>
-              </label>
-              <div className="lg-options">
-                <button type="button" className="lg-link" onClick={() => switchMode("forgot")}>Lupa password?</button>
+      {mode === "request" && (
+        <form className="card" onSubmit={handleRequest} noValidate>
+          <div className="grab" aria-hidden="true" />
+          <div>
+            <h1>Minta akses</h1>
+            <p className="sub">{reqSent ? "Admin akan meninjau. Link untuk membuat password dikirim ke email saat akun disetujui." : "Isi data diri. Admin menyetujui setiap akun baru."}</p>
+          </div>
+          {reqSent ? (
+            <p className="msg">Permintaan untuk <strong>{req.email}</strong> sudah terkirim.</p>
+          ) : (
+            <>
+              <div className="fld">
+                <label htmlFor="rq-name">Nama lengkap</label>
+                <div className="inp"><Icon name="luser" />
+                  <input id="rq-name" value={req.full_name} onChange={(e) => setReq({ ...req, full_name: e.target.value })} autoComplete="name" required autoFocus /></div>
               </div>
-              {error && <p className="lg-msg err" role="alert">{error}</p>}
-              <button type="submit" className="lg-submit" disabled={loading}>
-                {loading ? <span className="lg-spin" aria-label="Memproses" /> : "Masuk"}
-              </button>
-            </form>
+              <div className="fld">
+                <label htmlFor="rq-mail">Email kantor</label>
+                <div className="inp"><Icon name="mail" />
+                  <input id="rq-mail" type="email" value={req.email} onChange={(e) => setReq({ ...req, email: e.target.value })} placeholder="nama@kantor.co.id" autoComplete="email" required /></div>
+              </div>
+              <div className="fld">
+                <label htmlFor="rq-dept">Departemen</label>
+                <div className="inp"><Icon name="users" />
+                  <input id="rq-dept" list="rq-depts" value={req.department} onChange={(e) => setReq({ ...req, department: e.target.value })} placeholder="Business Planning" /></div>
+                <datalist id="rq-depts">{DEPARTMENTS.map((d) => <option key={d} value={d} />)}</datalist>
+              </div>
+              <div className="fld">
+                <label htmlFor="rq-region">Region</label>
+                <div className="inp"><Icon name="pin" />
+                  <select id="rq-region" value={req.region} onChange={(e) => setReq({ ...req, region: e.target.value })}>
+                    {REGIONS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                  </select></div>
+              </div>
+              {cta("Kirim permintaan", req.full_name.trim().length < 2 || !req.email.includes("@"))}
+              <p className={`msg${error ? " err" : ""}`} role="status" aria-live="polite">{error}</p>
+            </>
           )}
+          <button type="button" className="link back" onClick={() => switchMode("login")}><Icon name="arrowr" />Kembali ke Masuk</button>
+        </form>
+      )}
 
-          {mode === "forgot" && (
-            <form onSubmit={handleForgot} className="lg-form">
-              <h2 className="lg-title">Lupa password</h2>
-              {forgotSent ? (
-                <>
-                  <p className="lg-msg ok">Jika email terdaftar, tautan reset sudah dikirim ke <strong>{forgotEmail}</strong>. Periksa kotak masuk atau folder spam. Tautan berlaku 30 menit.</p>
-                  <button type="button" className="lg-submit" onClick={() => switchMode("login")}>Kembali ke Masuk</button>
-                </>
-              ) : (
-                <>
-                  <p className="lg-sub">Masukkan email kantor Anda. Kami kirim tautan untuk membuat password baru.</p>
-                  <label className="lg-group">
-                    <span className="lg-label">Email</span>
-                    <span className="lg-field">
-                      <Mail size={18} aria-hidden="true" />
-                      <input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)}
-                        placeholder="nama@ioh.co.id" autoComplete="email" required autoFocus />
-                    </span>
-                  </label>
-                  {error && <p className="lg-msg err" role="alert">{error}</p>}
-                  <button type="submit" className="lg-submit" disabled={loading || !forgotEmail}>
-                    {loading ? <span className="lg-spin" aria-label="Memproses" /> : "Kirim tautan reset"}
-                  </button>
-                  <button type="button" className="lg-back" onClick={() => switchMode("login")}>
-                    <ArrowLeft size={16} aria-hidden="true" /> Kembali ke Masuk
-                  </button>
-                </>
-              )}
-            </form>
+      {mode === "forgot" && (
+        <form className="card" onSubmit={handleForgot} noValidate>
+          <div className="grab" aria-hidden="true" />
+          <div>
+            <h1>Lupa password</h1>
+            <p className="sub">{forgotSent ? "Cek kotak masuk atau folder spam. Tautan berlaku 30 menit." : "Kami kirim tautan untuk membuat password baru."}</p>
+          </div>
+          {forgotSent ? (
+            <p className="msg">Jika email terdaftar, tautan reset sudah dikirim ke <strong>{forgotEmail}</strong>.</p>
+          ) : (
+            <>
+              <div className="fld">
+                <label htmlFor="lg-mail">Email kantor</label>
+                <div className="inp">
+                  <Icon name="mail" />
+                  <input id="lg-mail" type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="nama@kantor.co.id" autoComplete="email" required autoFocus />
+                </div>
+              </div>
+              {cta("Kirim tautan reset", !forgotEmail)}
+              <p className={`msg${error ? " err" : ""}`} role="status" aria-live="polite">{error}</p>
+            </>
           )}
+          <button type="button" className="link back" onClick={() => switchMode("login")}><Icon name="arrowr" />Kembali ke Masuk</button>
+        </form>
+      )}
 
-          {mode === "reset" && (
-            <form onSubmit={handleReset} className="lg-form">
-              <h2 className="lg-title">Buat password baru</h2>
-              <label className="lg-group">
-                <span className="lg-label">Password baru</span>
-                <span className="lg-field">
-                  <Lock size={18} aria-hidden="true" />
-                  <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                    autoComplete="new-password" minLength={8} required autoFocus />
-                </span>
-              </label>
-              <label className="lg-group">
-                <span className="lg-label">Ulangi password</span>
-                <span className="lg-field">
-                  <Lock size={18} aria-hidden="true" />
-                  <input type="password" value={newPasswordConfirm}
-                    onChange={(e) => setNewPasswordConfirm(e.target.value)} autoComplete="new-password" required />
-                </span>
-              </label>
-              {error && <p className="lg-msg err" role="alert">{error}</p>}
-              <button type="submit" className="lg-submit" disabled={loading || !newPassword}>
-                {loading ? <span className="lg-spin" aria-label="Memproses" /> : "Simpan password"}
-              </button>
-              <button type="button" className="lg-back" onClick={() => switchMode("login")}>
-                <ArrowLeft size={16} aria-hidden="true" /> Kembali ke Masuk
-              </button>
-            </form>
-          )}
-        </section>
+      {mode === "reset" && (
+        <form className="card" onSubmit={handleReset} noValidate>
+          <div className="grab" aria-hidden="true" />
+          <div><h1>Buat password baru</h1><p className="sub">Minimal 8 karakter.</p></div>
+          {pwField("lg-new", newPassword, setNewPassword, "new-password", "Password baru", { autoFocus: true, minLength: 8 })}
+          {pwField("lg-new2", newPasswordConfirm, setNewPasswordConfirm, "new-password", "Ulangi password")}
+          {cta("Simpan password", !newPassword)}
+          <p className={`msg${error ? " err" : ""}`} role="status" aria-live="polite">{error}</p>
+          <button type="button" className="link back" onClick={() => switchMode("login")}><Icon name="arrowr" />Kembali ke Masuk</button>
+        </form>
+      )}
+
+      <div className="bottom">
+        <button type="button" className="vctl" onClick={() => setPaused((p) => !p)} aria-label={paused ? "Putar video" : "Jeda video"}>
+          <Icon name={paused ? "play" : "pause"} /><span>{paused ? "Putar video" : "Jeda video"}</span>
+        </button>
+        <span className="foot">© 2026 Agent Java</span>
       </div>
     </main>
   );

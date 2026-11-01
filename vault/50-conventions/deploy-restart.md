@@ -37,7 +37,7 @@ sudo systemctl restart telco-backend       # picks up the new app_release.json
 
 Bump BOTH `mobile/pubspec.yaml` version AND `backend/data/app_release.json`
 (`version_name` / `version_code` / `apk_sha256` / `size_bytes` / `notes`).
-Current release: read `backend/data/app_release.json` (authoritative; 1.48.3+66 on 2026-10-14).
+Current release: read `backend/data/app_release.json` (authoritative). 1.50.0+69 (Redesign v2) ships with the scripts in project files `deploy/redesign-v2/`: the APK is built on the PC, the old APK is kept as `Bizplan-Java-Agent-<ver>.apk` in `history` so Unduh can still serve it.
 
 ### Release signing
 

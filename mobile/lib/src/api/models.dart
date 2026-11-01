@@ -53,6 +53,15 @@ class ChatMessage {
   List<ProfileSection> profileResults;
   Map<String, dynamic>? locationResult;
 
+  /// Headline KPI cards from the result event (backend/app/headline_kpis.py).
+  List<Map<String, dynamic>> kpis = [];
+
+  /// Data source label, e.g. "Dump Performance 1 Nov 05.00".
+  String? source;
+
+  /// The step pill was tapped to show the SQL.
+  bool showSql = false;
+
   /// Pipeline steps the agent ran and how long the answer took.
   int steps = 0;
   DateTime? startedAt;

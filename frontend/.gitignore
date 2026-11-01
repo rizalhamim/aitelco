@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# visual gate output (mockup | app | heat sheets)
+/tools/visual/out/

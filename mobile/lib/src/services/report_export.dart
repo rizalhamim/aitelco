@@ -252,7 +252,7 @@ List<Sheet> adhocSheets(AdhocReport a) {
       {'keterangan': 'Pertanyaan', 'nilai': a.title},
       {'keterangan': 'Disimpan', 'nilai': a.savedAt.toIso8601String().substring(0, 16).replaceFirst('T', ' ')},
       {'keterangan': 'Jumlah baris', 'nilai': a.rows.length},
-      {'keterangan': 'Sumber', 'nilai': 'Bizplan Java Agent (BigQuery)'},
+      {'keterangan': 'Sumber', 'nilai': 'Agent Java (BigQuery)'},
     ]),
   ];
 }
@@ -369,9 +369,9 @@ Future<Uint8List> buildOverviewPdf(Map<String, dynamic> ov, String name) async {
   ];
   final summary = ((ov['summary'] as Map?)?['text'] ?? '').toString();
   final targets = ov['has_targets'] == true;
-  const note = 'Angka MTD dibandingkan bulan lalu. Sumber: BigQuery · Bizplan Java Agent.';
+  const note = 'Angka MTD dibandingkan bulan lalu. Sumber: BigQuery · Agent Java.';
 
-  final doc = pw.Document(theme: theme, title: name, author: 'Bizplan Java Agent');
+  final doc = pw.Document(theme: theme, title: name, author: 'Agent Java');
   doc.addPage(pw.MultiPage(
     pageFormat: PdfPageFormat.a4,
     margin: const pw.EdgeInsets.fromLTRB(36, 32, 36, 28),
@@ -456,11 +456,11 @@ Future<Uint8List> buildTablePdf(String title, List<String> columns, List<Map<Str
   final theme = await _theme();
   final logo = await _logo();
   final cols = columns.take(7).toList();
-  final doc = pw.Document(theme: theme, title: title, author: 'Bizplan Java Agent');
+  final doc = pw.Document(theme: theme, title: title, author: 'Agent Java');
   doc.addPage(pw.MultiPage(
     pageFormat: cols.length > 4 ? PdfPageFormat.a4.landscape : PdfPageFormat.a4,
     margin: const pw.EdgeInsets.fromLTRB(36, 32, 36, 28),
-    footer: (c) => _footer(c, 'Hasil Bizplan Java Agent · ${rows.length} baris${columns.length > cols.length ? ' · ${columns.length - cols.length} kolom lain ada di XLSX' : ''}'),
+    footer: (c) => _footer(c, 'Hasil Agent Java · ${rows.length} baris${columns.length > cols.length ? ' · ${columns.length - cols.length} kolom lain ada di XLSX' : ''}'),
     build: (c) => [
       _head(logo, 'Laporan ad-hoc dari agent', title),
       pw.TableHelper.fromTextArray(

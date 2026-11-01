@@ -1,0 +1,49 @@
+/* Redesign v2 page 09: Unduh aplikasi Android (web). Reuses v2.css .card/.linkbtn and the TopBar. */
+.v2 .dlx { flex: 1; min-width: 0; padding: 20px 24px; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; background: #F5F9F8; align-content: start }
+:where(.v2 .dlx) :where(button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer }
+.v2 .dlx .pcol { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.v2 .dlx .ctag { font: 600 10.5px/1 var(--f-display); padding: 4px 8px; border-radius: 99px; margin-left: auto }
+.v2 .hero9 { grid-column: 1 / -1; background: linear-gradient(135deg, #0A6A5F 0%, #04332E 70%); color: #fff; border-radius: 26px; padding: 30px 34px 0; display: grid; grid-template-columns: 1fr 260px 220px; gap: 28px; position: relative; overflow: hidden; height: 360px }
+.v2 .hero9 .glow { position: absolute; right: 120px; top: -140px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(rgba(34,184,201,.45), rgba(34,184,201,0) 70%); pointer-events: none }
+.v2 .hero9 .tx { display: grid; gap: 12px; align-content: start; position: relative; padding-top: 6px }
+.v2 .hero9 .eb { font: 600 12px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: #C7F25E }
+.v2 .hero9 h3 { margin: 0; font: 700 34px/1.15 var(--f-display); color: #fff } .v2 .hero9 h3 span { color: #C7F25E }
+.v2 .hero9 p { margin: 0; font: 400 14.5px/1.55 var(--f-body); color: #C0EDE8; max-width: 440px }
+.v2 .hero9 .meta { display: flex; gap: 8px; flex-wrap: wrap } .v2 .hero9 .meta span { font: 600 12px/1 var(--f-display); padding: 7px 11px; border-radius: 99px; background: rgba(255,255,255,.12); white-space: nowrap }
+.v2 .hero9 .cta { display: flex; gap: 10px; margin-top: 6px; align-items: center }
+.v2 .hero9 .note { font: 500 12px/1.3 var(--f-display); color: #C7F25E }
+.v2 .bigdl { height: 50px; padding: 0 22px; border-radius: 15px; background: #C7F25E; color: #04332E; display: inline-flex; align-items: center; gap: 10px; font: 700 15px/1 var(--f-display); white-space: nowrap; box-shadow: 0 10px 24px rgba(0,0,0,.2); text-decoration: none }
+.v2 .bigdl svg { width: 20px; height: 20px } .v2 .bigdl.off { opacity: .6; cursor: default }
+.v2 .dlx .ghost { height: 50px; padding: 0 18px; border-radius: 15px; border: 1px solid rgba(255,255,255,.3); color: #fff; display: inline-flex; align-items: center; gap: 8px; font: 600 14px/1 var(--f-display); white-space: nowrap }
+.v2 .dlx .ghost svg { width: 17px; height: 17px } .v2 .dlx .ghost:disabled { opacity: .6; cursor: default }
+.v2 .ph9 { position: relative; align-self: end; width: 240px; height: 330px; border-radius: 34px 34px 0 0; border: 8px solid #0B1312; border-bottom: 0; overflow: hidden; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,.35) }
+.v2 .ph9 img { width: 100%; display: block }
+.v2 .qr9 { position: relative; align-self: start; background: #fff; border-radius: 20px; padding: 16px; display: grid; gap: 10px; justify-items: center; color: #0F1F1D }
+.v2 .qr9 svg { width: 150px; height: 150px; display: block } .v2 .qr9 b { font: 600 13px/1.2 var(--f-display) } .v2 .qr9 small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; text-align: center }
+.v2 .dlx .wn { display: grid; gap: 10px }
+.v2 .dlx .wn .wi { display: grid; grid-template-columns: 36px 1fr; gap: 2px 12px; align-items: start }
+.v2 .dlx .wn .wi i { grid-row: span 2; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center } .v2 .dlx .wn .wi i svg { width: 18px; height: 18px }
+.v2 .dlx .wn .wi b { font: 600 13.5px/1.3 var(--f-display); color: #0F1F1D } .v2 .dlx .wn .wi small { font: 400 12px/1.4 var(--f-body); color: #5A6B68 }
+.v2 .dlx .wn2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px }
+.v2 .dlx .steps9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.v2 .dlx .steps9 div { background: #F5F9F8; border-radius: 14px; padding: 14px; display: grid; gap: 6px; align-content: start }
+.v2 .dlx .steps9 em { font: 700 12px/1 var(--f-display); font-style: normal; width: 26px; height: 26px; border-radius: 8px; background: #0E8579; color: #fff; display: grid; place-items: center }
+.v2 .dlx .steps9 b { font: 600 13.5px/1.3 var(--f-display); color: #0F1F1D } .v2 .dlx .steps9 small { font: 400 12px/1.45 var(--f-body); color: #5A6B68 }
+.v2 .dlx .vh .vr { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; padding: 10px 0; border-top: 1px solid #ECF3F1 } .v2 .dlx .vh .vr:first-of-type { border-top: 0 }
+.v2 .dlx .vh .vr b { font: 600 13.5px/1.25 var(--f-display); display: flex; gap: 8px; align-items: center; color: #0F1F1D } .v2 .dlx .vh .vr small { font: 400 11.5px/1.35 var(--f-body); color: #5A6B68; grid-column: 1 }
+.v2 .dlx .vh .vr .dlx2 { grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #0A6A5F; width: 18px; height: 18px; display: grid } .v2 .dlx .vh .vr .dlx2 svg { width: 18px; height: 18px }
+.v2 .dlx .vh .vr .dlx2.off { color: #C9D3D1; cursor: not-allowed }
+.v2 .dlx .pl { font: 600 11px/1 var(--f-display); padding: 4px 8px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px } .v2 .dlx .pl.g { background: #E6F4EA; color: #1F7A3A }
+.v2 .dlx .req { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.v2 .dlx .req div { background: #F5F9F8; border-radius: 12px; padding: 10px 12px; display: grid; gap: 3px } .v2 .dlx .req small { font: 500 11px/1.2 var(--f-display); color: #5A6B68 } .v2 .dlx .req b { font: 600 13px/1.25 var(--f-display); color: #0F1F1D }
+.v2 .dlx .sha { display: flex; align-items: center; gap: 8px; background: #F5F9F8; border-radius: 12px; padding: 10px 12px; font: 500 11.5px/1.3 var(--f-mono, monospace); color: #3D4C49; white-space: nowrap; overflow: hidden }
+.v2 .dlx .sha span { flex: 1; overflow: hidden; text-overflow: ellipsis } .v2 .dlx .sha svg { width: 15px; height: 15px; color: #0A6A5F; flex: none }
+.v2 .dlx .sha button { display: grid; color: #0A6A5F } .v2 .dlx .sha button.ok { color: #1F7A3A }
+.v2 .dlx .faq .fq { padding: 11px 0; border-top: 1px solid #ECF3F1; display: grid; gap: 5px } .v2 .dlx .faq .fq:first-of-type { border-top: 0 }
+.v2 .dlx .faq .fq b { font: 600 13px/1.3 var(--f-display); display: flex; align-items: center; gap: 8px; color: #0F1F1D; text-align: left; width: 100% }
+.v2 .dlx .faq .fq b svg { width: 16px; height: 16px; margin-left: auto; color: #5A6B68; flex: none }
+.v2 .dlx .faq .fq small { font: 400 12px/1.5 var(--f-body); color: #5A6B68 }
+@media (max-width: 1100px) {
+  .v2 .dlx { grid-template-columns: minmax(0, 1fr) }
+  .v2 .hero9 { grid-template-columns: 1fr; height: auto; padding-bottom: 28px } .v2 .hero9 .ph9 { display: none }
+}

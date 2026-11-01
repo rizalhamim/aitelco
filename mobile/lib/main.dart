@@ -45,7 +45,7 @@ class _BizplanAppState extends State<BizplanApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      title: 'Bizplan Java Agent',
+      title: 'Agent Java',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
@@ -74,7 +74,7 @@ class _BizplanAppState extends State<BizplanApp> {
         '/download': (_) => const DownloadScreen(),
         '/login': (_) => const LoginScreen(),
         '/chat': (_) => const ChatScreen(),
-        '/profile': (_) => const ProfileScreen(),
+        '/profile': (c) => ProfileScreen(alerts: ModalRoute.of(c)?.settings.arguments as int?),
         '/map': (_) => const MapQueryScreen(),
         '/reports': (_) => const ReportsScreen(),
         '/site': (_) => const SitePerformanceScreen(),

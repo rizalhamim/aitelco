@@ -22,6 +22,7 @@ from . import site_perf
 from . import map_synth_agent
 from . import correlate_agent
 from . import chart_spec
+from . import headline_kpis
 from . import telemetry
 from starlette.concurrency import run_in_threadpool
 from .database import init_db, get_db, ChatSession, ChatMessage, UsageLog, utcnow
@@ -31,6 +32,10 @@ from .app_update import router as app_update_router
 from .routes_reports import router as reports_router
 from .routes_stats import router as stats_router, usage_router
 from .dashboard import router as dashboard_router
+from .performance import router as performance_router
+from .map_agent import router as map_agent_router
+from .report_library import router as report_docs_router
+from .profile_api import router as profile_router
 from .watchlist import router as watchlist_router, evaluate_all as evaluate_watchlist
 from .report_schedule import links_router as report_links_router, router as report_schedule_router, run_due as run_due_reports
 from .map_overview import router as map_router
@@ -68,6 +73,10 @@ app.include_router(reports_router)
 app.include_router(stats_router)
 app.include_router(usage_router)
 app.include_router(dashboard_router)
+app.include_router(performance_router)
+app.include_router(map_agent_router)
+app.include_router(report_docs_router)
+app.include_router(profile_router)
 app.include_router(watchlist_router)
 app.include_router(report_schedule_router)
 app.include_router(report_links_router)
@@ -81,7 +90,8 @@ def startup():
 
 @app.on_event("startup")
 async def start_watchlist_loop():
-    """Hourly: check watchlist rules (each at most once per day) and send due scheduled reports."""
+    """Hourly: check watchlist rules (each at most once per day), send due scheduled reports,
+    and write the daily Performance dump after 05.00 WIB (perf_dump)."""
     import asyncio
     import logging
 
@@ -96,6 +106,13 @@ async def start_watchlist_loop():
                 await run_in_threadpool(run_due_reports)
             except Exception as e:
                 logging.getLogger("report_schedule").warning(f"report loop: {e}")
+            try:
+                from . import perf_dump
+                if perf_dump.due():
+                    res = await run_in_threadpool(perf_dump.run_dump)
+                    logging.getLogger("perf_dump").info(f"dump: {res.get('dump') or res}")
+            except Exception as e:
+                logging.getLogger("perf_dump").warning(f"dump loop: {e}")
             await asyncio.sleep(3600)
 
     if _os.environ.get("WATCHLIST_LOOP", "1") != "0":
@@ -1182,13 +1199,16 @@ def chat_stream(req: ChatReq, request: Request):
                         selected_tables=gen_sql.get("_allowed_tables"),
                         table_contracts=knowledge.table_contracts(),
                     )
+                    _v2_chart = chart_spec.suggest(result["columns"], result["rows"], req.message,
+                                                   sql=result.get("sql") or "")
                     yield sse("result", {
                         "columns": result["columns"], "rows": result["rows"],
                         "row_count": result["row_count"], "sql": result["sql"],
                         "bytes_processed": result["bytes_processed"],
                         "refine_round": refine_round,
-                        "chart": chart_spec.suggest(result["columns"], result["rows"], req.message,
-                                                    sql=result.get("sql") or ""),
+                        "chart": _v2_chart,
+                        # Redesign v2 answer card: up to 3 headline numbers with delta and spark
+                        "kpis": headline_kpis.safe_headline(result["columns"], result["rows"], _v2_chart),
                     })
                     # Chart rendering is decided here, not in the clients: a column's
                     # TYPE says nothing about its meaning, so web and mobile used to

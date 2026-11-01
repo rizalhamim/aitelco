@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -10,21 +11,23 @@ import '../api/models.dart';
 import '../app_state.dart';
 import '../services/keep_alive_service.dart';
 import '../services/report_export.dart';
+import '../ui/answer_v2.dart';
 import '../ui/chart.dart';
 import '../ui/ds.dart';
 import '../ui/icons.dart';
 import '../ui/kit.dart';
+import '../ui/mock_icons.dart';
+import '../ui/v2.dart';
 import '../widgets/chart_panel.dart';
-import '../widgets/collapsible.dart';
-import '../widgets/data_table_view.dart';
 import 'location_sheet.dart';
 import 'report_list_screen.dart';
 
-/// Android · Tanya Agent: header, conversation with answer cards (pipeline
-/// meta, validated chip, KPI tiles, chart, Export / Pantau), follow-up chips
-/// and the composer. Lives in the home shell's first tab.
+/// Android · Tanya Agent v2 (design/mockup-v2/02-tanya-agent): app bar with
+/// history, bell and profile; conversation with answer cards (validated and
+/// step pills, headline KPIs, Grafik / Tabel / Peta, actions); follow-up chips
+/// and the composer docked over a fade. Lives in the home shell's first tab.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.preview, this.previewTouch, this.onWatch});
+  const ChatScreen({super.key, this.preview, this.previewTouch, this.onWatch, this.onOpenMap});
 
   /// Messages to show instead of a live session (golden tests and demos).
   final List<ChatMessage>? preview;
@@ -32,6 +35,9 @@ class ChatScreen extends StatefulWidget {
 
   /// Opens the Alert tab to create a watch rule for a question.
   final void Function(String question)? onWatch;
+
+  /// Switches to the Peta Agent tab.
+  final VoidCallback? onOpenMap;
 
   @override
   State<ChatScreen> createState() => ChatScreenState();
@@ -141,8 +147,12 @@ class ChatScreenState extends State<ChatScreen> {
           case 'result':
             final cols = (data['columns'] as List?)?.map((e) => e.toString()).toList() ?? [];
             final rows = (data['rows'] as List?)?.map((e) => Map<String, dynamic>.from(e as Map)).toList() ?? [];
-            setState(() => a.result = ResultTable(cols, rows, (data['row_count'] as int?) ?? rows.length,
-                chart: data['chart'] is Map ? Map<String, dynamic>.from(data['chart'] as Map) : null));
+            setState(() {
+              a.result = ResultTable(cols, rows, (data['row_count'] as int?) ?? rows.length,
+                  chart: data['chart'] is Map ? Map<String, dynamic>.from(data['chart'] as Map) : null);
+              a.kpis = (data['kpis'] as List?)?.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList() ?? [];
+              a.source = data['source']?.toString();
+            });
           case 'chart_spec':
             // Server builds the chart spec after the result (build_chart_spec);
             // kept as a fallback when the result carries no Redesign chart.
@@ -182,7 +192,12 @@ class ChatScreenState extends State<ChatScreen> {
             gotDone = true;
             setState(() {
               a.status = null;
-              a.elapsed = a.startedAt == null ? null : DateTime.now().difference(a.startedAt!);
+              final ms = data['elapsed_ms'];
+              a.elapsed = ms is num
+                  ? Duration(milliseconds: ms.toInt())
+                  : a.startedAt == null
+                      ? null
+                      : DateTime.now().difference(a.startedAt!);
               if (a.error == null) a.validated = true;
             });
           case 'error':
@@ -237,7 +252,7 @@ class ChatScreenState extends State<ChatScreen> {
         backgroundColor: p.surface,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
         builder: (_) => ReportExportSheet(
-          item: ReportItem(id: 'adhoc:${saved.id}', kind: 'adhoc', title: saved.title, format: 'XLSX', date: saved.savedAt, adhoc: saved),
+          item: ReportItem(id: 'adhoc:${saved.id}', kind: 'adhoc', title: saved.title, format: 'XLSX', adhoc: saved),
         ),
       );
     } catch (e) {
@@ -254,232 +269,267 @@ class ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  /// Scope named in the conversation ("West Java"), shown under the title.
+  String get _scope {
+    const names = ['West Java', 'Central Java', 'East Java', 'Jabodetabek'];
+    for (final m in _messages.reversed.where((m) => m.isUser)) {
+      for (final n in names) {
+        if (m.content.toLowerCase().contains(n.toLowerCase())) return n;
+      }
+    }
+    return 'Circle Java';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final p = Pal.of(context);
     final top = MediaQuery.of(context).padding.top;
+    final scope = V2Scope.maybeOf(context);
+    final showSugg = !_busy && _messages.isNotEmpty && !_messages.last.isUser && _messages.last.error == null;
     return ColoredBox(
-      color: p.bg,
+      color: V2.bg,
       child: Column(children: [
         SizedBox(height: top),
-        _header(p),
+        V2AppBar(
+          title: 'Tanya Agent',
+          subtitle: '${_busy ? 'Menganalisis' : 'Online'} · $_scope',
+          subtitleDot: _busy ? const Color(0xFFE0A100) : const Color(0xFF2E9E57),
+          alertCount: scope?.alerts ?? 0,
+          onBell: scope == null ? null : () => scope.openAlerts(),
+          actions: [V2IconButton(icon: 'hist', label: 'Riwayat dan menu', onTap: _openMenu)],
+        ),
         Expanded(
           child: Stack(children: [
-            Positioned(left: 160, top: -120, width: 360, height: 300, child: Glow(color: p.teal400, alpha: .13)),
-            _messages.isEmpty ? _welcome(p) : _conversation(p),
+            Positioned.fill(child: _messages.isEmpty ? _welcome() : _conversation()),
+            // the dock fades the conversation out above the composer (mockup .dfade)
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 150,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00F5F9F8), V2.bg],
+                      stops: [0, .4],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 14,
+              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                if (showSugg) ...[_followUps(), const SizedBox(height: 14)],
+                _composer(),
+              ]),
+            ),
           ]),
         ),
-        if (!_busy && _messages.isNotEmpty && !_messages.last.isUser && _messages.last.error == null) _followUps(p),
-        _composer(p),
       ]),
     );
   }
 
-  Widget _header(Pal p) {
-    return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: p.surface, border: Border(bottom: BorderSide(color: p.rule))),
-      child: Row(children: [
-        AppLogo(size: 44, radius: 14, border: p.teal200),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Tanya Agent', style: ts(16, w600, p.ink)),
-            Row(children: [
-              Container(width: 8, height: 8, decoration: BoxDecoration(color: _busy ? p.warning : p.successSolid, shape: BoxShape.circle)),
-              const SizedBox(width: 6),
-              Text(_busy ? 'Menganalisis · Region Jawa' : 'Online · Region Jawa', style: ts(12, w400, p.mute)),
-            ]),
-          ]),
-        ),
-        SquareIconButton(Icx.history, tooltip: 'Riwayat & menu', onTap: _openMenu),
-      ]),
-    );
-  }
-
-  Widget _conversation(Pal p) {
+  Widget _conversation() {
     return ListView.builder(
       controller: _scroll,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 170),
       itemCount: _messages.length,
-      itemBuilder: (_, i) => _messages[i].isUser ? _userBubble(p, _messages[i]) : _answer(p, i),
+      itemBuilder: (_, i) => _messages[i].isUser ? _userBubble(_messages[i]) : _answer(i),
     );
   }
 
-  Widget _userBubble(Pal p, ChatMessage m) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14, left: 68),
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        decoration: BoxDecoration(
-          color: p.teal600,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(18), topRight: Radius.circular(18),
-            bottomLeft: Radius.circular(18), bottomRight: Radius.circular(6),
+  Widget _userBubble(ChatMessage m) {
+    return LayoutBuilder(builder: (context, c) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: Container(
+          constraints: BoxConstraints(maxWidth: c.maxWidth * .85),
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.fromLTRB(15, 12, 15, 12),
+          decoration: BoxDecoration(
+            color: V2.teal600,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20), topRight: Radius.circular(20),
+              bottomLeft: Radius.circular(20), bottomRight: Radius.circular(6),
+            ),
+            boxShadow: [cssShadow(const Color(0x330E8579), 0, 6, 16)],
           ),
+          child: Text(m.content, style: V2.b(14, FontWeight.w400, Colors.white, lh: 1.5)),
         ),
-        child: Text(m.content, style: ts(14, w400, Colors.white, lh: 1.5)),
-      ),
-    );
+      );
+    });
   }
 
-  Widget _answer(Pal p, int i) {
+  Widget _pill(String text, {String? icon, Color bg = V2.rule2, Color fg = V2.ink2, Widget? lead, VoidCallback? onTap}) {
+    final child = Container(
+      height: 28,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(99)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        if (lead != null) ...[lead, const SizedBox(width: 6)],
+        if (icon != null) ...[MIcon(icon, size: 14, color: fg), const SizedBox(width: 6)],
+        Flexible(child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: V2.d(12, FontWeight.w600, fg, lh: 1))),
+      ]),
+    );
+    return onTap == null ? child : GestureDetector(onTap: onTap, child: child);
+  }
+
+  Widget _answer(int i) {
     final m = _messages[i];
     final live = m.status != null;
     final spec = m.result?.chart == null ? null : ChartSpec(m.result!.chart!);
     final rows = m.result?.rows ?? const <Map<String, dynamic>>[];
-    final tiles = spec != null && spec.type != 'kpi' ? periodTotals(spec, m.result!.columns, rows) : const <KpiItem>[];
+    final kpis = m.kpis.map(HeadlineKpi.fromJson).whereType<HeadlineKpi>().toList();
     final secs = m.elapsed == null ? null : m.elapsed!.inMilliseconds / 1000;
-    final meta = live
-        ? m.status!
-        : [
-            if (m.steps > 0) '${m.steps} langkah',
-            if (secs != null) '${idNum(secs < .1 ? .1 : secs, 1)} dtk',
-          ].join(' · ');
+    final meta = [
+      if (m.steps > 0) '${m.steps} langkah',
+      if (secs != null) '${idNum(secs < .1 ? .1 : secs, 1)} dtk',
+    ].join(' · ');
     final okSections = m.profileResults.where((s) => s.status == 'ok' && s.rows.isNotEmpty).toList();
+    final spans = answerSpans(m.content);
+    final showSql = m.sql != null && AuthState.canViewSql && widget.preview == null;
+    final gap = const SizedBox(height: 11);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: p.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: p.rule),
-        boxShadow: p.shadow,
+        border: Border.all(color: V2.rule),
+        boxShadow: [cssShadow(const Color(0x0D0F1F1D), 0, 4, 14)],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        SizedBox(
-          height: 28,
-          child: Row(children: [
-            const _AiDot(),
-            const SizedBox(width: 6),
-            if (live) ...[
-              SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: p.teal600)),
-              const SizedBox(width: 6),
-            ],
-            Expanded(child: Text(meta, maxLines: 1, overflow: TextOverflow.ellipsis, style: ts(12, w600, p.mute))),
-            if (!live && m.validated && m.error == null) _validatedChip(p),
-          ]),
-        ),
+        Wrap(spacing: 10, runSpacing: 6, children: [
+          if (live)
+            _pill(m.status!, bg: V2.teal50, fg: V2.teal700,
+                lead: const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: V2.teal700)))
+          else if (m.validated && m.error == null)
+            _pill('Tervalidasi', icon: 'check', bg: const Color(0xFFE6F4EA), fg: const Color(0xFF1F7A3A)),
+          if (!live && meta.isNotEmpty) _pill(meta, onTap: showSql ? () => setState(() => m.showSql = !m.showSql) : null),
+          if (!live && m.source != null) _pill(m.source!, icon: 'db', bg: const Color(0xFFE3F7FA), fg: const Color(0xFF0E6F7C)),
+        ]),
         if (m.content.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          MarkdownBody(
-            data: m.content,
-            styleSheet: MarkdownStyleSheet(
-              p: ts(14, w400, p.text2, lh: 1.5),
-              strong: ts(14, w600, p.ink, lh: 1.5),
-              h1: ts(18, w700, p.ink, lh: 1.35),
-              h2: ts(16, w600, p.ink),
-              h3: ts(14, w600, p.ink),
-              listBullet: ts(14, w400, p.text2, lh: 1.5),
-              tableColumnWidth: const IntrinsicColumnWidth(),
-              tableHead: ts(12, w600, p.ink),
-              tableBody: ts(12, w400, p.text2),
-              tableCellsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              tableBorder: TableBorder.all(color: p.rule, width: 1),
-              tableScrollbarThumbVisibility: true,
+          gap,
+          if (spans != null)
+            // Flutter rounds each 21.7 px line up to 22 while CSS keeps 21.7, and puts
+            // Prompt glyphs 1 px lower than the browser; size and place the block like
+            // CSS so the text and the cards below sit where the mockup puts them.
+            LayoutBuilder(builder: (context, c) {
+              final tp = TextPainter(text: spans, textDirection: TextDirection.ltr)..layout(maxWidth: c.maxWidth);
+              final lines = tp.computeLineMetrics().length;
+              tp.dispose();
+              return SizedBox(
+                height: lines * 14 * 1.55,
+                child: OverflowBox(alignment: Alignment.topLeft, maxHeight: double.infinity, child: Transform.translate(offset: const Offset(0, -1.0), child: Text.rich(spans))),
+              );
+            })
+          else
+            MarkdownBody(
+              data: m.content,
+              styleSheet: MarkdownStyleSheet(
+                p: V2.b(14, FontWeight.w400, V2.ink, lh: 1.55),
+                strong: V2.b(14, FontWeight.w600, V2.ink, lh: 1.55),
+                h1: V2.d(17, FontWeight.w700, V2.ink, lh: 1.3),
+                h2: V2.d(15, FontWeight.w700, V2.ink, lh: 1.3),
+                h3: V2.d(14, FontWeight.w600, V2.ink, lh: 1.3),
+                listBullet: V2.b(14, FontWeight.w400, V2.ink, lh: 1.55),
+                tableColumnWidth: const IntrinsicColumnWidth(),
+                tableHead: V2.d(11.5, FontWeight.w600, V2.mute),
+                tableBody: V2.b(12.5, FontWeight.w400, V2.ink),
+                tableCellsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                tableBorder: TableBorder.all(color: V2.rule, width: 1),
+              ),
             ),
-          ),
         ] else if (live && m.result == null) ...[
-          const SizedBox(height: 12),
+          gap,
           const Skeleton(width: 280),
           const SizedBox(height: 8),
           const Skeleton(width: 220),
-          const SizedBox(height: 8),
-          const Skeleton(width: 160),
         ],
-        if (tiles.isNotEmpty) ...[const SizedBox(height: 12), KpiGrid(items: tiles)],
-        if (spec != null && spec.type != 'none' && rows.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          SmartChart(
-            spec: spec,
+        if (kpis.isNotEmpty) ...[gap, KpiGridV2(kpis: kpis)],
+        if (m.result != null && rows.isNotEmpty) ...[
+          gap,
+          AnswerVizV2(
+            key: ValueKey('viz$i'),
+            columns: m.result!.columns,
             rows: rows,
-            height: spec.type == 'line' || spec.type == 'area' ? 130 : 180,
-            touchIndex: widget.previewTouch,
+            spec: spec,
+            initialHover: widget.previewTouch,
+            onOpenMap: widget.onOpenMap,
+            chartFallback: spec != null && spec.type != 'none' && spec.type != 'kpi'
+                ? SmartChart(spec: spec, rows: rows, height: spec.type == 'hbar' ? 220 : 170)
+                : m.chartSpec != null
+                    ? ChartPanel(columns: m.result!.columns, rows: rows, spec: m.chartSpec)
+                    : null,
           ),
         ],
-        if ((spec == null || spec.type == 'none') && m.chartSpec != null && rows.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          ChartPanel(columns: m.result!.columns, rows: rows, spec: m.chartSpec),
-        ],
-        if (m.result != null && rows.isNotEmpty && widget.preview == null)
-          Collapsible(
-            title: 'Data (${m.result!.rowCount} baris)',
-            icon: Icons.table_chart_outlined,
-            accent: p.teal700,
-            child: DataTableView(columns: m.result!.columns, rows: rows),
-          ),
         for (final s in okSections) ...[
-          const SizedBox(height: 12),
-          Text(s.title, style: ts(13, w600, p.ink)),
+          gap,
+          Text(s.title, style: V2.d(13, FontWeight.w600, V2.ink)),
           const SizedBox(height: 8),
-          if (s.chart != null && ChartSpec(s.chart!).type != 'none')
-            SmartChart(spec: ChartSpec(s.chart!), rows: s.rows, height: 150)
-          else
-            DataTableView(columns: s.columns, rows: s.rows, maxRows: 10),
+          AnswerVizV2(
+            columns: s.columns,
+            rows: s.rows,
+            spec: s.chart == null ? null : ChartSpec(s.chart!),
+            chartFallback: s.chart != null && ChartSpec(s.chart!).type != 'none' ? SmartChart(spec: ChartSpec(s.chart!), rows: s.rows, height: 150) : null,
+          ),
         ],
         if (m.locationResult != null) LocationResultView(data: m.locationResult!, lang: _lang),
-        if (m.sql != null && AuthState.canViewSql && widget.preview == null)
-          Collapsible(
-            title: 'SQL',
-            icon: Icons.code,
-            accent: p.mute,
-            child: SelectableText(m.sql!, style: TextStyle(fontFamily: 'monospace', fontSize: 11.5, color: p.ink)),
-          ),
-        if (m.error != null) ...[
-          const SizedBox(height: 12),
+        if (showSql && m.showSql) ...[
+          gap,
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: p.dangerTint, borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: V2.bg, borderRadius: BorderRadius.circular(12), border: Border.all(color: V2.rule2)),
+            child: SelectableText(m.sql!, style: const TextStyle(fontFamily: 'monospace', fontSize: 11.5, color: V2.ink)),
+          ),
+        ],
+        if (m.error != null) ...[
+          gap,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: const Color(0xFFFDECEC), borderRadius: BorderRadius.circular(12)),
             child: Row(children: [
-              Ic(Icx.alertCircle, size: 18, color: p.danger),
+              const MIcon('warn', size: 18, color: V2.red),
               const SizedBox(width: 10),
-              Expanded(child: Text(m.error!, style: ts(13, w500, p.danger, lh: 1.4))),
+              Expanded(child: Text(m.error!, style: V2.b(13, FontWeight.w500, V2.red, lh: 1.4))),
             ]),
           ),
         ],
         if (!live && m.error == null && (m.result != null || m.content.isNotEmpty)) ...[
-          const SizedBox(height: 12),
-          Row(children: [
-            Expanded(
-              child: _ActionButton(
-                icon: Icx.download,
-                label: 'Export',
-                onTap: m.result != null && AuthState.canExport ? () => _export(i) : null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(child: _ActionButton(icon: Icx.bellRing, label: 'Pantau', tint: true, onTap: () => _watch(i))),
+          gap,
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            _ActionButton(icon: 'copy', label: 'Salin', onTap: () => _copy(m)),
+            _ActionButton(icon: 'dl', label: 'Ekspor', onTap: m.result != null && AuthState.canExport ? () => _export(i) : null),
+            _ActionButton(icon: 'bellplus', label: 'Pantau', tint: true, onTap: () => _watch(i)),
+            if (m.result != null && widget.onOpenMap != null) _ActionButton(icon: 'map', label: 'Peta Agent', onTap: widget.onOpenMap),
           ]),
         ],
       ]),
     );
   }
 
-  Widget _validatedChip(Pal p) => Container(
-        height: 28,
-        padding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
-        decoration: BoxDecoration(color: p.teal50, borderRadius: BorderRadius.circular(999)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Ic(Icx.check, size: 14, color: p.teal600),
-          const SizedBox(width: 6),
-          Text('Tervalidasi', style: ts(12, w600, p.teal800)),
-        ]),
-      );
+  Future<void> _copy(ChatMessage m) async {
+    await Clipboard.setData(ClipboardData(text: m.content.replaceAll('**', '')));
+    if (mounted) showToast(context, 'Jawaban disalin.');
+  }
 
-  /// Follow-up questions built from the answer: why the named place moved,
-  /// next month's projection, and the neighbouring region for comparison.
+  /// Follow-up questions built from the answer: why the named place moved, the
+  /// headline count KPI, next month's projection, and a neighbouring region.
   List<String> _suggestions(ChatMessage m) {
     final spec = m.result?.chart == null ? null : ChartSpec(m.result!.chart!);
     final rows = m.result?.rows ?? const [];
     final text = m.content;
     final out = <String>[];
-    final named = RegExp(r'\*\*([A-Za-z][A-Za-z .\-]{2,30})\*\*').allMatches(text).map((x) => x[1]!.trim())
-        .where((w) => !RegExp(r'\d').hasMatch(w) && !RegExp(r'^(naik|turun|revenue)', caseSensitive: false).hasMatch(w)).toList();
+    final named = RegExp(r'\*\*([A-Z][A-Za-z .\-]{2,30}?)(?:\s*\([^)]*\))?\*\*').allMatches(text).map((x) => x[1]!.trim())
+        .where((w) => !RegExp(r'\d').hasMatch(w) && !RegExp(r'^(naik|turun|revenue|rp)\b', caseSensitive: false).hasMatch(w)).toList();
     if (named.isNotEmpty) {
-      out.add('Kenapa ${named.first} ${RegExp(r'turun|−|-\d').hasMatch(text) ? 'turun' : 'naik'}?');
+      out.add('Kenapa ${named.first} ${RegExp(r'turun|−\d|-\d').hasMatch(text) ? 'turun' : 'naik'}?');
     } else {
       final key = spec?.mapKey ?? spec?.x;
       if (spec != null && key != null && rows.isNotEmpty && spec.type != 'line' && spec.type != 'area') {
@@ -487,11 +537,17 @@ class ChatScreenState extends State<ChatScreen> {
         if (top.isNotEmpty) out.add('Kenapa ${_title(top)} seperti ini?');
       }
     }
+    for (final k in m.kpis.map(HeadlineKpi.fromJson).whereType<HeadlineKpi>()) {
+      if (k.format == 'number' && k.value == k.value.roundToDouble() && RegExp(r'bawah|below|gagal|fail|outage', caseSensitive: false).hasMatch(k.column)) {
+        out.add('${idNum(k.value, 0)} ${k.label().toLowerCase()}');
+        break;
+      }
+    }
     final d = spec?.x == null || rows.isEmpty ? null : parseDate(rows.last[spec!.x]);
     out.add(d == null ? 'Proyeksi bulan depan' : 'Proyeksi ${_monthLong[d.$2 % 12]}');
-    const regions = [('Jawa Barat', 'Jabar'), ('Jawa Tengah', 'Jateng'), ('Jawa Timur', 'Jatim'), ('Jabodetabek', 'Jabodetabek')];
-    final i = regions.indexWhere((r) => text.contains(r.$1) || text.contains(r.$2));
-    out.add(i < 0 ? 'Bandingkan dengan bulan lalu' : 'Bandingkan ${regions[(i + 1) % regions.length].$2}');
+    const regions = ['West Java', 'Central Java', 'East Java', 'Jabodetabek'];
+    final i = regions.indexWhere((r) => text.contains(r));
+    out.add(i < 0 ? 'Bandingkan dengan bulan lalu' : 'Bandingkan dengan ${regions[(i + 1) % regions.length]}');
     return out;
   }
 
@@ -499,127 +555,176 @@ class ChatScreenState extends State<ChatScreen> {
 
   String _title(String s) => s.split(' ').map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}').join(' ');
 
-  Widget _followUps(Pal p) {
+  Widget _followUps() {
     final items = _suggestions(_messages.last);
     return SizedBox(
-      height: 48,
+      height: 36,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         itemCount: items.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) => PillChip(items[i], icon: Icx.sparkles, accent: true, onTap: () => _send(items[i])),
+        itemBuilder: (_, i) => Semantics(
+          button: true,
+          child: GestureDetector(
+            onTap: () => _send(items[i]),
+            child: Container(
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(99), border: Border.all(color: const Color(0xFFFFC2AF))),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const MIcon('spark', size: 16, color: V2.coral),
+                const SizedBox(width: 8),
+                Text(items[i], style: V2.d(12.5, FontWeight.w500, V2.ink, lh: 1)),
+              ]),
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _welcome(Pal p) {
+  Widget _welcome() {
     const starters = [
-      ('Revenue', 'Performa revenue Jawa Barat bulan ini vs bulan lalu?'),
-      ('Site', 'Site dengan availability terendah minggu ini di Jawa Tengah'),
-      ('Market share', 'Market share IM3 vs kompetitor per kabupaten di Jawa Timur'),
-      ('Profil', 'Tampilkan profil lengkap kota Surabaya'),
+      ('wallet', Color(0xFFFCEDD3), Color(0xFFB7791F), 'Revenue', 'Revenue West Java bulan ini vs bulan lalu?'),
+      ('tower', Color(0xFFFBE2E8), Color(0xFFC23A5B), 'Site', 'Site dengan availability terendah minggu ini di Central Java'),
+      ('pulse', Color(0xFFE6F7F5), V2.teal700, 'Performance', 'Site productivity terendah di East Java bulan ini'),
+      ('map', Color(0xFFE3F7FA), Color(0xFF0E6F7C), 'Profil wilayah', 'Tampilkan profil lengkap kota Surabaya'),
     ];
     final name = (AuthState.user?['full_name'] ?? AuthState.user?['username'] ?? '').toString().split(' ').first;
-    return ListView(padding: const EdgeInsets.fromLTRB(16, 24, 16, 16), children: [
-      const Center(child: SizedBox(width: 132, height: 132, child: Image(image: AssetImage('assets/img/ai_orb.webp')))),
-      const SizedBox(height: 8),
-      Text(name.isEmpty ? 'Mau tahu apa hari ini?' : 'Halo, $name. Mau tahu apa hari ini?',
-          textAlign: TextAlign.center, style: ts(18, w700, p.ink, lh: 1.35)),
+    return ListView(padding: const EdgeInsets.fromLTRB(14, 24, 14, 170), children: [
+      Text(name.isEmpty ? 'Mau tahu apa hari ini?' : 'Halo, $name. Mau tahu apa hari ini?', style: V2.d(20, FontWeight.w700, V2.ink, lh: 1.3)),
       const SizedBox(height: 6),
-      Text('Tanyakan revenue, site, network, market share atau sales di Jawa. Agent menulis query, mengambil data, lalu menyajikan angka dan grafiknya.',
-          textAlign: TextAlign.center, style: ts(13, w400, p.text2, lh: 1.5)),
-      const SizedBox(height: 20),
-      for (final (t, q) in starters)
+      Text('Tanya revenue, site, performance, market share atau profil wilayah di Circle Java. Agent menulis query, mengambil data, lalu menyajikan angka, grafik dan peta.',
+          style: V2.b(13.5, FontWeight.w400, V2.ink2, lh: 1.5)),
+      const SizedBox(height: 18),
+      for (final (icon, bg, fg, t, q) in starters)
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: Material(
-            color: p.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: p.rule)),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => _send(q),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(children: [
-                  IconTile(Icx.sparkles, bg: p.teal50, fg: p.teal700, size: 36, radius: 10),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(t, style: ts(13, w600, p.ink)),
-                      Text(q, style: ts(12, w400, p.text2)),
-                    ]),
-                  ),
-                  Ic(Icx.chevronRight, size: 16, color: p.mute),
-                ]),
-              ),
+          child: GestureDetector(
+            onTap: () => _send(q),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: V2.rule)),
+              child: Row(children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+                  child: MIcon(icon, size: 18, color: fg),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(t, style: V2.d(13, FontWeight.w600, V2.ink, lh: 1.3)),
+                    Text(q, style: V2.b(12.5, FontWeight.w400, V2.ink2, lh: 1.4)),
+                  ]),
+                ),
+                const MIcon('chevr', size: 16, color: V2.mute),
+              ]),
             ),
           ),
         ),
     ]);
   }
 
-  Widget _composer(Pal p) {
+  Widget _composer() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Container(
-        constraints: const BoxConstraints(minHeight: 59),
-        padding: const EdgeInsets.fromLTRB(18, 0, 7, 0),
+        constraints: const BoxConstraints(minHeight: 58),
+        padding: const EdgeInsets.fromLTRB(8, 0, 6, 0),
         decoration: BoxDecoration(
-          color: p.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: p.teal200, width: 1.5),
-          boxShadow: [
-            BoxShadow(color: const Color(0xFF15A697).withValues(alpha: .2), blurRadius: 24),
-            const BoxShadow(color: Color(0x0F0F1F1D), offset: Offset(0, 4), blurRadius: 14),
-          ],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: V2.teal200),
+          boxShadow: [cssShadow(const Color(0x2404332E), 0, 10, 26)],
         ),
         child: Row(children: [
+          Semantics(
+            button: true,
+            label: 'Lampiran dan menu',
+            child: GestureDetector(
+              onTap: _openMenu,
+              child: Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                child: const MIcon('clip', size: 20, color: V2.ink2),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
           Expanded(
-            child: TextField(
-              controller: _input,
-              minLines: 1,
-              maxLines: 4,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _send(),
-              style: ts(14, w400, p.ink, lh: 1.5),
-              cursorColor: p.teal600,
-              decoration: InputDecoration(
-                isCollapsed: true,
-                filled: false,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                hintText: 'Tanya tentang bisnis Jawa…',
-                hintStyle: ts(14, w400, p.mute, lh: 1.5),
-                contentPadding: const EdgeInsets.symmetric(vertical: 18),
+            // The placeholder is drawn beside the field, centered like the mockup's
+            // two-line 14 px hint, so typed text can keep a comfortable line height.
+            child: Stack(alignment: Alignment.centerLeft, children: [
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _input,
+                builder: (_, v, __) => v.text.isNotEmpty
+                    ? const SizedBox.shrink()
+                    : IgnorePointer(
+                        child: Text('Tanya tentang bisnis Circle Java…',
+                            maxLines: 2, overflow: TextOverflow.ellipsis, style: V2.b(14, FontWeight.w400, const Color(0xFF8A9A97), lh: 1)),
+                      ),
+              ),
+              Semantics(
+                label: 'Tanya tentang bisnis Circle Java',
+                textField: true,
+                child: TextField(
+                  controller: _input,
+                  minLines: 1,
+                  maxLines: 4,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _send(),
+                  style: V2.b(14, FontWeight.w400, V2.ink, lh: 1.4),
+                  cursorColor: V2.teal600,
+                  decoration: const InputDecoration(
+                    isCollapsed: true,
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ]),
+          ),
+          const SizedBox(width: 6),
+          Semantics(
+            button: true,
+            label: _listening ? 'Berhenti mendengarkan' : 'Input suara',
+            child: GestureDetector(
+              onTap: _busy ? null : _voice,
+              child: Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: _listening ? V2.teal50 : null, borderRadius: BorderRadius.circular(12)),
+                child: MIcon('mic', size: 19, color: _listening ? V2.teal700 : V2.mute),
               ),
             ),
           ),
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: IconButton(
-              tooltip: _listening ? 'Berhenti mendengarkan' : 'Input suara',
-              onPressed: _busy ? null : _voice,
-              style: IconButton.styleFrom(
-                backgroundColor: _listening ? p.teal50 : Colors.transparent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              icon: Ic(Icx.mic, size: 18, color: _listening ? p.teal700 : p.mute),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Material(
-            color: p.teal600,
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
+          const SizedBox(width: 6),
+          Semantics(
+            button: true,
+            label: _busy ? 'Hentikan' : 'Kirim',
+            child: GestureDetector(
               onTap: _busy ? _stop : () => _send(),
-              child: SizedBox(
+              child: Container(
                 width: 44,
                 height: 44,
-                child: Center(child: Ic(_busy ? Icx.square : Icx.send, size: 18, color: Colors.white)),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: cssLinear(135, const [V2.teal600, Color(0xFF1597A8)], const Size(44, 44)),
+                ),
+                child: _busy
+                    ? Container(width: 14, height: 14, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)))
+                    : const MIcon('send', size: 20, color: Colors.white),
               ),
             ),
           ),
@@ -801,51 +906,36 @@ class ChatScreenState extends State<ChatScreen> {
   }
 }
 
-/// The gradient AI dot with a sparkle that leads each answer card.
-class _AiDot extends StatelessWidget {
-  const _AiDot();
-
-  @override
-  Widget build(BuildContext context) => Container(
-        width: 22,
-        height: 22,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(begin: Alignment(-.75, -.875), end: Alignment(.75, 1), colors: [Color(0xFF15A697), Color(0xFF0A6A5F)]),
-        ),
-        alignment: Alignment.center,
-        child: const Ic(Icx.sparkles, size: 12, color: Colors.white),
-      );
-}
-
+/// Answer card action: outlined, or teal-tinted for Pantau.
 class _ActionButton extends StatelessWidget {
   const _ActionButton({required this.icon, required this.label, this.onTap, this.tint = false});
-  final I3 icon;
+  final String icon;
   final String label;
   final VoidCallback? onTap;
   final bool tint;
 
   @override
   Widget build(BuildContext context) {
-    final p = Pal.of(context);
-    final fg = tint ? p.teal700 : p.ink;
+    final fg = tint ? V2.teal700 : V2.ink2;
     return Opacity(
       opacity: onTap == null ? .5 : 1,
-      child: Material(
-        color: tint ? p.teal50 : p.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: tint ? BorderSide.none : BorderSide(color: p.rule),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+      child: Semantics(
+        button: true,
+        label: label,
+        child: GestureDetector(
           onTap: onTap,
-          child: SizedBox(
-            height: 36,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Ic(icon, size: 24, color: fg),
-              const SizedBox(width: 8),
-              Text(label, style: ts(13, w600, fg)),
+          child: Container(
+            height: 34,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: tint ? V2.teal50 : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: tint ? null : Border.all(color: V2.rule),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              MIcon(icon, size: 16, color: fg),
+              const SizedBox(width: 6),
+              Text(label, style: V2.d(12.5, FontWeight.w600, fg, lh: 1)),
             ]),
           ),
         ),

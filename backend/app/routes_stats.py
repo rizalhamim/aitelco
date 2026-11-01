@@ -8,14 +8,14 @@ POST /api/usage/export                   log a client-side export (XLSX/PDF)
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from .app_update import _load_release
 from .auth import get_current_user, require_admin
-from .database import (AppClient, AppDownload, AppVersionSeen, LoginAudit, Notification, UsageLog,
-                       User, get_db)
+from .database import (AppClient, AppDownload, AppVersionSeen, LoginAudit, Notification, PasswordReset,
+                       UnknownLogin, UsageLog, User, get_db)
 from .telemetry import platform_from_user_agent
 
 router = APIRouter(prefix="/api/admin", tags=["admin-stats"])
@@ -28,7 +28,45 @@ FAILURE_REASONS = {
     "failed_login": "Kata sandi salah",
     "failed_inactive": "Akun dinonaktifkan",
     "failed_token": "Token kedaluwarsa",
+    "failed_locked": "Akun terkunci",
 }
+
+# Pages counted in "Pemakaian fitur" (POST /api/usage/view), in the order shown.
+FEATURES = [("tanya", "Tanya Agent"), ("dashboard", "Dashboard"), ("performance", "Performance"),
+            ("peta", "Peta Agent"), ("laporan", "Laporan"), ("watchlist", "Watchlist dan Alert")]
+# A page opened again within this many minutes counts as the same session.
+VIEW_SESSION_MINUTES = 30
+# Status "Tidak aktif" in the access table: nothing seen for this many days.
+ACTIVE_DAYS = 7
+REGION_LABEL = {"JAVA": "Circle Java", "WEST JAVA": "West Java", "CENTRAL JAVA": "Central Java", "EAST JAVA": "East Java"}
+TOPIC_BUCKETS = [("performance", "Performance"), ("site", "Site productivity"), ("profile", "Profile wilayah")]
+_SITE_WORDS = ("productiv", "produktiv", "per site", "/site", "new site", "site baru", "rev/site", "rgu/site", "vlr/site")
+_PROFILE_WORDS = ("market share", "penetrasi", "profil", "profile", "demograf", "kompetitor", "competit", "populasi",
+                  "household", "rumah tangga", "potensi")
+
+
+def topic_bucket(domain: str | None, question: str | None) -> str:
+    """Performance, Site productivity or Profile wilayah for one agent question."""
+    q = (question or "").lower()
+    d = (domain or "").lower()
+    if any(w in q for w in _SITE_WORDS) or d in ("network", "network_benchmark", "site"):
+        return "site"
+    if any(w in q for w in _PROFILE_WORDS) or d in ("competitive", "market_share"):
+        return "profile"
+    return "performance"
+
+
+def _region_of(u: User) -> str:
+    import json
+    try:
+        key = json.loads(u.preferences or "{}").get("default_region") or "JAVA"
+    except (TypeError, ValueError):
+        key = "JAVA"
+    return REGION_LABEL.get(key, "Circle Java")
+
+
+def _approved(u: User) -> bool:
+    return (u.approval_status or "approved") == "approved"
 
 # UsageLog.domain -> topic label shown in the user drawer.
 TOPICS = {
@@ -122,11 +160,12 @@ def _version_key(v: str | None) -> tuple:
 
 @router.get("/app-stats")
 def app_stats(
-    days: int = Query(30, ge=7, le=365),
+    days: int = Query(30, ge=1, le=365),
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
     now = _naive(datetime.now(timezone.utc))
+    history_days = max(2 * days, 37)
     since = now - timedelta(days=days)
     release = _load_release()
     latest = release.get("version_name")
@@ -136,10 +175,10 @@ def app_stats(
     downloads = db.query(AppDownload).all()
     # Two periods back, so each KPI can be compared with the period before it.
     logins = (db.query(LoginAudit)
-              .filter(LoginAudit.created_at >= now - timedelta(days=max(2 * days, 30)))
+              .filter(LoginAudit.created_at >= now - timedelta(days=history_days))
               .all())
     usage = (db.query(UsageLog)
-             .filter(UsageLog.created_at >= now - timedelta(days=max(2 * days, 30)))
+             .filter(UsageLog.created_at >= now - timedelta(days=history_days))
              .all())
 
     # ── Installs & versions (latest android client per user) ──
@@ -184,6 +223,13 @@ def app_stats(
         t = _naive(d.created_at)
         if t >= since:
             by_day[t.date()]["updates" if d.source == "in_app" else "downloads"] += 1
+    # Statistik v2 always shows the last 14 days (WIB), whatever the period.
+    by_day_wib = defaultdict(lambda: {"downloads": 0, "updates": 0})
+    for d in downloads:
+        t = _naive(d.created_at) + timedelta(hours=7)
+        by_day_wib[t.date()]["updates" if d.source == "in_app" else "downloads"] += 1
+    downloads_14d = [{"date": ((now + timedelta(hours=7)).date() - timedelta(days=i)).isoformat(),
+                      **by_day_wib[(now + timedelta(hours=7)).date() - timedelta(days=i)]} for i in range(13, -1, -1)]
     for i in range(days - 1, -1, -1):
         day = (now - timedelta(days=i)).date()
         timeline.append({"date": day.isoformat(), **by_day[day]})
@@ -197,7 +243,7 @@ def app_stats(
     by_device = defaultdict(list)
     for h in history:
         by_device[(h.user_id, h.device_model)].append(h)
-    weeks = min(12, max(1, days // 7))
+    weeks = 7  # Statistik v2: six weeks back and this week
     adoption = []
     for w in range(weeks - 1, -1, -1):
         end = now - timedelta(days=7 * w)
@@ -224,8 +270,16 @@ def app_stats(
         t = _naive(u.created_at)
         if u.user_id not in last_activity or t > last_activity[u.user_id][0]:
             last_activity[u.user_id] = (t, u.action, u.domain, u.detail)
+    platforms: dict[int, set] = defaultdict(set)
+    for l in logins:
+        if l.action == "login":
+            platforms[l.user_id].add(platform_from_user_agent(l.user_agent))
+    for c in clients:
+        platforms[c.user_id].add("android" if c.platform == "android" else "web")
     rows = []
     for u in users:
+        if not _approved(u):
+            continue
         c = android_by_user.get(u.id)
         last_login = _naive(u.last_login)
         act = last_activity.get(u.id)
@@ -251,13 +305,120 @@ def app_stats(
             "status": ("aktif" if last_seen and now - last_seen <= timedelta(days=INACTIVE_AFTER_DAYS)
                        else "tidak_aktif"),
             "last_seen": _iso(last_seen),
+            "region": _region_of(u),
+            "platforms": [p for p in ("web", "android") if p in platforms.get(u.id, set())] or (["android"] if c else ["web"]),
+            # Statistik v2 status: Tidak aktif (nothing for ACTIVE_DAYS), else Versi lama (Android not on latest), else Aktif.
+            "state": ("tidak_aktif" if not u.is_active or not last_seen or now - last_seen > timedelta(days=ACTIVE_DAYS)
+                      else "versi_lama" if c and latest and c.app_version != latest else "aktif"),
         })
     rows.sort(key=lambda r: r["last_login"] or "", reverse=True)
 
     outdated = [r for r in rows if r["app_version"] and not r["is_latest"]]
     outdated.sort(key=lambda r: _version_key(r["app_version"]))
 
+    # ── Statistik v2 blocks ──
+    wib = timedelta(hours=7)
+    today0 = datetime.combine((now + wib).date(), datetime.min.time()) - wib
+    today_logins = [l for l in logins if l.action == "login" and _naive(l.created_at) >= today0]
+    today_platform = Counter(platform_from_user_agent(l.user_agent) for l in today_logins)
+    questions = [u for u in usage if u.action == "query"]
+    q_period = [u for u in questions if _naive(u.created_at) >= since]
+    q_prev = sum(1 for u in questions if prev_since <= _naive(u.created_at) < since)
+
+    # Daily active (DAU) and 7-day rolling (WAU), 30 WIB days, from logins and any logged activity.
+    by_day_users: dict = defaultdict(set)
+    for u in usage:
+        by_day_users[(_naive(u.created_at) + wib).date()].add(u.user_id)
+    for l in logins:
+        if l.action == "login":
+            by_day_users[(_naive(l.created_at) + wib).date()].add(l.user_id)
+    today_wib = (now + wib).date()
+    daily_active = []
+    for i in range(29, -1, -1):
+        day = today_wib - timedelta(days=i)
+        week = set().union(*(by_day_users.get(day - timedelta(days=k), set()) for k in range(7)))
+        daily_active.append({"date": day.isoformat(), "dau": len(by_day_users.get(day, set())), "wau": len(week)})
+
+    views = Counter(u.domain for u in usage if u.action == "view" and _naive(u.created_at) >= since)
+    buckets = Counter(topic_bucket(u.domain, u.detail) for u in q_period)
+
+    android_devices = [c for c in clients if c.platform == "android" and getattr(c, "signed_out_at", None) is None]
+    on_latest_devices = sum(1 for c in android_devices if latest and c.app_version == latest)
+    released = release.get("released_at")
+    dl_since_release = sum(1 for d in downloads if latest and d.version_name == latest)
+
+    # Login failures and locks in the period, one line per account (newest first).
+    from .routes_auth import LOCK_AFTER, LOCK_MINUTES
+    events = []
+    fails_by_user: dict[int, list] = defaultdict(list)
+    for l in logins:
+        if _is_failed(l.action) and _naive(l.created_at) >= since:
+            fails_by_user[l.user_id].append(l)
+    good_by_user: dict[int, list] = defaultdict(list)
+    for l in logins:
+        if l.action == "login":
+            good_by_user[l.user_id].append(_naive(l.created_at))
+    locked_accounts = 0
+    for uid, rows_ in fails_by_user.items():
+        rows_.sort(key=lambda l: _naive(l.created_at))
+        name = by_id[uid].username if uid in by_id else f"#{uid}"
+        last = _naive(rows_[-1].created_at)
+        pw = [l for l in rows_ if l.action == "failed_login"]
+        otp = [l for l in rows_ if l.action == "failed_token"]
+        inactive = [l for l in rows_ if l.action == "failed_inactive"]
+        locked = any(l.action == "failed_locked" for l in rows_) or any(
+            _naive(pw[i + LOCK_AFTER - 1].created_at) - _naive(pw[i].created_at) <= timedelta(minutes=LOCK_MINUTES)
+            for i in range(0, max(0, len(pw) - LOCK_AFTER + 1)))
+        later = sorted(t for t in good_by_user.get(uid, []) if t > _naive(rows_[0].created_at))
+        if locked:
+            locked_accounts += 1
+            events.append({"tag": "terkunci", "title": f"{name} · {len(pw)} kali salah password", "at": _iso(last),
+                           "note": f"akun dikunci {LOCK_MINUTES} menit"})
+        elif inactive:
+            events.append({"tag": "diblokir", "title": f"{name} · akun nonaktif mencoba masuk", "at": _iso(last),
+                           "note": f"{len(inactive)} kali ditolak"})
+        elif otp:
+            events.append({"tag": "pantau", "title": f"{name} · OTP kedaluwarsa {len(otp)} kali", "at": _iso(last),
+                           "note": f"berhasil di percobaan {'ketiga' if len(otp) == 2 else f'ke-{len(otp) + 1}'}"
+                           if later else "belum berhasil masuk"})
+        elif pw:
+            events.append({"tag": "pantau", "title": f"{name} · {len(pw)} kali salah password", "at": _iso(last),
+                           "note": "lalu berhasil masuk" if later else "belum berhasil masuk"})
+    unknown = (db.query(UnknownLogin).filter(UnknownLogin.created_at >= since)
+               .order_by(UnknownLogin.created_at.desc()).all())
+    if unknown:
+        events.append({"tag": "diblokir", "title": f"Akun tidak dikenal · {len(unknown)} kali", "at": _iso(unknown[0].created_at),
+                       "note": "username tidak terdaftar"})
+    order = {"terkunci": 0, "pantau": 1, "diblokir": 2}
+    events.sort(key=lambda e: (order[e["tag"]], -(datetime.fromisoformat(e["at"][:-1]).timestamp())))
+
+    pending = sorted((u for u in users if (u.approval_status or "approved") == "pending"),
+                     key=lambda u: _naive(u.created_at), reverse=True)
+    approved_rows = rows
+    active_30 = sum(1 for r in approved_rows if r["last_seen"] and now - datetime.fromisoformat(r["last_seen"][:-1]) <= timedelta(days=30))
+    outdated_devices = sum(1 for c in android_devices if latest and c.app_version and c.app_version != latest)
+    v2 = {
+        "active": {"dau": active_since(timedelta(days=1)), "wau": active_since(timedelta(days=7)),
+                   "mau": active_since(timedelta(days=30))},
+        "logins_today": {"total": len(today_logins), "web": today_platform.get("web", 0),
+                         "android": today_platform.get("android", 0)},
+        "questions": {"count": len(q_period), "change": change(len(q_period), q_prev)},
+        "adoption": {"version": ".".join((latest or "").split(".")[:2]) or None, "devices_on_latest": on_latest_devices,
+                     "devices": len(android_devices), "downloads_since_release": dl_since_release, "released_at": released},
+        "failed": {"count": len(failed) + len(unknown), "locked_accounts": locked_accounts},
+        "daily_active": daily_active,
+        "features": [{"key": k, "label": lbl, "sessions": views.get(k, 0)} for k, lbl in FEATURES],
+        "topics": [{"key": k, "label": lbl, "count": buckets.get(k, 0),
+                    "pct": round(100 * buckets.get(k, 0) / len(q_period)) if q_period else 0} for k, lbl in TOPIC_BUCKETS],
+        "pending": [{"id": u.id, "full_name": u.full_name, "email": u.email, "department": u.department,
+                     "region": _region_of(u), "requested_at": _iso(u.created_at)} for u in pending],
+        "security": events[:8],
+        "downloads_14d": downloads_14d,
+        "accounts": {"total": len(approved_rows), "active_30d": active_30, "outdated_devices": outdated_devices},
+    }
+
     return {
+        "v2": v2,
         "generated_at": _iso(now),
         "period_days": days,
         "latest_release": {
@@ -466,5 +627,60 @@ def log_export(req: ExportReq, user: User = Depends(get_current_user), db: Sessi
     """Exports are built in the browser, so the client reports them here."""
     detail = f"{req.format.upper()} · {req.title}".strip(" ·")
     db.add(UsageLog(user_id=user.id, action="export", domain=req.domain, detail=detail))
+    db.commit()
+    return {"ok": True}
+
+
+class ViewReq(BaseModel):
+    page: str = Field(min_length=2, max_length=30)
+
+
+@usage_router.post("/view")
+def log_view(req: ViewReq, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """One session per page for "Pemakaian fitur": a page opened again within
+    VIEW_SESSION_MINUTES is the same session and is not logged twice."""
+    keys = {k for k, _ in FEATURES}
+    if req.page not in keys:
+        return {"ok": False}
+    cut = _naive(datetime.now(timezone.utc)) - timedelta(minutes=VIEW_SESSION_MINUTES)
+    seen = (db.query(UsageLog.id)
+            .filter(UsageLog.user_id == user.id, UsageLog.action == "view", UsageLog.domain == req.page,
+                    UsageLog.created_at >= cut).first())
+    if not seen:
+        db.add(UsageLog(user_id=user.id, action="view", domain=req.page))
+        db.commit()
+    return {"ok": True, "new": not seen}
+
+
+def _pending_user(db: Session, user_id: int) -> User:
+    u = db.query(User).filter(User.id == user_id).first()
+    if u is None or (u.approval_status or "approved") != "pending":
+        raise HTTPException(404, "Permintaan akses tidak ditemukan")
+    return u
+
+
+@router.post("/app-stats/pending/{user_id}/approve")
+def approve_access(user_id: int, bg: BackgroundTasks, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Activates the account and emails a link to set the first password (valid 3 days)."""
+    import secrets
+
+    from . import email_service
+    u = _pending_user(db, user_id)
+    u.approval_status = "approved"
+    u.is_active = True
+    token = secrets.token_urlsafe(48)
+    db.add(PasswordReset(user_id=u.id, token=token, expires_at=datetime.now(timezone.utc) + timedelta(days=3)))
+    db.commit()
+    if u.email and "@" in u.email:
+        bg.add_task(email_service.send_access_approved, u.email, u.username, u.full_name, token)
+    return {"ok": True, "username": u.username}
+
+
+@router.post("/app-stats/pending/{user_id}/reject")
+def reject_access(user_id: int, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Keeps the row (so the same email cannot ask again unnoticed) but never lets it sign in."""
+    u = _pending_user(db, user_id)
+    u.approval_status = "rejected"
+    u.is_active = False
     db.commit()
     return {"ok": True}

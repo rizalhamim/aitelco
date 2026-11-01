@@ -130,7 +130,7 @@ class UpdateService {
       if (await Permission.requestInstallPackages.isDenied) {
         final status = await Permission.requestInstallPackages.request();
         if (!status.isGranted) {
-          return 'Izin instal aplikasi ditolak. Aktifkan "Install unknown apps" untuk Bizplan Java Agent.';
+          return 'Izin instal aplikasi ditolak. Aktifkan "Install unknown apps" untuk Agent Java.';
         }
       }
 

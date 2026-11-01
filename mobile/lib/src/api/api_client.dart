@@ -558,6 +558,57 @@ class ApiClient {
   static Future<Map<String, dynamic>> dashboardOverview({String region = ''}) =>
       _getJson('/api/dashboard/overview', {if (region.isNotEmpty) 'region': region});
 
+  /// Performance drill-down (04): KPIs, 12-month trend, contribution and sites.
+  static Future<Map<String, dynamic>> performance({
+    String region = '',
+    String kabupaten = '',
+    String kecamatan = '',
+    String status = '',
+    int page = 1,
+    int size = 7,
+  }) =>
+      _getJson('/api/performance', {
+        if (region.isNotEmpty) 'region': region,
+        if (kabupaten.isNotEmpty) 'kabupaten': kabupaten,
+        if (kecamatan.isNotEmpty) 'kecamatan': kecamatan,
+        if (status.isNotEmpty) 'status': status,
+        'page': '$page',
+        'size': '$size',
+      });
+
+  static Future<List<dynamic>> performanceSearch(String q) async =>
+      (await _getJson('/api/performance/search', {'q': q}))['results'] as List? ?? [];
+
+  /// Peta Agent frame: projected kecamatan paths, metrics, sites (map_agent.py).
+  static Future<Map<String, dynamic>> mapAgent({String region = '', String kabupaten = '', String site = ''}) =>
+      _getJson('/api/map/agent', {
+        if (region.isNotEmpty) 'region': region,
+        if (kabupaten.isNotEmpty) 'kabupaten': kabupaten,
+        if (site.isNotEmpty) 'site': site,
+      });
+
+  static Future<List<dynamic>> mapAgentScopes() async {
+    final res = await _authGet(Uri.parse('$base/api/map/agent/scopes'));
+    if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
+    return jsonDecode(utf8.decode(res.bodyBytes)) as List;
+  }
+
+  static Future<Map<String, dynamic>> mapAgentAsk(String q, {String region = '', String kabupaten = '', List<Map<String, dynamic>> shapes = const []}) =>
+      _sendJson('POST', '/api/map/agent/ask', {'q': q, 'region': region, 'kabupaten': kabupaten, 'shapes': shapes});
+
+  static Future<Map<String, dynamic>> mapAgentUpload(String name, List<int> bytes, {String region = '', String kabupaten = ''}) =>
+      _sendJson('POST', '/api/map/agent/upload', {'name': name, 'data': base64Encode(bytes), 'region': region, 'kabupaten': kabupaten});
+
+  /// Shapefile (.zip), GeoJSON or CSV of [features]; returns the file bytes.
+  static Future<List<int>> mapAgentExport(String format, String name, List<Map<String, dynamic>> features) async {
+    Future<http.Response> go() => http.post(Uri.parse('$base/api/map/agent/export'),
+        headers: _headers(), body: jsonEncode({'format': format, 'name': name, 'features': features}));
+    var res = await go();
+    if (res.statusCode == 401 && await refreshAccessToken()) res = await go();
+    if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
+    return res.bodyBytes;
+  }
+
   static Future<List<dynamic>> watchAlerts({String status = 'all'}) async =>
       (await _getJson('/api/watchlist/alerts', {'status': status}))['alerts'] as List? ?? [];
 
@@ -589,6 +640,13 @@ class ApiClient {
   static Future<Map<String, dynamic>> mapKabupatenDetail(String kabupaten, String provinsi) =>
       _getJson('/api/map/kabupaten/detail', {'kabupaten': kabupaten, 'provinsi': provinsi});
 
+  /// Laporan library items (Redesign v2 page 06).
+  static Future<Map<String, dynamic>> reportLibrary() => _getJson('/api/report-docs/library');
+
+  /// A report document as typed sections: kind outlook, bulanan or profile.
+  static Future<Map<String, dynamic>> reportDoc(String kind, {String region = '', String kabupaten = ''}) =>
+      _getJson('/api/report-docs/doc', {'kind': kind, 'region': region, 'kabupaten': kabupaten});
+
   static Future<List<dynamic>> reportSchedules() async {
     final res = await _authGet(Uri.parse('$base/api/report-schedules'));
     if (res.statusCode != 200) return [];
@@ -598,6 +656,10 @@ class ApiClient {
 
   static Future<Map<String, dynamic>> appStats({int days = 30}) => _getJson('/api/admin/app-stats', {'days': '$days'});
 
+  /// Access requests from the login page (Statistik, admin): approve emails a first-password link.
+  static Future<Map<String, dynamic>> decideAccess(int id, bool approve) =>
+      _sendJson('POST', '/api/admin/app-stats/pending/$id/${approve ? 'approve' : 'reject'}');
+  static Future<Map<String, dynamic>> requestAccess(Map<String, dynamic> body) => _sendJson('POST', '/api/auth/request-access', body);
   static Future<int> remindUsers(List<int> ids) async =>
       ((await _sendJson('POST', '/api/admin/app-stats/remind', {'user_ids': ids}))['sent'] as num?)?.toInt() ?? 0;
 
@@ -697,6 +759,14 @@ class ApiClient {
   }
 
   // ── Profile / account ──
+  // ── Profil (Redesign v2 page 08) ──
+  static Future<Map<String, dynamic>> profile() => _getJson('/api/profile');
+
+  static Future<Map<String, dynamic>> saveProfilePrefs(Map<String, dynamic> patch) =>
+      _sendJson('PUT', '/api/profile/prefs', {'prefs': patch});
+
+  static Future<Map<String, dynamic>> signOutDevice(int id) => _sendJson('POST', '/api/profile/devices/$id/sign-out');
+
   static Future<Map<String, dynamic>> getMe() async {
     final res = await _authGet(Uri.parse('$base/api/auth/me'));
     final data = jsonDecode(res.body) as Map<String, dynamic>;

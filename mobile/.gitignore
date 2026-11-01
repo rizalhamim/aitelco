@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# visual gate output (mockup | app | heat sheets)
+test/golden_v2/out/

@@ -61,14 +61,14 @@ class KeepAliveService {
       await ensurePermission();
       if (_running) {
         await FlutterForegroundTask.updateService(
-          notificationTitle: 'Bizplan Java Agent',
+          notificationTitle: 'Agent Java',
           notificationText: text,
         );
         return;
       }
       await FlutterForegroundTask.startService(
         serviceId: 4869,
-        notificationTitle: 'Bizplan Java Agent',
+        notificationTitle: 'Agent Java',
         notificationText: text,
       );
       _running = true;

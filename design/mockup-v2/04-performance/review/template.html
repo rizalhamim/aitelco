@@ -1,0 +1,673 @@
+<title>Agent Java Performance Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Prompt:wght@400;500&display=swap">
+<style>
+/* Layout: review chrome (header, tabs, notes) around a scaled, pixel-true mockup stage */
+:root {
+  /* review chrome */
+  --page: #EEF4F2; --panel: #FFFFFF; --ink: #0F1F1D; --ink-2: #3D4C49; --mute: #5A6B68; --rule: #DCE6E3;
+  --chip: #E6F7F5; --chip-ink: #0A6A5F;
+  /* Agent Java palette v2: teal core + fresh accents */
+  --teal-900: #04332E; --teal-700: #0A6A5F; --teal-600: #0E8579; --teal-500: #15A697; --teal-50: #E6F7F5;
+  --lagoon-500: #22B8C9; --lagoon-600: #1597A8; --lagoon-50: #E3F7FA;
+  --lime-400: #C7F25E; --lime-700: #5E8A12; --lime-50: #F4FCE3;
+  --mint-300: #7EE8A2;
+  --coral-500: #FF7A59; --coral-600: #E85D3C; --coral-50: #FFEDE7;
+  --amber-500: #F5A623;
+  --f-display: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Prompt", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--page); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 18px }
+header.top-r { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; justify-content: space-between }
+.brandline { display: flex; align-items: center; gap: 12px; min-width: 0 }
+.brandline svg { width: 44px; height: 44px; flex: none; border-radius: 11px }
+.brandline h1 { font-family: var(--f-display); font-size: 20px; line-height: 1.2; margin: 0; font-weight: 700; text-wrap: balance }
+.brandline p { margin: 0; color: var(--mute); font-size: 13px }
+.chip-r { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--chip); color: var(--chip-ink);
+  font: 600 12px/1 var(--f-display); letter-spacing: .02em }
+.chip-r i { width: 7px; height: 7px; border-radius: 50%; background: var(--amber-500) }
+.steps { display: flex; gap: 6px; flex-wrap: wrap; font: 500 12px/1 var(--f-display); color: var(--mute) }
+.steps span { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--rule) }
+.steps span.on { background: var(--teal-600); border-color: var(--teal-600); color: #fff }
+.tabs { display: inline-flex; padding: 4px; gap: 4px; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; flex-wrap: wrap }
+.tabs button { font: 600 13px/1 var(--f-display); border: 0; background: transparent; color: var(--ink-2); padding: 10px 14px; border-radius: 9px; cursor: pointer }
+.tabs button[aria-selected="true"] { background: var(--teal-600); color: #fff }
+.tabs button:focus-visible { outline: 2px solid var(--lagoon-500); outline-offset: 2px }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start }
+@media (max-width: 980px) { .main { grid-template-columns: minmax(0, 1fr) } }
+.stage { background: repeating-conic-gradient(var(--rule) 0 25%, transparent 0 50%) 0 0/22px 22px, var(--panel); border: 1px solid var(--rule);
+  border-radius: 16px; padding: 18px; min-width: 0; overflow: hidden }
+.stage-label { display: flex; justify-content: space-between; gap: 10px; font: 500 12px/1.3 var(--f-display); color: var(--mute); margin-bottom: 10px; flex-wrap: wrap }
+.fit { position: relative; width: 100%; margin: 0 auto }
+.fit > .frame { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: 0 20px 60px rgba(4,51,46,.28) }
+aside.notes { background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; padding: 18px; display: grid; gap: 14px; min-width: 0 }
+aside.notes h2 { font: 700 14px/1.3 var(--f-display); margin: 0; letter-spacing: .01em }
+aside.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 13.5px }
+aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 13.5px; color: var(--ink-2) }
+.panel { display: none } .panel.on { display: block }
+
+/* ───────────── Mockup frames (fixed design pixels, not theme-aware on purpose) ───────────── */
+.frame { overflow: hidden; color: #0F1F1D; font-family: var(--f-body); background: #F5F9F8; position: relative }
+.tile { background: #fff; border-radius: 28%; display: grid; place-items: center; flex: none; border: 1px solid #E1E9E7 }
+.tile img { width: 84%; height: 84%; object-fit: contain; display: block }
+.ic { width: 20px; height: 20px; flex: none }
+.btn-ic { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: grid; place-items: center; color: #3D4C49; position: relative; cursor: pointer }
+.btn-ic:hover { border-color: #8FDFD7 }
+.badge { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; border-radius: 9px; background: #E04848; color: #fff; font: 700 10px/18px var(--f-display); text-align: center; padding: 0 5px; border: 2px solid #fff }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #15A697, #0A6A5F); color: #fff; display: grid; place-items: center; font: 700 15px/1 var(--f-display); flex: none; cursor: pointer; box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px #C7F25E }
+.chip { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 13px/1 var(--f-display); color: #3D4C49 }
+.chip.teal { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F }
+.chip svg { width: 16px; height: 16px }
+
+/* sidebar */
+.side { position: absolute; left: 0; top: 0; bottom: 0; width: 272px; background: #fff; border-right: 1px solid #E1E9E7; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px }
+.side .brand { display: flex; align-items: center; gap: 12px; padding: 2px 4px 6px }
+.side .brand b { font: 700 17px/1.2 var(--f-display); display: block }
+.side .brand b em { font-style: normal; color: #0E8579 }
+.side .brand small { font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.newchat { height: 46px; border: 0; border-radius: 14px; background: linear-gradient(100deg, #0E8579, #15A697 55%, #1597A8); color: #fff; font: 600 14px/1 var(--f-display); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 18px rgba(14,133,121,.28) }
+.search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body) }
+.search svg { width: 17px; height: 17px }
+.navh { font: 600 11px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; padding: 4px 6px 0 }
+.nav { display: flex; flex-direction: column; gap: 2px }
+.nav a { display: flex; align-items: center; gap: 11px; height: 42px; padding: 0 10px; border-radius: 12px; font: 500 14px/1 var(--f-display); color: #0F1F1D; text-decoration: none; position: relative }
+.nav a .nt { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none }
+.nav a .nt svg { width: 17px; height: 17px }
+.nav a.on { background: #E6F7F5; color: #0A6A5F; font-weight: 600 }
+.nav a.on::before { content: ""; position: absolute; left: -16px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: #0E8579 }
+.nav a .new { margin-left: auto; font: 600 10px/1 var(--f-display); padding: 4px 7px; border-radius: 99px; background: #F4FCE3; color: #5E8A12; border: 1px solid #E2F9A8 }
+.nav a .cnt { margin-left: auto; font: 700 11px/1 var(--f-display); min-width: 22px; height: 20px; border-radius: 10px; background: #E04848; color: #fff; display: grid; place-items: center; padding: 0 6px }
+.hist a { display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 10px; border-radius: 10px; font: 400 13px/1.2 var(--f-body); color: #3D4C49; white-space: nowrap; overflow: hidden }
+.hist a.on { background: #ECF3F1; color: #0F1F1D }
+.hist svg { width: 15px; height: 15px; flex: none; color: #5A6B68 }
+.side .spacer { flex: 1 }
+.apk { border-radius: 16px; background: linear-gradient(135deg, #04332E, #0A6A5F); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 12px }
+.apk .ai { width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.12); display: grid; place-items: center }
+.apk b { font: 600 13px/1.3 var(--f-display); display: block } .apk small { font: 400 11px/1.3 var(--f-body); color: #C0EDE8 }
+.apk svg { width: 18px; height: 18px }
+.me { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; background: #ECF3F1 }
+.me .avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: none }
+.me b { font: 600 13px/1.3 var(--f-display); display: block } .me small { font: 400 11px/1.3 var(--f-body); color: #5A6B68 }
+.me svg { margin-left: auto; width: 18px; height: 18px; color: #5A6B68 }
+
+/* main */
+.top { position: absolute; left: 272px; right: 0; top: 0; height: 76px; background: rgba(255,255,255,.88); border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 28px }
+.top h2 { font: 700 19px/1.25 var(--f-display); margin: 0 } .top p { margin: 0; font: 400 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.top .grow { flex: 1 }
+.conv { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 22px 56px 0; display: flex; flex-direction: column; gap: 16px; overflow: hidden;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(34,184,201,.08), rgba(34,184,201,0)), #F5F9F8 }
+.ubub { align-self: flex-end; max-width: 620px; background: #0E8579; color: #fff; padding: 14px 18px; border-radius: 20px 20px 6px 20px; font: 400 15px/1.5 var(--f-body); box-shadow: 0 6px 16px rgba(14,133,121,.2) }
+.ubub small { display: block; margin-top: 4px; font-size: 11px; color: #C0EDE8 }
+.ans { display: flex; gap: 14px; align-items: flex-start }
+.ans > .tile { width: 40px; height: 40px; border-radius: 12px }
+.acard { flex: 1; min-width: 0; background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 14px rgba(15,31,29,.05) }
+.ahead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.ahead b { font: 600 14px/1 var(--f-display) }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 99px; font: 600 12px/1 var(--f-display) }
+.pill svg { width: 14px; height: 14px }
+.pill.ok { background: #E6F4EA; color: #1F7A3A } .pill.ai { background: #FFEDE7; color: #B5401F } .pill.src { background: #E3F7FA; color: #0E6F7C } .pill.grey { background: #ECF3F1; color: #3D4C49 }
+.ahead .r { margin-left: auto; color: #5A6B68; font: 500 12px/1 var(--f-display); display: flex; align-items: center; gap: 6px }
+.atext { font: 400 15px/1.6 var(--f-body); color: #0F1F1D; margin: 0 }
+.atext b { font-weight: 600 } .atext .dn { color: #C42B2B; font-weight: 600 }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.kpi { border-radius: 16px; background: #F5F9F8; border: 1px solid #ECF3F1; padding: 14px 16px; display: grid; gap: 4px; position: relative }
+.kpi .lb { font: 500 12.5px/1.2 var(--f-display); color: #3D4C49; display: flex; align-items: center; gap: 8px }
+.kpi .lb i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center }
+.kpi .lb i svg { width: 15px; height: 15px }
+.kpi .v { font: 700 24px/1.15 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em }
+.kpi .d { font: 600 12px/1 var(--f-display); display: inline-flex; align-items: center; gap: 4px }
+.kpi .d.dn { color: #C42B2B } .kpi .d.up { color: #1F7A3A }
+.kpi .d span { color: #5A6B68; font-weight: 500 }
+.kpi svg.spark { position: absolute; right: 14px; bottom: 14px }
+.viz { border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px 12px; display: grid; gap: 10px }
+.vhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.vhead h4 { margin: 0; font: 600 14.5px/1.3 var(--f-display) } .vhead p { margin: 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: #ECF3F1; border-radius: 10px; margin-left: auto }
+.seg button { border: 0; background: transparent; font: 600 12px/1 var(--f-display); color: #3D4C49; padding: 7px 11px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
+.seg button svg { width: 14px; height: 14px }
+.seg button.on { background: #fff; color: #0A6A5F; box-shadow: 0 1px 3px rgba(15,31,29,.12) }
+.legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.lg { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49; background: #fff; cursor: pointer }
+.lg i { width: 10px; height: 10px; border-radius: 50% }
+.lg.off { opacity: .45 }
+.chartbox { position: relative }
+.tip { position: absolute; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 500 12px/1.5 var(--f-display); pointer-events: none; box-shadow: 0 10px 24px rgba(0,0,0,.25); min-width: 150px }
+.tip b { display: block; font-weight: 700; margin-bottom: 2px }
+.tip div { display: flex; align-items: center; gap: 7px } .tip div i { width: 8px; height: 8px; border-radius: 50% } .tip div span { margin-left: auto; font-weight: 700; padding-left: 12px; font-variant-numeric: tabular-nums }
+.tbl { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.tbl th { text-align: left; font: 600 11.5px/1.2 var(--f-display); color: #5A6B68; padding: 8px 10px; border-bottom: 1px solid #E1E9E7 }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid #ECF3F1 }
+.tbl td.n, .tbl th.n { text-align: right }
+.tbl .dn { color: #C42B2B; font-weight: 600 } .tbl .up { color: #1F7A3A; font-weight: 600 }
+.tmap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px }
+.tmap div { border-radius: 10px; height: 52px; padding: 6px 8px; font: 600 11px/1.2 var(--f-display); display: flex; flex-direction: column; justify-content: space-between }
+.tmap div span { font-weight: 700; font-size: 12px }
+.vfoot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 2px }
+.act { display: flex; gap: 6px; margin-left: auto }
+.act button { height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid #E1E9E7; background: #fff; font: 500 12px/1 var(--f-display); color: #3D4C49; display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
+.act button svg { width: 15px; height: 15px }
+.act button.pri { background: #0E8579; border-color: #0E8579; color: #fff }
+.sugg { display: flex; gap: 8px; flex-wrap: wrap; padding-left: 54px }
+.sg { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 99px; border: 1px solid #FFC2AF; background: #fff; font: 500 13px/1 var(--f-display); color: #0F1F1D; cursor: pointer }
+.sg svg { width: 16px; height: 16px; color: #FF7A59 }
+.composer { position: absolute; left: 328px; right: 56px; bottom: 34px; background: #fff; border: 1.5px solid #8FDFD7; border-radius: 22px; padding: 14px 14px 12px 18px; box-shadow: 0 16px 40px rgba(4,51,46,.14); display: grid; gap: 10px }
+.composer .ph { font: 400 15px/1.4 var(--f-body); color: #8A9A97 }
+.composer .row { display: flex; align-items: center; gap: 8px }
+.composer .row .grow { flex: 1 }
+.send { width: 46px; height: 46px; border-radius: 14px; border: 0; background: linear-gradient(135deg, #0E8579, #1597A8); color: #fff; display: grid; place-items: center }
+.send svg { width: 20px; height: 20px }
+.disclaim { position: absolute; left: 272px; right: 0; bottom: 10px; text-align: center; font: 400 11.5px/1 var(--f-body); color: #5A6B68 }
+.fade { position: absolute; left: 272px; right: 0; bottom: 0; height: 190px; background: linear-gradient(180deg, rgba(245,249,248,0), #F5F9F8 45%) }
+
+/* Web 1440 x 1080 */
+#webFrame { width: 1440px; height: 1080px; border-radius: 6px }
+
+/* Android 390 x 844 */
+#droidFrame { width: 390px; height: 844px; border-radius: 44px; border: 10px solid #0B1312 }
+#droidFrame .status { position: absolute; top: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 13px/1 var(--f-display); background: #fff }
+#droidFrame .status .cam { width: 12px; height: 12px; border-radius: 50%; background: #0B1312; position: absolute; left: 50%; top: 11px; transform: translateX(-50%) }
+.dbar { position: absolute; top: 34px; left: 0; right: 0; height: 62px; background: #fff; border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 14px }
+.dbar .tile { width: 38px; height: 38px; border-radius: 11px }
+.dbar b { font: 700 16px/1.2 var(--f-display); display: block } .dbar small { font: 400 11.5px/1.2 var(--f-body); color: #5A6B68; display: flex; align-items: center; gap: 5px }
+.dbar small i { width: 7px; height: 7px; border-radius: 50%; background: #2E9E57 }
+.dbar .grow { flex: 1 }
+.dbar .btn-ic { width: 38px; height: 38px; border-radius: 11px }
+.dbar .avatar { width: 34px; height: 34px; font-size: 13px }
+.dconv { position: absolute; top: 96px; left: 0; right: 0; bottom: 0; padding: 14px 14px 0; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+#droidFrame .ubub { max-width: 290px; font-size: 14px; padding: 12px 15px }
+#droidFrame .acard { padding: 14px; gap: 11px; border-radius: 20px }
+#droidFrame .atext { font-size: 14px; line-height: 1.55 }
+#droidFrame .kpis { grid-template-columns: 1fr 1fr; gap: 8px }
+#droidFrame .kpi { padding: 11px 12px }
+#droidFrame .kpi .v { font-size: 19px }
+#droidFrame .viz { padding: 10px 10px 8px; border-radius: 16px; overflow: hidden; min-width: 0 }
+#droidFrame .tmap div { font-size: 10px; height: 46px; padding: 5px 6px; overflow: hidden }
+#droidFrame .seg { margin-left: 0 }
+#droidFrame .seg button { padding: 7px 10px }
+.dsugg { position: absolute; left: 0; right: 0; bottom: 166px; display: flex; gap: 8px; padding: 0 14px; overflow: hidden }
+.dsugg .sg { flex: none; height: 36px; font-size: 12.5px; background: #fff }
+.dcomp { position: absolute; left: 14px; right: 14px; bottom: 94px; height: 58px; background: #fff; border: 1.5px solid #8FDFD7; border-radius: 20px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 16px; box-shadow: 0 10px 26px rgba(4,51,46,.14) }
+.dcomp .ph { flex: 1; font: 400 14px/1 var(--f-body); color: #8A9A97 }
+.dcomp .send { width: 44px; height: 44px; border-radius: 14px }
+.dcomp .mic { width: 36px; height: 36px; display: grid; place-items: center; color: #5A6B68 }
+.dcomp .mic svg { width: 19px; height: 19px }
+.dfade { position: absolute; left: 0; right: 0; bottom: 80px; height: 150px; background: linear-gradient(180deg, rgba(245,249,248,0), #F5F9F8 40%) }
+.bnav { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: #fff; border-top: 1px solid #E1E9E7; display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 6px 14px }
+.bnav a { display: grid; justify-items: center; align-content: start; gap: 4px; font: 500 11px/1.2 var(--f-display); color: #5A6B68; text-decoration: none; position: relative }
+.bnav a i { width: 54px; height: 30px; border-radius: 15px; display: grid; place-items: center }
+.bnav a i svg { width: 20px; height: 20px }
+.bnav a.on { color: #0A6A5F; font-weight: 700 } .bnav a.on i { background: #C0EDE8 }
+.bnav a .dot { position: absolute; top: 0; right: 14px; width: 8px; height: 8px; border-radius: 50%; background: #C7F25E; border: 1.5px solid #fff }
+.homebar { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 118px; height: 4px; border-radius: 4px; background: #0F1F1D; opacity: .75 }
+
+/* ───── 03 Dashboard ───── */
+#webFrame { height: 1420px }
+.dash { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 24px 32px; display: flex; flex-direction: column; gap: 18px;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(34,184,201,.08), rgba(34,184,201,0)), #F5F9F8 }
+.dhead { display: flex; align-items: flex-end; gap: 14px }
+.dhead .eb { font: 600 11px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: #0A6A5F }
+.dhead h1 { font: 800 30px/1.15 var(--f-display); margin: 6px 0 4px; letter-spacing: -.01em }
+.dhead p { margin: 0; font: 400 13px/1.3 var(--f-body); color: #5A6B68 }
+.dhead .grow { flex: 1 }
+.hero { border-radius: 24px; padding: 22px 26px; color: #fff; position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr 220px; gap: 24px;
+  background: radial-gradient(420px 260px at 82% 20%, rgba(34,184,201,.45), rgba(34,184,201,0)), radial-gradient(300px 220px at 10% 110%, rgba(199,242,94,.18), rgba(199,242,94,0)), linear-gradient(135deg, #0A6A5F, #04332E 70%) }
+.hero .tag { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); font: 600 12px/1 var(--f-display) }
+.hero .tag svg { width: 14px; height: 14px; color: #FF7A59 }
+.hero p { font: 400 17px/1.55 var(--f-body); margin: 14px 0 16px; max-width: 840px }
+.hero p b { font-weight: 600; color: #C7F25E } .hero p em { font-style: normal; font-weight: 600; color: #FFC2AF }
+.hero .btns { display: flex; gap: 10px }
+.hero .b1 { height: 42px; padding: 0 16px; border-radius: 13px; background: #C7F25E; color: #04332E; font: 600 14px/1 var(--f-display); display: inline-flex; align-items: center; gap: 8px }
+.hero .b2 { height: 42px; padding: 0 16px; border-radius: 13px; border: 1px solid rgba(255,255,255,.35); color: #fff; font: 600 14px/1 var(--f-display); display: inline-flex; align-items: center; gap: 8px }
+.hero .b1 svg, .hero .b2 svg { width: 17px; height: 17px }
+.hero .mini { display: grid; gap: 10px; align-content: center }
+.hero .mini div { border-radius: 16px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.16); padding: 12px 14px }
+.hero .mini small { display: block; font: 500 12px/1.2 var(--f-display); color: #C0EDE8 }
+.hero .mini b { font: 700 24px/1.2 var(--f-display); font-variant-numeric: tabular-nums }
+.krow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px }
+.kc { min-width: 0; overflow: hidden; background: #fff; border: 1px solid #E1E9E7; border-radius: 20px; padding: 16px 18px; display: grid; gap: 6px; box-shadow: 0 4px 14px rgba(15,31,29,.04) }
+.kc .t { display: flex; align-items: center; gap: 10px; font: 500 13px/1.2 var(--f-display); color: #3D4C49 }
+.kc .t i { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center } .kc .t i svg { width: 18px; height: 18px }
+.kc .t .dl { margin-left: auto; font: 600 12px/1 var(--f-display); padding: 5px 8px; border-radius: 99px }
+.dl.up { background: #E6F4EA; color: #1F7A3A } .dl.dn { background: #FDECEC; color: #C42B2B }
+.kc .v { font: 700 30px/1.15 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em }
+.kc .s { font: 400 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.kc .bar { height: 6px; border-radius: 6px; background: #ECF3F1; overflow: hidden } .kc .bar i { display: block; height: 100%; border-radius: 6px }
+.row2 { display: grid; grid-template-columns: 1fr 360px; gap: 14px }
+.card { background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(15,31,29,.04); display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+.card .ch { display: flex; align-items: flex-start; gap: 10px }
+.card .ch h3 { margin: 0; font: 600 16px/1.3 var(--f-display) } .card .ch p { margin: 2px 0 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.card .ch .grow { flex: 1 }
+.crumb { display: flex; align-items: center; gap: 6px; font: 600 13px/1 var(--f-display); color: #0A6A5F }
+.crumb span { color: #0F1F1D } .crumb svg { width: 14px; height: 14px; transform: rotate(-90deg); color: #5A6B68 }
+.al { border: 1px solid #E1E9E7; border-radius: 16px; padding: 12px 14px 12px 16px; display: grid; grid-template-columns: 34px 1fr; gap: 4px 12px; position: relative; overflow: hidden }
+.al::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px }
+.al.k::before { background: #C42B2B } .al.w::before { background: #F5A623 }
+.al .ai { grid-row: span 3; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center }
+.al.k .ai { background: #FDECEC; color: #C42B2B } .al.w .ai { background: #FDF3E2; color: #B7791F }
+.al .ai svg { width: 18px; height: 18px }
+.al b { font: 600 13.5px/1.3 var(--f-display); display: flex; gap: 8px } .al b small { margin-left: auto; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; white-space: nowrap }
+.al p { margin: 0; font: 400 12.5px/1.4 var(--f-body); color: #3D4C49 }
+.al .tg { display: flex; gap: 8px; align-items: center; font: 500 11.5px/1 var(--f-display); color: #5A6B68 }
+.sev { padding: 4px 8px; border-radius: 99px; font: 600 11px/1 var(--f-display) }
+.sev.k { background: #FDECEC; color: #C42B2B } .sev.w { background: #FDF3E2; color: #B7791F }
+.addal { height: 44px; border: 1.5px dashed #8FDFD7; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 13px/1 var(--f-display); color: #0A6A5F }
+.addal svg { width: 16px; height: 16px }
+.rt { width: 100%; border-collapse: collapse; font: 400 13.5px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.rt th { text-align: left; font: 600 11px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 10px 12px; background: #F5F9F8; border-bottom: 1px solid #E1E9E7 }
+.rt td { padding: 12px; border-bottom: 1px solid #ECF3F1 }
+.rt .rn { display: flex; align-items: center; gap: 10px; font: 600 14px/1 var(--f-display) } .rt .rn i { width: 10px; height: 10px; border-radius: 3px }
+.rt .n { text-align: right }
+.dchip { font: 600 12px/1 var(--f-display); padding: 5px 8px; border-radius: 99px; display: inline-block }
+.prog { display: flex; align-items: center; gap: 10px } .prog .bar { flex: 1; height: 8px; border-radius: 8px; background: #ECF3F1; overflow: hidden } .prog .bar i { display: block; height: 100%; border-radius: 8px }
+.prog b { font: 700 13px/1 var(--f-display); width: 56px; text-align: right }
+.linkbtn { height: 36px; padding: 0 14px; border-radius: 11px; border: 1px solid #E1E9E7; background: #fff; font: 600 13px/1 var(--f-display); color: #0A6A5F; display: inline-flex; align-items: center; gap: 7px }
+.linkbtn svg { width: 16px; height: 16px }
+.ctip { position: absolute; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 500 12px/1.55 var(--f-display); pointer-events: none; box-shadow: 0 10px 24px rgba(0,0,0,.25); min-width: 170px; white-space: nowrap }
+.ctip b { display: block } .ctip div { display: flex; align-items: center; gap: 7px } .ctip div i { width: 8px; height: 8px; border-radius: 50% } .ctip div span { margin-left: auto; padding-left: 12px; font-weight: 700 }
+
+/* Android dashboard 390 x 1520 */
+#droidFrame { height: 1720px }
+#droidFrame .ddash { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 14px; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+#droidFrame .hero { grid-template-columns: 1fr; padding: 16px; border-radius: 20px; gap: 0 }
+#droidFrame .hero p { font-size: 14.5px; margin: 10px 0 12px }
+#droidFrame .hero .b1, #droidFrame .hero .b2 { height: 38px; font-size: 13px; padding: 0 12px }
+#droidFrame .krow { grid-template-columns: 1fr 1fr; gap: 10px }
+#droidFrame .kc { padding: 12px; border-radius: 16px; gap: 4px }
+#droidFrame .kc .t i { width: 28px; height: 28px } #droidFrame .kc .t i svg { width: 15px; height: 15px }
+#droidFrame .kc .v { font-size: 21px }
+#droidFrame .card { padding: 14px; border-radius: 18px }
+#droidFrame .seg { margin-left: 0 }
+.rlist { display: grid; gap: 8px }
+.rli { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #ECF3F1 }
+.rli .rn { font: 600 14px/1 var(--f-display); display: flex; align-items: center; gap: 8px } .rli .rn i { width: 10px; height: 10px; border-radius: 3px }
+.rli .rv { font: 700 14px/1 var(--f-display); text-align: right; font-variant-numeric: tabular-nums }
+.rli .prog { grid-column: 1 / -1 }
+.crow { display: flex; align-items: center; gap: 12px } .crow .grow { flex: 1 }
+#droidFrame .ddash > * { flex-shrink: 0 }
+.drow { display: flex; align-items: center; gap: 8px } .drow .grow { flex: 1 }
+.drow .chip { height: 32px; padding: 0 10px; font-size: 12px } .drow .chip svg { width: 14px; height: 14px }
+.ctip.st { position: static; margin-top: 4px; min-width: 0; border-radius: 12px; box-shadow: none }
+
+
+/* ───── 04 Performance ───── */
+#webFrame { height: 1590px }
+.dsrc { display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0 14px; border-radius: 12px; background: #F4FCE3; border: 1px solid #DDF3A6; font: 500 12.5px/1 var(--f-display); color: #3D5A0E; white-space: nowrap }
+.dsrc i { width: 8px; height: 8px; border-radius: 50%; background: #5E8A12; box-shadow: 0 0 0 4px rgba(94,138,18,.15); flex: none }
+.dsrc b { font-weight: 700 } .dsrc a { color: #0A6A5F; font-weight: 600; text-decoration: none; margin-left: 4px }
+.filt { display: flex; align-items: center; gap: 10px }
+.filt .grow { flex: 1 }
+.sbox { width: 340px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 12px; font: 400 13.5px/1 var(--f-body); color: #5A6B68 }
+.sbox svg { width: 18px; height: 18px; flex: none } .sbox kbd { margin-left: auto; font: 600 11px/1 var(--f-display); padding: 4px 6px; border-radius: 6px; background: #ECF3F1; color: #5A6B68 }
+.path { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap }
+.path span { height: 34px; padding: 0 13px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--f-display); color: #0A6A5F; background: #E6F7F5; white-space: nowrap; cursor: pointer }
+.path span.cur { background: #0F1F1D; color: #fff }
+.path > svg { width: 14px; height: 14px; color: #8A9A97; flex: none }
+.path .lv { font: 500 11px/1 var(--f-display); opacity: .7; margin-right: 2px }
+.krow.k5 { grid-template-columns: repeat(5, 1fr) }
+.k5 .kc .v { font-size: 25px }
+.kc .yy { font: 400 12px/1.3 var(--f-body); color: #5A6B68 } .kc .yy b { font-weight: 600; font-family: var(--f-display) }
+.yy .p { color: #1F7A3A } .yy .m { color: #C42B2B }
+.row2.pf { grid-template-columns: 1fr 400px }
+.contrib { display: grid; gap: 2px }
+.cb { display: grid; grid-template-columns: 112px 1fr 62px; align-items: center; gap: 10px; height: 30px; font: 500 12.5px/1 var(--f-display); color: #3D4C49; border-radius: 8px; padding: 0 6px; cursor: pointer }
+.cb:hover { background: #F5F9F8 }
+.cb .tr { position: relative; height: 14px }
+.cb .tr::before { content: ""; position: absolute; left: 50%; top: -8px; bottom: -8px; width: 1px; background: #CBD6D3 }
+.cb .tr i { position: absolute; top: 0; height: 14px; border-radius: 4px }
+.cb b { font: 600 12.5px/1 var(--f-display); text-align: right; font-variant-numeric: tabular-nums }
+.cb.oth { color: #5A6B68; font-style: normal } .cb.oth .tr i { opacity: .55 }
+.cfoot { display: flex; justify-content: space-between; font: 400 12px/1.3 var(--f-body); color: #5A6B68; border-top: 1px solid #ECF3F1; padding-top: 10px }
+.cfoot b { font: 700 13px/1.3 var(--f-display); color: #C42B2B }
+.rt.st td { padding: 10px 12px; vertical-align: middle }
+.rt.st tr.row { cursor: pointer } .rt.st tr.row:hover td { background: #F8FBFA }
+.rt.st tr.sel td { background: #EEF9F7 }
+.rt.st tr.sel td:first-child { box-shadow: inset 3px 0 0 #0E8579 }
+.rt .sid { font: 600 13.5px/1.25 var(--f-display) } .rt .sid small { display: block; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.rt th.sort { color: #0A6A5F } .rt th.sort::after { content: " ↑"; }
+.sdet td { background: #EEF9F7; padding: 0 12px 16px !important; border-bottom: 1px solid #DCEFEC }
+.sdet .in { display: grid; grid-template-columns: repeat(4, 1fr) 260px; gap: 10px; padding-top: 2px }
+.mm { background: #fff; border: 1px solid #DCEFEC; border-radius: 14px; padding: 10px 12px; display: grid; gap: 3px }
+.mm small { font: 500 11.5px/1.2 var(--f-display); color: #5A6B68 } .mm b { font: 700 18px/1.25 var(--f-display); font-variant-numeric: tabular-nums } .mm em { font: 600 11.5px/1.2 var(--f-display); font-style: normal }
+.sdet .act { display: grid; gap: 8px; align-content: start }
+.sdet .act span { height: 36px; border-radius: 11px; display: flex; align-items: center; gap: 8px; padding: 0 12px; font: 600 13px/1 var(--f-display) }
+.sdet .act span svg { width: 16px; height: 16px }
+.sdet .act .a1 { background: #0E8579; color: #fff } .sdet .act .a2 { background: #fff; border: 1px solid #DCEFEC; color: #0A6A5F }
+.sdet .why { grid-column: 1 / 5; display: flex; gap: 10px; align-items: flex-start; font: 400 12.5px/1.45 var(--f-body); color: #3D4C49; background: #fff; border: 1px solid #DCEFEC; border-radius: 14px; padding: 10px 12px }
+.sdet .why svg { width: 16px; height: 16px; color: #FF7A59; flex: none; margin-top: 2px } .sdet .why b { font-weight: 600 }
+.pg { display: flex; align-items: center; gap: 8px; font: 400 12.5px/1 var(--f-body); color: #5A6B68 }
+.pg .grow { flex: 1 } .pg span { min-width: 32px; height: 32px; border-radius: 9px; border: 1px solid #E1E9E7; display: grid; place-items: center; font: 600 12.5px/1 var(--f-display); color: #3D4C49; background: #fff }
+.pg span.on { background: #0F1F1D; color: #fff; border-color: #0F1F1D }
+
+/* Android performance */
+#droidFrame { height: 1990px }
+#droidFrame .sbox { width: auto; height: 42px }
+#droidFrame .path { overflow: hidden }
+#droidFrame .path span { height: 30px; padding: 0 11px; font-size: 12px }
+#droidFrame .dsrc { height: 34px; font-size: 11.5px; padding: 0 11px; justify-content: flex-start }
+#droidFrame .kc .yy { font-size: 11px }
+#droidFrame .cb { grid-template-columns: 96px 1fr 52px; gap: 8px; font-size: 12px }
+.slist { display: grid; gap: 10px }
+.sli { border: 1px solid #E1E9E7; border-radius: 16px; padding: 12px; display: grid; gap: 10px; background: #fff }
+.sli.sel { border-color: #8FDFD7; background: #F2FBFA; box-shadow: inset 3px 0 0 #0E8579 }
+.sli .h { display: flex; align-items: flex-start; gap: 8px } .sli .h .grow { flex: 1 }
+.sli .m3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+.sli .m3 div { background: #F5F9F8; border-radius: 10px; padding: 7px 8px; display: grid; gap: 2px }
+.sli.sel .m3 div { background: #fff }
+.sli .m3 small { font: 500 10.5px/1.2 var(--f-display); color: #5A6B68 } .sli .m3 b { font: 700 14px/1.2 var(--f-display) } .sli .m3 em { font: 600 10.5px/1.2 var(--f-display); font-style: normal }
+.sli .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.sli .acts span { height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 12.5px/1 var(--f-display) }
+.sli .acts span svg { width: 15px; height: 15px }
+.sli .acts .a1 { background: #0E8579; color: #fff } .sli .acts .a2 { background: #fff; border: 1px solid #DCEFEC; color: #0A6A5F }
+.more { height: 42px; border-radius: 13px; border: 1px solid #E1E9E7; display: flex; align-items: center; justify-content: center; gap: 8px; font: 600 13px/1 var(--f-display); color: #0A6A5F; background: #fff }
+.more svg { width: 16px; height: 16px }
+.sev.n { background: #E6F4EA; color: #1F7A3A }
+.k5 .kc { padding: 14px 15px } .k5 .kc .t { gap: 8px } .k5 .kc .t i { width: 30px; height: 30px } .k5 .kc .t i svg { width: 16px; height: 16px }
+.kc .t .dl { white-space: nowrap }
+.krow.k5 { grid-template-columns: repeat(4, 1fr) .8fr }
+.k5 .kc .t .dl { font-size: 11px; padding: 4px 6px }
+
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+  <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></g></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></g></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4z"/><path d="M9 4v14M15 6v14"/></g></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></g></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></g></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/></g></symbol>
+  <symbol id="i-line" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M3 21h18"/></g></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M10 9.5v10"/></g></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></g></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></g></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-hist" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6L3.5 8.5"/><path d="M3.5 4v4.5H8M12 7.5V12l3 2"/></g></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4M8.2 13.2l7.6 4"/></g></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.1 5.9 5.9 2.1-5.9 2.1L12 18.5l-2.1-5.9L4 10.5l5.9-2.1L12 2.5zm6.5 12l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></g></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></g></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="m20 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8L9.6 17.3a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></g></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 10v10H4V10h3zm3 10h7.6a2 2 0 0 0 2-1.6l1.3-6.5A2 2 0 0 0 19 9.5h-5l.8-4a1.6 1.6 0 0 0-3-1L10 10v10z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-max" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M16 15h2"/><path d="M6 6V5a2 2 0 0 1 2-2h9"/></g></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/></g></symbol>
+  <symbol id="i-tower" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10 8 21M12 10l4 11M9.5 16h5"/><circle cx="12" cy="8.5" r="1.5"/><path d="M8 5a6 6 0 0 0 0 7M16 5a6 6 0 0 1 0 7"/></g></symbol>
+  <symbol id="i-bellplus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 9-5.2M18 11c.3 4.4 2.5 5.5 2.5 5.5h-17S6 15 6 9"/><path d="M10 20a2 2 0 0 0 4 0M19 2v6M16 5h6"/></g></symbol>
+  </defs>
+</svg>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></g></symbol>
+  <symbol id="i-chevr" viewBox="0 0 24 24"><path d="m10 7 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrowr" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pkg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7l-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></g></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <header class="top-r" style="display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;justify-content:space-between">
+    <div class="brandline">
+      <span style="width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;border:1px solid var(--rule)"><img src="{{OLDLOGO}}" alt="Logo Agent Java" style="width:84%;height:84%;object-fit:contain"></span>
+      <div><h1>Agent Java · Redesign v2</h1><p>Halaman 04 dari 9. Login, Tanya Agent, dan Dashboard sudah disetujui.</p></div>
+    </div>
+    <div class="steps" aria-label="Urutan review">
+      <span>✓ 01 Login</span><span>✓ 02 Tanya Agent</span><span>✓ 03 Dashboard</span><span class="on">04 Performance</span><span>05 Peta Agent</span><span>06 Laporan</span><span>07 Alert</span><span>08 Profil</span>
+    </div>
+  </header>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+    <div class="tabs" role="tablist" aria-label="Pilih frame">
+      <button role="tab" aria-selected="true" data-p="web">Web · 1440</button>
+      <button role="tab" aria-selected="false" data-p="droid">Android · 390</button>
+    </div>
+    <span class="chip-r"><i></i> Menunggu review Rizal</span>
+  </div>
+
+  <div class="main">
+    <section class="stage" aria-label="Mockup">
+      <div class="panel on" id="p-web">
+        <div class="stage-label"><span>Web · Performance · 1440 × 1590</span><span>Ganti metrik di grafik, klik baris site untuk membuka detail</span></div>
+        <div class="fit" data-w="1440" data-h="1590">
+          <div class="frame" id="webFrame">
+                        <aside class="side" data-name="Sidebar">
+              <div class="brand"><span class="tile" style="width:44px;height:44px;border-radius:13px"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><div><b>Agent <em>Java</em></b><small>Circle Java</small></div></div>
+              <div class="newchat"><svg class="ic"><use href="#i-plus"/></svg>Percakapan baru</div>
+              <div class="search"><svg><use href="#i-search"/></svg>Cari percakapan…</div>
+              <div class="navh">Menu</div>
+              <nav class="nav">
+                <a><span class="nt" style="background:#C0EDE8;color:#0A6A5F"><svg><use href="#i-chat"/></svg></span>Tanya Agent</a>
+                <a><span class="nt" style="background:#E1ECFA;color:#2C6CB0"><svg><use href="#i-grid"/></svg></span>Dashboard</a>
+                <a class="on"><span class="nt" style="background:#F4FCE3;color:#5E8A12"><svg><use href="#i-pulse"/></svg></span>Performance<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-map"/></svg></span>Peta Agent<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-file"/></svg></span>Laporan</a>
+                <a><span class="nt" style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-bell"/></svg></span>Watchlist dan Alert<span class="cnt">3</span></a>
+              </nav>
+              <div class="navh">Admin</div>
+              <nav class="nav"><a><span class="nt" style="background:#ECE5FA;color:#6A4CB5"><svg><use href="#i-bars"/></svg></span>Statistik</a></nav>
+              <div class="navh">Riwayat</div>
+              <div class="hist">
+                <a><svg><use href="#i-hist"/></svg>Revenue West Java vs bulan lalu</a>
+                <a><svg><use href="#i-hist"/></svg>Availability East Java minggu ini</a>
+                <a><svg><use href="#i-hist"/></svg>Market share FWA Semarang</a>
+              </div>
+              <div class="spacer"></div>
+              <div class="apk"><span class="ai"><svg><use href="#i-dl"/></svg></span><div><b>Aplikasi Android</b><small>Agent Java 1.50 · Unduh APK</small></div></div>
+              <div class="me"><span class="avatar">R</span><div><b>Rizal</b><small>Admin · Circle Java</small></div><svg><use href="#i-chev"/></svg></div>
+            </aside>
+
+            <header class="top" data-name="Top bar">
+              <div><h2>Performance</h2><p>Analisis KPI dari region sampai site</p></div>
+              <div class="grow"></div>
+              <span class="chip"><svg><use href="#i-cal"/></svg>Okt 2026</span>
+              <span class="btn-ic" aria-label="Alert"><svg class="ic"><use href="#i-bell"/></svg><span class="badge">3</span></span>
+              <span class="avatar" aria-label="Profil">R</span>
+            </header>
+            <div class="dash">
+              <div class="dhead">
+                <div><div class="eb">Performance · data ilustrasi</div><h1>Kab. Garut, Oktober 2026</h1><p>West Java · 42 kecamatan · 214 site · MoM terhadap Sep 2026, YoY terhadap Okt 2025</p></div>
+                <div class="grow"></div>
+                <span class="dsrc"><i></i>Dump Parquet <b>1 Nov 2026 05.00 WIB</b> · 0 query BigQuery<a>Status dump</a></span>
+              </div>
+              <div class="filt">
+                <nav class="path" aria-label="Drill-down">
+                  <span><small class="lv">Circle</small>Circle Java</span><svg><use href="#i-chevr"/></svg>
+                  <span><small class="lv">Region</small>West Java</span><svg><use href="#i-chevr"/></svg>
+                  <span class="cur"><small class="lv">Kabupaten</small>Garut</span><svg><use href="#i-chevr"/></svg>
+                  <span style="background:#fff;border:1px dashed #8FDFD7;color:#5A6B68">Pilih kecamatan</span>
+                </nav>
+                <div class="grow"></div>
+                <div class="sbox"><svg><use href="#i-search"/></svg>Cari site, kecamatan, atau kabupaten<kbd>/</kbd></div>
+                <span class="linkbtn" style="height:40px"><svg><use href="#i-dl"/></svg>Ekspor</span>
+              </div>
+              <div class="krow k5">
+                <div class="kc"><div class="t"><i style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-wallet"/></svg></i>Revenue<span class="dl dn">▼ 3,0%</span></div><div class="v">Rp 38,2 M</div><div class="yy">YoY <b class="p">▲ 4,1%</b> · Sep Rp 39,4 M</div></div>
+                <div class="kc"><div class="t"><i style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-db"/></svg></i>Payload<span class="dl dn">▼ 9,1%</span></div><div class="v">1,62 PB</div><div class="yy">YoY <b class="p">▲ 5,9%</b> · Sep 1,78 PB</div></div>
+                <div class="kc"><div class="t"><i style="background:#E1ECFA;color:#2C6CB0"><svg><use href="#i-users"/></svg></i>Pelanggan<span class="dl dn">▼ 0,4%</span></div><div class="v">812 rb</div><div class="yy">YoY <b class="p">▲ 2,8%</b> · Sep 815 rb</div></div>
+                <div class="kc"><div class="t"><i style="background:#ECE5FA;color:#6A4CB5"><svg><use href="#i-tower"/></svg></i>Availability<span class="dl dn">▼ 0,22 pp</span></div><div class="v">99,31%</div><div class="yy">YoY <b class="p">▲ 0,05 pp</b> · target 99,5%</div></div>
+                <div class="kc"><div class="t"><i style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-pkg"/></svg></i>Site</div><div class="v">214</div><div class="yy"><b class="m">14 kritis</b> · 23 waspada · 177 normal</div></div>
+              </div>
+              <div class="row2 pf">
+                <section class="card" data-name="Tren 12 bulan">
+                  <div class="ch"><div><h3>Tren 12 bulan</h3><p>Garis penuh: Nov 2025 sampai Okt 2026 · putus-putus: periode setahun sebelumnya</p></div><div class="grow"></div>
+                    <div class="seg mseg" style="margin:0"><button class="on" data-m="rev">Revenue</button><button data-m="pl">Payload</button><button data-m="sub">Pelanggan</button></div></div>
+                  <div class="legend"><span class="lg" data-s="0"><i style="background:#0E8579"></i>Nov 25 sampai Okt 26</span><span class="lg" data-s="1"><i style="background:#9AA8A5"></i>Nov 24 sampai Okt 25</span></div>
+                  <div class="chartbox"><svg class="tchart" width="650" height="290"></svg><div class="ctip"></div></div>
+                </section>
+                <section class="card" data-name="Kontribusi kecamatan">
+                  <div class="ch"><div><h3>Penyebab perubahan revenue</h3><p>Selisih MoM per kecamatan, Rp juta · klik untuk turun level</p></div></div>
+                  <div class="contrib"><div class="cb"><span>Tarogong Kidul</span><div class="tr"><i style="right:50%;width:48.0%;background:#E5484D"></i></div><b style="color:#C42B2B">−420</b></div><div class="cb"><span>Garut Kota</span><div class="tr"><i style="right:50%;width:35.4%;background:#E5484D"></i></div><b style="color:#C42B2B">−310</b></div><div class="cb"><span>Karangpawitan</span><div class="tr"><i style="right:50%;width:21.1%;background:#E5484D"></i></div><b style="color:#C42B2B">−185</b></div><div class="cb"><span>Cibatu</span><div class="tr"><i style="right:50%;width:13.7%;background:#E5484D"></i></div><b style="color:#C42B2B">−120</b></div><div class="cb"><span>Leles</span><div class="tr"><i style="right:50%;width:6.9%;background:#E5484D"></i></div><b style="color:#C42B2B">−60</b></div><div class="cb"><span>Bayongbong</span><div class="tr"><i style="left:50%;width:5.1%;background:#2E9E57"></i></div><b style="color:#1F7A3A">+45</b></div><div class="cb"><span>Kadungora</span><div class="tr"><i style="left:50%;width:9.1%;background:#2E9E57"></i></div><b style="color:#1F7A3A">+80</b></div><div class="cb"><span>Malangbong</span><div class="tr"><i style="left:50%;width:10.9%;background:#2E9E57"></i></div><b style="color:#1F7A3A">+95</b></div><div class="cb oth"><span>34 kec. lain</span><div class="tr"><i style="right:50%;width:37.1%;background:#E5484D"></i></div><b style="color:#C42B2B">−325</b></div></div>
+                  <div class="cfoot"><span>Total perubahan Kab. Garut</span><b>−Rp 1.200 jt</b></div>
+                </section>
+              </div>
+              <section class="card" data-name="Daftar site">
+                <div class="ch"><div><h3>Site di Kab. Garut</h3><p>214 site · diurutkan dari penurunan payload terbesar · klik baris untuk detail</p></div><div class="grow"></div>
+                  <div class="seg" style="margin:0"><button class="on">Semua</button><button>Kritis 14</button><button>Waspada 23</button><button>Normal 177</button></div></div>
+                <table class="rt st"><thead><tr><th>Site</th><th>Kecamatan</th><th class="n">Revenue</th><th class="n">MoM</th><th class="n">Payload</th><th class="n sort">MoM</th><th class="n">Availability</th><th>Status</th></tr></thead><tbody id="stb"></tbody></table>
+                <div class="pg"><span style="border:0;min-width:0;background:transparent;font-weight:400;color:#5A6B68">Menampilkan 1 sampai 7 dari 214 site</span><div class="grow"></div><span>‹</span><span class="on">1</span><span>2</span><span>3</span><span style="border:0;background:transparent">…</span><span>31</span><span>›</span></div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="p-droid">
+        <div class="stage-label"><span>Android · Performance · 390 × 1990 (layar digulir)</span><span>Tab Performa di navigasi bawah</span></div>
+        <div class="fit" data-w="390" data-h="1990" data-max="1">
+          <div class="frame" id="droidFrame">
+            <div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮▮▮ 86%</span></div>
+            <div class="dbar" data-name="App bar">
+              <span class="tile"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span>
+              <div><b>Performance</b><small><i></i>Kab. Garut · Okt 2026</small></div>
+              <span class="grow"></span>
+              <span class="btn-ic" aria-label="Alert"><svg class="ic"><use href="#i-bell"/></svg><span class="badge">3</span></span>
+              <span class="avatar" aria-label="Profil">R</span>
+            </div>
+            <div class="ddash">
+              <div class="sbox"><svg><use href="#i-search"/></svg>Cari site atau wilayah</div>
+              <nav class="path" aria-label="Drill-down"><span>Circle Java</span><svg><use href="#i-chevr"/></svg><span>West Java</span><svg><use href="#i-chevr"/></svg><span class="cur">Garut</span></nav>
+              <span class="dsrc"><i></i>Dump Parquet <b>1 Nov 05.00 WIB</b> · offline siap</span>
+              <div class="krow">
+                <div class="kc"><div class="t"><i style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-wallet"/></svg></i>Revenue</div><div class="v">Rp 38,2 M</div><span class="dl dn" style="justify-self:start;font:600 11px/1 var(--f-display);padding:4px 7px;border-radius:99px">▼ 3,0% MoM</span><div class="yy">YoY <b class="p">▲ 4,1%</b></div></div>
+                <div class="kc"><div class="t"><i style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-db"/></svg></i>Payload</div><div class="v">1,62 PB</div><span class="dl dn" style="justify-self:start;font:600 11px/1 var(--f-display);padding:4px 7px;border-radius:99px">▼ 9,1% MoM</span><div class="yy">YoY <b class="p">▲ 5,9%</b></div></div>
+                <div class="kc"><div class="t"><i style="background:#E1ECFA;color:#2C6CB0"><svg><use href="#i-users"/></svg></i>Pelanggan</div><div class="v">812 rb</div><span class="dl dn" style="justify-self:start;font:600 11px/1 var(--f-display);padding:4px 7px;border-radius:99px">▼ 0,4% MoM</span><div class="yy">YoY <b class="p">▲ 2,8%</b></div></div>
+                <div class="kc"><div class="t"><i style="background:#ECE5FA;color:#6A4CB5"><svg><use href="#i-tower"/></svg></i>Availability</div><div class="v">99,31%</div><span class="dl dn" style="justify-self:start;font:600 11px/1 var(--f-display);padding:4px 7px;border-radius:99px">▼ 0,22 pp</span><div class="yy">Target 99,5%</div></div>
+              </div>
+              <section class="card" data-name="Tren 12 bulan">
+                <div class="ch"><div><h3>Tren 12 bulan</h3><p>Putus-putus: setahun sebelumnya</p></div></div>
+                <div class="seg mseg"><button class="on" data-m="rev">Revenue</button><button data-m="pl">Payload</button><button data-m="sub">Pelanggan</button></div>
+                <div class="chartbox"><svg class="tchart" width="330" height="190" data-small="1"></svg><div class="ctip st"></div></div>
+              </section>
+              <section class="card" data-name="Kontribusi kecamatan">
+                <div class="ch"><div><h3>Penyebab perubahan revenue</h3><p>Selisih MoM, Rp juta · ketuk untuk turun level</p></div></div>
+                <div class="contrib"><div class="cb"><span>Tarogong Kidul</span><div class="tr"><i style="right:50%;width:48.0%;background:#E5484D"></i></div><b style="color:#C42B2B">−420</b></div><div class="cb"><span>Garut Kota</span><div class="tr"><i style="right:50%;width:35.4%;background:#E5484D"></i></div><b style="color:#C42B2B">−310</b></div><div class="cb"><span>Karangpawitan</span><div class="tr"><i style="right:50%;width:21.1%;background:#E5484D"></i></div><b style="color:#C42B2B">−185</b></div><div class="cb"><span>Cibatu</span><div class="tr"><i style="right:50%;width:13.7%;background:#E5484D"></i></div><b style="color:#C42B2B">−120</b></div><div class="cb"><span>Kadungora</span><div class="tr"><i style="left:50%;width:9.1%;background:#2E9E57"></i></div><b style="color:#1F7A3A">+80</b></div><div class="cb"><span>Malangbong</span><div class="tr"><i style="left:50%;width:10.9%;background:#2E9E57"></i></div><b style="color:#1F7A3A">+95</b></div><div class="cb oth"><span>36 kec. lain</span><div class="tr"><i style="right:50%;width:38.9%;background:#E5484D"></i></div><b style="color:#C42B2B">−340</b></div></div>
+                <div class="cfoot"><span>Total Kab. Garut</span><b>−Rp 1.200 jt</b></div>
+              </section>
+              <section class="card" data-name="Daftar site">
+                <div class="ch"><div><h3>Site di Kab. Garut</h3><p>214 site · payload MoM terendah dulu</p></div></div>
+                <div class="seg"><button class="on">Semua</button><button>Kritis 14</button><button>Waspada 23</button></div>
+                <div class="slist"><div class="sli sel"><div class="h"><div class="sid" style="font:600 14px/1.25 var(--f-display)">GRT-0412<small style="display:block;font:400 11.5px/1.3 var(--f-body);color:#5A6B68">Tarogong Kidul 2 · Tarogong Kidul</small></div><span class="grow"></span><span class="sev k">Kritis</span></div><div class="m3"><div><small>Payload</small><b>96,2 TB</b><em style="color:#C42B2B">▼ 14,7%</em></div><div><small>Revenue</small><b>Rp 412 jt</b><em style="color:#C42B2B">▼ 8,4%</em></div><div><small>Avail.</small><b>99,10%</b><em style="color:#C42B2B">▼ 0,6 pp</em></div></div><p style="margin:0;font:400 12.5px/1.45 var(--f-body);color:#3D4C49"><b style="font-weight:600">Catatan agent:</b> payload turun sejak 26 Okt, bersamaan dengan gangguan 3 jam di sektor 2.</p><div class="acts"><span class="a1"><svg><use href="#i-spark"/></svg>Tanya Agent</span><span class="a2"><svg><use href="#i-map"/></svg>Lihat di peta</span></div></div><div class="sli"><div class="h"><div class="sid" style="font:600 14px/1.25 var(--f-display)">GRT-0388<small style="display:block;font:400 11.5px/1.3 var(--f-body);color:#5A6B68">Garut Kota Pasar · Garut Kota</small></div><span class="grow"></span><span class="sev k">Kritis</span></div><div class="m3"><div><small>Payload</small><b>88,4 TB</b><em style="color:#C42B2B">▼ 12,2%</em></div><div><small>Revenue</small><b>Rp 386 jt</b><em style="color:#C42B2B">▼ 6,1%</em></div><div><small>Avail.</small><b>98,42%</b><em style="color:#C42B2B">▼ 1,3 pp</em></div></div></div></div>
+                <div class="more">Lihat semua 214 site<svg><use href="#i-arrowr"/></svg></div>
+              </section>
+            </div>
+            <nav class="bnav" data-name="Bottom nav">
+              <a><i><svg><use href="#i-spark"/></svg></i>Agent</a>
+              <a><i><svg><use href="#i-grid"/></svg></i>Dashboard</a>
+              <a class="on"><i><svg><use href="#i-pulse"/></svg></i>Performa</a>
+              <a><i><svg><use href="#i-map"/></svg></i><span class="dot"></span>Peta</a>
+              <a><i><svg><use href="#i-file"/></svg></i>Laporan</a>
+            </nav>
+            <div class="homebar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="notes">
+      <div>
+        <h2>Yang baru di Performance</h2>
+        <ul>
+          <li>Kembali jadi menu utama: "Performance" di sidebar web dan tab "Performa" di Android.</li>
+          <li>Drill-down berjenjang Circle Java, region, kabupaten, kecamatan, sampai site. Setiap level bisa diklik untuk naik lagi.</li>
+          <li>Label hijau menunjukkan data diambil dari dump Parquet harian (1 Nov 05.00 WIB), jadi membuka halaman ini tidak menjalankan query BigQuery. Jika dump terlambat, label berubah kuning dan backend kembali ke BigQuery.</li>
+          <li>Setiap KPI menampilkan MoM dan YoY sekaligus.</li>
+          <li>Grafik tren 12 bulan dengan pembanding tahun lalu, bisa ganti Revenue, Payload, dan Pelanggan.</li>
+          <li>"Penyebab perubahan" menjelaskan kecamatan mana yang membuat revenue turun atau naik.</li>
+          <li>Detail site langsung terbuka di baris tabel, dengan tombol ke Peta Agent dan Tanya Agent.</li>
+        </ul>
+      </div>
+      <div class="q"><b>Yang perlu kamu cek:</b> urutan drill-down, KPI yang tampil (5 kartu), isi detail site, dan apakah halaman ini disetujui sebelum lanjut ke 05 Peta Agent.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  const fits = [...document.querySelectorAll('.fit')];
+  function layout() { fits.forEach(f => { if (!f.offsetParent) return; const w = +f.dataset.w, h = +f.dataset.h, avail = f.parentElement.clientWidth; const s = Math.min(f.dataset.max ? 1 : 9, avail / w); f.style.height = (h * s) + 'px'; f.style.width = (w * s) + 'px'; f.firstElementChild.style.transform = 'scale(' + s + ')'; }); }
+  new ResizeObserver(layout).observe(document.querySelector('.stage')); layout();
+  const tabs = document.querySelectorAll('[role=tab]');
+  tabs.forEach(t => t.addEventListener('click', () => { tabs.forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false')); document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p)); layout(); }));
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); p && p.appendChild(e); return e; };
+  const id = (v, d) => v.toLocaleString('id-ID', { maximumFractionDigits: d, minimumFractionDigits: d });
+  // trend chart
+  const MON = ['Nov', 'Des', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt'];
+  const YR = ['2025', '2025', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026', '2026'];
+  const D = {
+    rev: { c: [36.1, 36.8, 36.0, 35.4, 36.6, 37.2, 38.0, 38.9, 39.6, 39.9, 39.4, 38.2], p: [34.0, 34.6, 34.1, 33.5, 34.4, 35.0, 35.6, 36.2, 36.8, 37.0, 36.9, 36.7], f: v => 'Rp ' + id(v, 1) + ' M', ax: v => id(v, 0) },
+    pl: { c: [1.58, 1.60, 1.555, 1.54, 1.59, 1.62, 1.66, 1.70, 1.745, 1.78, 1.782, 1.62], p: [1.30, 1.33, 1.31, 1.29, 1.34, 1.38, 1.41, 1.44, 1.48, 1.50, 1.51, 1.53], f: v => id(v, 2) + ' PB', ax: v => id(v, 1) },
+    sub: { c: [790, 795, 792, 788, 796, 801, 806, 810, 814, 816, 815, 812], p: [760, 764, 762, 760, 766, 770, 774, 778, 782, 786, 788, 790], f: v => id(v, 0) + ' rb', ax: v => id(v, 0) }
+  };
+  document.querySelectorAll('svg.tchart').forEach(svg => {
+    const card = svg.closest('.card'), small = !!svg.dataset.small, tip = svg.parentElement.querySelector('.ctip');
+    const st = { m: 'rev', hover: 11, on: [true, true] };
+    function draw() {
+      svg.innerHTML = '';
+      const W = +svg.getAttribute('width'), H = +svg.getAttribute('height'), pl = small ? 34 : 44, pr = small ? 8 : 18, pt = 12, pb = 26, iw = W - pl - pr, ih = H - pt - pb, d = D[st.m];
+      const all = [...d.c, ...d.p], mn0 = Math.min(...all), mx0 = Math.max(...all), pad = (mx0 - mn0) * .15, mn = mn0 - pad, mx = mx0 + pad;
+      const X = i => pl + iw * i / 11, Y = v => pt + ih * (1 - (v - mn) / (mx - mn));
+      for (let g = 0; g <= 3; g++) { const v = mn + (mx - mn) * g / 3; el('line', { x1: pl, x2: W - pr, y1: Y(v), y2: Y(v), stroke: g ? '#ECF3F1' : '#B9C6C3', 'stroke-width': 1 }, svg);
+        el('text', { x: pl - 8, y: Y(v) + 4, 'text-anchor': 'end', 'font-family': 'Poppins, sans-serif', 'font-size': small ? 10 : 11, fill: '#5A6B68' }, svg).textContent = d.ax(v); }
+      el('line', { x1: X(st.hover), x2: X(st.hover), y1: pt, y2: pt + ih, stroke: '#8FDFD7', 'stroke-width': 1.5, 'stroke-dasharray': '3 3' }, svg);
+      const path = v => v.map((a, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(a).toFixed(1)).join(' ');
+      if (st.on[0]) { const gid = 'tg' + (small ? 's' : 'w'); const g = el('linearGradient', { id: gid, x1: 0, y1: 0, x2: 0, y2: 1 }, el('defs', {}, svg)); el('stop', { offset: 0, 'stop-color': '#0E8579', 'stop-opacity': .18 }, g); el('stop', { offset: 1, 'stop-color': '#0E8579', 'stop-opacity': 0 }, g);
+        el('path', { d: path(d.c) + ` L${X(11)} ${pt + ih} L${X(0)} ${pt + ih} Z`, fill: `url(#${gid})` }, svg); }
+      if (st.on[1]) el('path', { d: path(d.p), fill: 'none', stroke: '#9AA8A5', 'stroke-width': 2, 'stroke-dasharray': '5 4' }, svg);
+      if (st.on[0]) el('path', { d: path(d.c), fill: 'none', stroke: '#0E8579', 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+      if (st.on[1]) el('circle', { cx: X(st.hover), cy: Y(d.p[st.hover]), r: 4, fill: '#fff', stroke: '#9AA8A5', 'stroke-width': 2 }, svg);
+      if (st.on[0]) el('circle', { cx: X(st.hover), cy: Y(d.c[st.hover]), r: 5, fill: '#0E8579', stroke: '#fff', 'stroke-width': 2 }, svg);
+      MON.forEach((m, i) => { if (small && i % 2 && i !== st.hover) return; el('text', { x: X(i), y: H - 7, 'text-anchor': 'middle', 'font-family': 'Poppins, sans-serif', 'font-size': small ? 10 : 11.5, 'font-weight': i === st.hover ? 700 : 400, fill: i === st.hover ? '#0F1F1D' : '#5A6B68' }, svg).textContent = m; });
+      const c = d.c[st.hover], p = d.p[st.hover], yoy = (c / p - 1) * 100, mom = st.hover ? (c / d.c[st.hover - 1] - 1) * 100 : null;
+      const sg = v => (v >= 0 ? '▲ ' : '▼ ') + id(Math.abs(v), 1) + '%';
+      tip.innerHTML = `<b>${MON[st.hover]} ${YR[st.hover]}</b><div><i style="background:#0E8579"></i>Nilai<span>${d.f(c)}</span></div><div><i style="background:#9AA8A5"></i>Setahun lalu<span>${d.f(p)}</span></div><div><i style="background:transparent"></i>YoY<span style="color:${yoy >= 0 ? '#8EE0A6' : '#FF9C9C'}">${sg(yoy)}</span></div>` + (mom === null ? '' : `<div><i style="background:transparent"></i>MoM<span style="color:${mom >= 0 ? '#8EE0A6' : '#FF9C9C'}">${sg(mom)}</span></div>`);
+      if (!small) { const tx = X(st.hover) + 14, flip = tx + 190 > W; tip.style.left = (flip ? X(st.hover) - 204 : tx) + 'px'; const up = Math.max(Y(c), Y(p)) < pt + ih * .55; tip.style.top = (up ? H - pb - 120 : 14) + 'px'; }
+    }
+    draw();
+    svg.addEventListener('mousemove', e => { const r = svg.getBoundingClientRect(), sc = r.width / svg.getAttribute('width'), pl = small ? 34 : 44, pr = small ? 8 : 18, iw = +svg.getAttribute('width') - pl - pr; const j = Math.max(0, Math.min(11, Math.round(((e.clientX - r.left) / sc - pl) / iw * 11))); if (j !== st.hover) { st.hover = j; draw(); } });
+    card.querySelectorAll('.mseg button').forEach(b => b.addEventListener('click', () => { st.m = b.dataset.m; card.querySelectorAll('.mseg button').forEach(x => x.classList.toggle('on', x === b)); draw(); }));
+    card.querySelectorAll('.lg').forEach(l => l.addEventListener('click', () => { const s = +l.dataset.s; if (st.on.filter(Boolean).length > 1 || !st.on[s]) { st.on[s] = !st.on[s]; l.classList.toggle('off', !st.on[s]); draw(); } }));
+  });
+  // site table with inline detail
+  const S = [
+    { id: 'GRT-0412', n: 'Tarogong Kidul 2', k: 'Tarogong Kidul', rev: 'Rp 412 jt', rm: -8.4, pl: '96,2 TB', pm: -14.7, av: '99,10%', s: 'k', ga: '46 /hari', gam: -18, sub: '9,8 rb', subm: -1.2, g5: '22%', fwa: '312', why: 'Payload turun sejak 26 Okt, bersamaan dengan gangguan 3 jam di sektor 2. Revenue data ikut turun 8,4%; pelanggan relatif stabil, jadi kemungkinan besar masalah kualitas jaringan, bukan churn.' },
+    { id: 'GRT-0388', n: 'Garut Kota Pasar', k: 'Garut Kota', rev: 'Rp 386 jt', rm: -6.1, pl: '88,4 TB', pm: -12.2, av: '98,42%', s: 'k', ga: '39 /hari', gam: -11, sub: '9,1 rb', subm: -0.8, g5: '18%', fwa: '204', why: 'Availability 98,42% di bawah target 99,5% karena gangguan listrik 21 sampai 23 Okt. Payload dan revenue turun pada periode yang sama.' },
+    { id: 'GRT-0217', n: 'Karangpawitan 1', k: 'Karangpawitan', rev: 'Rp 301 jt', rm: -4.0, pl: '70,1 TB', pm: -9.6, av: '99,71%', s: 'w', ga: '31 /hari', gam: -6, sub: '7,4 rb', subm: -0.5, g5: '15%', fwa: '166', why: 'Penurunan payload merata di semua sektor tanpa gangguan tercatat. Kompetitor membuka 2 site baru di radius 1 km pada awal Oktober.' },
+    { id: 'GRT-0155', n: 'Tarogong Kaler 3', k: 'Tarogong Kaler', rev: 'Rp 288 jt', rm: -2.2, pl: '66,3 TB', pm: -7.1, av: '99,80%', s: 'w', ga: '28 /hari', gam: -3, sub: '6,9 rb', subm: -0.2, g5: '14%', fwa: '140', why: 'Payload turun 7,1% setelah promo kuota malam berakhir 30 Sep. Revenue hanya turun 2,2%.' },
+    { id: 'GRT-0098', n: 'Cibatu Stasiun', k: 'Cibatu', rev: 'Rp 254 jt', rm: -1.5, pl: '58,0 TB', pm: -5.2, av: '99,92%', s: 'n', ga: '24 /hari', gam: 2, sub: '6,2 rb', subm: 0.3, g5: '9%', fwa: '98', why: 'Masih dalam batas normal. Penurunan payload sejalan dengan pola musiman Oktober tahun lalu.' },
+    { id: 'GRT-0301', n: 'Bayongbong 1', k: 'Bayongbong', rev: 'Rp 240 jt', rm: 1.2, pl: '54,9 TB', pm: -1.0, av: '99,95%', s: 'n', ga: '26 /hari', gam: 5, sub: '5,8 rb', subm: 0.9, g5: '8%', fwa: '121', why: 'Revenue naik 1,2% didorong penjualan paket FWA. Tidak ada tindakan yang diperlukan.' },
+    { id: 'GRT-0064', n: 'Kadungora Pasar', k: 'Kadungora', rev: 'Rp 226 jt', rm: 2.8, pl: '51,6 TB', pm: 0.8, av: '99,97%', s: 'n', ga: '29 /hari', gam: 9, sub: '5,5 rb', subm: 1.4, g5: '11%', fwa: '133', why: 'Tumbuh di semua metrik. Kandidat untuk menambah kapasitas 5G.' }
+  ];
+  const SEV = { k: 'Kritis', w: 'Waspada', n: 'Normal' };
+  const pct = v => `<span class="dchip" style="background:${v >= 0 ? '#E6F4EA' : '#FDECEC'};color:${v >= 0 ? '#1F7A3A' : '#C42B2B'}">${v >= 0 ? '▲' : '▼'} ${id(Math.abs(v), 1)}%</span>`;
+  const em = v => `<em style="color:${v >= 0 ? '#1F7A3A' : '#C42B2B'}">${v >= 0 ? '▲' : '▼'} ${id(Math.abs(v), 1)}% MoM</em>`;
+  const tb = document.getElementById('stb');
+  let sel = 0;
+  function rows() {
+    tb.innerHTML = S.map((s, i) => `<tr class="row${i === sel ? ' sel' : ''}" data-i="${i}"><td><div class="sid">${s.id}<small>${s.n}</small></div></td><td>${s.k}</td><td class="n">${s.rev}</td><td class="n">${pct(s.rm)}</td><td class="n">${s.pl}</td><td class="n">${pct(s.pm)}</td><td class="n" style="color:${parseFloat(s.av.replace(',', '.')) < 99.5 ? '#C42B2B' : 'inherit'}">${s.av}</td><td><span class="sev ${s.s}">${SEV[s.s]}</span></td></tr>` +
+      (i === sel ? `<tr class="sdet"><td colspan="8"><div class="in">
+        <div class="mm"><small>Gross add harian</small><b>${s.ga}</b>${em(s.gam)}</div>
+        <div class="mm"><small>Pelanggan aktif</small><b>${s.sub}</b>${em(s.subm)}</div>
+        <div class="mm"><small>Porsi trafik 5G</small><b>${s.g5}</b><em style="color:#5A6B68">dari payload site</em></div>
+        <div class="mm"><small>Pelanggan FWA</small><b>${s.fwa}</b><em style="color:#5A6B68">aktif bulan ini</em></div>
+        <div class="act" style="grid-row:span 2"><span class="a1"><svg><use href="#i-spark"/></svg>Tanya Agent soal site ini</span><span class="a2"><svg><use href="#i-map"/></svg>Lihat di Peta Agent</span><span class="a2"><svg><use href="#i-bellplus"/></svg>Pantau site ini</span></div>
+        <div class="why"><svg><use href="#i-spark"/></svg><span><b>Catatan agent:</b> ${s.why}</span></div></div></td></tr>` : '')).join('');
+    tb.querySelectorAll('tr.row').forEach(r => r.addEventListener('click', () => { const i = +r.dataset.i; sel = sel === i ? -1 : i; rows(); }));
+  }
+  rows();
+})();
+</script>

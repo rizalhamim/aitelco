@@ -13,7 +13,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from .database import get_db, User, LoginAudit, UsageLog, utcnow
+from .database import get_db, AppClient, User, LoginAudit, UsageLog, utcnow
 
 # ── Config ──
 _DEFAULT_SECRET = "telco-ai-secret-key-change-in-production-2024"
@@ -46,15 +46,17 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire, "type": "access"})
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire, "iat": int(now.timestamp()), "type": "access"})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def create_refresh_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(days=30)
-    to_encode.update({"exp": expire, "type": "refresh"})
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(days=30)
+    to_encode.update({"exp": expire, "iat": int(now.timestamp()), "type": "refresh"})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -69,9 +71,39 @@ def decode_token(token: str) -> dict:
         )
 
 
+def device_signed_out(db: Session, user: User, headers, payload: dict) -> bool:
+    """True when this Android device was signed out from the Profil page after the
+    token was issued. Devices are told apart by the X-Client-Platform and
+    X-Device-Model headers the app sends; web sessions are not affected."""
+    if headers is None or (headers.get("x-client-platform") or "").lower() != "android":
+        return False
+    model = (headers.get("x-device-model") or "").strip()[:120]
+    row = (db.query(AppClient)
+           .filter(AppClient.user_id == user.id, AppClient.platform == "android", AppClient.device_model == model)
+           .first())
+    if row is None or row.signed_out_at is None:
+        return False
+    out = row.signed_out_at
+    if out.tzinfo is None:
+        out = out.replace(tzinfo=timezone.utc)
+    return float(payload.get("iat") or 0) < out.timestamp()
+
+
+def clear_device_signout(db: Session, user: User, headers) -> None:
+    """A fresh sign-in from a signed-out device lets it back in."""
+    if headers is None or (headers.get("x-client-platform") or "").lower() != "android":
+        return
+    model = (headers.get("x-device-model") or "").strip()[:120]
+    (db.query(AppClient)
+     .filter(AppClient.user_id == user.id, AppClient.platform == "android", AppClient.device_model == model)
+     .update({AppClient.signed_out_at: None}))
+    db.commit()
+
+
 # ── FastAPI Dependencies ──
 
 async def get_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db),
 ) -> User:
@@ -101,6 +133,8 @@ async def get_current_user(
 
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found or inactive")
+    if device_signed_out(db, user, request.headers, payload):
+        raise HTTPException(status_code=401, detail="Perangkat ini sudah dikeluarkan dari akun. Silakan masuk lagi.")
 
     return user
 

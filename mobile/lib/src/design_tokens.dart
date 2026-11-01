@@ -26,6 +26,18 @@ class DSColor {
   static const amber500 = Color(0xFFF5A623);
   static const green500 = Color(0xFF2FA84F);
   static const blue500 = Color(0xFF2A74D4);
+  static const lagoon50 = Color(0xFFE3F7FA);
+  static const lagoon500 = Color(0xFF22B8C9);
+  static const lagoon600 = Color(0xFF1597A8);
+  static const lagoon700 = Color(0xFF0E6F7C);
+  static const lime50 = Color(0xFFF4FCE3);
+  static const lime400 = Color(0xFFC7F25E);
+  static const lime700 = Color(0xFF5E8A12);
+  static const coral50 = Color(0xFFFFEDE7);
+  static const coral500 = Color(0xFFFF7A59);
+  static const coral600 = Color(0xFFE85D3C);
+  static const coral700 = Color(0xFFB5401F);
+  static const mint300 = Color(0xFF7EE8A2);
   static const chart = <Color>[
     Color(0xFF15A697),
     Color(0xFFF5A623),
@@ -89,6 +101,9 @@ class DSLight {
   static const mute = Color(0xFF5A6B68);
   static const info = Color(0xFF2C6CB0);
   static const zebra = Color(0xFFFBFBF9);
+  static const accentLagoon = Color(0xFF22B8C9);
+  static const accentLime = Color(0xFFC7F25E);
+  static const accentCoral = Color(0xFFFF7A59);
 }
 
 /// Semantic colors, dark theme.
@@ -140,6 +155,9 @@ class DSDark {
   static const mute = Color(0xFF8A9C99);
   static const info = Color(0xFF7FB3EA);
   static const zebra = Color(0xFF18211F);
+  static const accentLagoon = Color(0xFF22B8C9);
+  static const accentLime = Color(0xFFC7F25E);
+  static const accentCoral = Color(0xFFFF7A59);
 }
 
 /// Spacing scale in logical pixels.
@@ -169,7 +187,7 @@ class DSRadius {
 class DSFont {
   DSFont._();
   static const display = 'Poppins';
-  static const body = 'Poppins';
+  static const body = 'Prompt';
 }
 
 /// Type scale: font size and weight (100-900).

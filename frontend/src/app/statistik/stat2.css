@@ -1,0 +1,65 @@
+/* Redesign v2 page 09: Statistik aplikasi (web, admin). Reuses v2.css .card/.seg/.linkbtn/.btn-ic. */
+.v2 .stx { flex: 1; min-width: 0; padding: 20px 24px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; background: #F5F9F8; align-content: start }
+:where(.v2 .stx) :where(button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer }
+.v2 .stx .c12 { grid-column: span 12 } .v2 .stx .c8 { grid-column: span 8 } .v2 .stx .c7 { grid-column: span 7 } .v2 .stx .c6 { grid-column: span 6 } .v2 .stx .c5 { grid-column: span 5 } .v2 .stx .c4 { grid-column: span 4 }
+.v2 .stx .err { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; padding: 12px 16px; border-radius: 14px; background: #FDECEC; color: #C42B2B; font: 500 13px/1.3 var(--f-display) }
+.v2 .stx .grow { flex: 1 }
+.v2 .stx .k5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px }
+.v2 .stx .k9 { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px; display: grid; gap: 6px; min-width: 0 }
+.v2 .stx .k9 small { font: 500 12px/1.25 var(--f-display); color: #5A6B68; display: flex; align-items: center; gap: 7px; white-space: nowrap }
+.v2 .stx .k9 small i { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center } .v2 .stx .k9 small i svg { width: 14px; height: 14px }
+.v2 .stx .k9 b { font: 700 24px/1.1 var(--f-display); white-space: nowrap; color: #0F1F1D } .v2 .stx .k9 b span { font: 600 14px/1 var(--f-display); color: #5A6B68 }
+.v2 .stx .k9 em { font: 500 11.5px/1.3 var(--f-display); font-style: normal; color: #5A6B68; white-space: nowrap }
+.v2 .stx .k9 em.up { color: #1F7A3A } .v2 .stx .k9 em.dn { color: #C42B2B }
+.v2 .stx .k9 .bar2 { height: 6px; border-radius: 3px; background: #ECF3F1; overflow: hidden; display: flex } .v2 .stx .k9 .bar2 i { background: #0E8579 }
+.v2 .stx .lg9 { display: flex; gap: 14px; flex-wrap: wrap; font: 500 11.5px/1 var(--f-display); color: #3D4C49 }
+.v2 .stx .lg9 span { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap } .v2 .stx .lg9 span i { width: 10px; height: 10px; border-radius: 3px } .v2 .stx .lg9 span i.ln { height: 3px; border-radius: 2px }
+.v2 .stx .ch9 { width: 100%; display: block; overflow: visible }
+.v2 .stx .hm { display: grid; grid-template-columns: 34px repeat(24, minmax(0, 1fr)); gap: 3px; font: 500 10px/1 var(--f-display); color: #5A6B68; align-items: center }
+.v2 .stx .hm i { height: 18px; border-radius: 4px; display: block }
+.v2 .stx .hm .hx { text-align: center }
+.v2 .stx .fu { display: grid; gap: 9px }
+.v2 .stx .fu > div { display: grid; grid-template-columns: 120px 1fr 52px; gap: 10px; align-items: center; font: 500 12.5px/1.2 var(--f-display); color: #0F1F1D }
+.v2 .stx .fu > div span { height: 10px; border-radius: 5px; background: #ECF3F1; overflow: hidden; display: flex } .v2 .stx .fu > div span i { border-radius: 5px }
+.v2 .stx .fu > div b { font: 700 12.5px/1 var(--f-display); text-align: right }
+.v2 .stx .tp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px }
+.v2 .stx .tp div { border-radius: 12px; padding: 10px 12px; display: grid; gap: 3px } .v2 .stx .tp b { font: 700 18px/1.1 var(--f-display); color: #0F1F1D } .v2 .stx .tp small { font: 500 11.5px/1.25 var(--f-display); color: #3D4C49 }
+.v2 .stx .ut { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums; color: #0F1F1D }
+.v2 .stx .ut th { text-align: left; font: 600 10.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 9px 10px; border-bottom: 1px solid #E1E9E7; white-space: nowrap }
+.v2 .stx .ut td { padding: 9px 10px; border-bottom: 1px solid #ECF3F1; white-space: nowrap }
+.v2 .stx .ut tbody tr { cursor: pointer } .v2 .stx .ut tbody tr:hover td { background: #F5F9F8 }
+.v2 .stx .who2 { display: flex; align-items: center; gap: 10px } .v2 .stx .who2 i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--f-display); font-style: normal; color: #fff; flex: none }
+.v2 .stx .who2 b { font: 600 13px/1.2 var(--f-display); display: block } .v2 .stx .who2 small { font: 400 11px/1.2 var(--f-body); color: #5A6B68 }
+.v2 .stx .pl { font: 600 11px/1 var(--f-display); padding: 4px 8px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap }
+.v2 .stx .pl.w { background: #E1ECFA; color: #2C6CB0 } .v2 .stx .pl.a { background: #F4FCE3; color: #5E8A12 } .v2 .stx .pl.o { background: #FDF3E2; color: #B7791F }
+.v2 .stx .pl.g { background: #E6F4EA; color: #1F7A3A } .v2 .stx .pl.m { background: #ECF3F1; color: #5A6B68 } .v2 .stx .pl.r { background: #FDECEC; color: #C42B2B }
+.v2 .stx .tb2 { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap } .v2 .stx .tb2 .seg { margin: 0 }
+.v2 .stx .sbox { width: 240px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 12px; color: #5A6B68 }
+.v2 .stx .sbox:focus-within { border-color: #8FDFD7 } .v2 .stx .sbox svg { width: 18px; height: 18px; flex: none }
+.v2 .stx .sbox input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 400 13.5px/1 var(--f-body); color: #0F1F1D; padding: 0 }
+.v2 .stx .sbox input::placeholder { color: #5A6B68; opacity: 1 }
+.v2 .stx .ctag { font: 600 10.5px/1 var(--f-display); padding: 4px 8px; border-radius: 99px; background: #ECE5FA; color: #6A4CB5; margin-left: auto }
+.v2 .stx .foot2 { display: flex; align-items: center; gap: 10px; border-top: 1px solid #ECF3F1; padding-top: 12px }
+.v2 .stx .foot2 small { font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .stx .linkbtn:disabled { opacity: .55; cursor: default }
+.v2 .stx .pcol { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.v2 .stx .pend { display: grid; gap: 8px }
+.v2 .stx .pend .pr { display: grid; grid-template-columns: 32px 1fr auto; gap: 2px 10px; align-items: center; padding: 9px 0; border-top: 1px solid #ECF3F1 }
+.v2 .stx .pend .pr > i { grid-row: span 2; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 700 12px/1 var(--f-display); font-style: normal; color: #fff }
+.v2 .stx .pend .pr b { font: 600 13px/1.2 var(--f-display); color: #0F1F1D } .v2 .stx .pend .pr small { font: 400 11.5px/1.25 var(--f-body); color: #5A6B68; grid-column: 2 }
+.v2 .stx .pend .pr .ab { grid-row: span 2; grid-column: 3; display: flex; gap: 6px }
+.v2 .stx .pend .pr .ab button { height: 30px; padding: 0 10px; border-radius: 9px; display: inline-flex; align-items: center; font: 600 12px/1 var(--f-display); border: 1px solid #E1E9E7; color: #3D4C49; white-space: nowrap }
+.v2 .stx .pend .pr .ab button.p { background: #0E8579; border-color: #0E8579; color: #fff }
+.v2 .stx .pend .pr .ab button:disabled { opacity: .55; cursor: default }
+.v2 .stx .pend .none { font: 400 12.5px/1.4 var(--f-body); color: #5A6B68; padding: 9px 0; border-top: 1px solid #ECF3F1 }
+.v2 .stx .sec2 { display: grid; gap: 0 }
+.v2 .stx .sec2 .sr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 9px 0; border-top: 1px solid #ECF3F1 } .v2 .stx .sec2 .sr:first-child { border-top: 0 }
+.v2 .stx .sec2 .sr b { font: 600 13px/1.25 var(--f-display); color: #0F1F1D } .v2 .stx .sec2 .sr small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68; grid-column: 1 }
+.v2 .stx .sec2 .sr .pl { grid-column: 2; grid-row: 1 / span 2; align-self: center }
+.v2 .stx .empty { font: 400 12.5px/1.4 var(--f-body); color: #5A6B68 }
+.v2 .stx .tip { position: absolute; pointer-events: none; background: #0F1F1D; color: #fff; border-radius: 8px; padding: 6px 8px; font: 500 11.5px/1.35 var(--f-display); white-space: nowrap; transform: translate(-50%, -110%); z-index: 3 }
+.v2 .stx .chw { position: relative }
+@media (max-width: 1100px) {
+  .v2 .stx .c8, .v2 .stx .c7, .v2 .stx .c6, .v2 .stx .c5, .v2 .stx .c4 { grid-column: span 12 }
+  .v2 .stx .k5 { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+}

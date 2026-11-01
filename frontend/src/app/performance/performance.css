@@ -1,0 +1,76 @@
+/* 04 Performance v2, ported from design/mockup-v2/04-performance (Web 1440 x 1591).
+   Shares .krow, .kc, .card, .ctip, .rt, .sev and .dl with dashboard.css. */
+.v2 .dsrc { display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0 14px; border-radius: 12px; background: #F4FCE3; border: 1px solid #DDF3A6; font: 500 12.5px/1 var(--f-display); color: #3D5A0E; white-space: nowrap; position: relative }
+.v2 .dsrc i { width: 8px; height: 8px; border-radius: 50%; background: #5E8A12; box-shadow: 0 0 0 4px rgba(94,138,18,.15); flex: none }
+.v2 .dsrc b { font-weight: 700 }
+.v2 .dsrc button { border: 0; background: none; padding: 0; color: #0A6A5F; font: 600 12.5px/1 var(--f-display); margin-left: 4px; cursor: pointer }
+.v2 .dsrc.warn { background: #FDF3E2; border-color: #F5D9A8; color: #7A4E0E } .v2 .dsrc.warn i { background: #E0A100; box-shadow: 0 0 0 4px rgba(224,161,0,.18) }
+.v2 .dsrc .pop { position: absolute; right: 0; top: 44px; z-index: 20; width: 300px; white-space: normal; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 400 12.5px/1.45 var(--f-body); box-shadow: 0 10px 24px rgba(0,0,0,.25) }
+.v2 .filt { display: flex; align-items: center; gap: 10px }
+.v2 .filt .grow { flex: 1 }
+.v2 .sbox { width: 340px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 12px; color: #5A6B68; position: relative }
+.v2 .sbox:focus-within { border-color: #8FDFD7 }
+.v2 .sbox svg { width: 18px; height: 18px; flex: none }
+.v2 .sbox input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 400 13.5px/1 var(--f-body); color: #0F1F1D; padding: 0 }
+.v2 .sbox input::placeholder { color: #5A6B68; opacity: 1 }
+.v2 .sbox kbd { margin-left: auto; font: 600 11px/1 var(--f-display); padding: 4px 6px; border-radius: 6px; background: #ECF3F1; color: #5A6B68 }
+.v2 .sres { position: absolute; left: -1px; right: -1px; top: 44px; z-index: 20; background: #fff; border: 1px solid #E1E9E7; border-radius: 12px; box-shadow: 0 10px 26px rgba(4,51,46,.14); padding: 6px; display: grid; gap: 2px; max-height: 360px; overflow: auto }
+.v2 .sres button { display: flex; gap: 10px; align-items: center; text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 8px; font: 500 13px/1.3 var(--f-display); color: #0F1F1D; cursor: pointer }
+.v2 .sres button:hover, .v2 .sres button:focus-visible { background: #F5F9F8 }
+.v2 .sres small { margin-left: auto; font: 400 11.5px/1 var(--f-body); color: #5A6B68 }
+.v2 .path { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; position: relative }
+.v2 .path > button { height: 34px; padding: 0 13px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--f-display); color: #0A6A5F; background: #E6F7F5; white-space: nowrap; cursor: pointer; border: 0 }
+.v2 .path > button.cur { background: #0F1F1D; color: #fff; cursor: default }
+.v2 .path > button.next { background: #fff; border: 1px dashed #8FDFD7; color: #5A6B68 }
+.v2 .path > svg { width: 14px; height: 14px; color: #8A9A97; flex: none }
+.v2 .path .lv { font: 500 11px/1 var(--f-display); opacity: .7; margin-right: 2px }
+.v2 .path .menu { position: absolute; top: 40px; right: 0; z-index: 20; min-width: 220px; max-height: 340px; overflow: auto; background: #fff; border: 1px solid #E1E9E7; border-radius: 12px; box-shadow: 0 10px 26px rgba(4,51,46,.14); padding: 6px; display: grid }
+.v2 .path .menu button { border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 8px; font: 500 13px/1.3 var(--f-display); color: #0F1F1D; cursor: pointer }
+.v2 .path .menu button:hover { background: #F5F9F8 }
+.v2 .krow.k5 { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, .8fr) }
+.v2 .k5 .kc { padding: 14px 15px } .v2 .k5 .kc .t { gap: 8px } .v2 .k5 .kc .t i { width: 30px; height: 30px } .v2 .k5 .kc .t i svg { width: 16px; height: 16px }
+.v2 .k5 .kc .t .dl { font-size: 11px; padding: 4px 6px }
+.v2 .k5 .kc .v { font-size: 25px }
+.v2 .kc .yy { font: 400 12px/1.3 var(--f-body); color: #5A6B68 } .v2 .kc .yy b { font-weight: 600; font-family: var(--f-display) }
+.v2 .yy .p { color: #1F7A3A } .v2 .yy .m { color: #C42B2B }
+.v2 .row2.pf { grid-template-columns: minmax(0, 1fr) 400px }
+.v2 .pf .ch p { max-width: 383px }
+.v2 .tchartbox { position: relative; padding-bottom: 7.3px } /* the mockup svg is inline: its line box adds 7.3 px below */
+.v2 .tchart { display: block; overflow: visible }
+.v2 .contrib { display: grid; gap: 2px }
+.v2 .cb { display: grid; grid-template-columns: 112px 1fr 62px; align-items: center; gap: 10px; height: 30px; font: 500 12.5px/1 var(--f-display); color: #3D4C49; border-radius: 8px; padding: 0 6px; cursor: pointer; border: 0; background: none; text-align: left; width: 100% }
+.v2 .cb:hover, .v2 .cb:focus-visible { background: #F5F9F8 }
+.v2 .cb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.v2 .cb .tr { position: relative; height: 14px }
+.v2 .cb .tr::before { content: ""; position: absolute; left: 50%; top: -8px; bottom: -8px; width: 1px; background: #CBD6D3 }
+.v2 .cb .tr i { position: absolute; top: 0; height: 14px; border-radius: 4px }
+.v2 .cb b { font: 600 12.5px/1 var(--f-display); text-align: right; font-variant-numeric: tabular-nums }
+.v2 .cb.oth { color: #5A6B68; cursor: default } .v2 .cb.oth .tr i { opacity: .55 }
+.v2 .cfoot { display: flex; justify-content: space-between; font: 400 12px/1.3 var(--f-body); color: #5A6B68; border-top: 1px solid #ECF3F1; padding-top: 10px }
+.v2 .cfoot b { font: 700 13px/1.3 var(--f-display) }
+.v2 .rt.st td { padding: 10px 12px; vertical-align: middle }
+.v2 .rt.st tr.row { cursor: pointer } .v2 .rt.st tr.row:hover td { background: #F8FBFA }
+.v2 .rt.st tr.sel td, .v2 .rt.st tr.sel:hover td { background: #EEF9F7 }
+.v2 .rt.st tr.sel td:first-child { box-shadow: inset 3px 0 0 #0E8579 }
+.v2 .rt .sid { font: 600 13.5px/1.25 var(--f-display) } .v2 .rt .sid small { display: block; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.v2 .rt th.sort { color: #0A6A5F }
+.v2 .sev.n { background: #E6F4EA; color: #1F7A3A }
+.v2 .sdet td { background: #EEF9F7; padding: 0 12px 16px !important; border-bottom: 1px solid #DCEFEC; cursor: default }
+.v2 .sdet .in { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) 260px; gap: 10px; padding-top: 2px }
+.v2 .mm { background: #fff; border: 1px solid #DCEFEC; border-radius: 14px; padding: 10px 12px; display: grid; gap: 3px; min-width: 0 }
+.v2 .mm small { font: 500 11.5px/1.2 var(--f-display); color: #5A6B68 } .v2 .mm b { font: 700 18px/1.25 var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.v2 .mm em { font: 600 11.5px/1.2 var(--f-display); font-style: normal; color: #5A6B68 } .v2 .mm em.up { color: #1F7A3A } .v2 .mm em.down { color: #C42B2B }
+.v2 .sdet .act { display: grid; gap: 8px; align-content: start; grid-row: span 2 }
+.v2 .sdet .act button, .v2 .sdet .act a { height: 36px; border-radius: 11px; display: flex; align-items: center; gap: 8px; padding: 0 12px; font: 600 13px/1 var(--f-display); cursor: pointer; text-decoration: none; border: 0 }
+.v2 .sdet .act svg { width: 16px; height: 16px }
+.v2 .sdet .act .a1 { background: #0E8579; color: #fff } .v2 .sdet .act .a2 { background: #fff; border: 1px solid #DCEFEC; color: #0A6A5F }
+.v2 .sdet .why { grid-column: 1 / 5; display: flex; gap: 10px; align-items: flex-start; font: 400 12.5px/1.45 var(--f-body); color: #3D4C49; background: #fff; border: 1px solid #DCEFEC; border-radius: 14px; padding: 10px 12px }
+.v2 .sdet .why svg { width: 16px; height: 16px; color: #FF7A59; flex: none; margin-top: 2px } .v2 .sdet .why b { font-weight: 600 }
+.v2 .pg { display: flex; align-items: center; gap: 8px; font: 400 12.5px/1 var(--f-body); color: #5A6B68 }
+.v2 .pg .grow { flex: 1 }
+.v2 .pg button, .v2 .pg .gap { min-width: 32px; height: 32px; border-radius: 9px; border: 1px solid #E1E9E7; display: grid; place-items: center; font: 600 12.5px/1 var(--f-display); color: #3D4C49; background: #fff; cursor: pointer; padding: 0 }
+.v2 .pg button:disabled { cursor: default; color: #9AA8A5 }
+.v2 .pg button.on { background: #0F1F1D; color: #fff; border-color: #0F1F1D; opacity: 1 }
+.v2 .pg .gap { border: 0; background: transparent; cursor: default }
+.v2 .pg .info { font: 400 12.5px/1 var(--f-display) }
+.v2 .perr { display: flex; align-items: center; gap: 10px; font: 400 13px/1.4 var(--f-body); color: #3D4C49 }

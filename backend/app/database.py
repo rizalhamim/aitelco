@@ -44,6 +44,10 @@ class User(Base):
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     last_login = Column(DateTime, nullable=True)
     login_count = Column(Integer, default=0, nullable=False)
+    password_changed_at = Column(DateTime, nullable=True)
+    preferences = Column(Text, nullable=True)  # JSON from the Profil page (display, notifications, default region)
+    # "approved" for every account an admin made; "pending" or "rejected" for access requests from the login page.
+    approval_status = Column(String(20), default="approved", nullable=True)
 
     # Relationships
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
@@ -101,6 +105,17 @@ class LoginAudit(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     user = relationship("User", back_populates="login_audits")
+
+
+class UnknownLogin(Base):
+    """Sign-in attempts with a username that does not exist (LoginAudit needs a user)."""
+    __tablename__ = "unknown_logins"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(100), nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
 
 
 class UsageLog(Base):
@@ -176,6 +191,8 @@ class AppClient(Base):
     app_build = Column(Integer, nullable=True)
     first_seen = Column(DateTime, default=utcnow, nullable=False)
     last_seen = Column(DateTime, default=utcnow, nullable=False, index=True)
+    # "Keluarkan" on the Profil page: tokens issued before this are refused from this device.
+    signed_out_at = Column(DateTime, nullable=True)
 
     __table_args__ = (Index("ix_app_clients_user_device", "user_id", "platform", "device_model", unique=True),)
 
@@ -211,6 +228,7 @@ class WatchRule(Base):
     days = Column(Integer, nullable=False, default=1)      # consecutive daily checks in breach before alerting
     notify_inapp = Column(Boolean, nullable=False, default=True)
     notify_email = Column(Boolean, nullable=False, default=False)
+    notify_push = Column(Boolean, nullable=False, default=False)  # Android system notification
     active = Column(Boolean, nullable=False, default=True)
     source_question = Column(Text, nullable=True)          # chat question it was created from
     last_value = Column(Float, nullable=True)              # value compared against the threshold
@@ -277,6 +295,7 @@ class ReportRun(Base):
     kind = Column(String(20), nullable=False, default="mingguan")  # mingguan, bulanan, adhoc
     region = Column(String(120), nullable=False, default="")
     recipients = Column(Integer, nullable=False, default=0)
+    failed = Column(Integer, nullable=False, default=0)  # addresses the mail server refused
     status = Column(String(20), nullable=False, default="terkirim")  # terkirim, gagal
     created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
 
@@ -298,10 +317,29 @@ class ReportLink(Base):
 
 # ── Database Init ──
 
+def _add_missing_columns():
+    """Additive columns on tables that already exist (create_all never alters a table)."""
+    from sqlalchemy import inspect, text
+    wanted = {"report_runs": [("failed", "INTEGER NOT NULL DEFAULT 0")],
+              "watch_rules": [("notify_push", "BOOLEAN NOT NULL DEFAULT 0")],
+              "users": [("password_changed_at", "DATETIME"), ("preferences", "TEXT"), ("approval_status", "VARCHAR(20)")],
+              "app_clients": [("signed_out_at", "DATETIME")]}
+    insp = inspect(engine)
+    with engine.begin() as conn:
+        for table, cols in wanted.items():
+            if not insp.has_table(table):
+                continue
+            have = {c["name"] for c in insp.get_columns(table)}
+            for name, ddl in cols:
+                if name not in have:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+
+
 def init_db():
     """Create tables if they don't exist, and seed default admin user."""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     Base.metadata.create_all(bind=engine)
+    _add_missing_columns()
 
     # Auto-create default admin if no users exist
     db = SessionLocal()

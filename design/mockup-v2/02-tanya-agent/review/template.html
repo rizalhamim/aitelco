@@ -1,0 +1,570 @@
+<title>Agent Java Tanya Agent Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Prompt:wght@400;500&display=swap">
+<style>
+/* Layout: review chrome (header, tabs, notes) around a scaled, pixel-true mockup stage */
+:root {
+  /* review chrome */
+  --page: #EEF4F2; --panel: #FFFFFF; --ink: #0F1F1D; --ink-2: #3D4C49; --mute: #5A6B68; --rule: #DCE6E3;
+  --chip: #E6F7F5; --chip-ink: #0A6A5F;
+  /* Agent Java palette v2: teal core + fresh accents */
+  --teal-900: #04332E; --teal-700: #0A6A5F; --teal-600: #0E8579; --teal-500: #15A697; --teal-50: #E6F7F5;
+  --lagoon-500: #22B8C9; --lagoon-600: #1597A8; --lagoon-50: #E3F7FA;
+  --lime-400: #C7F25E; --lime-700: #5E8A12; --lime-50: #F4FCE3;
+  --mint-300: #7EE8A2;
+  --coral-500: #FF7A59; --coral-600: #E85D3C; --coral-50: #FFEDE7;
+  --amber-500: #F5A623;
+  --f-display: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Prompt", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--page); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 18px }
+header.top-r { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; justify-content: space-between }
+.brandline { display: flex; align-items: center; gap: 12px; min-width: 0 }
+.brandline svg { width: 44px; height: 44px; flex: none; border-radius: 11px }
+.brandline h1 { font-family: var(--f-display); font-size: 20px; line-height: 1.2; margin: 0; font-weight: 700; text-wrap: balance }
+.brandline p { margin: 0; color: var(--mute); font-size: 13px }
+.chip-r { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: var(--chip); color: var(--chip-ink);
+  font: 600 12px/1 var(--f-display); letter-spacing: .02em }
+.chip-r i { width: 7px; height: 7px; border-radius: 50%; background: var(--amber-500) }
+.steps { display: flex; gap: 6px; flex-wrap: wrap; font: 500 12px/1 var(--f-display); color: var(--mute) }
+.steps span { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--rule) }
+.steps span.on { background: var(--teal-600); border-color: var(--teal-600); color: #fff }
+.tabs { display: inline-flex; padding: 4px; gap: 4px; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; flex-wrap: wrap }
+.tabs button { font: 600 13px/1 var(--f-display); border: 0; background: transparent; color: var(--ink-2); padding: 10px 14px; border-radius: 9px; cursor: pointer }
+.tabs button[aria-selected="true"] { background: var(--teal-600); color: #fff }
+.tabs button:focus-visible { outline: 2px solid var(--lagoon-500); outline-offset: 2px }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start }
+@media (max-width: 980px) { .main { grid-template-columns: minmax(0, 1fr) } }
+.stage { background: repeating-conic-gradient(var(--rule) 0 25%, transparent 0 50%) 0 0/22px 22px, var(--panel); border: 1px solid var(--rule);
+  border-radius: 16px; padding: 18px; min-width: 0; overflow: hidden }
+.stage-label { display: flex; justify-content: space-between; gap: 10px; font: 500 12px/1.3 var(--f-display); color: var(--mute); margin-bottom: 10px; flex-wrap: wrap }
+.fit { position: relative; width: 100%; margin: 0 auto }
+.fit > .frame { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: 0 20px 60px rgba(4,51,46,.28) }
+aside.notes { background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; padding: 18px; display: grid; gap: 14px; min-width: 0 }
+aside.notes h2 { font: 700 14px/1.3 var(--f-display); margin: 0; letter-spacing: .01em }
+aside.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 13.5px }
+aside.notes .q { border-top: 1px solid var(--rule); padding-top: 12px; font-size: 13.5px; color: var(--ink-2) }
+.panel { display: none } .panel.on { display: block }
+
+/* ───────────── Mockup frames (fixed design pixels, not theme-aware on purpose) ───────────── */
+.frame { overflow: hidden; color: #0F1F1D; font-family: var(--f-body); background: #F5F9F8; position: relative }
+.tile { background: #fff; border-radius: 28%; display: grid; place-items: center; flex: none; border: 1px solid #E1E9E7 }
+.tile img { width: 84%; height: 84%; object-fit: contain; display: block }
+.ic { width: 20px; height: 20px; flex: none }
+.btn-ic { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; display: grid; place-items: center; color: #3D4C49; position: relative; cursor: pointer }
+.btn-ic:hover { border-color: #8FDFD7 }
+.badge { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; border-radius: 9px; background: #E04848; color: #fff; font: 700 10px/18px var(--f-display); text-align: center; padding: 0 5px; border: 2px solid #fff }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #15A697, #0A6A5F); color: #fff; display: grid; place-items: center; font: 700 15px/1 var(--f-display); flex: none; cursor: pointer; box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px #C7F25E }
+.chip { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 13px/1 var(--f-display); color: #3D4C49 }
+.chip.teal { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F }
+.chip svg { width: 16px; height: 16px }
+
+/* sidebar */
+.side { position: absolute; left: 0; top: 0; bottom: 0; width: 272px; background: #fff; border-right: 1px solid #E1E9E7; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px }
+.side .brand { display: flex; align-items: center; gap: 12px; padding: 2px 4px 6px }
+.side .brand b { font: 700 17px/1.2 var(--f-display); display: block }
+.side .brand b em { font-style: normal; color: #0E8579 }
+.side .brand small { font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.newchat { height: 46px; border: 0; border-radius: 14px; background: linear-gradient(100deg, #0E8579, #15A697 55%, #1597A8); color: #fff; font: 600 14px/1 var(--f-display); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 18px rgba(14,133,121,.28) }
+.search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body) }
+.search svg { width: 17px; height: 17px }
+.navh { font: 600 11px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; padding: 4px 6px 0 }
+.nav { display: flex; flex-direction: column; gap: 2px }
+.nav a { display: flex; align-items: center; gap: 11px; height: 42px; padding: 0 10px; border-radius: 12px; font: 500 14px/1 var(--f-display); color: #0F1F1D; text-decoration: none; position: relative }
+.nav a .nt { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none }
+.nav a .nt svg { width: 17px; height: 17px }
+.nav a.on { background: #E6F7F5; color: #0A6A5F; font-weight: 600 }
+.nav a.on::before { content: ""; position: absolute; left: -16px; top: 9px; bottom: 9px; width: 4px; border-radius: 0 4px 4px 0; background: #0E8579 }
+.nav a .new { margin-left: auto; font: 600 10px/1 var(--f-display); padding: 4px 7px; border-radius: 99px; background: #F4FCE3; color: #5E8A12; border: 1px solid #E2F9A8 }
+.nav a .cnt { margin-left: auto; font: 700 11px/1 var(--f-display); min-width: 22px; height: 20px; border-radius: 10px; background: #E04848; color: #fff; display: grid; place-items: center; padding: 0 6px }
+.hist a { display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 10px; border-radius: 10px; font: 400 13px/1.2 var(--f-body); color: #3D4C49; white-space: nowrap; overflow: hidden }
+.hist a.on { background: #ECF3F1; color: #0F1F1D }
+.hist svg { width: 15px; height: 15px; flex: none; color: #5A6B68 }
+.side .spacer { flex: 1 }
+.apk { border-radius: 16px; background: linear-gradient(135deg, #04332E, #0A6A5F); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 12px }
+.apk .ai { width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.12); display: grid; place-items: center }
+.apk b { font: 600 13px/1.3 var(--f-display); display: block } .apk small { font: 400 11px/1.3 var(--f-body); color: #C0EDE8 }
+.apk svg { width: 18px; height: 18px }
+.me { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; background: #ECF3F1 }
+.me .avatar { width: 36px; height: 36px; font-size: 13px; box-shadow: none }
+.me b { font: 600 13px/1.3 var(--f-display); display: block } .me small { font: 400 11px/1.3 var(--f-body); color: #5A6B68 }
+.me svg { margin-left: auto; width: 18px; height: 18px; color: #5A6B68 }
+
+/* main */
+.top { position: absolute; left: 272px; right: 0; top: 0; height: 76px; background: rgba(255,255,255,.88); border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 28px }
+.top h2 { font: 700 19px/1.25 var(--f-display); margin: 0 } .top p { margin: 0; font: 400 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.top .grow { flex: 1 }
+.conv { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 22px 56px 0; display: flex; flex-direction: column; gap: 16px; overflow: hidden;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(34,184,201,.08), rgba(34,184,201,0)), #F5F9F8 }
+.ubub { align-self: flex-end; max-width: 620px; background: #0E8579; color: #fff; padding: 14px 18px; border-radius: 20px 20px 6px 20px; font: 400 15px/1.5 var(--f-body); box-shadow: 0 6px 16px rgba(14,133,121,.2) }
+.ubub small { display: block; margin-top: 4px; font-size: 11px; color: #C0EDE8 }
+.ans { display: flex; gap: 14px; align-items: flex-start }
+.ans > .tile { width: 40px; height: 40px; border-radius: 12px }
+.acard { flex: 1; min-width: 0; background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 4px 14px rgba(15,31,29,.05) }
+.ahead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.ahead b { font: 600 14px/1 var(--f-display) }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 99px; font: 600 12px/1 var(--f-display) }
+.pill svg { width: 14px; height: 14px }
+.pill.ok { background: #E6F4EA; color: #1F7A3A } .pill.ai { background: #FFEDE7; color: #B5401F } .pill.src { background: #E3F7FA; color: #0E6F7C } .pill.grey { background: #ECF3F1; color: #3D4C49 }
+.ahead .r { margin-left: auto; color: #5A6B68; font: 500 12px/1 var(--f-display); display: flex; align-items: center; gap: 6px }
+.atext { font: 400 15px/1.6 var(--f-body); color: #0F1F1D; margin: 0 }
+.atext b { font-weight: 600 } .atext .dn { color: #C42B2B; font-weight: 600 }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.kpi { border-radius: 16px; background: #F5F9F8; border: 1px solid #ECF3F1; padding: 14px 16px; display: grid; gap: 4px; position: relative }
+.kpi .lb { font: 500 12.5px/1.2 var(--f-display); color: #3D4C49; display: flex; align-items: center; gap: 8px }
+.kpi .lb i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center }
+.kpi .lb i svg { width: 15px; height: 15px }
+.kpi .v { font: 700 24px/1.15 var(--f-display); font-variant-numeric: tabular-nums; letter-spacing: -.01em }
+.kpi .d { font: 600 12px/1 var(--f-display); display: inline-flex; align-items: center; gap: 4px }
+.kpi .d.dn { color: #C42B2B } .kpi .d.up { color: #1F7A3A }
+.kpi .d span { color: #5A6B68; font-weight: 500 }
+.kpi svg.spark { position: absolute; right: 14px; bottom: 14px }
+.viz { border: 1px solid #E1E9E7; border-radius: 18px; padding: 14px 16px 12px; display: grid; gap: 10px }
+.vhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.vhead h4 { margin: 0; font: 600 14.5px/1.3 var(--f-display) } .vhead p { margin: 0; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.seg { display: inline-flex; padding: 3px; gap: 2px; background: #ECF3F1; border-radius: 10px; margin-left: auto }
+.seg button { border: 0; background: transparent; font: 600 12px/1 var(--f-display); color: #3D4C49; padding: 7px 11px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
+.seg button svg { width: 14px; height: 14px }
+.seg button.on { background: #fff; color: #0A6A5F; box-shadow: 0 1px 3px rgba(15,31,29,.12) }
+.legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.lg { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49; background: #fff; cursor: pointer }
+.lg i { width: 10px; height: 10px; border-radius: 50% }
+.lg.off { opacity: .45 }
+.chartbox { position: relative }
+.tip { position: absolute; background: #0F1F1D; color: #fff; border-radius: 12px; padding: 10px 12px; font: 500 12px/1.5 var(--f-display); pointer-events: none; box-shadow: 0 10px 24px rgba(0,0,0,.25); min-width: 150px }
+.tip b { display: block; font-weight: 700; margin-bottom: 2px }
+.tip div { display: flex; align-items: center; gap: 7px } .tip div i { width: 8px; height: 8px; border-radius: 50% } .tip div span { margin-left: auto; font-weight: 700; padding-left: 12px; font-variant-numeric: tabular-nums }
+.tbl { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.tbl th { text-align: left; font: 600 11.5px/1.2 var(--f-display); color: #5A6B68; padding: 8px 10px; border-bottom: 1px solid #E1E9E7 }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid #ECF3F1 }
+.tbl td.n, .tbl th.n { text-align: right }
+.tbl .dn { color: #C42B2B; font-weight: 600 } .tbl .up { color: #1F7A3A; font-weight: 600 }
+.tmap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px }
+.tmap div { border-radius: 10px; height: 52px; padding: 6px 8px; font: 600 11px/1.2 var(--f-display); display: flex; flex-direction: column; justify-content: space-between }
+.tmap div span { font-weight: 700; font-size: 12px }
+.vfoot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 2px }
+.act { display: flex; gap: 6px; margin-left: auto }
+.act button { height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid #E1E9E7; background: #fff; font: 500 12px/1 var(--f-display); color: #3D4C49; display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
+.act button svg { width: 15px; height: 15px }
+.act button.pri { background: #0E8579; border-color: #0E8579; color: #fff }
+.sugg { display: flex; gap: 8px; flex-wrap: wrap; padding-left: 54px }
+.sg { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 99px; border: 1px solid #FFC2AF; background: #fff; font: 500 13px/1 var(--f-display); color: #0F1F1D; cursor: pointer }
+.sg svg { width: 16px; height: 16px; color: #FF7A59 }
+.composer { position: absolute; left: 328px; right: 56px; bottom: 34px; background: #fff; border: 1.5px solid #8FDFD7; border-radius: 22px; padding: 14px 14px 12px 18px; box-shadow: 0 16px 40px rgba(4,51,46,.14); display: grid; gap: 10px }
+.composer .ph { font: 400 15px/1.4 var(--f-body); color: #8A9A97 }
+.composer .row { display: flex; align-items: center; gap: 8px }
+.composer .row .grow { flex: 1 }
+.send { width: 46px; height: 46px; border-radius: 14px; border: 0; background: linear-gradient(135deg, #0E8579, #1597A8); color: #fff; display: grid; place-items: center }
+.send svg { width: 20px; height: 20px }
+.disclaim { position: absolute; left: 272px; right: 0; bottom: 10px; text-align: center; font: 400 11.5px/1 var(--f-body); color: #5A6B68 }
+.fade { position: absolute; left: 272px; right: 0; bottom: 0; height: 190px; background: linear-gradient(180deg, rgba(245,249,248,0), #F5F9F8 45%) }
+
+/* Web 1440 x 1080 */
+#webFrame { width: 1440px; height: 1080px; border-radius: 6px }
+
+/* Android 390 x 844 */
+#droidFrame { width: 390px; height: 844px; border-radius: 44px; border: 10px solid #0B1312 }
+#droidFrame .status { position: absolute; top: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 13px/1 var(--f-display); background: #fff }
+#droidFrame .status .cam { width: 12px; height: 12px; border-radius: 50%; background: #0B1312; position: absolute; left: 50%; top: 11px; transform: translateX(-50%) }
+.dbar { position: absolute; top: 34px; left: 0; right: 0; height: 62px; background: #fff; border-bottom: 1px solid #E1E9E7; display: flex; align-items: center; gap: 10px; padding: 0 14px }
+.dbar .tile { width: 38px; height: 38px; border-radius: 11px }
+.dbar b { font: 700 16px/1.2 var(--f-display); display: block } .dbar small { font: 400 11.5px/1.2 var(--f-body); color: #5A6B68; display: flex; align-items: center; gap: 5px }
+.dbar small i { width: 7px; height: 7px; border-radius: 50%; background: #2E9E57 }
+.dbar .grow { flex: 1 }
+.dbar .btn-ic { width: 38px; height: 38px; border-radius: 11px }
+.dbar .avatar { width: 34px; height: 34px; font-size: 13px }
+.dconv { position: absolute; top: 96px; left: 0; right: 0; bottom: 0; padding: 14px 14px 0; display: flex; flex-direction: column; gap: 12px; background: #F5F9F8 }
+#droidFrame .ubub { max-width: 290px; font-size: 14px; padding: 12px 15px }
+#droidFrame .acard { padding: 14px; gap: 11px; border-radius: 20px }
+#droidFrame .atext { font-size: 14px; line-height: 1.55 }
+#droidFrame .kpis { grid-template-columns: 1fr 1fr; gap: 8px }
+#droidFrame .kpi { padding: 11px 12px }
+#droidFrame .kpi .v { font-size: 19px }
+#droidFrame .viz { padding: 10px 10px 8px; border-radius: 16px; overflow: hidden; min-width: 0 }
+#droidFrame .tmap div { font-size: 10px; height: 46px; padding: 5px 6px; overflow: hidden }
+#droidFrame .seg { margin-left: 0 }
+#droidFrame .seg button { padding: 7px 10px }
+.dsugg { position: absolute; left: 0; right: 0; bottom: 166px; display: flex; gap: 8px; padding: 0 14px; overflow: hidden }
+.dsugg .sg { flex: none; height: 36px; font-size: 12.5px; background: #fff }
+.dcomp { position: absolute; left: 14px; right: 14px; bottom: 94px; height: 58px; background: #fff; border: 1.5px solid #8FDFD7; border-radius: 20px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 16px; box-shadow: 0 10px 26px rgba(4,51,46,.14) }
+.dcomp .ph { flex: 1; font: 400 14px/1 var(--f-body); color: #8A9A97 }
+.dcomp .send { width: 44px; height: 44px; border-radius: 14px }
+.dcomp .mic { width: 36px; height: 36px; display: grid; place-items: center; color: #5A6B68 }
+.dcomp .mic svg { width: 19px; height: 19px }
+.dfade { position: absolute; left: 0; right: 0; bottom: 80px; height: 150px; background: linear-gradient(180deg, rgba(245,249,248,0), #F5F9F8 40%) }
+.bnav { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: #fff; border-top: 1px solid #E1E9E7; display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 6px 14px }
+.bnav a { display: grid; justify-items: center; align-content: start; gap: 4px; font: 500 11px/1.2 var(--f-display); color: #5A6B68; text-decoration: none; position: relative }
+.bnav a i { width: 54px; height: 30px; border-radius: 15px; display: grid; place-items: center }
+.bnav a i svg { width: 20px; height: 20px }
+.bnav a.on { color: #0A6A5F; font-weight: 700 } .bnav a.on i { background: #C0EDE8 }
+.bnav a .dot { position: absolute; top: 0; right: 14px; width: 8px; height: 8px; border-radius: 50%; background: #C7F25E; border: 1.5px solid #fff }
+.homebar { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 118px; height: 4px; border-radius: 4px; background: #0F1F1D; opacity: .75 }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+  <symbol id="i-chat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></g></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></g></symbol>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></g></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4z"/><path d="M9 4v14M15 6v14"/></g></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></g></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></g></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/></g></symbol>
+  <symbol id="i-line" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M3 21h18"/></g></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M10 9.5v10"/></g></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></g></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></g></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-hist" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6L3.5 8.5"/><path d="M3.5 4v4.5H8M12 7.5V12l3 2"/></g></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4M8.2 13.2l7.6 4"/></g></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.1 5.9 5.9 2.1-5.9 2.1L12 18.5l-2.1-5.9L4 10.5l5.9-2.1L12 2.5zm6.5 12l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></g></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></g></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="m20 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8L9.6 17.3a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></g></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M7 10v10H4V10h3zm3 10h7.6a2 2 0 0 0 2-1.6l1.3-6.5A2 2 0 0 0 19 9.5h-5l.8-4a1.6 1.6 0 0 0-3-1L10 10v10z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+  <symbol id="i-max" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M16 15h2"/><path d="M6 6V5a2 2 0 0 1 2-2h9"/></g></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/></g></symbol>
+  <symbol id="i-tower" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10 8 21M12 10l4 11M9.5 16h5"/><circle cx="12" cy="8.5" r="1.5"/><path d="M8 5a6 6 0 0 0 0 7M16 5a6 6 0 0 1 0 7"/></g></symbol>
+  <symbol id="i-bellplus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 9-5.2M18 11c.3 4.4 2.5 5.5 2.5 5.5h-17S6 15 6 9"/><path d="M10 20a2 2 0 0 0 4 0M19 2v6M16 5h6"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="top-r" style="display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;justify-content:space-between">
+    <div class="brandline">
+      <span class="tile" style="width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;border:1px solid var(--rule)"><img src="{{OLDLOGO}}" alt="Logo Agent Java" style="width:84%;height:84%;object-fit:contain"></span>
+      <div><h1>Agent Java · Redesign v2</h1><p>Halaman 02 dari 9. Login sudah disetujui.</p></div>
+    </div>
+    <div class="steps" aria-label="Urutan review">
+      <span>✓ 01 Login</span><span class="on">02 Tanya Agent</span><span>03 Dashboard</span><span>04 Performance</span><span>05 Peta Agent</span><span>06 Laporan</span><span>07 Alert</span><span>08 Profil</span>
+    </div>
+  </header>
+
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+    <div class="tabs" role="tablist" aria-label="Pilih frame">
+      <button role="tab" id="t-web" aria-selected="true" data-p="web">Web · 1440</button>
+      <button role="tab" id="t-droid" aria-selected="false" data-p="droid">Android · 390</button>
+    </div>
+    <span class="chip-r"><i></i> Menunggu review Rizal</span>
+  </div>
+
+  <div class="main">
+    <section class="stage" aria-label="Mockup">
+      <!-- WEB -->
+      <div class="panel on" id="p-web">
+        <div class="stage-label"><span>Web · Tanya Agent · 1440 × 1080</span><span>Arahkan kursor ke grafik, klik legenda, ganti tab Grafik / Tabel / Peta</span></div>
+        <div class="fit" data-w="1440" data-h="1080">
+          <div class="frame" id="webFrame">
+            <aside class="side" data-name="Sidebar">
+              <div class="brand"><span class="tile" style="width:44px;height:44px;border-radius:13px"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span><div><b>Agent <em>Java</em></b><small>Circle Java</small></div></div>
+              <div class="newchat"><svg class="ic"><use href="#i-plus"/></svg>Percakapan baru</div>
+              <div class="search"><svg><use href="#i-search"/></svg>Cari percakapan…</div>
+              <div class="navh">Menu</div>
+              <nav class="nav">
+                <a class="on"><span class="nt" style="background:#C0EDE8;color:#0A6A5F"><svg><use href="#i-chat"/></svg></span>Tanya Agent</a>
+                <a><span class="nt" style="background:#E1ECFA;color:#2C6CB0"><svg><use href="#i-grid"/></svg></span>Dashboard</a>
+                <a><span class="nt" style="background:#F4FCE3;color:#5E8A12"><svg><use href="#i-pulse"/></svg></span>Performance<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-map"/></svg></span>Peta Agent<span class="new">Baru</span></a>
+                <a><span class="nt" style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-file"/></svg></span>Laporan</a>
+                <a><span class="nt" style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-bell"/></svg></span>Watchlist dan Alert<span class="cnt">3</span></a>
+              </nav>
+              <div class="navh">Admin</div>
+              <nav class="nav"><a><span class="nt" style="background:#ECE5FA;color:#6A4CB5"><svg><use href="#i-bars"/></svg></span>Statistik</a></nav>
+              <div class="navh">Riwayat</div>
+              <div class="hist">
+                <a class="on"><svg><use href="#i-hist"/></svg>Revenue West Java vs bulan lalu</a>
+                <a><svg><use href="#i-hist"/></svg>Site availability East Java minggu ini</a>
+                <a><svg><use href="#i-hist"/></svg>Market share FWA Semarang</a>
+              </div>
+              <div class="spacer"></div>
+              <div class="apk"><span class="ai"><svg><use href="#i-dl"/></svg></span><div><b>Aplikasi Android</b><small>Agent Java 1.50 · Unduh APK</small></div></div>
+              <div class="me"><span class="avatar">R</span><div><b>Rizal</b><small>Admin · Circle Java</small></div><svg><use href="#i-chev"/></svg></div>
+            </aside>
+
+            <header class="top" data-name="Top bar">
+              <div><h2>Revenue West Java vs bulan lalu</h2><p>3 pertanyaan · data ilustrasi</p></div>
+              <div class="grow"></div>
+              <span class="chip teal"><svg><use href="#i-pin"/></svg>West Java</span>
+              <span class="chip"><svg><use href="#i-cal"/></svg>Okt 2026</span>
+              <span class="btn-ic" aria-label="Bagikan"><svg class="ic"><use href="#i-share"/></svg></span>
+              <span class="btn-ic" aria-label="Alert"><svg class="ic"><use href="#i-bell"/></svg><span class="badge">3</span></span>
+              <span class="avatar" aria-label="Profil">R</span>
+            </header>
+
+            <div class="conv" data-name="Percakapan">
+              <div class="ubub">Bagaimana performa revenue West Java bulan ini dibanding bulan lalu? Kabupaten mana yang paling turun?<small>09.12</small></div>
+              <div class="ans">
+                <span class="tile"><img src="{{OLDLOGO}}" alt=""></span>
+                <div class="acard" data-name="Jawaban Agent">
+                  <div class="ahead">
+                    <b>Agent Java</b>
+                    <span class="pill ok"><svg><use href="#i-check"/></svg>Tervalidasi</span>
+                    <span class="pill grey">5 langkah · 8,2 dtk<svg><use href="#i-chev"/></svg></span>
+                    <span class="r"><span class="pill src"><svg><use href="#i-db"/></svg>Dump Performance 1 Nov 05.00</span></span>
+                  </div>
+                  <p class="atext">Revenue West Java Oktober 2026 <b>Rp 412,6 M</b>, <span class="dn">turun 2,4%</span> dari September (Rp 422,7 M). Penurunan terbesar di <b>Garut (−7,9%)</b> dan <b>Cianjur (−6,2%)</b>, sejalan dengan turunnya payload data dan <b>37 site</b> yang availability-nya di bawah target 99,5%.</p>
+                  <div class="kpis">
+                    <div class="kpi"><span class="lb"><i style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-wallet"/></svg></i>Revenue</span><span class="v">Rp 412,6 M</span><span class="d dn">▼ 2,4% <span>vs Sep</span></span><svg class="spark" width="84" height="30" data-spark="412,418,425,431,422.7,412.6" data-color="#0E8579"></svg></div>
+                    <div class="kpi"><span class="lb"><i style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-db"/></svg></i>Payload data</span><span class="v">18,9 PB</span><span class="d dn">▼ 1,1% <span>vs Sep</span></span><svg class="spark" width="84" height="30" data-spark="17.6,18.1,18.7,19.3,19.1,18.9" data-color="#1597A8"></svg></div>
+                    <div class="kpi"><span class="lb"><i style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-tower"/></svg></i>Site di bawah target</span><span class="v">37 site</span><span class="d dn">▲ 9 <span>vs Sep</span></span><svg class="spark" width="84" height="30" data-spark="22,25,24,26,28,37" data-color="#C23A5B"></svg></div>
+                  </div>
+                  <div class="viz" data-name="Visual jawaban">
+                    <div class="vhead">
+                      <div><h4>Revenue harian, Okt vs Sep 2026</h4><p>Rp miliar per hari · arahkan kursor untuk detail</p></div>
+                      <div class="seg" role="tablist" aria-label="Bentuk jawaban">
+                        <button class="on" data-v="chart"><svg><use href="#i-line"/></svg>Grafik</button>
+                        <button data-v="table"><svg><use href="#i-table"/></svg>Tabel</button>
+                        <button data-v="map"><svg><use href="#i-map"/></svg>Peta</button>
+                      </div>
+                    </div>
+                    <div class="vbody" data-v="chart">
+                      <div class="legend"><span class="lg" data-s="0"><i style="background:#0E8579"></i>Okt 2026</span><span class="lg" data-s="1"><i style="background:#22B8C9"></i>Sep 2026</span>
+                        <span class="seg" style="margin-left:auto"><button class="on" data-t="line">Garis</button><button data-t="bar">Batang</button></span></div>
+                      <div class="chartbox"><svg class="chart" width="926" height="220" data-pad="44,12,10,26"></svg><div class="tip"></div></div>
+                    </div>
+                    <div class="vbody" data-v="table" hidden>
+                      <table class="tbl"><thead><tr><th>Kabupaten</th><th class="n">Revenue Okt</th><th class="n">vs Sep</th><th class="n">Payload</th><th class="n">Site &lt; target</th></tr></thead><tbody class="tb"></tbody></table>
+                    </div>
+                    <div class="vbody" data-v="map" hidden>
+                      <div class="tmap"></div>
+                      <p style="margin:8px 0 0;font:400 11.5px/1.3 var(--f-body);color:#5A6B68">Peta ringkas 12 kabupaten terbesar, posisi kira-kira. Buka di Peta Agent untuk batas wilayah asli.</p>
+                    </div>
+                  </div>
+                  <div class="vfoot">
+                    <span class="pill ai"><svg><use href="#i-spark"/></svg>Lanjutkan</span>
+                    <div class="act">
+                      <button><svg><use href="#i-copy"/></svg>Salin</button>
+                      <button><svg><use href="#i-dl"/></svg>Ekspor</button>
+                      <button><svg><use href="#i-bellplus"/></svg>Pantau</button>
+                      <button class="pri"><svg><use href="#i-map"/></svg>Buka di Peta Agent</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="sugg">
+                <span class="sg"><svg><use href="#i-spark"/></svg>Kenapa Garut turun 7,9%?</span>
+                <span class="sg"><svg><use href="#i-spark"/></svg>Daftar 37 site di bawah target</span>
+                <span class="sg"><svg><use href="#i-spark"/></svg>Proyeksi revenue November</span>
+              </div>
+            </div>
+            <div class="fade"></div>
+            <div class="composer" data-name="Kotak tanya">
+              <div class="ph">Tanya apa saja tentang bisnis Circle Java: revenue, site, market share, peta…</div>
+              <div class="row">
+                <span class="btn-ic" style="width:36px;height:36px"><svg class="ic"><use href="#i-clip"/></svg></span>
+                <span class="chip teal" style="height:32px"><svg><use href="#i-pin"/></svg>West Java</span>
+                <span class="chip" style="height:32px"><svg><use href="#i-cal"/></svg>Okt 2026</span>
+                <span class="grow"></span>
+                <span class="btn-ic" style="width:36px;height:36px;border:0"><svg class="ic"><use href="#i-mic"/></svg></span>
+                <span class="send"><svg><use href="#i-send"/></svg></span>
+              </div>
+            </div>
+            <div class="disclaim">Agent bisa keliru. Cek angka penting sebelum dibagikan. Data di mockup ini ilustrasi.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANDROID -->
+      <div class="panel" id="p-droid">
+        <div class="stage-label"><span>Android · Tanya Agent · 390 × 844</span><span>Avatar profil dan lonceng alert ada di semua tab</span></div>
+        <div class="fit" data-w="390" data-h="844" data-max="1">
+          <div class="frame" id="droidFrame">
+            <div class="status"><span>9:41</span><span class="cam"></span><span>5G ▮▮▮ 86%</span></div>
+            <div class="dbar" data-name="App bar">
+              <span class="tile"><img src="{{OLDLOGO}}" alt="Logo Agent Java"></span>
+              <div><b>Tanya Agent</b><small><i></i>Online · West Java</small></div>
+              <span class="grow"></span>
+              <span class="btn-ic" aria-label="Riwayat"><svg class="ic"><use href="#i-hist"/></svg></span>
+              <span class="btn-ic" aria-label="Alert"><svg class="ic"><use href="#i-bell"/></svg><span class="badge">3</span></span>
+              <span class="avatar" aria-label="Profil">R</span>
+            </div>
+            <div class="dconv">
+              <div class="ubub">Revenue West Java bulan ini vs bulan lalu? Kabupaten mana paling turun?</div>
+              <div class="acard" data-name="Jawaban Agent">
+                <div class="ahead"><span class="pill ok"><svg><use href="#i-check"/></svg>Tervalidasi</span><span class="pill grey">5 langkah · 8,2 dtk</span></div>
+                <p class="atext">Revenue West Java <b>Rp 412,6 M</b>, <span class="dn">turun 2,4%</span> vs September. Terbesar di <b>Garut (−7,9%)</b> dan <b>Cianjur (−6,2%)</b>.</p>
+                <div class="kpis">
+                  <div class="kpi"><span class="lb">Revenue</span><span class="v">Rp 412,6 M</span><span class="d dn">▼ 2,4%</span></div>
+                  <div class="kpi"><span class="lb">Site &lt; target</span><span class="v">37 site</span><span class="d dn">▲ 9</span></div>
+                </div>
+                <div class="viz" data-name="Visual jawaban">
+                  <div class="seg" role="tablist" aria-label="Bentuk jawaban">
+                    <button class="on" data-v="chart"><svg><use href="#i-line"/></svg>Grafik</button>
+                    <button data-v="table"><svg><use href="#i-table"/></svg>Tabel</button>
+                    <button data-v="map"><svg><use href="#i-map"/></svg>Peta</button>
+                  </div>
+                  <div class="vbody" data-v="chart">
+                    <div class="chartbox"><svg class="chart" width="292" height="150" data-pad="30,8,8,22" data-small="1"></svg><div class="tip"></div></div>
+                    <div class="legend"><span class="lg" data-s="0"><i style="background:#0E8579"></i>Okt</span><span class="lg" data-s="1"><i style="background:#22B8C9"></i>Sep</span></div>
+                  </div>
+                  <div class="vbody" data-v="table" hidden><table class="tbl"><thead><tr><th>Kabupaten</th><th class="n">Okt</th><th class="n">vs Sep</th></tr></thead><tbody class="tb" data-short="1"></tbody></table></div>
+                  <div class="vbody" data-v="map" hidden><div class="tmap" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="dfade"></div>
+            <div class="dsugg"><span class="sg"><svg><use href="#i-spark"/></svg>Kenapa Garut turun?</span><span class="sg"><svg><use href="#i-spark"/></svg>37 site di bawah target</span></div>
+            <div class="dcomp" data-name="Kotak tanya"><span class="btn-ic" style="width:34px;height:34px;border:0;margin-left:-8px"><svg class="ic"><use href="#i-clip"/></svg></span><span class="ph">Tanya tentang bisnis Circle Java…</span><span class="mic"><svg><use href="#i-mic"/></svg></span><span class="send"><svg><use href="#i-send"/></svg></span></div>
+            <nav class="bnav" data-name="Bottom nav">
+              <a class="on"><i><svg><use href="#i-spark"/></svg></i>Agent</a>
+              <a><i><svg><use href="#i-grid"/></svg></i>Dashboard</a>
+              <a><i><svg><use href="#i-pulse"/></svg></i><span class="dot"></span>Performa</a>
+              <a><i><svg><use href="#i-map"/></svg></i><span class="dot"></span>Peta</a>
+              <a><i><svg><use href="#i-file"/></svg></i>Laporan</a>
+            </nav>
+            <div class="homebar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="notes">
+      <div>
+        <h2>Yang baru di Tanya Agent v2</h2>
+        <ul>
+          <li>Penamaan wilayah mengikuti data: Circle Java, West Java, Central Java, East Java (tidak diterjemahkan jadi Jawa).</li>
+          <li>Logo elang dan nama Agent Java; tidak ada logo atau teks IOH (v1 masih punya "Didukung oleh indosat").</li>
+          <li>Menu baru: <b>Performance</b> dan <b>Peta Agent</b>. Di Android, Alert pindah ke lonceng di app bar supaya bottom nav muat Performa dan Peta.</li>
+          <li>Avatar profil ada di app bar semua tab, jadi profil bisa dibuka dari mana saja.</li>
+          <li>Satu jawaban bisa dilihat sebagai Grafik, Tabel, atau Peta, plus tombol "Buka di Peta Agent".</li>
+          <li>Grafik interaktif: tooltip per hari, legenda bisa dimatikan, ganti garis atau batang.</li>
+          <li>Label sumber data selalu tampil, misalnya "Dump Performance 1 Nov 05.00" bila jawaban dari dump Parquet.</li>
+          <li>Aksen baru: lagoon untuk seri pembanding, coral untuk saran lanjutan AI, lime untuk penanda menu baru.</li>
+        </ul>
+      </div>
+      <div class="q"><b>Yang perlu kamu cek:</b> susunan menu baru (terutama Alert pindah ke lonceng di Android), isi kartu jawaban, dan apakah halaman ini disetujui sebelum lanjut ke 03 Dashboard.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  const fits = [...document.querySelectorAll('.fit')];
+  function layout() {
+    fits.forEach(f => {
+      if (!f.offsetParent) return;
+      const w = +f.dataset.w, h = +f.dataset.h, avail = f.parentElement.clientWidth;
+      const s = Math.min(f.dataset.max ? 1 : 9, avail / w);
+      f.style.height = (h * s) + 'px'; f.style.width = (w * s) + 'px';
+      f.firstElementChild.style.transform = 'scale(' + s + ')';
+    });
+  }
+  new ResizeObserver(layout).observe(document.querySelector('.stage'));
+  layout();
+  const tabs = document.querySelectorAll('[role=tab]');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p));
+    layout();
+  }));
+
+  // illustrative data
+  const okt = [], sep = [];
+  for (let d = 1; d <= 31; d++) {
+    const wk = Math.sin((d + 2) / 7 * 2 * Math.PI);
+    okt.push(+(13.3 + 1.1 * wk + 0.35 * Math.sin(d * 1.7) - (d > 12 && d < 20 ? 0.9 : 0)).toFixed(2));
+    if (d <= 30) sep.push(+(14.1 + 1.0 * Math.sin((d + 1) / 7 * 2 * Math.PI) + 0.3 * Math.cos(d * 1.3)).toFixed(2));
+  }
+  const KAB = [['Bogor',58.4,-1.2,'2,61',4],['Bekasi',49.1,0.8,'2,24',2],['Karawang',27.3,1.4,'1,22',1],['Purwakarta',11.0,2.1,'0,48',0],['Subang',13.6,-0.6,'0,61',2],['Indramayu',15.2,-1.1,'0,70',3],
+               ['Sukabumi',24.8,-3.1,'1,12',5],['Cianjur',19.2,-6.2,'0,88',7],['Bandung',44.7,-1.9,'2,05',3],['Garut',21.6,-7.9,'0,97',8],['Tasikmalaya',18.4,-2.7,'0,82',4],['Cirebon',17.9,0.4,'0,79',1]];
+  const fmt = (v, d = 1) => v.toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); p && p.appendChild(e); return e; };
+  const COL = ['#0E8579', '#22B8C9'];
+
+  function draw(svg, st) {
+    svg.innerHTML = '';
+    const W = +svg.getAttribute('width'), H = +svg.getAttribute('height');
+    const [pl, pr, pt, pb] = svg.dataset.pad.split(',').map(Number);
+    const small = !!svg.dataset.small;
+    const lo = 10, hi = 16, iw = W - pl - pr, ih = H - pt - pb;
+    const x = i => pl + iw * i / 30, y = v => pt + ih * (1 - (v - lo) / (hi - lo));
+    const defs = el('defs', {}, svg);
+    const g = el('linearGradient', { id: svg.id + 'g', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    el('stop', { offset: 0, 'stop-color': '#0E8579', 'stop-opacity': .22 }, g); el('stop', { offset: 1, 'stop-color': '#0E8579', 'stop-opacity': 0 }, g);
+    for (let v = lo; v <= hi; v += 2) {
+      el('line', { x1: pl, x2: W - pr, y1: y(v), y2: y(v), stroke: '#ECF3F1', 'stroke-width': 1 }, svg);
+      el('text', { x: pl - 8, y: y(v) + 4, 'text-anchor': 'end', 'font-family': 'Poppins, sans-serif', 'font-size': small ? 10 : 11, fill: '#5A6B68' }, svg).textContent = v + (small ? '' : ' M');
+    }
+    [1, 8, 15, 22, 29].forEach(d => el('text', { x: x(d - 1), y: H - 6, 'text-anchor': 'middle', 'font-family': 'Poppins, sans-serif', 'font-size': small ? 10 : 11, fill: '#5A6B68' }, svg).textContent = d + (small ? '' : ' Okt'));
+    const series = [okt, sep];
+    if (st.type === 'line') {
+      if (st.on[0]) {
+        const d = okt.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+        el('path', { d: d + ` L${x(30)} ${y(lo)} L${x(0)} ${y(lo)} Z`, fill: `url(#${svg.id}g)` }, svg);
+      }
+      [1, 0].forEach(s => { if (!st.on[s]) return;
+        el('path', { d: series[s].map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' '), fill: 'none', stroke: COL[s], 'stroke-width': s ? 2 : 2.6, 'stroke-dasharray': s ? '5 4' : 'none', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg); });
+    } else {
+      const bw = iw / 31 / (st.on[0] && st.on[1] ? 2.6 : 1.6);
+      for (let i = 0; i < 31; i++) [0, 1].forEach(s => { if (!st.on[s] || series[s][i] == null) return;
+        const off = st.on[0] && st.on[1] ? (s ? bw * .55 : -bw * .55) : 0;
+        el('rect', { x: (x(i) + off - bw / 2).toFixed(1), y: y(series[s][i]).toFixed(1), width: bw.toFixed(1), height: (y(lo) - y(series[s][i])).toFixed(1), rx: 2, fill: COL[s], opacity: s ? .75 : 1 }, svg); });
+    }
+    // hover marker
+    const i = st.hover;
+    el('line', { x1: x(i), x2: x(i), y1: pt, y2: pt + ih, stroke: '#0F1F1D', 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: .5 }, svg);
+    [1, 0].forEach(s => { if (st.on[s] && series[s][i] != null) el('circle', { cx: x(i), cy: y(series[s][i]), r: 5, fill: '#fff', stroke: COL[s], 'stroke-width': 2.5 }, svg); });
+    const tip = svg.parentElement.querySelector('.tip');
+    const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const dn = days[new Date(2026, 9, i + 1).getDay()];
+    tip.innerHTML = `<b>${dn}, ${i + 1} Okt 2026</b>` + [0, 1].filter(s => st.on[s] && series[s][i] != null).map(s => `<div><i style="background:${COL[s]}"></i>${s ? (i + 1) + ' Sep' : 'Okt'}<span>Rp ${fmt(series[s][i])} M</span></div>`).join('');
+    const tx = x(i) + 14, flip = tx + 170 > W;
+    tip.style.left = (flip ? x(i) - 14 - (small ? 150 : 165) : tx) + 'px';
+    tip.style.top = (small ? 4 : pt + 4) + 'px';
+  }
+
+  document.querySelectorAll('.viz').forEach((viz, n) => {
+    const svg = viz.querySelector('svg.chart'); svg.id = 'ch' + n;
+    const st = { type: 'line', on: [true, true], hover: 15 };
+    draw(svg, st);
+    svg.addEventListener('mousemove', e => {
+      const r = svg.getBoundingClientRect(), sc = r.width / svg.getAttribute('width');
+      const [pl, pr] = svg.dataset.pad.split(',').map(Number);
+      const iw = +svg.getAttribute('width') - pl - pr;
+      st.hover = Math.max(0, Math.min(30, Math.round(((e.clientX - r.left) / sc - pl) / iw * 30))); draw(svg, st);
+    });
+    viz.querySelectorAll('.lg').forEach(l => l.addEventListener('click', () => { const s = +l.dataset.s; if (st.on[1 - s] || !st.on[s]) { st.on[s] = !st.on[s]; l.classList.toggle('off', !st.on[s]); draw(svg, st); } }));
+    viz.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { st.type = b.dataset.t; viz.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x === b)); draw(svg, st); }));
+    viz.querySelectorAll('button[data-v]').forEach(b => b.addEventListener('click', () => {
+      viz.querySelectorAll('button[data-v]').forEach(x => x.classList.toggle('on', x === b));
+      viz.querySelectorAll('.vbody').forEach(v => v.hidden = v.dataset.v !== b.dataset.v);
+    }));
+    // table
+    const tb = viz.querySelector('.tb'), short = !!tb.dataset.short;
+    [...KAB].sort((a, b) => a[2] - b[2]).slice(0, short ? 6 : 8).forEach(k => {
+      const c = k[2] < 0 ? 'dn' : 'up', d = (k[2] > 0 ? '+' : k[2] < 0 ? '−' : '') + fmt(Math.abs(k[2])) + '%';
+      tb.insertAdjacentHTML('beforeend', short ? `<tr><td>${k[0]}</td><td class="n">Rp ${fmt(k[1])} M</td><td class="n ${c}">${d}</td></tr>`
+        : `<tr><td>${k[0]}</td><td class="n">Rp ${fmt(k[1])} M</td><td class="n ${c}">${d}</td><td class="n">${k[3]} PB</td><td class="n">${k[4]}</td></tr>`);
+    });
+    // tile map
+    const tm = viz.querySelector('.tmap');
+    const shade = v => v <= -5 ? ['#C42B2B', '#fff'] : v <= -2 ? ['#F7B4A7', '#6E2410'] : v < 0 ? ['#FDECEC', '#8A2020'] : v <= 2 ? ['#DDF1E4', '#1F5E30'] : ['#2E9E57', '#fff'];
+    KAB.forEach(k => { const [bg, fg] = shade(k[2]); tm.insertAdjacentHTML('beforeend', `<div style="background:${bg};color:${fg}">${k[0]}<span>${k[2] > 0 ? '+' : k[2] < 0 ? '−' : ''}${fmt(Math.abs(k[2]))}%</span></div>`); });
+  });
+  // KPI sparklines
+  document.querySelectorAll('svg.spark').forEach(s => {
+    const v = s.dataset.spark.split(',').map(Number), W = +s.getAttribute('width'), H = +s.getAttribute('height');
+    const mn = Math.min(...v), mx = Math.max(...v), X = i => 2 + (W - 6) * i / (v.length - 1), Y = a => 3 + (H - 6) * (1 - (a - mn) / (mx - mn || 1));
+    el('path', { d: v.map((a, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(a).toFixed(1)).join(' '), fill: 'none', stroke: s.dataset.color, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, s);
+    el('circle', { cx: X(v.length - 1), cy: Y(v[v.length - 1]), r: 3, fill: s.dataset.color }, s);
+  });
+})();
+</script>

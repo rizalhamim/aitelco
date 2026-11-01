@@ -1,6 +1,7 @@
 """Watchlist evaluation and dashboard assembly, with BigQuery stubbed out."""
 import os
 import tempfile
+import uuid
 
 os.environ.setdefault("TELCO_AI_DB", os.path.join(tempfile.mkdtemp(), "t.db"))
 
@@ -15,6 +16,9 @@ init_db()
 
 
 def _user(name):
+    # unique per run: when another test module imported app.database first, TELCO_AI_DB above
+    # is ignored and the (persistent) default database already holds users from earlier runs
+    name = f"{name}-{uuid.uuid4().hex[:8]}"
     db = SessionLocal()
     u = User(username=name, email=f"{name}@x.id", full_name=name.title(), hashed_password="x")
     db.add(u)
@@ -58,7 +62,8 @@ def test_rule_fires_after_streak_and_recovers(monkeypatch):
         "condition": "turun", "threshold": 5, "days": 2})
     assert r.status_code == 200, r.text
     rule = r.json()
-    assert rule["value_label"] == "−9,0%" and rule["threshold_label"] == "≤ −5%"
+    assert rule["value_label"] == "−9,0%" and rule["threshold_label"] == "< −5%"
+    assert rule["threshold_sub"] == "selama 2 hari" and rule["group"] == "perf" and rule["title"] == "Payload MoM"
     assert rule["status"] == "normal" and rule["breach_streak"] == 1   # needs 2 days
 
     today["d"] = next(days)
@@ -66,7 +71,8 @@ def test_rule_fires_after_streak_and_recovers(monkeypatch):
     assert rules[0]["status"] == "kritis"
     assert client.get("/api/watchlist/alerts/count").json()["active"] == 1
     alerts = client.get("/api/watchlist/alerts").json()["alerts"]
-    assert alerts[0]["severity"] == "kritis" and "Garut" in alerts[0]["title"]
+    assert alerts[0]["severity"] == "kritis" and alerts[0]["title"].startswith("Payload Garut turun")
+    assert alerts[0]["kabupaten"] == "GARUT" and alerts[0]["group_label"] == "Performance"
     db = SessionLocal()
     assert db.query(Notification).filter(Notification.user_id == u.id, Notification.kind == "alert").count() == 1
     db.close()
@@ -106,7 +112,10 @@ def test_dashboard_overview(monkeypatch):
 
     monkeypatch.setattr(dashboard, "run_query", fake_query)
     monkeypatch.setattr(dashboard.reports_cache, "data_marker", lambda fam, force=False: "m1")
+    monkeypatch.setattr(dashboard.perf_dump, "status", lambda: {"available": False, "fresh": False})
+    monkeypatch.setattr(dashboard.perf_dump, "load", lambda name, allow_stale=False: None)
     out = dashboard.build_overview()
+    assert out["source"]["kind"] == "bigquery"
     assert out["month_label"] == "Okt 2026" and out["prev_label"] == "Sep"
     keys = [k["key"] for k in out["kpis"]]
     assert keys == ["revenue", "subs", "payload", "availability"]
@@ -118,5 +127,45 @@ def test_dashboard_overview(monkeypatch):
     assert jb["mom_pct"] < 0 and jb["achievement_pct"] is None and 0 < jb["share_pct"] < 50
     assert len(out["revenue_by_region"]["labels"]) == 6
     text = out["summary"]["text"].replace("**", "").lower()
-    assert "revenue jawa turun" in text and "terutama dari jawa barat" in text
+    assert "revenue circle java turun" in text and "terutama dari jawa barat" in text
     assert "payload data turun 10,0%" in text
+
+
+def test_near_threshold_and_formats():
+    r = watchlist.WatchRule(metric="revenue", scope_level="region", scope_value="WEST JAVA", condition="turun", threshold=3, days=1)
+    assert watchlist.near(r, -2.4) and not watchlist.near(r, -1.0) and not watchlist.near(r, -3.5)
+    assert watchlist.fmt_threshold(r) == "< −3%" and watchlist.fmt_period(r) == "bulanan"
+    assert watchlist.scope_label(r) == "West Java"
+    a = watchlist.WatchRule(metric="availability", scope_level="circle", scope_value="JAVA", condition="di_bawah", threshold=99.0, days=1)
+    assert not watchlist.near(a, 99.31) and watchlist.near(a, 99.1)
+    assert watchlist.fmt_threshold(a) == "< 99,0%" and watchlist.fmt_period(a) == "harian" and watchlist.scope_label(a) == "Circle Java"
+    g = watchlist.WatchRule(metric="rgu_site", scope_level="kabkota", scope_value="GARUT", condition="di_bawah", threshold=1800, days=60)
+    assert watchlist.near(g, 1900) and watchlist.fmt_threshold(g) == "< 1,8 rb" and watchlist.fmt_period(g) == "selama 2 bulan"
+    m = watchlist.WatchRule(metric="market_share", scope_level="kabkota", scope_value="CIANJUR", condition="turun", threshold=0.5, days=1)
+    assert watchlist.fmt_threshold(m) == "turun > 0,5 pp" and not watchlist.available("market_share")
+
+
+def test_parse_sentence():
+    d = watchlist.parse_sentence("Kabari saya kalau revenue per site di Kab. Garut turun di bawah Rp 180 jt selama 2 bulan")
+    assert (d["metric"], d["scope_level"], d["scope_value"], d["condition"], d["threshold"], d["days"]) == \
+        ("rev_site", "kabkota", "GARUT", "di_bawah", 180e6, 60)
+    assert d["metric_label"] == "Revenue / site" and d["group_label"] == "Site productivity"
+    assert d["condition_label"] == "< Rp 180 jt, 2 bulan" and not d["missing"]
+    d = watchlist.parse_sentence("payload West Java turun lebih dari 5% selama 3 hari")
+    assert (d["metric"], d["scope_value"], d["condition"], d["threshold"], d["days"]) == ("payload", "WEST JAVA", "turun", 5.0, 3)
+    assert watchlist.parse_sentence("tolong pantau ya")["missing"] == ["metric", "condition", "threshold"]
+
+
+def test_unavailable_metric_and_stats(monkeypatch):
+    u = _user("stat")
+    app = FastAPI()
+    app.include_router(watchlist.router)
+    app.dependency_overrides[get_current_user] = lambda: SessionLocal().get(User, u.id)
+    client = TestClient(app)
+    r = client.post("/api/watchlist/rules", json={"metric": "vlr_site", "scope_level": "region", "scope_value": "CENTRAL JAVA",
+                                                  "condition": "di_bawah", "threshold": 3000, "notify_push": True})
+    assert r.status_code == 200, r.text
+    assert r.json()["status"] == "nodata" and r.json()["notify_push"] is True and r.json()["available"] is False
+    st = client.get("/api/watchlist/stats").json()
+    assert st["alerts_30d"] == 0 and [g["label"] for g in st["by_group"]] == ["Performance", "Site productivity", "Profile wilayah"]
+    assert client.post("/api/watchlist/parse", json={"text": "availability Kota Semarang di bawah 99%"}).json()["scope_label"].startswith("Kota Semarang")
