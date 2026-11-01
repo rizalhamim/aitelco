@@ -160,6 +160,19 @@ class MapScreenState extends State<MapScreen> {
   }
 
   /// Opens the map on one site (from Performance "Lihat di peta").
+  /// Shows one kabupaten with a metric layer (alert "Peta" action).
+  void openKabupaten(String kabupaten, {String? metric}) {
+    setState(() {
+      if (metric != null) {
+        _metric = metric;
+        final m = _metrics.where((x) => x['key'] == metric).firstOrNull;
+        if (m != null) _cat = m['cat'] as String;
+      }
+      _kab = kabupaten;
+    });
+    _load();
+  }
+
   void focusSite(String siteId) {
     final s = _sites.where((x) => x['id'] == siteId).firstOrNull;
     if (s == null) {

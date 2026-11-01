@@ -72,7 +72,16 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       WidgetsBinding.instance.addPostFrameCallback((_) => key.currentState?.createFrom(question));
     }
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => WatchlistScreen(key: key, onAsk: _ask, onCountChanged: (n) => setState(() => _alerts = n)),
+      builder: (_) => WatchlistScreen(
+        key: key,
+        onAsk: _ask,
+        onCountChanged: (n) => setState(() => _alerts = n),
+        onNav: _go,
+        onOpenMap: (kab, metric) {
+          _go(3);
+          _map.currentState?.openKabupaten(kab, metric: metric);
+        },
+      ),
     ));
     _refreshCount();
   }

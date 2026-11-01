@@ -50,9 +50,9 @@ export function guessFromQuestion(q: string): { metric?: string; scope?: Scope; 
     : /fwa/.test(s) ? "fwa_revenue"
     : /pelanggan|rgu|subscriber/.test(s) ? "subs"
     : /revenue|pendapatan/.test(s) ? "revenue" : undefined;
-  const region = /west java|jawa barat|jabar/.test(s) ? "JAWA BARAT"
-    : /central java|jawa tengah|jateng|diy|yogya/.test(s) ? "JAWA TENGAH & DIY"
-    : /east java|jawa timur|jatim/.test(s) ? "JAWA TIMUR" : undefined;
+  const region = /west java|jawa barat|jabar/.test(s) ? "WEST JAVA"
+    : /central java|jawa tengah|jateng|diy|yogya/.test(s) ? "CENTRAL JAVA"
+    : /east java|jawa timur|jatim/.test(s) ? "EAST JAVA" : undefined;
   const kab = s.match(/\b(kab(?:upaten|\.)?|kota)\s+([a-z]+(?:\s[a-z]+)?)/);
   const condition = /naik|tumbuh/.test(s) && !/turun/.test(s) ? "naik" : undefined;
   const scope = kab ? { level: "kabkota", value: `${kab[1].startsWith("kota") ? "KOTA" : "KAB."} ${kab[2].replace(/\s(turun|naik|bulan|minggu|vs|dan|di)$/, "").toUpperCase()}` }
