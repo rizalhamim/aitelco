@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any
 
 # ---------------------------------------------------------------- column roles
@@ -440,7 +441,17 @@ _TOP_N = 15
 
 
 def _is_num(v) -> bool:
-    return isinstance(v, (int, float)) and not isinstance(v, bool)
+    # BigQuery NUMERIC arrives as Decimal before JSON encoding; it is a number too.
+    return isinstance(v, (int, float, Decimal)) and not isinstance(v, bool)
+
+
+_YEAR_NAME = re.compile(r"(^|_)(year|tahun|thn|yr)(_|$)", re.I)
+
+
+def _looks_year(col: str, vals: list) -> bool:
+    """`year` / `tahun` holding 2025, 2026 is an axis, never a measure to plot."""
+    return bool(_YEAR_NAME.search(col)) and bool(vals) and all(
+        _is_num(v) and float(v).is_integer() and 1900 <= float(v) <= 2100 for v in vals)
 
 
 def _looks_time_value(v) -> bool:
@@ -467,7 +478,9 @@ def _classify(columns: list[str], rows: list[dict]) -> dict[str, str]:
             kinds[c] = "empty"
             continue
         time_vals = all(_looks_time_value(v) for v in vals)
-        if _TIME_NAME.search(c) and (time_vals or not all(_is_num(v) for v in vals)):
+        if _looks_year(c, vals):
+            kinds[c] = "time"
+        elif _TIME_NAME.search(c) and (time_vals or not all(_is_num(v) for v in vals)):
             kinds[c] = "time"
         elif time_vals and not all(_is_num(v) for v in vals):
             kinds[c] = "time"
@@ -509,8 +522,8 @@ def _humanize(col: str) -> str:
     return " ".join(out).replace(" %", " (%)") if out else col
 
 
-def suggest(columns: list[str], rows: list[dict], question: str = "",
-            sql: str = "", result_profile: dict | None = None) -> dict:
+def _suggest_raw(columns: list[str], rows: list[dict], question: str = "",
+                 sql: str = "", result_profile: dict | None = None) -> dict:
     """Return a render-ready chart spec for this result (type "none" when no chart fits).
 
     Spec shape (all keys always present):
@@ -567,6 +580,18 @@ def suggest(columns: list[str], rows: list[dict], question: str = "",
         x = times[0]
         spec["x"] = x
         split = next((c for c in cats if 1 < len(set(_values(rows, c))) <= _MAX_SERIES), None)
+        many = _too_many_groups(rows, x, cats, nums[0]) if not split else None
+        if many:
+            # Long format with more groups than lines a reader can tell apart
+            # (month x 38 kabkota). Without a split the line zigzags through every
+            # kabkota at each month. Keep the biggest groups and say so in the caption.
+            split, kept, total = many
+            spec.update(type="line", y=[nums[0]], series_by=split,
+                        alternatives=["area", "stacked_bar", "bar"],
+                        title=f"{_humanize(nums[0])} per {_humanize(split)}")
+            spec["rows"] = [r for r in rows if str(r.get(split)) in kept]
+            spec["series_limited"] = {"shown": len(kept), "total": total}
+            return spec
         if split and len(nums) >= 1:
             spec.update(type="line", y=[nums[0]], series_by=split,
                         alternatives=["area", "stacked_bar", "bar"],
@@ -650,3 +675,200 @@ def suggest(columns: list[str], rows: list[dict], question: str = "",
                     title=f"{_humanize(nums[0])} vs {_humanize(nums[1])}")
         return spec
     return spec
+
+
+# ================================================================ finalize + validate
+#
+# `_suggest_raw()` picks the chart type. `suggest()` then makes the spec SAFE to draw:
+# every referenced column exists and carries numbers, a time axis runs oldest to
+# newest, and the caption says what the chart covers. A spec that cannot be drawn
+# honestly becomes type "none" (the client shows the table) instead of a broken chart.
+
+_MAX_LINE_GROUPS = 6
+
+
+def _too_many_groups(rows: list[dict], x: str, cats: list[str], measure: str):
+    """(split column, kept groups, total groups) when a time axis repeats per group."""
+    xs = [r.get(x) for r in rows]
+    if len(set(map(str, xs))) == len(xs) or not cats:
+        return None
+    best = None
+    for c in cats:
+        groups = {str(r.get(c)) for r in rows if r.get(c) is not None}
+        if len(groups) <= _MAX_SERIES:
+            continue
+        if best is None or len(groups) < best[1]:
+            best = (c, len(groups))
+    if not best:
+        return None
+    col, total = best
+    sums: dict[str, float] = {}
+    for r in rows:
+        v = r.get(measure)
+        if _is_num(v):
+            key = str(r.get(col))
+            sums[key] = sums.get(key, 0.0) + abs(float(v))
+    kept = [k for k, _ in sorted(sums.items(), key=lambda kv: -kv[1])[:_MAX_LINE_GROUPS]]
+    return (col, set(kept), total) if kept else None
+
+
+def _time_key(v):
+    """Sort key that orders 202609 / '2026-09' / dates / '2026-09-01' chronologically."""
+    if isinstance(v, (date, datetime)):
+        return (0, v.isoformat())
+    if _is_num(v):
+        return (0, f"{int(v):08d}" if float(v).is_integer() else str(v))
+    text = str(v or "").strip()
+    m = re.match(r"^(\d{4})[-/]?(\d{1,2})(?:[-/]?(\d{1,2}))?", text)
+    if m:
+        return (0, f"{m.group(1)}{int(m.group(2)):02d}{int(m.group(3) or 0):02d}")
+    return (1, text)
+
+
+def _numeric_share(rows: list[dict], col: str) -> float:
+    vals = [r.get(col) for r in rows if r.get(col) is not None]
+    if not vals:
+        return 0.0
+    return sum(1 for v in vals if _is_num(v)) / len(vals)
+
+
+def _coverage_caption(spec: dict, rows: list[dict], row_count: int, truncated: bool) -> str:
+    x = spec.get("x") or spec.get("label")
+    parts: list[str] = []
+    if x and spec["type"] not in ("kpi", "none"):
+        values = [r.get(x) for r in rows if r.get(x) is not None]
+        distinct = list(dict.fromkeys(str(v) for v in values))
+        if spec["type"] in ("line", "area", "combo") and spec.get("x") and all(
+                _time_key(v)[0] == 0 for v in values):
+            ordered = sorted(distinct, key=_time_key)
+            span = ordered[0] if len(ordered) == 1 else f"{ordered[0]} sampai {ordered[-1]}"
+            parts.append(f"{len(ordered)} periode ({span})")
+        else:
+            noun = _humanize(x).lower()
+            top_n = spec.get("top_n")
+            if top_n and len(distinct) > top_n:
+                parts.append(f"{top_n} teratas dari {len(distinct)} {noun}")
+            else:
+                parts.append(f"{len(distinct)} {noun}")
+    limited = spec.get("series_limited")
+    if limited:
+        parts.append(f"{limited['shown']} {_humanize(spec.get('series_by') or '').lower()} "
+                     f"terbesar dari {limited['total']}")
+    if truncated or row_count > len(rows):
+        parts.append(f"data dipotong, {len(rows)} dari {row_count} baris")
+    return " · ".join(p for p in parts if p)
+
+
+def _ascending_by(rows: list[dict], col: str) -> list[dict]:
+    return sorted(rows, key=lambda r: _time_key(r.get(col)))
+
+
+def suggest(columns: list[str], rows: list[dict], question: str = "",
+            sql: str = "", result_profile: dict | None = None) -> dict:
+    """Render-ready, validated chart spec (see `_suggest_raw` for the shape).
+
+    Extra keys on top of the raw shape:
+      caption   coverage of what is drawn ("6 periode (202604 sampai 202609)")
+      units     {col: "Rp" | "%" | ""} for axis titles
+      rows      plot-ready rows when they differ from the result order (time axis
+                sorted oldest to newest, or the kept groups of a limited line)
+      reason    why the type is "none", when it is
+    """
+    try:
+        spec = _suggest_raw(columns, rows, question, sql=sql, result_profile=result_profile)
+    except Exception as exc:  # never break a chat turn over a chart
+        out = _empty()
+        out["reason"] = f"spec_failed: {exc}"
+        return out
+    return _finalize(spec, list(columns or []), list(rows or []), result_profile)
+
+
+def _finalize(spec: dict, columns: list[str], rows: list[dict],
+              result_profile: dict | None) -> dict:
+    spec.setdefault("caption", "")
+    spec.setdefault("units", {})
+    if spec.get("type") in (None, "none") or not rows:
+        spec["type"] = "none"
+        spec.setdefault("reason", "no_plottable_measure" if rows else "empty_result")
+        return spec
+
+    plot_rows = spec.get("rows") or rows
+    colset = set(columns)
+
+    # Every measure must exist and actually carry numbers in the rows being drawn.
+    def usable(c: str) -> bool:
+        if c not in colset or _numeric_share(plot_rows, c) < 0.5:
+            return False
+        vals = [float(r.get(c)) for r in plot_rows if _is_num(r.get(c))]
+        # An all-zero series draws a flat line on the axis; a KPI tile of 0 is a fact.
+        return bool(vals) and (spec.get("type") == "kpi" or any(v != 0 for v in vals))
+
+    spec["y"] = [c for c in spec.get("y") or [] if usable(c)]
+    spec["y2"] = [c for c in spec.get("y2") or [] if usable(c) and c not in spec["y"]]
+    if not spec["y"] and spec["y2"]:
+        spec["y"], spec["y2"] = spec["y2"][:1], spec["y2"][1:]
+    if spec["type"] == "combo" and not spec["y2"]:
+        spec["type"] = "line" if spec.get("x") and spec["x"] in colset and \
+            all(_time_key(r.get(spec["x"]))[0] == 0 for r in plot_rows) else "bar"
+    if not spec["y"]:
+        return {**_empty(spec.get("title", "")), "map_key": spec.get("map_key"),
+                "caption": "", "units": {}, "reason": "no_numeric_measure"}
+    for key in ("x", "series_by", "label", "map_key"):
+        if spec.get(key) and spec[key] not in colset:
+            spec[key] = None
+    if spec["type"] in ("line", "area", "bar", "hbar", "stacked_bar", "combo") and not spec.get("x"):
+        return {**_empty(spec.get("title", "")), "caption": "", "units": {},
+                "reason": "no_category_axis"}
+
+    # A time axis runs oldest to newest. SQL very often ends in ORDER BY month DESC,
+    # which drew every trend right-to-left.
+    x = spec.get("x")
+    if x and spec["type"] in ("line", "area", "combo", "stacked_bar", "bar") and \
+            all(_time_key(r.get(x))[0] == 0 for r in plot_rows if r.get(x) is not None) and \
+            any(r.get(x) is not None for r in plot_rows):
+        ordered = _ascending_by(plot_rows, x)
+        if ordered != plot_rows or spec.get("rows"):
+            spec["rows"] = ordered
+        spec["time_axis"] = True
+
+    fmts = spec.get("formats") or {}
+    spec["units"] = {c: {"currency": "Rp", "percent": "%"}.get(fmts.get(c, ""), "")
+                     for c in spec["y"] + spec["y2"]}
+    profile = result_profile or {}
+    spec["caption"] = _coverage_caption(
+        spec, plot_rows, int(profile.get("row_count") or len(rows)),
+        bool(profile.get("truncated")))
+    spec["alternatives"] = [a for a in spec.get("alternatives") or [] if a != spec["type"]]
+    spec["title"] = (spec.get("title") or "").replace("\u2014", "-").strip() or "Hasil query"
+    return spec
+
+
+def chart_brief(spec: dict) -> dict | None:
+    """What the synthesizer needs to know about the chart the user is looking at."""
+    if not spec or spec.get("type") in (None, "none"):
+        return None
+    return {k: spec.get(k) for k in ("type", "title", "x", "y", "y2", "series_by",
+                                     "top_n", "caption", "units")
+            if spec.get(k) not in (None, [], {}, "")}
+
+
+def chronological_rows(columns: list[str], rows: list[dict], spec: dict, sql: str = "") -> list[dict] | None:
+    """Result rows re-ordered oldest to newest when the order carried no meaning.
+
+    Older app builds plot `result.rows` in the order received. When the SQL ordered by
+    the time column itself (or not at all), sorting the rows chronologically fixes
+    their charts too and reads naturally in the table. A ranking (ORDER BY revenue)
+    keeps its order; the chart then uses `spec.rows`.
+    """
+    if not spec.get("time_axis") or not spec.get("rows") or spec.get("series_limited"):
+        return None
+    x = spec.get("x")
+    try:
+        from .result_profiler import _order_by_column
+        order_col = _order_by_column(sql or "")
+    except Exception:
+        order_col = None
+    if order_col and order_col != x:
+        return None
+    ordered = _ascending_by(rows, x)
+    return ordered if ordered != rows else None

@@ -193,6 +193,7 @@ int? _dayNum(dynamic v) {
 /// Line, area and vertical bar results draw with the mockup chart; other shapes keep SmartChart.
 AnswerPlot? toAnswerPlot(ChartSpec? spec, List<Map<String, dynamic>> rows) {
   if (spec == null || spec.x == null || !['line', 'area', 'bar'].contains(spec.type) || spec.y.isEmpty || rows.isEmpty) return null;
+  rows = spec.rowsFor(rows);
   final x = spec.x!;
   final y0 = spec.y.first;
   final fmt = spec.fmt(y0) ?? 'number';

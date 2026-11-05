@@ -560,3 +560,10 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Deploy is one command from Git Bash on Rizal's PC (`deploy/redesign-v2/run.sh`, read through the server's own `git fetch github` because the raw GitHub CDN served stale scripts).
 - Lessons: `rham_site_wise_monthly.month_id` is STRING (perf_dump now types month literals from table metadata); server venv lacked `requirements-dev.txt`; the PC Flutter needs AGP >= 8.11.1 and must not use the tracked Linux `org.gradle.java.home` (the build copy drops it and builds with `--android-skip-build-dependency-validation`).
 - Gates on the server: pytest only `test_governance_covers_live_inventory` failing (also failing before), KB benchmark passed, smoke #11 empty once then OK on rerun. APK signer 038aa1bf...0458 verified, sha256 72737441...9659.
+
+## 2026-11-05 Agent rework: report template, validated charts, tidy thinking, faster turns
+- Charts: `chart_spec.suggest()` gained a validation layer (chronological time axis, year columns as axis, Decimal, all-zero measures dropped, top 6 groups for long time series, caption + units). The synthesizer now narrates the same spec the clients draw.
+- Report: `SYNTH_SYS` is a fixed template (bold one-line answer, context line, Temuan utama, Insight, optional Rekomendasi, Catatan data). `app/answer_facts.py` pre-formats the numbers (Rp one magnitude per column, %, pp, period words) and drives the empty-model fallback.
+- Thinking: one label vocabulary for `step_start` (`STEP_LABELS`), `done.timeline` and `done.elapsed_ms`; web AgentFlow roles translated.
+- Speed: Analyst parallel to Router, no re-route on a cosmetic rewrite, speculative SQL during the scope gate, deterministic grain check instead of a critique call.
+- Not yet measured live: run the smoke (`--only 2,11,20`), then hard-30 and correlation-30 before/after, after deploy.

@@ -702,7 +702,9 @@ Koordinat (${lat.toFixed(5)}, ${lon.toFixed(5)}) tidak terpetakan ke kecamatan, 
             const step = data.step as string;
             const stepLabel = (data.label as string) || step;
             const stepDesc = (data.desc as string) || "";
-            update({ status: `${stepLabel}: ${stepDesc}` });
+            // Backend labels are short plain-language phases; the description adds the
+            // specific (e.g. "Menyusun query untuk Revenue"), so show it when present.
+            update({ status: stepDesc || stepLabel });
             const kindMap: Record<string, FlowEvent["kind"]> = {
               analyst: "analyst", router: "router", sql_write: "sql_write",
               bq_exec: "bq_exec", synth: "synth", export: "export",

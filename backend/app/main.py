@@ -23,6 +23,8 @@ from . import map_synth_agent
 from . import correlate_agent
 from . import chart_spec
 from . import headline_kpis
+from . import answer_facts
+from concurrent.futures import ThreadPoolExecutor
 from . import telemetry
 from starlette.concurrency import run_in_threadpool
 from .database import init_db, get_db, ChatSession, ChatMessage, UsageLog, utcnow
@@ -503,6 +505,54 @@ def get_knowledge_routing(limit: int = 200):
     return {"routing_edges": memory.get_knowledge_routing(limit)}
 
 
+# ---------------- chat stream: tidy "thinking" steps + speculative work ----------------
+
+# One vocabulary for the agent's visible thinking, on web and Android alike. The step
+# KEYS stay as they were (clients map them to icons); only the label the user reads is
+# normalised, so every answer shows the same short, plain-language phases instead of a
+# mix of internal agent names ("Orchestrator", "Query Builder", "Data Engine").
+STEP_LABELS = {
+    "router": "Memahami pertanyaan",
+    "analyst": "Memperjelas kebutuhan data",
+    "scope": "Memastikan sumber data",
+    "sql_write": "Menyusun query",
+    "bq_exec": "Mengambil data",
+    "reflect": "Memeriksa kualitas jawaban",
+    "refine": "Memperbaiki query",
+    "synth": "Menyusun jawaban",
+    "export": "Menyiapkan file",
+}
+
+# Speculative work (the Analyst while the Router runs, SQL generation while the scope
+# gate runs). Shared and long-lived: the stream generator has many exits, and a pool
+# per request would need a shutdown on every one of them.
+_SPEC_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="chat-spec")
+
+
+def _tidy_step(data: dict, timeline: list) -> dict:
+    now = _time.time()
+    if timeline and "ms" not in timeline[-1]:
+        timeline[-1]["ms"] = int((now - timeline[-1]["_t"]) * 1000)
+    out = dict(data)
+    label = STEP_LABELS.get(str(data.get("step") or ""))
+    if label:
+        out["agent"] = data.get("label")
+        out["label"] = label
+    timeline.append({"step": out.get("step"), "label": out.get("label"), "_t": now})
+    return out
+
+
+def _close_timeline(timeline: list) -> list:
+    now = _time.time()
+    if timeline and "ms" not in timeline[-1]:
+        timeline[-1]["ms"] = int((now - timeline[-1]["_t"]) * 1000)
+    return [{"step": t["step"], "label": t["label"], "ms": t.get("ms", 0)} for t in timeline]
+
+
+def _no_em_dash(text: str) -> str:
+    return text.replace("\u2014", "-") if text else text
+
+
 @app.post("/api/chat")
 def chat(req: ChatReq):
     """Non-streaming full pipeline; returns the whole trace."""
@@ -544,7 +594,15 @@ def chat_stream(req: ChatReq, request: Request):
                 db.close()
 
     def gen():
+        _timeline: list = []
+
         def sse(event, data):
+            if isinstance(data, dict):
+                if event == "step_start":
+                    data = _tidy_step(data, _timeline)
+                elif event == "done":
+                    data = {**data, "elapsed_ms": int((_time.time() - t0) * 1000),
+                            "timeline": _close_timeline(_timeline)}
             return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, default=str)}\n\n"
 
         t0 = _time.time()
@@ -627,6 +685,16 @@ def chat_stream(req: ChatReq, request: Request):
         # ──── 0. FAST PATH: Router first ────
         # Route first to detect domain. If none → reply immediately (skip Analyst).
         # If data query → Analyst validates → SQL pipeline.
+        # The Analyst does not depend on the route, so it runs WHILE the router runs.
+        # If the router then finds a low-risk graph match the result is simply unused;
+        # otherwise the Analyst's latency is already paid when it is needed.
+        _analyst_future = None
+        if len((req.message or "").split()) >= 3:
+            try:
+                _analyst_future = _SPEC_POOL.submit(analyst_analyze, req.message, merged_history)
+            except Exception:
+                _analyst_future = None
+
         yield sse("step_start", {"step": "router", "label": "Orchestrator", "desc": "Menganalisis pertanyaan"})
         r = orchestrator.route(req.message, merged_history)
         domain = r.get("domain", "none")
@@ -685,7 +753,14 @@ def chat_stream(req: ChatReq, request: Request):
                 "reason": fast_flow.get("reason"),
             }
         else:
-            analysis = analyst_analyze(req.message, merged_history)
+            analysis = None
+            if _analyst_future is not None:
+                try:
+                    analysis = _analyst_future.result(timeout=150)
+                except Exception:
+                    analysis = None
+            if not isinstance(analysis, dict):
+                analysis = analyst_analyze(req.message, merged_history)
             analysis["_usage"] = llm.get_last_usage()
         yield sse("analyst", analysis)
 
@@ -722,7 +797,9 @@ def chat_stream(req: ChatReq, request: Request):
             return
 
         # Re-route with validated query if analyst changed it significantly
-        if validated_query and validated_query != req.message:
+        if (validated_query and validated_query != req.message
+                and orchestrator.needs_reroute_after_analyst(
+                    req.message, r.get("rephrased") or "", validated_query)):
             r2 = orchestrator.route(validated_query, merged_history)
             new_domain = r2.get("domain", "none")
             if new_domain != "none" and (new_domain in kb["domains"] or new_domain in ("PROFILE", "CORRELATE")):
@@ -990,12 +1067,27 @@ def chat_stream(req: ChatReq, request: Request):
         # hint for SQL generation. Initialised OUTSIDE the gate because the fast path
         # and map mode skip the gate entirely but still reach SQL generation.
         scope_table_hints = None
+        # SQL generated speculatively while the scope gate runs: (domain, future).
+        # Used only when the gate confirms the SAME domain on its first round without
+        # adding table hints; otherwise discarded. Initialised outside the gate because
+        # the fast path and map mode skip the gate.
+        _prefetch_sql = None
 
         if not req.map_context and not fast_flow.get("safe"):
             _tried_domains: list[str] = []
             for _gate_round in range(3):
                 yield sse("step_start", {"step": "scope", "label": "Domain Check",
                                          "desc": f"Memastikan domain '{kb['domains'][domain]['label']}' tepat"})
+                if _gate_round == 0:
+                    try:
+                        _prefetch_sql = (domain, _SPEC_POOL.submit(
+                            orchestrator.write_sql, domain,
+                            r.get("rephrased") or validated_query,
+                            None, None, merged_history, last_res,
+                            map_context=False, refine_hint=None,
+                            prior_attempt_sql=None, table_hints=None))
+                    except Exception:
+                        _prefetch_sql = None
                 fit = orchestrator.assess_domain_fit(
                     domain, r.get("rephrased") or validated_query, merged_history)
                 verdict = fit.get("verdict", "answerable")
@@ -1132,6 +1224,9 @@ def chat_stream(req: ChatReq, request: Request):
                 "deterministic": True,
             })
 
+        if _prefetch_sql is not None and (_prefetch_sql[0] != domain or scope_table_hints):
+            _prefetch_sql = None  # the gate moved the question: the guess is stale
+
         label = kb["domains"][domain]["label"]
         yield sse("step_start", {"step": "sql_write", "label": "Query Builder", "desc": f"Menyusun query untuk {label}"})
 
@@ -1153,6 +1248,7 @@ def chat_stream(req: ChatReq, request: Request):
         MAX_REFINE_ROUNDS = 2         # extra re-queries after the first good run
         refine_round = 0
         is_map = bool(req.map_context) or orchestrator._is_map_query(req.message)
+        _v2_chart = None              # the chart the user sees for the latest result
 
         while True:
             # ---- inner error-retry loop: get a query that RUNS ----
@@ -1160,12 +1256,17 @@ def chat_stream(req: ChatReq, request: Request):
             result = None
             for attempt in range(3):
                 try:
-                    gen_sql = orchestrator.write_sql(
-                        domain, r.get("rephrased") or validated_query,
-                        prior_error, prior_sql, merged_history, last_res,
-                        map_context=bool(req.map_context),
-                        refine_hint=refine_hint, prior_attempt_sql=prior_attempt_sql,
-                        table_hints=scope_table_hints)
+                    if (_prefetch_sql is not None and attempt == 0
+                            and refine_round == 0 and prior_error is None):
+                        _pf, _prefetch_sql = _prefetch_sql, None
+                        gen_sql = _pf[1].result(timeout=240)
+                    else:
+                        gen_sql = orchestrator.write_sql(
+                            domain, r.get("rephrased") or validated_query,
+                            prior_error, prior_sql, merged_history, last_res,
+                            map_context=bool(req.map_context),
+                            refine_hint=refine_hint, prior_attempt_sql=prior_attempt_sql,
+                            table_hints=scope_table_hints)
                 except Exception as e:
                     yield sse("retry", {"error": f"sql_gen_failed: {e}", "attempt": attempt + 1})
                     prior_error = f"sql_gen_failed: {e}"
@@ -1200,7 +1301,21 @@ def chat_stream(req: ChatReq, request: Request):
                         table_contracts=knowledge.table_contracts(),
                     )
                     _v2_chart = chart_spec.suggest(result["columns"], result["rows"], req.message,
-                                                   sql=result.get("sql") or "")
+                                                   sql=result.get("sql") or "",
+                                                   result_profile=result_profile)
+                    # A trend ordered newest-first (ORDER BY month DESC) is re-ordered
+                    # oldest-first so every client, including older app builds that
+                    # plot rows as received, draws time left to right.
+                    _chrono = chart_spec.chronological_rows(
+                        result["columns"], result["rows"], _v2_chart, result.get("sql") or "")
+                    if _chrono is not None:
+                        result["rows"] = _chrono
+                        _v2_chart.pop("rows", None)
+                        result_profile = profile_result(
+                            result, req.message,
+                            selected_tables=gen_sql.get("_allowed_tables"),
+                            table_contracts=knowledge.table_contracts(),
+                        )
                     yield sse("result", {
                         "columns": result["columns"], "rows": result["rows"],
                         "row_count": result["row_count"], "sql": result["sql"],
@@ -1373,7 +1488,7 @@ def chat_stream(req: ChatReq, request: Request):
                 yield sse("token", {"t": tok})
         else:
             yield sse("step_start", {"step": "synth", "label": "Synthesizer", "desc": "Merangkai jawaban dari data"})
-            preview = result["rows"][:50]
+            preview = result["rows"][:40]
             payload = {
                 "question": req.message, "what_it_computes": explanation,
                 "columns": result["columns"], "row_count": result["row_count"],
@@ -1392,36 +1507,32 @@ def chat_stream(req: ChatReq, request: Request):
             # The narration must agree with the chart the user is looking at: same
             # metric, same units, same coverage. Without this the text says "seluruh
             # kabkota" while the chart shows a top-10.
-            try:
-                _chart = build_chart_spec(
-                    result["columns"], result["rows"], question=req.message,
-                    result_profile=payload["result_profile"],
-                    sql=result.get("sql", ""))
-                if _chart.get("mode") != "none":
-                    payload["chart_spec"] = {
-                        "mode": _chart["mode"],
-                        "category": _chart.get("category"),
-                        "series": [
-                            {"column": s["column"], "unit": s["unit"], "role": s["role"]}
-                            for s in _chart.get("series", [])
-                        ],
-                        "caption": _chart.get("caption"),
-                    }
-            except Exception:
-                pass
+            # It is the chart the clients draw (`result.chart`), not a second build.
+            _brief = chart_spec.chart_brief(_v2_chart or {})
+            if _brief:
+                payload["chart_spec"] = _brief
+            # Numbers computed once, in Indonesian format, from the complete result:
+            # the writer quotes them instead of formatting 40 raw rows itself, which is
+            # both where inconsistent units came from and slow.
+            _facts = answer_facts.build(result["columns"], result["rows"], _v2_chart,
+                                        payload["result_profile"], language)
+            if _facts:
+                payload["key_facts"] = _facts
             msgs = [
                 {"role": "system", "content":
                     orchestrator.SYNTH_SYS.format(language=language)},
                 {"role": "user", "content": json.dumps(payload, ensure_ascii=False, default=str)},
             ]
             for tok in llm.chat_stream_complete(msgs, model=config.LLM_MODEL_CODER, max_tokens=2200):
+                tok = _no_em_dash(tok)
                 buf.append(tok)
                 yield sse("token", {"t": tok})
         answer_text = "".join(buf)
         if not answer_text.strip():
-            answer_text = orchestrator.deterministic_fallback_answer(
-                result, language, result_profile
-            )
+            answer_text = (answer_facts.fallback_report(
+                req.message, answer_facts.build(result["columns"], result["rows"], _v2_chart,
+                                                result_profile, language), language)
+                or orchestrator.deterministic_fallback_answer(result, language, result_profile))
             yield sse("token", {"t": answer_text})
         if session_id:
             memory.append_assistant(

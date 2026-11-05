@@ -274,10 +274,82 @@ def needs_llm_critique(
         "area", "branch", "circle", "kabkota", "kabkot", "kabupaten",
         "kecamatan", "kota", "per", "province", "provinsi", "region", "wilayah",
     }):
-        return True, "territory_or_grain_validation"
+        # A grouping the result visibly carries needs no model to confirm it:
+        # "revenue per kabupaten" answered with a kabupaten column IS the right grain.
+        # Only an explicit grouping qualifies; a territory used as a FILTER
+        # ("revenue Kabupaten Bandung") still goes to the critique.
+        grain = requested_grain(question)
+        if not (grain and result_has_grain(result.get("columns") or [], grain)
+                and (profile.get("row_count") or 0) > 1):
+            return True, "territory_or_grain_validation"
     if len(profile.get("source_tables") or []) > 1:
         return True, "multi_table_result"
     return False, "deterministic_profile_verified"
+
+
+# ---------------- Deterministic grain check (skips a critique call) ----------------
+
+_GRAIN_WORDS = {
+    "kecamatan": "kecamatan", "kec": "kecamatan",
+    "kabupaten": "kabkota", "kabkota": "kabkota", "kabkot": "kabkota", "kota": "kabkota",
+    "kab": "kabkota", "region": "region", "regional": "region", "circle": "circle",
+    "area": "area", "branch": "area", "district": "district", "microcluster": "district",
+    "mc": "district", "provinsi": "province", "province": "province", "site": "site",
+    "bulan": "month", "month": "month", "hari": "day", "day": "day", "tanggal": "day",
+    "minggu": "week", "week": "week",
+}
+_GRAIN_COLUMNS = {
+    "kecamatan": ("kecamatan", "kec", "kec_id", "kec_name", "kecamatan_name"),
+    "kabkota": ("kabkota", "kabkot", "kabupaten", "kota", "kab", "kabupaten_kota", "city"),
+    "region": ("region", "regional", "region_name"),
+    "circle": ("circle",),
+    "area": ("area", "branch", "branch_im3", "branch_name"),
+    "district": ("district", "micro_cluster", "micro_cluster_im3", "microcluster"),
+    "province": ("province", "provinsi"),
+    "site": ("site_id", "site_name", "site_nm", "siteid"),
+    "month": ("month_id", "month", "bulan", "mth_id", "mth", "period", "periode"),
+    "day": ("dt_id", "dt", "date", "tanggal", "day"),
+    "week": ("week", "week_id", "minggu", "wk"),
+}
+_GRAIN_RE = re.compile(
+    r"\b(?:per|by|tiap|setiap|masing[- ]masing|berdasarkan|breakdown)\s+"
+    r"(micro\s*cluster|[a-z]+)", re.I)
+
+
+def requested_grain(question: str) -> str | None:
+    """The level the user asked to GROUP by ("per kabupaten" -> "kabkota"), or None."""
+    for match in _GRAIN_RE.finditer(question or ""):
+        word = re.sub(r"\s+", "", match.group(1).lower())
+        if word in _GRAIN_WORDS:
+            return _GRAIN_WORDS[word]
+    return None
+
+
+def result_has_grain(columns: list[str], grain: str) -> bool:
+    names = _GRAIN_COLUMNS.get(grain, ())
+    for col in columns:
+        low = col.lower()
+        if low in names or any(low.startswith(n + "_") or low.endswith("_" + n) for n in names):
+            return True
+    return False
+
+
+def needs_reroute_after_analyst(original: str, rephrased: str, validated: str) -> bool:
+    """Route again only when the Analyst changed WHAT is asked, not how it is worded.
+
+    The Analyst rewrites nearly every question, so re-routing on any difference spent
+    a router call on almost every turn for the same answer. Measure how much of the
+    validated question is new vocabulary versus the user's words and the router's own
+    restatement; a mostly-new question is a different question.
+    """
+    def words(text: str) -> set[str]:
+        return {w for w in re.findall(r"[a-z0-9_]+", (text or "").lower()) if len(w) >= 3}
+    new = words(validated)
+    if not new:
+        return False
+    known = words(original) | words(rephrased)
+    overlap = len(new & known) / len(new)
+    return overlap < 0.5
 
 
 # ---------------- Domain scope gate (per-domain knowledge self-assessment) ----------------
@@ -1050,18 +1122,55 @@ def write_sql(domain_key: str, question: str, prior_error: str | None = None,
 
 SYNTH_SYS = IDENTITY + """
 
-You are a telco business analyst for Indosat (IOH). Summarize the SQL query result
-into a clear, helpful answer for a business user. Reply in the user's language ({language}).
+You are a telco business analyst for Indosat (IOH). Turn the SQL query result into a
+short, well-structured business report. Reply in the user's language ({language}).
 
-ANSWER STRUCTURE (in this order, no exceptions):
-1. FIRST SENTENCE answers the question asked, with the number in it. Not a preamble,
-   not a restatement of the question, not "Berikut adalah hasil analisis".
-2. Immediately after the number, state the PERIOD and the TERRITORY SCOPE it covers
-   (e.g. "MTD Agustus 2026 (202608), 10 dari 38 kabkota di East Java"). The user cannot
-   judge a number without knowing what it covers.
-3. Then the table or breakdown, only if it adds something the sentence did not.
-4. Then "Insight": explain WHY, what changed, what to do. Never restate the table in
-   prose. If you have nothing to add beyond the numbers, omit the section entirely.
+The user already sees, directly under your text, a chart and a table built from the
+SAME rows (tabs "Grafik" and "Tabel"). Your job is the reading of the numbers, not a
+copy of the table.
+
+OUTPUT TEMPLATE (Markdown, always in this order, every answer looks the same):
+
+**<Direct answer in ONE sentence with the key number in it>**
+<One context line: period · territory scope · coverage, e.g. "MTD Agustus 2026 (202608) · 10 dari 38 kabkota di East Java">
+
+### Temuan utama
+- 3 to 5 bullets. Each bullet is one fact with its number in **bold**.
+
+### Insight
+- 2 to 3 bullets: WHY it happened, what changed, what it means for the business.
+  Never restate the table in prose. Omit this section if there is nothing beyond the numbers.
+
+### Rekomendasi
+- 1 to 3 concrete next actions. Only when the user asks for analysis, evaluation or
+  advice, or the data shows a clear problem. Otherwise omit the section.
+
+> Catatan data: <only when the result is truncated, a top-N subset, mixes periods, or
+> carries source warnings. Otherwise omit.>
+
+Rules for the template:
+- The FIRST SENTENCE answers the question asked, with the number in it. Not a preamble,
+  not a restatement of the question, not "Berikut adalah hasil analisis".
+- Immediately after the number, state the PERIOD and the TERRITORY SCOPE it covers.
+  The user cannot judge a number without knowing what it covers.
+- English answers use the headings "Key findings", "Insight", "Recommendations" and
+  "Data note". Indonesian answers use the headings above exactly.
+- Title the analysis section exactly "Insight". NEVER call it "AI Insight".
+- Do not paste the full result table. Include a Markdown table ONLY for a ranking or a
+  matrix of at most 10 rows when it says more than the bullets. When you do, the FIRST
+  column MUST be "Rank" numbered 1, 2, 3, ... in descending order of the main metric.
+  Example header: | Rank | <Category> | <Metric> | Contribution % |.
+- Keep it tight: about 120 to 220 words. No filler, no closing pleasantries.
+- Never use the em-dash character. Use a comma, a colon or a hyphen.
+
+KEY FACTS (when `key_facts` is present in the payload):
+- `key_facts` holds numbers already computed and formatted from the COMPLETE result:
+  latest/previous/change for a time series, highest/lowest/average, the sum of the
+  returned rows, the period, the coverage. QUOTE THESE STRINGS VERBATIM. Do not
+  recompute or reformat a number that is in `key_facts`.
+- `sum_of_rows` is the sum of the RETURNED rows only. Call it a total only when the
+  rows are the complete set (not truncated, not a top-N).
+- For any other number, follow the format rules below.
 
 NUMBERS AND UNITS (a wrong unit is a wrong answer):
 - Currency: always prefix Rp and pick ONE magnitude for the whole column, the one that
@@ -1069,22 +1178,23 @@ NUMBERS AND UNITS (a wrong unit is a wrong answer):
   mix magnitudes inside a single column, and never label a value with a magnitude it
   does not have (a 3,2 million value is "Rp 3,2 Jt", never "Rp 0,0 M").
 - Percentages: one decimal, always with the % sign. A share and a growth rate are
-  different things: label growth with its direction (naik/turun) or a sign.
+  different things: label growth with its direction (naik/turun) or a sign. A change
+  between two percentages is in pp (poin persentase), not %.
 - Indonesian locale: comma is the decimal separator, dot is the thousands separator.
 - Counts are integers with a thousands separator and their noun (1.280 site, 26.617 SO).
 - Never invent precision the data does not have, and never present a rounded number as
   exact when the difference matters for a decision.
+- Periods are written as words plus the code: "September 2026 (202609)".
 
 CHART CONSISTENCY (when `chart_spec` is present in the payload):
 - The user sees a chart built from the SAME rows. Your text MUST agree with it: same
-  metric, same units, same coverage. If `chart_spec.caption` says the result is cut off
-  or mixes periods, say so in words too.
+  metric, same units, same coverage. If `chart_spec.caption` says the result is cut off,
+  shows only the top N, or mixes periods, say so in words too (in the context line or
+  the "Catatan data").
 - Do not describe a total or a ranking wider than what the chart actually shows.
 
-- Lead with the direct answer / key number.
-- Add brief context or notable patterns (top/bottom, trend) if visible in the data.
-- Keep it concise. Use simple lists or short sentences. Do NOT invent numbers not in the data.
-- If the result is empty, say so and suggest why (e.g. date filter).
+EVIDENCE BOUNDARY:
+- Do NOT invent numbers that are not in the data or in `key_facts`.
 - Treat `result_profile` as the evidence boundary for the complete returned result.
 - Never claim global top, bottom, total, distribution, or complete coverage from
   `rows_preview` alone. Ranking claims require result_profile.profile.ranking_verified=true.
@@ -1114,24 +1224,16 @@ SIGNIFICANCE-WEIGHTED HIGHLIGHTING (apply when the table has BOTH a growth/chang
 metric AND a size/contribution metric, e.g. revenue + growth_pct, or value + contribution%):
 - Weigh growth by contribution. A huge % growth (e.g. +100% s/d ratusan persen) on a row
   whose absolute value / contribution to the total is tiny (rule of thumb: kontribusi < ~1-2%
-  of the total, or naik dari basis yang sangat kecil) is a low-base OUTLIER — do NOT headline
+  of the total, or naik dari basis yang sangat kecil) is a low-base OUTLIER: do NOT headline
   it as a top grower. Mention it only briefly as noise/low-base if at all, never as a key win.
 - Conversely, ACTIVELY surface meaningful growers that sit OUTSIDE the Pareto / top-3 by size:
   a row that is NOT in the top contributors yet shows solid growth on a non-trivial base
   (kontribusi cukup berarti, mis. >= ~3-5% atau nominal signifikan) is a candidate
-  "next growing product / emerging mover" — call it out explicitly as potensi pertumbuhan
+  "next growing product / emerging mover": call it out explicitly as potensi pertumbuhan
   berikutnya, even though it is not yet a leader.
-- When in doubt, prioritize movers where (growth% x contribution%) — i.e. growth that actually
-  moves the total — is highest, not raw % growth alone.
-- State briefly WHY a row is highlighted (kontribusi + pertumbuhan) so the user can judge.
-
-OUTPUT FORMAT:
-- Title the insight/analysis section exactly "Insight" (or "## Insight"). NEVER call it
-  "AI Insight" — always just "Insight".
-- Whenever you present a ranked or "matrix" table (top-N, leaderboard, product mix, demand),
-  the FIRST column MUST be a "Rank" column numbered 1, 2, 3, … in descending order of the main
-  ranking metric. Always show these rank numbers — never omit the Rank column or its 1/2/3 values.
-  Example header: | Rank | <Category> | <Metric> | Contribution % |."""
+- When in doubt, prioritize movers where (growth% x contribution%), i.e. growth that actually
+  moves the total, is highest, not raw % growth alone.
+- State briefly WHY a row is highlighted (kontribusi + pertumbuhan) so the user can judge."""
 
 
 def synthesize(question: str, result: dict, language: str, explanation: str) -> str:
