@@ -560,3 +560,9 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Deploy is one command from Git Bash on Rizal's PC (`deploy/redesign-v2/run.sh`, read through the server's own `git fetch github` because the raw GitHub CDN served stale scripts).
 - Lessons: `rham_site_wise_monthly.month_id` is STRING (perf_dump now types month literals from table metadata); server venv lacked `requirements-dev.txt`; the PC Flutter needs AGP >= 8.11.1 and must not use the tracked Linux `org.gradle.java.home` (the build copy drops it and builds with `--android-skip-build-dependency-validation`).
 - Gates on the server: pytest only `test_governance_covers_live_inventory` failing (also failing before), KB benchmark passed, smoke #11 empty once then OK on rerun. APK signer 038aa1bf...0458 verified, sha256 72737441...9659.
+
+## 2026-11-05 Agent Java v3: plan 6 fitur baru dan mockup (menunggu review Rizal)
+- Rizal minta minimal 5 fitur baru untuk web dan APK plus mockup. Panel desain 5 peran (`.kilo/agent/`) memilih: Diagnosa "Kenapa?", Brief Pagi, Klasemen, Ruang Saya, Tindak Lanjut, Simulasi Target, plus quick win Bandingkan, Ctrl K, site terdekat GPS. Mode Lapangan terpisah ditolak (pengguna utama pimpinan dan planner; dilebur ke Tindak Lanjut Android).
+- Mockup di `design/mockup-v3/` (PNG @2x, halaman review, .figcraft). Plan: Claude Doc "Agent Java v3: Plan Fitur Baru dan Mockup".
+- Temuan teknis: push Android belum punya transport (`notify_push` hanya tersimpan, tidak ada FCM di `mobile/pubspec.yaml`); target bulanan dari `backend/data/targets.json` (fallback `{}` di `dashboard.py`) perlu dicek di server.
+- Aturan desain v3: chip basis di setiap angka, realisasi/estimasi/hipotesis dibedakan visual, data kosong = status "Belum tersedia", pertumbuhan selalu persen plus rupiah, baris aksi Kenapa?/Pin/Tugas/Bagikan.
