@@ -1,7 +1,7 @@
 ---
 title: ADR - the backend decides the chart, the clients only render it
 type: decision
-updated: 2026-08-23
+updated: 2026-11-05
 ---
 
 # ADR: chart_spec is built in the backend
@@ -65,6 +65,25 @@ text to match it: same metric, same units, same coverage. Without this the answe
 
 Both clients keep a local heuristic for chat history rendered before this existed. The
 fallback was also fixed to never plot an identifier or a period column.
+
+## 2026-11 validation layer (the spec the clients draw is `suggest()`)
+
+Since Redesign v1 the clients draw `result.chart` (`suggest()`), and `build_chart_spec()`
+only feeds the legacy `chart_spec` event. The synthesizer was still narrating the
+`build_chart_spec()` view, so text and chart could disagree. Now:
+
+- `suggest()` = `_suggest_raw()` (type choice) + `_finalize()` (safety): every y/y2
+  column must exist and be numeric in at least half the drawn rows and not all zero
+  (a KPI keeps a 0), a missing axis gives type `none` with a `reason`, it never raises.
+- A time axis runs oldest to newest (`spec.rows`). SQL ending in `ORDER BY month DESC`
+  drew every trend right to left. When the SQL ordered by the time column (or not at
+  all), `chronological_rows()` also re-orders `result.rows`, so older APKs that ignore
+  `spec.rows` draw it correctly too. A ranking order (ORDER BY revenue) stays in the table.
+- `year`/`tahun` ints are an axis, never a measure. Decimal is a number.
+- More than 8 groups on a time axis (month x 38 kabkota) keeps the 6 biggest groups and
+  says so in the caption, instead of one line zigzagging through every kabkota.
+- `caption` and `units` come with the spec; the synthesizer receives `chart_brief()` of
+  this SAME spec. Guarded by the `suggest() validation layer` tests in `test_chart_spec.py`.
 
 ## Related
 

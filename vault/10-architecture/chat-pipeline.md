@@ -1,7 +1,7 @@
 ---
 title: Chat pipeline (/api/chat/stream)
 type: architecture
-updated: 2026-08-19
+updated: 2026-11-05
 ---
 
 # Chat pipeline: `/api/chat/stream`
@@ -42,6 +42,24 @@ Router
 
 `step_start` · `route` · `sql` · `result` · `token` · `done`. Needs `X-Accel-Buffering: no`
 for nginx. Non-streaming variant: `POST /api/chat`.
+
+## Speed paths and visible thinking (2026-11)
+
+- The Analyst runs in parallel with the Router (`_SPEC_POOL`), used only off the fast path.
+- After the Analyst, the router runs again only when the rewrite changed the question
+  (`orchestrator.needs_reroute_after_analyst`, word overlap below 0.5).
+- SQL is generated speculatively while the scope gate runs (round 0); used only when the
+  gate confirms the SAME domain with no table hints, otherwise discarded.
+- `needs_llm_critique` no longer sends every "per X" question to the critique model: an
+  explicit grouping the result visibly carries (`requested_grain` + `result_has_grain`)
+  is verified deterministically. A territory used as a filter still gets the critique.
+- `step_start` labels are one plain-language vocabulary (`main.STEP_LABELS`); the original
+  agent name moves to `agent`. `done` carries `elapsed_ms` and `timeline` (label + ms per step).
+- The writer gets `key_facts` (`app/answer_facts.py`): numbers computed once in Indonesian
+  format, quoted verbatim, and a fixed report template in `SYNTH_SYS`. The same facts make
+  `fallback_report()` when the model returns nothing.
+- `tests/test_chat_stream_flow.py` runs the whole generator with stubs; it does not replace
+  the live smoke run.
 
 ## Related
 
