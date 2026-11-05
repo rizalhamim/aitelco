@@ -54,6 +54,18 @@
 .lgv2 .inp > svg { width: 19px; height: 19px; color: #5A6B68; flex: none }
 .lgv2 .inp input { border: 0; outline: 0; flex: 1; min-width: 0; font: 400 15px/1 var(--font-prompt), "Prompt", sans-serif; color: #0F1F1D; background: transparent; padding: 0 }
 .lgv2 .inp input::placeholder { color: #8A9A97 }
+/* The input fills the whole field so nothing the browser paints on it (autofill, focus)
+   shows as a smaller box inside the rounded field. */
+.lgv2 .inp input { align-self: stretch; height: auto; border-radius: 0; box-shadow: none; -webkit-appearance: none; appearance: none }
+/* Saved-password autofill: Chrome/Edge paint a blue rectangle behind the text and Safari a
+   yellow one, which read as a stray box inside the field. Keep the field white instead. */
+.lgv2 .inp input:-webkit-autofill, .lgv2 .inp input:-webkit-autofill:hover, .lgv2 .inp input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 40px #fff inset; box-shadow: 0 0 0 40px #fff inset;
+  -webkit-text-fill-color: #0F1F1D; caret-color: #0F1F1D; transition: background-color 600000s 0s, color 600000s 0s }
+/* Separate rule: a browser that does not know one of these selectors drops the whole list. */
+.lgv2 .inp input:autofill { box-shadow: 0 0 0 40px #fff inset; -webkit-text-fill-color: #0F1F1D; transition: background-color 600000s 0s, color 600000s 0s }
+/* Edge adds its own eye and clear buttons next to the custom show-password button. */
+.lgv2 .inp input::-ms-reveal, .lgv2 .inp input::-ms-clear { display: none }
 .lgv2 .inp button { border: 0; background: transparent; padding: 6px; margin-right: -6px; border-radius: 8px; color: #5A6B68; cursor: pointer; display: grid }
 .lgv2 .inp button svg { width: 19px; height: 19px }
 .lgv2 .inp button:focus-visible { outline: 2px solid var(--teal500) }

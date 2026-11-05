@@ -560,3 +560,7 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Deploy is one command from Git Bash on Rizal's PC (`deploy/redesign-v2/run.sh`, read through the server's own `git fetch github` because the raw GitHub CDN served stale scripts).
 - Lessons: `rham_site_wise_monthly.month_id` is STRING (perf_dump now types month literals from table metadata); server venv lacked `requirements-dev.txt`; the PC Flutter needs AGP >= 8.11.1 and must not use the tracked Linux `org.gradle.java.home` (the build copy drops it and builds with `--android-skip-build-dependency-validation`).
 - Gates on the server: pytest only `test_governance_covers_live_inventory` failing (also failing before), KB benchmark passed, smoke #11 empty once then OK on rerun. APK signer 038aa1bf...0458 verified, sha256 72737441...9659.
+
+## 2026-11-05 Login input boxes cleaned up (web + Android)
+- Android: `InputDecoration.collapsed` only sets `border`, so the theme's `enabledBorder`/`focusedBorder` (OutlineInputBorder in `theme.dart`) still drew a tight second outline around the text inside the rounded login field. `_V2Field` now sets every border state to `InputBorder.none`. Same trap applies to any custom-boxed TextField under the app theme.
+- Web: login inputs now fill the field height, browser autofill paint (blue/yellow rectangle) is overridden to white, Edge's extra reveal/clear buttons hidden. Lint + build green; Flutter gates not run in the cloud container (no SDK).
