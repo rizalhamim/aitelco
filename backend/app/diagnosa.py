@@ -17,6 +17,7 @@ Bases: "month" compares the last complete month with the one before (full months
 """
 from __future__ import annotations
 
+import math
 import time
 from typing import Optional
 
@@ -306,6 +307,8 @@ def build(metric: str = "revenue", region: str = "", kabupaten: str = "", basis:
     if other:
         contrib.append({"key": "_other", "name": "Lainnya", "count": other["count"], "noun": LEVEL_NOUN.get(child, ""),
                         "delta": other["delta"], "share_pct": other.get("share_pct"), "other": True})
+    scale = _scale(metric, max(abs(prev), abs(cur)))
+    _labels(metric, scale, contrib, tree, eff, delta)
     return {
         "metric": metric, "metric_label": mlabel, "unit": m["unit"],
         "scope": {k: v for k, v in scope.items() if k != "provinces"},
@@ -314,7 +317,11 @@ def build(metric: str = "revenue", region: str = "", kabupaten: str = "", basis:
         "source": source,
         "coverage_pct": _coverage(site_rows, scope, per["site_month"]),
         "title": f"Kenapa {lower_label(metric) if metric != 'subs' else 'pelanggan aktif'} {name} {verb} {num(abs(g_pct or 0), 1)}%?",
-        "total": {"prev": prev, "cur": cur, "delta": delta, "pct": g_pct},
+        "total": {"prev": prev, "cur": cur, "delta": delta, "pct": g_pct, "delta_label": fmt_delta(metric, delta),
+                  "detail": f"{pct(g_pct)} · {fmt_value(metric, prev)} ke {fmt_value(metric, cur)}",
+                  "label": f"Perubahan {lower_label(metric) if metric != 'subs' else 'pelanggan aktif'}"},
+        "month_chip": _month_chip(t, per),
+        "scale": scale, "waterfall": _waterfall(prev, contrib, scale, per),
         "summary": seg(*parts), "summary_short": seg(*short),
         "contrib": contrib, "effects": eff, "tree": tree, "hypotheses": hyps,
         "missing": "distribusi voucher dan outlet. Data channel belum ada di Performance dump.",
@@ -324,6 +331,74 @@ def build(metric: str = "revenue", region: str = "", kabupaten: str = "", basis:
                          "origin": "diagnosa", "region": region or None, "kabupaten": path_kab, "metric": metric,
                          "impact": tree["level1"][0]["delta"] if tree["level1"] else delta},
     }
+
+
+def _month_chip(t: dict, per: dict) -> str:
+    """Top bar month: the month of the newest daily data (the same chip on every v3 page)."""
+    last = last_day(t.get("kab_daily") or t.get("region_daily") or [])
+    return month_label(Window(last).month) if last else per["cur"]
+
+
+def _scale(metric: str, size: float) -> dict:
+    """Display unit for charts and short numbers: Rp miliar, TB/PB, or ribu pelanggan."""
+    unit = METRICS[metric]["unit"]
+    if unit == "IDR":
+        return {"div": 1e9, "unit": "Rp miliar"}
+    if unit == "GB":
+        return {"div": 1e6, "unit": "PB"} if size >= 1e6 else {"div": 1e3, "unit": "TB"}
+    return {"div": 1e3, "unit": "ribu pelanggan"}
+
+
+def _labels(metric: str, scale: dict, contrib: list, tree: dict, eff: Optional[dict], delta: float):
+    div = scale["div"]
+    for c in contrib:
+        c["delta_label"] = fmt_delta(metric, c["delta"])
+    for nd in tree.get("level1") or []:
+        nd["delta_label"] = fmt_delta(metric, nd["delta"])
+    for nd in tree.get("level2") or []:
+        nd["delta_label"] = fmt_delta(metric, nd["delta"])
+    if tree.get("level2_other"):
+        o = tree["level2_other"]
+        o["delta_label"] = fmt_delta(metric, o["delta"])
+    if tree.get("sites"):
+        st = tree["sites"]
+        for it in st["items"]:
+            it["short"] = num(it["delta"] / div, 2)
+        av = ""
+        if st.get("avail_min") is not None:
+            lo, hi = st["avail_min"], st["avail_max"]
+            rng = f"{num(lo, 1)}% sd {num(hi, 1)}%" if round(hi, 1) != round(lo, 1) else f"{num(lo, 1)}%"
+            av = f" Availability ke-{len(st['items'])} site {rng}, " + ("normal." if not st.get("below") else f"{st['below']} di bawah ambang.")
+        st["note"] = f"{scale['unit'][0].upper() + scale['unit'][1:]}.{av}"
+    if eff:
+        big = max(abs(eff["volume"]), abs(eff["rate"]), abs(eff["mix"])) or 1
+        subs = {"volume": f"RGU 90D {pct(eff.get('subs_pct'))}",
+                "rate": f"{METRICS[metric]['label']} per RGU {pct(eff.get('rate_pct'))}",
+                "mix": "Pergeseran antar wilayah" if abs(eff["mix"]) >= big * .02 else "Hampir tidak ada pergeseran"}
+        eff["rows"] = [{"key": k, "label": f"Efek {k}", "sub": subs[k], "value": eff[k], "short": num(eff[k] / div, 1),
+                        "width_pct": round(abs(eff[k]) / big * 100, 1)} for k in ("volume", "rate", "mix")]
+        eff["total_short"] = num(eff["total"] / div, 1)
+        eff["note"] = f"{scale['unit'][0].upper() + scale['unit'][1:]}, jumlahnya sama dengan {fmt_delta(metric, delta)}"
+
+
+def _waterfall(prev: float, contrib: list, scale: dict, per: dict) -> dict:
+    """Bars in display units plus a scale that starts near the data (draw.js data-min/data-max)."""
+    div = scale["div"]
+    bars = [{"l": per["prev"], "v": round(prev / div, 1), "t": "total"}]
+    run = prev / div
+    lo_v = hi_v = run
+    for c in contrib:
+        v = c["delta"] / div
+        run += v
+        lo_v, hi_v = min(lo_v, run), max(hi_v, run)
+        lab = f"Lainnya|{c['count']} {c.get('noun', '')}".strip() if c.get("other") else c["name"]
+        bars.append({"l": lab, "v": round(v, 1), **({"dim": 1} if c.get("other") else {})})
+    bars.append({"l": per["cur"], "t": "end"})
+    span = (hi_v - lo_v) or abs(hi_v) * .05 or 1
+    step = 10 ** math.floor(math.log10(span)) / 2
+    lo = max(0.0, math.floor((lo_v - span) / step) * step)
+    hi = math.ceil((hi_v + span * .2) / step) * step
+    return {"bars": bars, "min": lo, "max": hi, "unit": scale["unit"]}
 
 
 def _site_count(site_rows: list[dict], kab: str, kec: str, month: Optional[int]) -> Optional[int]:

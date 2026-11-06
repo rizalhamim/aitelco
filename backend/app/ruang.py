@@ -408,6 +408,7 @@ def board_detail(db: Session, b: Board, user: User, role: str) -> dict:
             "schedule": {"weekday": b.schedule_weekday, "hour": b.schedule_hour, "minute": b.schedule_minute, "label": sched,
                          "recipients": recips, "format": "PDF"} if sched else None,
             "fresh": {"ok": fresh, "label": ("Segar · " if fresh else "Belum segar · ") + _dump_short(ctx.source)},
+            "month_chip": month_label(ctx.win.month) if ctx.win else "",
             "source": ctx.source}
 
 

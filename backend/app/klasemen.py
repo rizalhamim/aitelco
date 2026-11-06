@@ -28,8 +28,8 @@ from . import perf_dump
 from .auth import get_current_user
 from .database import User, WatchRule, get_db
 from .diagnosa import effects
-from .v3_common import (METRICS, REGION_COLOR, Window, complete_month, f, growth, last_day, load_targets,
-                        month_label, norm, num, pct, region_label, region_target, tables, title)
+from .v3_common import (METRICS, REGION_COLOR, Window, complete_month, f, fmt_delta, growth, last_day, load_targets,
+                        month_label, norm, num, pct, region_label, region_target, rp, rp_m, tables, title)
 
 router = APIRouter(prefix="/api/klasemen", tags=["klasemen"])
 
@@ -296,6 +296,11 @@ def build(level: str = "kabupaten", metric: str = "revenue", sort: str = "achiev
             mine = _mine(r, rows, t, level, metric, basis)
     regions_rows, _, _ = rank_rows(t, "region", metric if metric not in ("rev_site",) else "revenue", "")
     regions = _order(regions_rows, sort)
+    for r in rows + regions:
+        _label(r, metric)
+    if mine:
+        mine["need_fmt"] = rp_m(mine["need"]) if mine.get("need") is not None and metric in ("revenue", "rev_site") else (
+            num(mine["need"], 0) if mine.get("need") is not None else None)
     month = win.month if win else basis.get("month")
     noun = LEVEL_NOUN[level]
     return {
@@ -311,9 +316,29 @@ def build(level: str = "kabupaten", metric: str = "revenue", sort: str = "achiev
         "rows": rows, "best": rows[:3], "worst": list(reversed(rows[-3:])) if total > 3 else [],
         "mine": mine,
         "regions": [{"rank": r["rank"], "key": r["key"], "name": r["name"], "color": REGION_COLOR.get(r["key"], "#5A6B68"),
-                     "achievement_pct": r["achievement_pct"], "growth_pct": r["growth_pct"], "growth_abs": r["growth_abs"]} for r in regions],
+                     "achievement_pct": r["achievement_pct"], "growth_pct": r["growth_pct"], "growth_abs": r["growth_abs"],
+                     "ach_label": r["ach_label"], "growth_label": r["growth_label"], "abs_label": r["abs_label"]} for r in regions],
+        "month_chip": month_label(month) if month else "",
+        "vs_label": "vs LMTD" if basis["kind"] == "mtd" else "vs bulan lalu",
         "badges": _badges(rows, t, level),
     }
+
+
+def _label(r: dict, metric: str):
+    """Display strings, so web and Android show the same numbers."""
+    a, g, d = r.get("achievement_pct"), r.get("growth_pct"), r.get("growth_abs")
+    r["ach_label"] = f"{num(a, 1)}%" if a is not None else None
+    r["growth_label"] = pct(g)
+    if d is None:
+        r["abs_label"] = "–"
+    elif metric == "availability":
+        r["abs_label"] = f"{'+' if d > 0 else ''}{num(d, 2)} pp"
+    elif metric == "rev_site":
+        r["abs_label"] = rp(d, sign=True)
+    else:
+        r["abs_label"] = fmt_delta(metric, d)
+    mv = r.get("move")
+    r["move_label"] = None if mv is None else ("tetap" if mv == 0 else f"{'naik' if mv > 0 else 'turun'} {abs(mv)} peringkat")
 
 
 def _mine(r: dict, rows: list[dict], t: dict, level: str, metric: str, basis: dict) -> dict:

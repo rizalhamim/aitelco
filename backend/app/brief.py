@@ -36,7 +36,7 @@ router = APIRouter(prefix="/api/brief", tags=["brief"])
 
 SEND_HOUR = 6
 TOPICS = {"perf": "Performance", "prod": "Site productivity", "prof": "Profile wilayah", "ftth": "FTTH"}
-DEFAULT_PREFS = {"topics": ["perf", "prod", "prof"], "regions": ["JAVA"], "push": True, "email": False}
+DEFAULT_PREFS = {"topics": ["perf", "prod", "prof"], "regions": ["JAVA"], "send": True, "push": True, "email": False}
 TONE = {"k": "Perlu tindakan", "w": "Waspada", "g": "Kabar baik"}
 COUNT_WORD = {1: "Satu", 2: "Dua", 3: "Tiga", 4: "Empat", 5: "Lima"}
 
@@ -397,6 +397,7 @@ def build(db: Session, user: User, now: Optional[datetime] = None) -> dict:
         "subtitle": f"Disusun agent untuk {name} · {DAYS[today.weekday()]}, {today.day} {MONTHS[today.month - 1]} {today.year} {SEND_HOUR:02d}.00 WIB",
         "date_short": f"{DAYS[today.weekday()]}, {today.day} {MONTHS[today.month - 1]} · {SEND_HOUR:02d}.00",
         "headline": headline,
+        "month_chip": month_label(win.month),
         "audio": {"text": audio, "seconds": max(20, round(len(audio.split()) / 2.3))},
         "basis": {"dump": source.get("label_wib"), "period": win.label(), "period_short": win.label().replace("MTD ", "MTD ").replace(" vs LMTD", "\nvs LMTD"),
                   "focus": f"Fokus: {scope}" + (", semua region" if len(focus) == 3 else "")},
@@ -428,6 +429,7 @@ def notification_text(name: str, headline: list, stories: list) -> dict:
 class PrefsIn(BaseModel):
     topics: Optional[list[str]] = None
     regions: Optional[list[str]] = None
+    send: Optional[bool] = None
     push: Optional[bool] = None
     email: Optional[bool] = None
 
@@ -453,6 +455,8 @@ def set_prefs(body: PrefsIn, user: User = Depends(get_current_user), db: Session
     if body.regions is not None:
         regs = [norm(r) for r in body.regions]
         p["regions"] = ["JAVA"] if "JAVA" in regs or not regs else [r for r in regs if r in REGIONS]
+    if body.send is not None:
+        p["send"] = body.send
     if body.push is not None:
         p["push"] = body.push
     if body.email is not None:
@@ -506,7 +510,7 @@ def send_due(now: Optional[datetime] = None) -> int:
             if u.id in done:
                 continue
             p = prefs_of(u)
-            if not p.get("push") and not p.get("email"):
+            if not p.get("send", True) or (not p.get("push") and not p.get("email")):
                 continue
             try:
                 b = build(db, u, now)

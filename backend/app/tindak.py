@@ -8,6 +8,7 @@ POST   /api/tindak/tasks/{id}/items | PATCH .../items/{iid}  checklist
 POST   /api/tindak/tasks/{id}/photos                         field photo (base64 JPEG/PNG, max 2 MB, optional GPS)
 GET    /api/tindak/photos/{pid}                              photo file
 GET    /api/tindak/tasks/{id}/nearest?lat=&lon=              next site to visit (Android GPS)
+GET    /api/tindak/count                                     open tasks of the user (sidebar badge)
 GET    /api/tindak/people                                    PIC choices
 GET    /api/tindak/export.csv
 
@@ -37,7 +38,7 @@ from sqlalchemy.orm import Session
 from . import config
 from .auth import get_current_user
 from .database import Notification, SessionLocal, Task, TaskEvent, TaskItem, TaskPhoto, User, get_db, utcnow
-from .v3_common import (METRICS, WIB, as_date, day_label, daily_series, lower_label, norm, num, pct, region_label, rp_m, tables, title,
+from .v3_common import (METRICS, MONTHS, WIB, as_date, day_label, daily_series, lower_label, norm, num, pct, region_label, rp_m, tables, title,
                         today_wib)
 
 router = APIRouter(prefix="/api/tindak", tags=["tindak"])
@@ -281,6 +282,9 @@ def board(db: Session, user: User, view: str = "all", region: str = "") -> dict:
             "waiting": len(waiting), "proven": len(proven), "verified": len(verified),
         },
         "lanes": lanes, "done_total": done_total,
+        "done": [c for c, t in sorted(((c, t) for c, t in zip(cards, tasks) if c in pool and t.status == "selesai"),
+                                      key=lambda ct: ct[1].done_at or datetime.min, reverse=True)][:50],
+        "month_chip": f"{MONTHS[today.month - 1]} {today.year}",
         "mine": [c for c in mine_only if c["status"] in ("baru", "dikerjakan", "verifikasi")],
         "today": today.isoformat(),
     }
@@ -428,6 +432,14 @@ def create_task(db: Session, user: User, body: TaskIn) -> Task:
     db.commit()
     db.refresh(t)
     return t
+
+
+@router.get("/count")
+def count_mine(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Open tasks the user owns or created: the sidebar badge on Tindak Lanjut."""
+    n = (db.query(Task).filter(Task.status.in_(("baru", "dikerjakan")))
+         .filter((Task.assignee_id == user.id) | (Task.created_by == user.id)).count())
+    return {"open_mine": n}
 
 
 @router.get("/tasks")

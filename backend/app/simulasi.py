@@ -15,7 +15,7 @@ applies the levers itself (formulas in "levers"), so sliders answer instantly.
 from __future__ import annotations
 
 import math
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from statistics import mean, pstdev
 from typing import Optional
 
@@ -25,7 +25,7 @@ from . import perf_dump
 from .auth import get_current_user
 from .database import User
 from .diagnosa import effects
-from .v3_common import (METRICS, REGION_COLOR, REGIONS, Window, complete_month, day_label, daily_series, f,
+from .v3_common import (METRICS, REGION_COLOR, REGIONS, WIB, Window, complete_month, day_label, daily_series, f,
                         load_targets, month_label, month_of, norm, pct, region_label, region_target, rp, rp_m, tables)
 
 router = APIRouter(prefix="/api/simulasi", tags=["simulasi"])
@@ -137,6 +137,14 @@ def _prev_month_total(t: dict, metric: str, region: str, month: int) -> Optional
     return sum(f(r.get(col)) for r in rows)
 
 
+def _source_note(source: dict) -> str:
+    """"dump 5 Nov 05.00" (WIB) or "BigQuery langsung", shown after the data date."""
+    if source.get("kind") in ("dump", "stale") and source.get("created_at"):
+        c = datetime.fromisoformat(source["created_at"]).astimezone(WIB)
+        return f"dump {day_label(c.date())} {c:%H.%M}"
+    return source.get("label") or ""
+
+
 def build(metric: str = "revenue", region: str = "") -> dict:
     if metric not in SIM_METRICS:
         raise HTTPException(400, "Metrik tidak didukung")
@@ -212,7 +220,7 @@ def build(metric: str = "revenue", region: str = "") -> dict:
         "metric": metric, "metric_label": mlabel, "unit": METRICS[metric]["unit"], "region": region or None, "scope_label": scope_label,
         "month": win.month, "month_label": month_label(win.month), "title": f"{mlabel} {scope_label}, {month_label(win.month)}",
         "source": source,
-        "basis": {"data_until": day_label(last), "remaining_days": win.remaining, "weekend_days": weekend,
+        "basis": {"data_until": day_label(last), "source_note": _source_note(source), "remaining_days": win.remaining, "weekend_days": weekend,
                   "target_source": f"targets.json {month_label(win.month)}" if target else None},
         "days_elapsed": win.days, "days_in_month": win.dim, "mtd": fc["mtd"], "per_day": per_day,
         "estimate": {"mid": fc["estimate"], "lo": fc["lo"], "hi": fc["hi"],
