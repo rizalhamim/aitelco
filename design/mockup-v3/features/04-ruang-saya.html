@@ -1,0 +1,164 @@
+<!--title: Ruang Saya-->
+<!--lead: Jawaban agent tidak lagi hilang di riwayat chat. Grafik, tabel, peta, atau KPI apa pun bisa di-pin ke papan pribadi. Pin menyimpan pertanyaannya, bukan angkanya, jadi papan selalu segar dari dump terbaru. Papan bisa dibagikan ke tim, diberi catatan, dan dikirim terjadwal sebelum rapat.-->
+<!--webH: 1120-->
+<!--droidH: 900-->
+<style>
+.body { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 22px 32px; display: flex; flex-direction: column; gap: 14px;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(199,242,94,.12), rgba(199,242,94,0)), #F5F9F8 }
+.hd { display: flex; align-items: flex-end; gap: 14px } .hd .grow { flex: 1 }
+.hd h1 { font: 800 28px/1.2 var(--f-display); margin: 6px 0 4px; letter-spacing: -.01em } .hd p { margin: 0; font: 400 13px/1.4 var(--f-body); color: #5A6B68 }
+.boards { display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #E1E9E7 }
+.boards span { height: 40px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px; font: 600 13.5px/1 var(--f-display); color: #5A6B68; border-bottom: 2.5px solid transparent; white-space: nowrap }
+.boards span.on { color: #0A6A5F; border-color: #0E8579 }
+.boards span em { font-style: normal; font: 600 11px/1 var(--f-display); padding: 3px 7px; border-radius: 99px; background: #ECF3F1; color: #3D4C49 }
+.boards span.add { color: #0A6A5F } .boards svg { width: 15px; height: 15px }
+.boards .grow { flex: 1 }
+.share { display: flex; align-items: center; gap: 10px }
+.faces { display: flex } .faces i { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #F5F9F8; margin-left: -8px; display: grid; place-items: center; font: 700 11px/1 var(--f-display); color: #fff; font-style: normal }
+.bt { white-space: nowrap; height: 38px; padding: 0 13px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; font: 600 13px/1 var(--f-display); color: #0A6A5F; display: inline-flex; align-items: center; gap: 7px }
+.bt svg { width: 16px; height: 16px } .bt.pri { background: #0E8579; border-color: #0E8579; color: #fff }
+.fresh { display: flex; align-items: center; gap: 8px; font: 500 12px/1.3 var(--f-display); color: #3D4C49 }
+.fresh i { width: 8px; height: 8px; border-radius: 50%; background: #2FA84F; box-shadow: 0 0 0 4px #E6F4EA }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start }
+.pin { background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 14px rgba(15,31,29,.04); position: relative }
+.pin .ph { display: flex; align-items: flex-start; gap: 8px }
+.pin .ph .grip { width: 18px; height: 18px; color: #B9C6C3; flex: none; margin-top: 2px }
+.pin h4 { margin: 0; font: 600 14.5px/1.3 var(--f-display) } .pin .ph small { display: block; margin-top: 2px; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.pin .ph .dots { margin-left: auto; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: #5A6B68; flex: none } .pin .ph .dots svg { width: 16px; height: 16px }
+.pin .pf { white-space: nowrap; display: flex; align-items: center; gap: 8px; border-top: 1px solid #ECF3F1; padding-top: 10px; font: 500 11.5px/1.3 var(--f-display); color: #5A6B68 }
+.pin .pf svg { width: 14px; height: 14px } .pin .pf .grow { flex: 1 }
+.pin .pf .ask { color: #B5401F; display: inline-flex; align-items: center; gap: 5px; font-weight: 600 } .pin .pf .ask svg { color: #FF7A59 }
+.src { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 99px; font: 600 10.5px/1 var(--f-display) }
+.src.c { background: #E3F7FA; color: #0E6F7C } .src.t { background: #FCEDD3; color: #8F5A10 } .src.m { background: #F4FCE3; color: #5E8A12 } .src.k { background: #E6F7F5; color: #0A6A5F } .src.n { background: #ECE5FA; color: #6A4CB5 }
+.big { display: flex; align-items: baseline; gap: 10px } .big b { font: 700 32px/1 var(--f-display); font-variant-numeric: tabular-nums } .big span { font: 600 12.5px/1 var(--f-display) }
+.dn { color: #C42B2B } .up { color: #1F7A3A }
+.lg2 { display: flex; gap: 12px; font: 500 11.5px/1 var(--f-display); color: #3D4C49 } .lg2 i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px }
+.mt { width: 100%; border-collapse: collapse; font: 400 12.5px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.mt th { text-align: left; font: 600 10.5px/1 var(--f-display); color: #5A6B68; text-transform: uppercase; letter-spacing: .05em; padding: 7px 6px; border-bottom: 1px solid #E1E9E7 }
+.mt td { padding: 7px 6px; border-bottom: 1px solid #ECF3F1 } .mt .n { text-align: right } .mt td b { font: 600 12.5px/1 var(--f-display) }
+.note2 { border-radius: 14px; background: #FBFDFC; border: 1px solid #ECF3F1; padding: 10px 12px; display: grid; grid-template-columns: 28px 1fr; gap: 10px }
+.note2 .av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 700 11px/1 var(--f-display); color: #fff }
+.note2 b { font: 600 12.5px/1.2 var(--f-display) } .note2 b small { font: 400 11px/1 var(--f-body); color: #5A6B68; margin-left: 6px }
+.note2 p { margin: 3px 0 0; font: 400 12.5px/1.45 var(--f-body); color: #3D4C49 }
+.reply { height: 36px; border-radius: 11px; border: 1px solid #E1E9E7; display: flex; align-items: center; padding: 0 12px; font: 400 12.5px/1 var(--f-body); color: #8A9A97 }
+.empty { border-radius: 16px; background: #FDF3E2; border: 1px dashed #E9C27A; padding: 14px; display: grid; gap: 6px; text-align: center; justify-items: center }
+.empty svg { width: 22px; height: 22px; color: #B7791F } .empty b { font: 600 13px/1.3 var(--f-display); color: #6B4A0E } .empty p { margin: 0; font: 400 12px/1.45 var(--f-body); color: #6B4A0E }
+.drag { transform: rotate(-1.6deg); box-shadow: 0 26px 50px rgba(4,51,46,.22); border-color: #8FDFD7 }
+.drop { border: 2px dashed #8FDFD7; border-radius: 22px; height: 120px; display: grid; place-items: center; font: 600 12.5px/1 var(--f-display); color: #0A6A5F; background: rgba(230,247,245,.5) }
+.kgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.kgrid div { border-radius: 14px; background: #F5F9F8; padding: 10px 12px } .kgrid small { display: block; font: 500 11.5px/1.2 var(--f-display); color: #5A6B68 } .kgrid b { font: 700 20px/1.3 var(--f-display) } .kgrid span { font: 600 11.5px/1 var(--f-display) }
+.sched { border-radius: 16px; background: linear-gradient(135deg, #04332E, #0A6A5F); color: #fff; padding: 14px 16px; display: grid; gap: 8px }
+.sched b { font: 600 14px/1.3 var(--f-display) } .sched p { margin: 0; font: 400 12.5px/1.45 var(--f-body); color: #C0EDE8 }
+.sched .row { display: flex; gap: 8px } .sched .row span { white-space: nowrap; height: 30px; padding: 0 9px; border-radius: 10px; background: rgba(255,255,255,.12); font: 600 12px/30px var(--f-display) }
+
+/* Android */
+.dpad { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: #F5F9F8; overflow: hidden }
+.dboards { display: flex; gap: 6px; overflow: hidden } .dboards span { flex: none; height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 600 12px/32px var(--f-display); color: #3D4C49 }
+.dboards span.on { background: #0E8579; border-color: #0E8579; color: #fff }
+.dfresh { display: flex; align-items: center; gap: 7px; font: 500 11px/1.3 var(--f-display); color: #3D4C49 } .dfresh i { width: 7px; height: 7px; border-radius: 50%; background: #2FA84F } .dfresh .grow { flex: 1 }
+.dfresh .faces i { width: 24px; height: 24px; font-size: 9.5px }
+.dpad .pin { padding: 12px 14px; border-radius: 20px; gap: 8px }
+.dpad .big b { font-size: 26px }
+.fab { position: absolute; right: 16px; bottom: 96px; height: 52px; padding: 0 18px; border-radius: 18px; background: linear-gradient(135deg, #0E8579, #1597A8); color: #fff; display: flex; align-items: center; gap: 8px; font: 600 14px/1 var(--f-display); box-shadow: 0 14px 30px rgba(14,133,121,.35) }
+.fab svg { width: 18px; height: 18px }
+</style>
+
+<template id="web">
+{{SIDE:ruang}}
+{{TOP:Ruang Saya|Papan pantauan pribadi dari jawaban agent}}
+<div class="body">
+  <div class="hd">
+    <div><div class="eb">Ruang Saya · data ilustrasi</div><h1>Pantauan West Java</h1><p>7 pin · dibagikan ke 3 orang · dikirim ke email setiap Senin 07.30</p></div>
+    <div class="grow"></div>
+    <div class="share"><span class="faces"><i style="background:#0E8579;margin-left:0">R</i><i style="background:#6A4CB5">S</i><i style="background:#FF7A59">D</i><i style="background:#22B8C9">A</i></span>
+      <span class="bt"><svg><use href="#i-refresh"/></svg>Segarkan</span><span class="bt"><svg><use href="#i-mail"/></svg>Jadwal kirim</span><span class="bt pri"><svg><use href="#i-users"/></svg>Bagikan papan</span></div>
+  </div>
+  <div class="boards"><span class="on">Pantauan West Java<em>7</em></span><span>Rapat Senin<em>5</em></span><span>FWA Semarang<em>3</em></span><span>Dibagikan ke saya<em>2</em></span><span class="add"><svg><use href="#i-plus"/></svg>Papan baru</span><span class="grow"></span>
+    <span class="fresh" style="border:0"><i></i>Segar · dump 5 Nov 05.00</span></div>
+
+  <div class="grid">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <article class="pin"><div class="ph"><svg class="grip"><use href="#i-dots"/></svg><div><h4>Revenue harian West Java</h4><small>Nov MTD vs Okt, Rp miliar per hari</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+        <div class="big"><b>Rp 52,8 M</b><span class="dn">−1,8% vs LMTD</span></div>
+        <svg width="370" height="110" viewBox="0 0 370 110">
+          <line x1="28" x2="366" y1="96" y2="96" stroke="#B9C6C3"/><line x1="28" x2="366" y1="56" y2="56" stroke="#ECF3F1"/><line x1="28" x2="366" y1="16" y2="16" stroke="#ECF3F1"/>
+          <text x="22" y="99" text-anchor="end" font-family="Poppins" font-size="10" fill="#5A6B68">0</text><text x="22" y="59" text-anchor="end" font-family="Poppins" font-size="10" fill="#5A6B68">7</text><text x="22" y="19" text-anchor="end" font-family="Poppins" font-size="10" fill="#5A6B68">14</text>
+          <path d="M40 19 L125 18.5 L210 20 L295 19.2 L352 18" fill="none" stroke="#22B8C9" stroke-width="2" stroke-dasharray="5 4"/>
+          <path d="M40 20 L125 21.5 L210 22.3 L295 21" fill="none" stroke="#0E8579" stroke-width="3" stroke-linecap="round"/><circle cx="295" cy="21" r="4" fill="#fff" stroke="#0E8579" stroke-width="2.5"/>
+          <text x="40" y="110" text-anchor="middle" font-family="Poppins" font-size="10" fill="#5A6B68">1</text><text x="125" y="110" text-anchor="middle" font-family="Poppins" font-size="10" fill="#5A6B68">2</text><text x="210" y="110" text-anchor="middle" font-family="Poppins" font-size="10" fill="#5A6B68">3</text><text x="295" y="110" text-anchor="middle" font-family="Poppins" font-size="10" fill="#5A6B68">4 Nov</text>
+        </svg>
+        <div class="lg2"><span><i style="background:#0E8579"></i>Nov</span><span><i style="background:#22B8C9"></i>Okt, hari yang sama</span></div>
+        <div class="pf"><span class="src c"><svg><use href="#i-line"/></svg>Grafik</span>Dari Tanya Agent, 1 Nov<span class="grow"></span><span class="ask"><svg><use href="#i-spark"/></svg>Tanya lanjut</span></div></article>
+      <article class="pin"><div class="ph"><svg class="grip"><use href="#i-dots"/></svg><div><h4>Catatan tim</h4><small>Menempel di pin Gross add FWA</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+        <div class="note2"><span class="av" style="background:#6A4CB5">S</span><div><b>Sari<small>Kemarin 16.20</small></b><p>Program bundling FWA Semarang mulai 6 Nov. Pantau gross add 7 hari setelahnya.</p></div></div>
+        <div class="note2"><span class="av" style="background:#0E8579">R</span><div><b>Rizal<small>Kemarin 17.02</small></b><p>Oke, saya buat tindak lanjut dan pasang alert jika di bawah 40 per hari.</p></div></div>
+        <div class="reply">Balas atau sebut @nama</div>
+        <div class="pf"><span class="src n"><svg><use href="#i-chat"/></svg>Catatan</span>2 komentar<span class="grow"></span></div></article>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <article class="pin drag"><div class="ph"><svg class="grip" style="color:#0E8579"><use href="#i-dots"/></svg><div><h4>Peta payload Garut per kecamatan</h4><small>MTD vs LMTD, % perubahan</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+        <svg width="370" height="150" viewBox="0 0 370 150">
+          <rect width="370" height="150" rx="14" fill="#EEF5F3"/>
+          <path d="M60 30 L118 18 L150 44 L132 78 L84 84 L52 60Z" fill="#E6F4EA" stroke="#fff" stroke-width="2"/>
+          <path d="M150 44 L206 26 L246 52 L232 92 L180 96 L132 78Z" fill="#FAD0D0" stroke="#fff" stroke-width="2"/>
+          <path d="M246 52 L300 40 L322 78 L292 106 L232 92Z" fill="#FDECEC" stroke="#fff" stroke-width="2"/>
+          <path d="M84 84 L132 78 L180 96 L170 128 L110 136 L72 114Z" fill="#EF5350" stroke="#fff" stroke-width="2"/>
+          <path d="M180 96 L232 92 L292 106 L270 136 L200 140 L170 128Z" fill="#C42B2B" stroke="#fff" stroke-width="2"/>
+          <text x="214" y="124" text-anchor="middle" font-family="Poppins" font-size="10.5" font-weight="700" fill="#fff">Cikajang −12%</text>
+          <text x="120" y="114" text-anchor="middle" font-family="Poppins" font-size="10.5" font-weight="600" fill="#fff">Pameungpeuk</text>
+          <text x="100" y="56" text-anchor="middle" font-family="Poppins" font-size="10.5" fill="#1F7A3A">Garut Kota</text>
+        </svg>
+        <div class="lg2"><span><i style="background:#C42B2B"></i>turun &gt; 10%</span><span><i style="background:#FAD0D0"></i>0 sd −5%</span><span><i style="background:#E6F4EA"></i>naik</span></div>
+        <div class="pf"><span class="src m"><svg><use href="#i-map"/></svg>Peta</span>Dari Peta Agent<span class="grow"></span><span class="ask"><svg><use href="#i-spark"/></svg>Tanya lanjut</span></div></article>
+      <div class="drop">Lepas di sini untuk memindah pin</div>
+      <article class="pin"><div class="ph"><svg class="grip"><use href="#i-dots"/></svg><div><h4>Market share FWA Semarang</h4><small>Pin dari pertanyaan 28 Okt</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+        <div class="empty"><svg><use href="#i-info"/></svg><b>Belum tersedia di Performance dump</b><p>Pin tetap disimpan dan akan terisi otomatis saat data market share masuk dump. Sementara itu tampilkan gross add FWA?</p></div>
+        <div class="pf"><span class="src k"><svg><use href="#i-db"/></svg>KPI</span>Menunggu data<span class="grow"></span></div></article>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <article class="pin"><div class="ph"><svg class="grip"><use href="#i-dots"/></svg><div><h4>KPI pantauan</h4><small>West Java · MTD 1 sd 4 Nov</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+        <div class="kgrid"><div><small>Site di bawah target</small><b>37</b> <span class="dn">▲9</span></div><div><small>Availability</small><b>99,58%</b> <span class="up">+0,04 pp</span></div><div><small>RGU 90D</small><b>9,4 jt</b> <span class="dn">−0,8%</span></div><div><small>Rev per site</small><b>Rp 21,4 jt</b> <span class="dn">−1,2%</span></div></div>
+        <div class="pf"><span class="src k"><svg><use href="#i-grid"/></svg>KPI</span>Dari Dashboard<span class="grow"></span></div></article>
+      <article class="pin"><div class="ph"><svg class="grip"><use href="#i-dots"/></svg><div><h4>5 kabupaten turun terdalam</h4><small>Revenue MTD vs LMTD</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+        <table class="mt"><thead><tr><th>Kabupaten</th><th class="n">%</th><th class="n">Rp</th></tr></thead><tbody>
+          <tr><td><b>Garut</b></td><td class="n dn">−6,1%</td><td class="n">−0,7 M</td></tr><tr><td><b>Cianjur</b></td><td class="n dn">−5,2%</td><td class="n">−0,8 M</td></tr><tr><td><b>Tasikmalaya</b></td><td class="n dn">−3,1%</td><td class="n">−0,4 M</td></tr><tr><td><b>Sukabumi</b></td><td class="n dn">−1,6%</td><td class="n">−0,3 M</td></tr><tr><td><b>Ciamis</b></td><td class="n dn">−1,2%</td><td class="n">−0,1 M</td></tr></tbody></table>
+        <div class="pf"><span class="src t"><svg><use href="#i-table"/></svg>Tabel</span>Dari Klasemen<span class="grow"></span><span class="ask"><svg><use href="#i-spark"/></svg>Tanya lanjut</span></div></article>
+      <div class="sched"><b>Kirim papan ini sebelum rapat</b><p>Setiap Senin 07.30, PDF ke 4 orang. Angka dibekukan saat dikirim dan diberi tanggal data.</p><div class="row"><span>Senin 07.30</span><span>PDF</span><span>4 orang</span></div></div>
+    </div>
+  </div>
+</div>
+</template>
+
+<template id="droid">
+{{STATUS}}
+{{DBAR:Ruang Saya|Pantauan West Java · 7 pin}}
+<div class="dpad">
+  <div class="dboards"><span class="on">Pantauan West Java</span><span>Rapat Senin</span><span>FWA Semarang</span><span>+ Papan</span></div>
+  <div class="dfresh"><i></i>Segar · dump 5 Nov 05.00<span class="grow"></span><span class="faces"><i style="background:#0E8579;margin-left:0">R</i><i style="background:#6A4CB5">S</i><i style="background:#FF7A59">D</i></span></div>
+  <article class="pin"><div class="ph"><div><h4>Revenue harian West Java</h4><small>Nov MTD vs Okt · Rp miliar per hari</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+    <div class="big"><b>Rp 52,8 M</b><span class="dn">−1,8% vs LMTD</span></div>
+    <svg width="320" height="70" viewBox="0 0 320 70"><line x1="18" x2="318" y1="60" y2="60" stroke="#B9C6C3"/><line x1="18" x2="318" y1="8" y2="8" stroke="#ECF3F1"/><text x="12" y="63" text-anchor="end" font-family="Poppins" font-size="9.5" fill="#5A6B68">0</text><text x="12" y="11" text-anchor="end" font-family="Poppins" font-size="9.5" fill="#5A6B68">14</text>
+<path d="M26 10.2 L110 10.5 L194 9.6 L278 10.1 L312 10.8" fill="none" stroke="#22B8C9" stroke-width="2" stroke-dasharray="5 4"/><path d="M26 10.9 L110 11.8 L194 12.2 L278 11.4" fill="none" stroke="#0E8579" stroke-width="3" stroke-linecap="round"/><circle cx="278" cy="11.4" r="3.5" fill="#fff" stroke="#0E8579" stroke-width="2"/></svg>
+    <div class="lg2"><span><i style="background:#0E8579"></i>Nov</span><span><i style="background:#22B8C9"></i>Okt, hari yang sama</span></div>
+    <div class="pf"><span class="src c">Grafik</span>Tanya Agent<span class="grow"></span><span class="ask"><svg><use href="#i-spark"/></svg>Tanya lanjut</span></div></article>
+  <article class="pin"><div class="ph"><div><h4>KPI pantauan</h4><small>West Java · MTD 1 sd 4 Nov</small></div><span class="dots"><svg><use href="#i-dots"/></svg></span></div>
+    <div class="kgrid"><div><small>Site &lt; target</small><b>37</b> <span class="dn">▲9</span></div><div><small>Availability</small><b>99,58%</b> <span class="up">+0,04</span></div></div></article>
+  <article class="pin"><div class="ph"><div><h4>Market share FWA Semarang</h4><small>Pin dari pertanyaan 28 Okt</small></div></div>
+    <div class="empty" style="padding:10px"><b>Belum tersedia di Performance dump</b><p>Akan terisi otomatis saat data masuk.</p></div></article>
+</div>
+<span class="fab"><svg><use href="#i-spark"/></svg>Tanya dan pin</span>
+{{BNAV:dash}}
+</template>
+
+<template id="notes">
+<li>Tombol Pin di setiap jawaban agent, kartu KPI, peta, tabel Klasemen, dan kartu Brief Pagi.</li>
+<li>Pin menyimpan pertanyaan dan spesifikasi grafik, bukan angka. Papan diperbarui dari dump terbaru dan statusnya terlihat ("Semua pin segar").</li>
+<li>Beberapa papan per user (misalnya Rapat Senin), bisa dibagikan ke tim dengan hak lihat atau edit, dibatasi wilayah akses user.</li>
+<li>Pin bisa digeser dan diatur ulang (drag and drop dengan bayangan dan area lepas).</li>
+<li>Catatan dan komentar tim menempel di pin, dengan @sebut nama.</li>
+<li>Data yang belum ada (market share FWA) tampil sebagai status "Belum tersedia", pin tidak dihapus.</li>
+<li>Kirim papan terjadwal sebagai PDF sebelum rapat, angka dibekukan dan diberi tanggal data.</li>
+<li>Android: daftar pin vertikal dan tombol "Tanya dan pin".</li>
+</template>

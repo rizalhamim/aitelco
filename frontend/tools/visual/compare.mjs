@@ -31,6 +31,20 @@ async function waitFor(url, ms = 60000) {
   throw new Error(`server at ${url} did not start`);
 }
 
+/** "Data ilustrasi" chips of a v3 mockup frame, read from its render page:
+    { render: "02-brief-pagi", frame: "web" | "droid" } -> [{x, y, w, h}] in frame CSS px. */
+async function illusRects(browser, { render, frame = "web" }) {
+  const page = await browser.newPage({ viewport: { width: 1900, height: 2600 } });
+  await page.goto("file://" + join(ROOT, "design/mockup-v3/render", render + ".html"));
+  await page.evaluate(() => document.fonts.ready);
+  const rects = await page.evaluate((id) => {
+    const f = document.getElementById(id), fb = f.getBoundingClientRect();
+    return [...f.querySelectorAll(".illus")].map((n) => { const r = n.getBoundingClientRect(); return { x: r.x - fb.x - 2, y: r.y - fb.y - 2, w: r.width + 4, h: r.height + 4 }; });
+  }, frame === "web" ? "webFrame" : "droidFrame");
+  await page.close();
+  return rects;
+}
+
 async function main() {
   const only = process.argv.slice(2);
   const cases = CASES.filter((c) => !only.length || only.includes(c.name));
@@ -73,7 +87,8 @@ async function main() {
       const shot = join(OUT, `${c.name}.app.png`);
       await page.screenshot({ path: shot, clip: c.clip ?? { x: 0, y: 0, width: c.width, height: c.height } });
       await page.close();
-      const res = await sharp.compare(mock, shot, join(OUT, `${c.name}.png`), c.clip);
+      const mask = c.illus ? await illusRects(browser, c.illus) : c.mask;
+      const res = await sharp.compare(mock, shot, join(OUT, `${c.name}.png`), c.clip, mask);
       const max = c.max ?? 2;
       const ok = res.score <= max;
       if (!ok) failed++;

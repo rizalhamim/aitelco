@@ -114,6 +114,31 @@ application or proxy change was needed. APK 1.47 still checks automatically only
 when Chat initializes, so fully close/reopen it and enter Chat, or use Profile's
 manual update check. Physical-device notification remains a user smoke test.
 
+### Agent Java v3 screens, 2026-11-06
+
+Six pushed screens in `lib/src/screens/v3/` (Brief Pagi, Diagnosa, Klasemen, Ruang Saya,
+Tindak Lanjut, Simulasi Target), opened from the "Alat analisa" card at the end of the
+Dashboard and from notifications. `V3Page` keeps the v2 app bar and bottom nav; HomeShell
+registers `V3Nav` callbacks (tab switch, alerts, ask, open map). Kit: `lib/src/ui/v3.dart`.
+
+Golden gate: `flutter test test/golden_v3` renders each screen in the mockup frame with the
+web gate's fixtures (`node frontend/tools/visual/export-v3-fixtures.mjs` writes
+`test/golden_v3/fixtures.json`) and compares against `design/mockup-v3/png`; every region
+must be within 2%. Chrome layout facts that the matching needed:
+- Chrome rounds font ascent and descent to whole px before half-leading (baseline rows).
+- Chrome floors border widths of 1px and up to whole CSS px (1.5px dashed draws as 1px,
+  dash 3w gap 2w).
+- Inline text directly in a div sits in a 16px Prompt line box (24.2px): `v3Strut`.
+- Flutter rounds line boxes; `V2Lines(exactPitch: true)` paints lines at the exact CSS pitch.
+- A CSS grid track never shrinks below a fixed-width child (the 314px sparkline, 334px fan),
+  so content may run into the card padding on a 370px screen.
+- Glyphs from a fallback font (`≥`, `−` in Prompt) grow the line box.
+
+Notifications: no FCM. WorkManager polls `/api/notify/pending` about every 15 minutes
+(`lib/src/services/v3_notify.dart`) and shows them with flutter_local_notifications; links
+`/brief`, `/tindak?task=N`, `/ruang?board=N` open the screen. Release 1.51.0+70 ships with
+`deploy/v3/`.
+
 ## Related
 
 - [[system-overview]] · [[deploy-restart]] · [[reports]]

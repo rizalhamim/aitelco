@@ -338,10 +338,14 @@ BoxShadow cssShadow(Color color, double dx, double dy, double blur, [double spre
 /// 1 px lower than Chrome, so a 3-line paragraph drifts; this keeps the
 /// mockup's block height and nudges the glyphs up by [dy].
 class V2Lines extends StatelessWidget {
-  const V2Lines(this.text, {super.key, required this.lineHeight, this.dy = -1});
+  const V2Lines(this.text, {super.key, required this.lineHeight, this.dy = -1, this.exactPitch = false});
   final InlineSpan text;
   final double lineHeight;
   final double dy;
+
+  /// Flutter rounds each line box to whole px; true paints every line at exactly
+  /// [lineHeight] apart like the browser does (used by the v3 pixel-matched screens).
+  final bool exactPitch;
 
   @override
   Widget build(BuildContext context) {
@@ -349,6 +353,12 @@ class V2Lines extends StatelessWidget {
       final tp = TextPainter(text: text, textDirection: TextDirection.ltr, textScaler: MediaQuery.textScalerOf(context))
         ..layout(maxWidth: c.maxWidth);
       final lines = tp.computeLineMetrics().length;
+      if (exactPitch) {
+        return Semantics(
+          label: text.toPlainText(),
+          child: SizedBox(width: c.maxWidth, height: lines * lineHeight, child: CustomPaint(painter: _PitchPainter(tp, lineHeight, dy))),
+        );
+      }
       tp.dispose();
       return SizedBox(
         height: lines * lineHeight,
@@ -360,4 +370,29 @@ class V2Lines extends StatelessWidget {
       );
     });
   }
+}
+
+class _PitchPainter extends CustomPainter {
+  _PitchPainter(this.tp, this.lh, this.dy);
+  final TextPainter tp;
+  final double lh, dy;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ms = tp.computeLineMetrics();
+    if (ms.isEmpty) return;
+    final base0 = ms.first.baseline;
+    for (var i = 0; i < ms.length; i++) {
+      final m = ms[i];
+      final shift = base0 + i * lh + dy - m.baseline;
+      canvas.save();
+      canvas.translate(0, shift);
+      canvas.clipRect(Rect.fromLTRB(-20, m.baseline - m.ascent, size.width + 20, m.baseline + m.descent));
+      tp.paint(canvas, Offset.zero);
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PitchPainter old) => old.tp != tp || old.lh != lh || old.dy != dy;
 }

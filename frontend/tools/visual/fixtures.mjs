@@ -6,6 +6,7 @@ import { MAP, UPLOAD, mapAsk } from "./map-fixture.mjs";
 import { LIBRARY, OUTLOOK, RUNS, SCHEDULES } from "./report-fixture.mjs";
 import { NOTIFS, PROFILE } from "./profile-fixture.mjs";
 import { APP_STATS } from "./stats-fixture.mjs";
+import { V3_STATIC } from "./v3-fixtures.mjs";
 import { RULES, WATCH_ALERTS, WATCH_META, WATCH_PARSE, WATCH_STATS } from "./watchlist-fixture.mjs";
 const HISTORY = [
   { session_id: "s1", title: "Revenue West Java vs bulan lalu", message_count: 4, updated_at: "2026-11-01T05:10:00" },
@@ -47,6 +48,7 @@ const STATIC = {
   "/api/profile": PROFILE,
   "/api/admin/app-stats": APP_STATS,
   "/api/auth/me/notifications": NOTIFS,
+  ...V3_STATIC,
 };
 
 export function fixtureFor(pathname, params, method, body) {
