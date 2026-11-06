@@ -18,8 +18,13 @@ Tables (all Circle Java):
     avail_month   4G availability per territory (circle, region, kabkot) and month
     region_daily  region x day, last 70 days (10 weeks), when the daily KPI table has the same
                   measures (probed from the table schema, skipped otherwise)
-    site_month    site x month for this month, last month and the same month last year:
+    site_month    site x month for this month, the two months before and the same month last year:
                   payload, revenue when present, 4G availability
+    kab_daily     kabupaten x day, last 70 days (Klasemen, Brief Pagi, Tindak Lanjut verification),
+                  plus gross add FWA when the daily table has it
+    kec_mtd       kecamatan MTD (day 1 to the latest day) and LMTD (same days last month),
+                  one row per kecamatan and period, so Klasemen and Diagnosa compare
+                  apple-to-apple without loading 70 days of every kecamatan
 
 Columns are probed from table metadata before each run, so an upstream rename drops
 one optional measure instead of failing the whole dump. Readers get None when the dump
@@ -61,6 +66,8 @@ T_ADDR = "rham_site_wise_addr_java"
 
 # measure -> physical column on the highlevel tables (same names as dashboard.KPIS)
 MEASURES = {"revenue": "rev_prepaid", "subs": "rgu_90d", "payload_gb": "usg_data_gb", "gross_add": "gross_add"}
+# optional daily measures: first column name present wins, skipped when none is
+DAILY_EXTRA = {"fwa_gross_add": ("fwa_gross_add", "gross_add_fwa", "ga_fwa", "fwa_ga")}
 
 
 def _fq(table: str) -> str:
@@ -151,11 +158,48 @@ WHERE t.circle = 'JAVA' AND t.region IS NOT NULL
   AND x.dt_id BETWEEN DATE '{start.isoformat()}' AND DATE '{latest_day.isoformat()}'
 GROUP BY dt_id, region
 """
+    if latest_day and day_col and "kec_id" in dly and dsums and kab:
+        start = latest_day - timedelta(days=69)
+        extra = "".join(f",\n  SUM(x.{c}) AS {m}" for m, c in ((m, _pick(dly, *names)) for m, names in DAILY_EXTRA.items()) if c)
+        q["kab_daily"] = f"""
+SELECT x.dt_id AS dt_id, t.region AS region, z.{kab} AS kabupaten,
+  {dsums}{extra}
+FROM {_fq(T_DLY)} x
+JOIN {_fq(T_TERR)} t ON x.kec_id = t.kec_id
+JOIN {_fq(T_ZZ)} z ON x.kec_id = z.kec_id
+WHERE t.circle = 'JAVA' AND t.region IS NOT NULL
+  AND x.dt_id BETWEEN DATE '{start.isoformat()}' AND DATE '{latest_day.isoformat()}'
+GROUP BY dt_id, region, kabupaten
+"""
+        cur0 = latest_day.replace(day=1)
+        lm_end = cur0 - timedelta(days=1)
+        lm0 = lm_end.replace(day=1)
+        lm_same = lm0.replace(day=min(latest_day.day, lm_end.day))
+        flows = ",\n  ".join(f"SUM(x.{c}) AS {m}" for m, c in MEASURES.items() if c in dly and m != "subs")
+        stock = (f",\n  SUM(IF(x.dt_id IN (DATE '{latest_day.isoformat()}', DATE '{lm_same.isoformat()}'), x.{MEASURES['subs']}, 0)) AS subs"
+                 if MEASURES["subs"] in dly else "")
+        kec_names = ",\n  ".join(f"ANY_VALUE(z.{c}) AS {alias}" for c, alias in ((kab, "kabupaten"), (kec_name, "kecamatan")) if c)
+        if flows:
+            q["kec_mtd"] = f"""
+SELECT x.kec_id AS kec_id, ANY_VALUE(t.region) AS region,
+  {kec_names},
+  IF(x.dt_id >= DATE '{cur0.isoformat()}', 'mtd', 'lmtd') AS period,
+  {flows}{stock}
+FROM {_fq(T_DLY)} x
+JOIN {_fq(T_TERR)} t ON x.kec_id = t.kec_id
+JOIN {_fq(T_ZZ)} z ON x.kec_id = z.kec_id
+WHERE t.circle = 'JAVA' AND t.region IS NOT NULL
+  AND (x.dt_id BETWEEN DATE '{cur0.isoformat()}' AND DATE '{latest_day.isoformat()}'
+       OR x.dt_id BETWEEN DATE '{lm0.isoformat()}' AND DATE '{lm_same.isoformat()}')
+GROUP BY kec_id, period
+"""
     site = cols(T_SITE)
     addr = cols(T_ADDR)
     if "site_id" in site and "usg_data_gb" in site and "site_id" in addr:
         rev = _pick(site, "rev_total", "rev_prepaid", "revenue")
-        sm = (latest, month_add(latest, -1), month_add(latest, -12))
+        # latest, previous, the one before (Diagnosa compares the last complete month while
+        # the latest one is still running) and the same month last year
+        sm = (latest, month_add(latest, -1), month_add(latest, -2), month_add(latest, -12))
         av = cols(T_SITE_AV)
         has_av = "site_id" in av and "avg_avail_pct_4g" in av
         q["site_month"] = f"""

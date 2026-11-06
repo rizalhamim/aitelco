@@ -504,6 +504,7 @@ def get_notifications(
                 "title": n.title,
                 "message": n.message,
                 "kind": n.kind,
+                "link": n.link,
                 "is_read": n.is_read,
                 "created_at": n.created_at.isoformat() if n.created_at else None,
             }

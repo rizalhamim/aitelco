@@ -1,7 +1,8 @@
 """Database models and session management.
 
 SQLite-backed user management with SQLAlchemy ORM.
-Tables: users, chat_sessions, chat_messages, login_audit, usage_log, app_downloads, app_clients
+Tables: users, chat_sessions, chat_messages, login_audit, usage_log, app_downloads, app_clients,
+watchlist, report schedules, and the v3 boards, pins, tasks and brief logs
 """
 import os
 from datetime import datetime, timezone
@@ -159,8 +160,10 @@ class Notification(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
-    kind = Column(String(30), default="info", nullable=False)  # info, success, warn, alert
+    kind = Column(String(30), default="info", nullable=False)  # info, success, warn, alert, brief, task
     is_read = Column(Boolean, default=False, nullable=False)
+    link = Column(String(160), nullable=True)                 # app route to open, e.g. /brief, /tindak?task=3
+    push = Column(Boolean, default=False, nullable=False)     # also shown as an Android system notification
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
 
@@ -315,6 +318,137 @@ class ReportLink(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
 
+class Board(Base):
+    """Ruang Saya: a personal board of pins, optionally shared and sent on a schedule."""
+    __tablename__ = "boards"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(120), nullable=False)
+    position = Column(Integer, nullable=False, default=0)
+    schedule_weekday = Column(Integer, nullable=True)      # 0 = Monday; None = no scheduled send
+    schedule_hour = Column(Integer, nullable=False, default=7)
+    schedule_minute = Column(Integer, nullable=False, default=30)
+    schedule_recipients = Column(Text, nullable=False, default="")  # comma separated, extra to members
+    last_sent_on = Column(String(10), nullable=True)       # YYYY-MM-DD (WIB)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class BoardMember(Base):
+    __tablename__ = "board_members"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    board_id = Column(Integer, ForeignKey("boards.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    role = Column(String(10), nullable=False, default="view")  # view, edit
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+    __table_args__ = (Index("ix_board_members_board_user", "board_id", "user_id", unique=True),)
+
+
+class Pin(Base):
+    """A pinned question: stores the spec (what to compute), never the numbers, except
+    for frozen chat answers that cannot be recomputed without the agent."""
+    __tablename__ = "pins"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    board_id = Column(Integer, ForeignKey("boards.id", ondelete="CASCADE"), nullable=False, index=True)
+    kind = Column(String(20), nullable=False, default="chart")  # chart, map, table, kpi, notes, answer
+    title = Column(String(200), nullable=False)
+    subtitle = Column(String(255), nullable=True)
+    spec = Column(Text, nullable=False, default="{}")       # JSON, see ruang.SPEC_TYPES
+    origin = Column(String(20), nullable=False, default="tanya")  # tanya, peta, dashboard, klasemen, brief, diagnosa, simulasi
+    col = Column(Integer, nullable=False, default=0)
+    position = Column(Integer, nullable=False, default=0)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class PinNote(Base):
+    __tablename__ = "pin_notes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    pin_id = Column(Integer, ForeignKey("pins.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    text = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class Task(Base):
+    """Tindak Lanjut: an action with a PIC, due date, checklist and a KPI criterion.
+    Closed when the KPI is shown to improve (14 days before vs 14 days after)."""
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    assignee_name = Column(String(120), nullable=True)      # PIC outside the app, or the user's display name
+    assignee_unit = Column(String(120), nullable=True)      # e.g. "Branch Garut"
+    title = Column(String(200), nullable=False)
+    origin = Column(String(20), nullable=False, default="manual")  # alert, diagnosa, brief, ruang, simulasi, manual
+    origin_ref = Column(Text, nullable=True)               # JSON: question, rule id, pin id ...
+    region = Column(String(60), nullable=True)
+    kabupaten = Column(String(80), nullable=True)
+    scope_label = Column(String(160), nullable=True)       # "Garut · 3 kecamatan"
+    impact = Column(Float, nullable=True)                  # IDR at stake, drives priority
+    priority = Column(String(10), nullable=False, default="sedang")  # tinggi, sedang, rendah
+    status = Column(String(15), nullable=False, default="baru")  # baru, dikerjakan, verifikasi, selesai, batal
+    due_date = Column(String(10), nullable=True)           # YYYY-MM-DD
+    kpi = Column(Text, nullable=True)                      # JSON criterion, see tindak.criterion_text
+    sites = Column(Text, nullable=True)                    # JSON list of site ids to visit
+    done_at = Column(DateTime, nullable=True)              # work finished, verification starts
+    verify = Column(Text, nullable=True)                   # JSON result of the KPI verification
+    verified_on = Column(String(10), nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False, index=True)
+
+
+class TaskItem(Base):
+    __tablename__ = "task_items"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    text = Column(String(255), nullable=False)
+    done = Column(Boolean, nullable=False, default=False)
+    position = Column(Integer, nullable=False, default=0)
+
+
+class TaskPhoto(Base):
+    __tablename__ = "task_photos"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    path = Column(String(255), nullable=False)             # relative to data/uploads
+    caption = Column(String(160), nullable=True)
+    lat = Column(Float, nullable=True)
+    lon = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class TaskEvent(Base):
+    __tablename__ = "task_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    text = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+
+class BriefLog(Base):
+    """Brief Pagi per user and day: sent notification, opened cards and the vote."""
+    __tablename__ = "brief_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    day = Column(String(10), nullable=False)
+    sent_at = Column(DateTime, nullable=True)
+    opened = Column(Text, nullable=True)                   # JSON list of story keys opened
+    vote = Column(String(5), nullable=True)                # up, down
+
+    __table_args__ = (Index("ix_brief_logs_user_day", "user_id", "day", unique=True),)
+
+
 # ── Database Init ──
 
 def _add_missing_columns():
@@ -323,7 +457,8 @@ def _add_missing_columns():
     wanted = {"report_runs": [("failed", "INTEGER NOT NULL DEFAULT 0")],
               "watch_rules": [("notify_push", "BOOLEAN NOT NULL DEFAULT 0")],
               "users": [("password_changed_at", "DATETIME"), ("preferences", "TEXT"), ("approval_status", "VARCHAR(20)")],
-              "app_clients": [("signed_out_at", "DATETIME")]}
+              "app_clients": [("signed_out_at", "DATETIME")],
+              "notifications": [("link", "VARCHAR(160)"), ("push", "BOOLEAN NOT NULL DEFAULT 0")]}
     insp = inspect(engine)
     with engine.begin() as conn:
         for table, cols in wanted.items():
