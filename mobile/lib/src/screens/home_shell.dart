@@ -8,6 +8,8 @@ import 'chat_screen.dart';
 import 'dashboard_screen.dart';
 import 'map_screen.dart';
 import 'report_list_screen.dart';
+import '../services/v3_notify.dart';
+import 'v3/v3_nav.dart';
 import 'performance_screen.dart';
 import 'watchlist_screen.dart';
 
@@ -34,7 +36,20 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // the v3 screens (Brief Pagi, Klasemen, Diagnosa, ...) open on top of the shell
+    V3Nav.goTab = _go;
+    V3Nav.openAlerts = _openAlerts;
+    V3Nav.ask = _ask;
+    V3Nav.openMap = (kab, metric) {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      _go(3);
+      _map.currentState?.openKabupaten(kab, metric: metric);
+    };
     _refreshCount();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      V3Notify.requestPermission();
+      V3Notify.openPending();
+    });
     _poll = Timer.periodic(const Duration(minutes: 5), (_) => _refreshCount());
   }
 
@@ -53,7 +68,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   Future<void> _refreshCount() async {
     try {
       final n = await ApiClient.alertCount();
-      if (mounted) setState(() => _alerts = n);
+      if (mounted) setState(() => _alerts = V3Nav.alerts = n);
     } catch (_) {/* badge is best-effort */}
   }
 
@@ -75,7 +90,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       builder: (_) => WatchlistScreen(
         key: key,
         onAsk: _ask,
-        onCountChanged: (n) => setState(() => _alerts = n),
+        onCountChanged: (n) => setState(() => _alerts = V3Nav.alerts = n),
         onNav: _go,
         onOpenMap: (kab, metric) {
           _go(3);

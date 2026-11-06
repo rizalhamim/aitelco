@@ -4,6 +4,7 @@ import 'src/theme.dart';
 import 'src/api/api_client.dart';
 import 'src/app_state.dart';
 import 'src/services/keep_alive_service.dart';
+import 'src/services/v3_notify.dart';
 import 'src/screens/login_screen.dart';
 import 'src/screens/chat_screen.dart';
 import 'src/screens/download_screen.dart';
@@ -37,6 +38,7 @@ class _BizplanAppState extends State<BizplanApp> {
   void initState() {
     super.initState();
     AppState.I.addListener(() => setState(() {}));
+    V3Notify.init(_navigatorKey);
     ApiClient.onSessionExpired = () => _navigatorKey.currentState
         ?.pushNamedAndRemoveUntil('/login', (_) => false);
   }

@@ -320,8 +320,10 @@ class _DiagnosaBody extends StatelessWidget {
     return Row(children: [
       btn('map', 'Lihat di Peta', false, () {
         final s = d['scope'] as Map?;
-        V3Nav.openMap?.call((s?['kabupaten'] ?? '').toString(), (d['metric'] ?? 'revenue').toString());
-        V3Nav.tab(context, 3);
+        // the shell pops back to the tabs, switches to Peta and opens the kabupaten
+        final open = V3Nav.openMap;
+        if (open == null) return V3Nav.tab(context, 3);
+        open((s?['kabupaten'] ?? '').toString(), (d['metric'] ?? 'revenue').toString());
       }),
       const SizedBox(width: 8),
       btn('check', 'Tindak lanjut', true, () async {

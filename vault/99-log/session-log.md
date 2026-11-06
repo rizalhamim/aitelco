@@ -566,3 +566,11 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Mockup di `design/mockup-v3/` (PNG @2x, halaman review, .figcraft). Plan: Claude Doc "Agent Java v3: Plan Fitur Baru dan Mockup".
 - Temuan teknis: push Android belum punya transport (`notify_push` hanya tersimpan, tidak ada FCM di `mobile/pubspec.yaml`); target bulanan dari `backend/data/targets.json` (fallback `{}` di `dashboard.py`) perlu dicek di server.
 - Aturan desain v3: chip basis di setiap angka, realisasi/estimasi/hipotesis dibedakan visual, data kosong = status "Belum tersedia", pertumbuhan selalu persen plus rupiah, baris aksi Kenapa?/Pin/Tugas/Bagikan.
+
+## 2026-11-06 Agent Java v3: produksi web, Android, rilis 1.51.0 (70) disiapkan
+- Rizal setuju plan v3 dan minta sampai publish dengan output persis desain. Backend (6 modul + notify), web (6 halaman, 17 kasus visual lulus) dan Android (6 layar, golden test semua area ≤2%) selesai di branch `claude/project-thread-kjx27g`.
+- Android: kartu "Alat analisa" di akhir Dashboard (golden v2 tidak berubah), `V3Nav` didaftarkan HomeShell, notifikasi lewat WorkManager tanpa FCM. Plugin baru: flutter_tts, image_picker, flutter_local_notifications, workmanager (desugaring, minSdk 24, compileSdk 36).
+- Fakta layout Chrome untuk pencocokan piksel dicatat di [[mobile]].
+- Deploy: `deploy/v3/run.sh` (satu perintah dari Git Bash Rizal). Belum dijalankan; APK dibangun di PC.
+- pytest lokal: test_v3_features 16 lulus; test lain gagal karena `backend/data` tidak ada di clone (gate di server membandingkan dengan commit sebelumnya).
+
