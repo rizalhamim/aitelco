@@ -1,0 +1,3798 @@
+{
+ "/api/simulasi": {
+  "metric": "revenue",
+  "metric_label": "Revenue",
+  "unit": "IDR",
+  "region": null,
+  "scope_label": "Circle Java",
+  "month": 202611,
+  "month_label": "Nov 2026",
+  "title": "Revenue Circle Java, Nov 2026",
+  "basis": {
+   "data_until": "4 Nov",
+   "source_note": "dump 5 Nov 05.00",
+   "remaining_days": 26,
+   "weekend_days": 8,
+   "target_source": "targets.json Nov 2026"
+  },
+  "days_elapsed": 4,
+  "days_in_month": 30,
+  "mtd": 246800000000,
+  "per_day": 61700000000,
+  "estimate": {
+   "mid": 1873000000000,
+   "lo": 1850000000000,
+   "hi": 1900000000000,
+   "pct": 98.58
+  },
+  "target": 1900000000000,
+  "target_vs_prev_pct": 3.3,
+  "prev_month_label": "Okt",
+  "gap": -27000000000,
+  "need_per_day": 63580000000,
+  "path": {
+   "days": 30,
+   "today": 4,
+   "target_per_day": 63330000000,
+   "month_short": "Nov",
+   "act": [
+    -4099999999.9999995,
+    -5300000000,
+    -5400000000,
+    -6500000000
+   ],
+   "mid": [
+    -6500000000,
+    -7300000000,
+    -8100000000,
+    -8900000000,
+    -9700000000,
+    -10400000000,
+    -11200000000,
+    -12000000000,
+    -12800000000,
+    -13600000000,
+    -14400000000,
+    -15200000000,
+    -16000000000,
+    -16800000000,
+    -17500000000,
+    -18300000000,
+    -19100000000,
+    -19900000000,
+    -20700000000,
+    -21500000000,
+    -22300000000,
+    -23100000000,
+    -23800000000,
+    -24600000000,
+    -25400000000,
+    -26200000000,
+    -27000000000
+   ],
+   "lo": [
+    -6500000000,
+    -8400000000,
+    -10200000000,
+    -12100000000,
+    -14000000000,
+    -15800000000,
+    -17700000000,
+    -19600000000,
+    -21400000000,
+    -23300000000,
+    -25200000000,
+    -27000000000,
+    -28900000000,
+    -30800000000,
+    -32600000000,
+    -34500000000,
+    -36300000000,
+    -38200000000,
+    -40100000000,
+    -41900000000,
+    -43800000000,
+    -45700000000,
+    -47500000000,
+    -49400000000,
+    -51300000000,
+    -53100000000,
+    -55000000000
+   ],
+   "hi": [
+    -6500000000,
+    -6200000000,
+    -5800000000,
+    -5500000000,
+    -5200000000,
+    -4900000000,
+    -4500000000,
+    -4200000000,
+    -3900000000,
+    -3600000000,
+    -3200000000,
+    -2900000000,
+    -2600000000,
+    -2200000000,
+    -1900000000,
+    -1600000000,
+    -1300000000,
+    -900000000,
+    -600000000,
+    -300000000,
+    0,
+    400000000,
+    700000000,
+    1000000000,
+    1300000000,
+    1700000000,
+    2000000000
+   ]
+  },
+  "regions": [
+   {
+    "region": "EAST JAVA",
+    "label": "East Java",
+    "color": "#0E8579",
+    "mtd": 106000000000,
+    "estimate": 816000000000,
+    "target": 805000000000,
+    "gap": 11000000000,
+    "per_day": 26500000000,
+    "need_per_day": 26900000000
+   },
+   {
+    "region": "CENTRAL JAVA",
+    "label": "Central Java",
+    "color": "#22B8C9",
+    "mtd": 88000000000,
+    "estimate": 647000000000,
+    "target": 655000000000,
+    "gap": -8000000000,
+    "per_day": 22000000000,
+    "need_per_day": 21800000000
+   },
+   {
+    "region": "WEST JAVA",
+    "label": "West Java",
+    "color": "#6A4CB5",
+    "mtd": 52800000000,
+    "estimate": 410000000000,
+    "target": 440000000000,
+    "gap": -30000000000,
+    "per_day": 13200000000,
+    "need_per_day": 14900000000
+   }
+  ],
+  "levers": [
+   {
+    "key": "rate",
+    "kind": "slider",
+    "label": "Revenue per RGU",
+    "unit": "%",
+    "min": 0,
+    "max": 3,
+    "step": 0.1,
+    "value": 0,
+    "note": "Dari program paket atau upsell, untuk 26 hari tersisa",
+    "effect": {
+     "type": "pct_of",
+     "base": 1626200000000
+    }
+   },
+   {
+    "key": "recover",
+    "kind": "toggle",
+    "label": "Pulihkan RGU West Java",
+    "value_label": "Level Sep",
+    "value": 0,
+    "note": "Mengembalikan efek volume −Rp 6,8 M per bulan dari Diagnosa",
+    "effect": {
+     "type": "fixed",
+     "amount": 5900000000
+    }
+   },
+   {
+    "key": "sites",
+    "kind": "slider",
+    "label": "Site baru on air",
+    "unit": "site",
+    "min": 0,
+    "max": 40,
+    "step": 1,
+    "value": 0,
+    "note": "Rata-rata site baru Rp 25 jt per bulan, prorata",
+    "effect": {
+     "type": "per_unit",
+     "amount": 15000000
+    }
+   },
+   {
+    "key": "churn",
+    "kind": "locked",
+    "label": "Churn dan ARPU paket",
+    "note": "Belum tersedia di Performance dump. Akan aktif saat data masuk."
+   }
+  ],
+  "target_note": null,
+  "agent_says": null,
+  "method": "Metode: run-rate harian disesuaikan pola hari dalam seminggu 8 minggu terakhir. Diuji balik 6 bulan, rata-rata meleset 1,2%."
+ },
+ "/api/tindak/tasks": {
+  "stats": {
+   "open": 12,
+   "open_mine": 5,
+   "due_today": 2,
+   "late": 1,
+   "late_days": 2,
+   "waiting": 3,
+   "proven": 8,
+   "verified": 11
+  },
+  "lanes": {
+   "baru": [
+    {
+     "items_done": 0,
+     "items_total": 0,
+     "photos": 0,
+     "progress": null,
+     "criterion": "Selesai jika availability ≥ 99,5% selama 7 hari",
+     "verify": null,
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": true,
+     "origin": "alert",
+     "due": {
+      "label": "8 Nov",
+      "urgent": false,
+      "late_days": -3
+     },
+     "id": 1,
+     "title": "Availability Cirebon di bawah 99,5%",
+     "status": "baru",
+     "origin_label": "Dari alert",
+     "origin_icon": "bell",
+     "origin_tone": "a",
+     "pic": {
+      "id": 5,
+      "name": "Andi",
+      "full_name": "Andi",
+      "unit": null,
+      "initial": "A",
+      "color": "#22B8C9"
+     }
+    },
+    {
+     "items_done": 0,
+     "items_total": 0,
+     "photos": 0,
+     "progress": null,
+     "criterion": "Selesai jika revenue 2 kabupaten uji naik ≥ 2%",
+     "verify": null,
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": false,
+     "origin": "brief",
+     "due": {
+      "label": "15 Nov",
+      "urgent": false,
+      "late_days": -10
+     },
+     "id": 2,
+     "title": "Uji program Malang di Central Java",
+     "status": "baru",
+     "origin_label": "Dari Brief Pagi",
+     "origin_icon": "sun",
+     "origin_tone": "b",
+     "pic": {
+      "id": 6,
+      "name": "Sari",
+      "full_name": "Sari",
+      "unit": null,
+      "initial": "S",
+      "color": "#6A4CB5"
+     }
+    }
+   ],
+   "dikerjakan": [
+    {
+     "items_done": 2,
+     "items_total": 4,
+     "photos": 3,
+     "progress": 0.5,
+     "criterion": "Selesai jika payload Garut kembali ≥ −3% vs periode sebelum",
+     "verify": null,
+     "region": "WEST JAVA",
+     "kabupaten": "GARUT",
+     "priority": "tinggi",
+     "impact": -4600000000,
+     "mine": true,
+     "origin": "diagnosa",
+     "due": {
+      "label": "Hari ini",
+      "long": "Hari ini, 5 Nov",
+      "urgent": true,
+      "late_days": 0
+     },
+     "id": 3,
+     "title": "Cek 14 site Garut selatan",
+     "status": "dikerjakan",
+     "origin_label": "Dari Diagnosa",
+     "origin_icon": "spark",
+     "origin_tone": "d",
+     "pic": {
+      "id": 4,
+      "name": "Dimas",
+      "full_name": "Dimas",
+      "unit": "Branch Garut",
+      "initial": "D",
+      "color": "#FF7A59"
+     }
+    },
+    {
+     "items_done": 1,
+     "items_total": 4,
+     "photos": 0,
+     "progress": 0.25,
+     "criterion": "Selesai jika gross add FWA ≥ 48 per hari",
+     "verify": null,
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": true,
+     "origin": "ruang",
+     "due": {
+      "label": "Hari ini",
+      "urgent": true,
+      "late_days": 0
+     },
+     "id": 4,
+     "title": "Program bundling FWA Semarang",
+     "status": "dikerjakan",
+     "origin_label": "Dari Ruang Saya",
+     "origin_icon": "layers",
+     "origin_tone": "p",
+     "pic": {
+      "id": 6,
+      "name": "Sari",
+      "full_name": "Sari",
+      "unit": null,
+      "initial": "S",
+      "color": "#6A4CB5"
+     }
+    },
+    {
+     "items_done": 0,
+     "items_total": 0,
+     "photos": 0,
+     "progress": null,
+     "criterion": null,
+     "verify": null,
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": false,
+     "origin": "alert",
+     "due": {
+      "label": "20 Nov",
+      "urgent": false,
+      "late_days": -15
+     },
+     "id": 7,
+     "title": "Tugas lain 7",
+     "status": "dikerjakan",
+     "origin_label": "Dari alert",
+     "origin_icon": "bell",
+     "origin_tone": "a",
+     "pic": {
+      "id": 5,
+      "name": "Andi",
+      "full_name": "Andi",
+      "unit": null,
+      "initial": "A",
+      "color": "#22B8C9"
+     }
+    },
+    {
+     "items_done": 0,
+     "items_total": 0,
+     "photos": 0,
+     "progress": null,
+     "criterion": null,
+     "verify": null,
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": false,
+     "origin": "alert",
+     "due": {
+      "label": "20 Nov",
+      "urgent": false,
+      "late_days": -15
+     },
+     "id": 8,
+     "title": "Tugas lain 8",
+     "status": "dikerjakan",
+     "origin_label": "Dari alert",
+     "origin_icon": "bell",
+     "origin_tone": "a",
+     "pic": {
+      "id": 5,
+      "name": "Andi",
+      "full_name": "Andi",
+      "unit": null,
+      "initial": "A",
+      "color": "#22B8C9"
+     }
+    },
+    {
+     "items_done": 0,
+     "items_total": 0,
+     "photos": 0,
+     "progress": null,
+     "criterion": null,
+     "verify": null,
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": false,
+     "origin": "alert",
+     "due": {
+      "label": "20 Nov",
+      "urgent": false,
+      "late_days": -15
+     },
+     "id": 9,
+     "title": "Tugas lain 9",
+     "status": "dikerjakan",
+     "origin_label": "Dari alert",
+     "origin_icon": "bell",
+     "origin_tone": "a",
+     "pic": {
+      "id": 5,
+      "name": "Andi",
+      "full_name": "Andi",
+      "unit": null,
+      "initial": "A",
+      "color": "#22B8C9"
+     }
+    }
+   ],
+   "verifikasi": [
+    {
+     "items_done": 0,
+     "items_total": 0,
+     "photos": 0,
+     "progress": null,
+     "criterion": null,
+     "verify": {
+      "text": "Data sesudah: 9 dari 14 hari",
+      "ok": null
+     },
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": false,
+     "origin": "alert",
+     "due": {
+      "label": null,
+      "urgent": false
+     },
+     "id": 5,
+     "title": "Optimasi 6 site Cianjur selatan",
+     "status": "verifikasi",
+     "origin_label": "Dari alert",
+     "origin_icon": "bell",
+     "origin_tone": "a",
+     "pic": {
+      "id": 1,
+      "name": "Rizal",
+      "full_name": "Rizal",
+      "unit": null,
+      "initial": "R",
+      "color": "#0E8579"
+     },
+     "done_label": "Selesai 27 Okt"
+    },
+    {
+     "items_done": 0,
+     "items_total": 0,
+     "photos": 0,
+     "progress": null,
+     "criterion": null,
+     "verify": {
+      "text": "Terbukti: RGU 90D +1,9% vs sebelum",
+      "ok": true
+     },
+     "region": null,
+     "kabupaten": null,
+     "priority": "sedang",
+     "impact": null,
+     "mine": false,
+     "origin": "diagnosa",
+     "due": {
+      "label": null,
+      "urgent": false
+     },
+     "id": 6,
+     "title": "Promo ulang paket 30 hari Sukabumi",
+     "status": "verifikasi",
+     "origin_label": "Dari Diagnosa",
+     "origin_icon": "spark",
+     "origin_tone": "d",
+     "pic": {
+      "id": 5,
+      "name": "Andi",
+      "full_name": "Andi",
+      "unit": null,
+      "initial": "A",
+      "color": "#22B8C9"
+     },
+     "done_label": "Selesai 18 Okt"
+    }
+   ]
+  },
+  "done_total": 18,
+  "done": [],
+  "mine": 5,
+  "today": "2026-11-05",
+  "month_chip": "Nov 2026"
+ },
+ "/api/tindak/tasks/3": {
+  "items_done": 2,
+  "items_total": 4,
+  "photos": 3,
+  "progress": 0.5,
+  "criterion": "Selesai jika payload Garut kembali ≥ −3% vs periode sebelum",
+  "verify": null,
+  "region": "WEST JAVA",
+  "kabupaten": "GARUT",
+  "priority": "tinggi",
+  "impact": -4600000000,
+  "mine": true,
+  "origin": "diagnosa",
+  "due": {
+   "label": "Hari ini",
+   "long": "Hari ini, 5 Nov",
+   "urgent": true,
+   "late_days": 0
+  },
+  "id": 3,
+  "title": "Cek 14 site Garut selatan",
+  "status": "dikerjakan",
+  "origin_label": "Dari Diagnosa",
+  "origin_icon": "spark",
+  "origin_tone": "d",
+  "pic": {
+   "id": 4,
+   "name": "Dimas",
+   "full_name": "Dimas",
+   "unit": "Branch Garut",
+   "initial": "D",
+   "color": "#FF7A59"
+  },
+  "origin_long": "Dari Diagnosa 4 Nov",
+  "scope_label": "Garut · 3 kecamatan",
+  "priority_label": "Tinggi · −Rp 4,6 M",
+  "items": [
+   {
+    "id": 1,
+    "text": "Cek availability dan alarm 14 site",
+    "done": true
+   },
+   {
+    "id": 2,
+    "text": "Kunjungi 6 site Cikajang",
+    "done": true
+   },
+   {
+    "id": 3,
+    "text": "Cek aktivitas kompetitor di outlet sekitar",
+    "done": false
+   },
+   {
+    "id": 4,
+    "text": "Usulkan program retensi ke Sales",
+    "done": false
+   }
+  ],
+  "photos_list": [
+   {
+    "id": 11,
+    "caption": "CKJ-012 · 4 Nov",
+    "created_at": "2026-11-04T09:00:00"
+   },
+   {
+    "id": 12,
+    "caption": "CKJ-007 · 4 Nov",
+    "created_at": "2026-11-04T10:00:00"
+   }
+  ],
+  "kpi": {
+   "metric": "payload"
+  },
+  "verify_detail": {
+   "metric_label": "Payload",
+   "before_label": "Sebelum · 21 Okt sd 3 Nov",
+   "after_label": "Sesudah · 6 Nov sd 19 Nov",
+   "before_pct": -9.4,
+   "after_pct": null,
+   "after_days": 0,
+   "result": null,
+   "window": 14
+  },
+  "history": [
+   {
+    "user": "Rizal",
+    "text": "membuat tugas dari Diagnosa revenue West Java",
+    "at_label": "4 Nov 08.12"
+   },
+   {
+    "user": "Dimas",
+    "text": "menyelesaikan 2 item checklist dan menambah 2 foto",
+    "at_label": "4 Nov 15.40"
+   }
+  ]
+ },
+ "/api/tindak/people": {
+  "people": [
+   {
+    "id": 4,
+    "name": "Dimas"
+   }
+  ]
+ },
+ "/api/ruang/boards": {
+  "boards": [
+   {
+    "id": 1,
+    "name": "Pantauan West Java",
+    "pins": 7
+   },
+   {
+    "id": 2,
+    "name": "Rapat Senin",
+    "pins": 5
+   },
+   {
+    "id": 3,
+    "name": "FWA Semarang",
+    "pins": 3
+   }
+  ],
+  "shared": [
+   {
+    "id": 9,
+    "name": "Papan Sari",
+    "pins": 2
+   }
+  ],
+  "shared_pins": 2
+ },
+ "/api/ruang/boards/1": {
+  "id": 1,
+  "name": "Pantauan West Java",
+  "role": "owner",
+  "summary": "7 pin · dibagikan ke 3 orang · dikirim ke email setiap Senin 07.30",
+  "columns": 3,
+  "month_chip": "Nov 2026",
+  "members": [
+   {
+    "id": 1,
+    "name": "R",
+    "initial": "R",
+    "color": "#0E8579",
+    "role": "owner"
+   },
+   {
+    "id": 2,
+    "name": "S",
+    "initial": "S",
+    "color": "#6A4CB5",
+    "role": "view"
+   },
+   {
+    "id": 3,
+    "name": "D",
+    "initial": "D",
+    "color": "#FF7A59",
+    "role": "view"
+   },
+   {
+    "id": 4,
+    "name": "A",
+    "initial": "A",
+    "color": "#22B8C9",
+    "role": "view"
+   }
+  ],
+  "schedule": {
+   "weekday": 0,
+   "hour": 7,
+   "minute": 30,
+   "label": "Senin 07.30",
+   "recipients": 4,
+   "format": "PDF"
+  },
+  "fresh": {
+   "ok": true,
+   "label": "Segar · dump 5 Nov 05.00"
+  },
+  "pins": [
+   {
+    "id": 1,
+    "board_id": 1,
+    "kind": "chart",
+    "title": "Revenue harian West Java",
+    "subtitle": "Nov MTD vs Okt, Rp miliar per hari",
+    "origin": "tanya",
+    "origin_label": "Dari Tanya Agent, 1 Nov",
+    "spec": {
+     "type": "daily_compare"
+    },
+    "col": 0,
+    "position": 0,
+    "data": {
+     "status": "ok",
+     "value_label": "Rp 52,8 M",
+     "growth_pct": -1.8,
+     "growth_label": "−1,8% vs LMTD",
+     "cur": [
+      13300000000,
+      13037500000,
+      12897500000,
+      13125000000
+     ],
+     "prev": [
+      13475000000,
+      13562500000,
+      13300000000,
+      13440000000.000002,
+      13650000000
+     ],
+     "days": 4,
+     "month": "Nov",
+     "prev_month": "Okt",
+     "scale": 1000000000
+    },
+    "ask": "q",
+    "notes_count": 0
+   },
+   {
+    "id": 2,
+    "board_id": 1,
+    "kind": "chart",
+    "title": "Catatan tim",
+    "subtitle": null,
+    "origin": "tanya",
+    "origin_label": "",
+    "spec": {
+     "type": "notes",
+     "for_pin": 5
+    },
+    "col": 0,
+    "position": 1,
+    "data": {
+     "status": "ok",
+     "for_title": "Gross add FWA",
+     "notes": [
+      {
+       "id": 1,
+       "user": "Sari",
+       "initial": "S",
+       "color": "#6A4CB5",
+       "text": "Program bundling FWA Semarang mulai 6 Nov. Pantau gross add 7 hari setelahnya.",
+       "at_label": "Kemarin 16.20"
+      },
+      {
+       "id": 2,
+       "user": "Rizal",
+       "initial": "R",
+       "color": "#0E8579",
+       "text": "Oke, saya buat tindak lanjut dan pasang alert jika di bawah 40 per hari.",
+       "at_label": "Kemarin 17.02"
+      }
+     ]
+    },
+    "ask": null,
+    "notes_count": 0
+   },
+   {
+    "id": 3,
+    "board_id": 1,
+    "kind": "chart",
+    "title": "Peta payload Garut per kecamatan",
+    "subtitle": "MTD vs LMTD, % perubahan",
+    "origin": "tanya",
+    "origin_label": "Dari Peta Agent",
+    "spec": {
+     "type": "map_change"
+    },
+    "col": 1,
+    "position": 0,
+    "data": {
+     "status": "ok",
+     "w": 370,
+     "h": 150,
+     "shapes": [
+      {
+       "name": "Garut Kota",
+       "d": "M60 30 L118 18 L150 44 L132 78 L84 84 L52 60Z",
+       "fill": "#E6F4EA",
+       "x": 100,
+       "y": 56
+      },
+      {
+       "name": "Tarogong",
+       "d": "M150 44 L206 26 L246 52 L232 92 L180 96 L132 78Z",
+       "fill": "#FAD0D0",
+       "x": 190,
+       "y": 62
+      },
+      {
+       "name": "Banyuresmi",
+       "d": "M246 52 L300 40 L322 78 L292 106 L232 92Z",
+       "fill": "#FDECEC",
+       "x": 280,
+       "y": 74
+      },
+      {
+       "name": "Pameungpeuk",
+       "d": "M84 84 L132 78 L180 96 L170 128 L110 136 L72 114Z",
+       "fill": "#EF5350",
+       "x": 120,
+       "y": 114
+      },
+      {
+       "name": "Cikajang",
+       "d": "M180 96 L232 92 L292 106 L270 136 L200 140 L170 128Z",
+       "fill": "#C42B2B",
+       "x": 214,
+       "y": 124
+      }
+     ],
+     "labels": [
+      {
+       "name": "Cikajang",
+       "text": "Cikajang −12%",
+       "dark": true
+      },
+      {
+       "name": "Pameungpeuk",
+       "text": "Pameungpeuk",
+       "dark": true
+      },
+      {
+       "name": "Garut Kota",
+       "text": "Garut Kota",
+       "dark": false,
+       "good": true
+      }
+     ],
+     "legend": [
+      {
+       "color": "#C42B2B",
+       "label": "turun > 10%"
+      },
+      {
+       "color": "#FAD0D0",
+       "label": "0 sd −5%"
+      },
+      {
+       "color": "#E6F4EA",
+       "label": "naik"
+      }
+     ]
+    },
+    "ask": "q",
+    "notes_count": 0
+   },
+   {
+    "id": 4,
+    "board_id": 1,
+    "kind": "chart",
+    "title": "Market share FWA Semarang",
+    "subtitle": "Pin dari pertanyaan 28 Okt",
+    "origin": "tanya",
+    "origin_label": "Dari Tanya Agent, 28 Okt",
+    "spec": {
+     "type": "unavailable"
+    },
+    "col": 1,
+    "position": 1,
+    "data": {
+     "status": "unavailable",
+     "message": "Belum tersedia di Performance dump",
+     "detail": "Pin tetap disimpan dan akan terisi otomatis saat data market share masuk dump. Sementara itu tampilkan gross add FWA?"
+    },
+    "ask": "q",
+    "notes_count": 0
+   },
+   {
+    "id": 5,
+    "board_id": 1,
+    "kind": "chart",
+    "title": "KPI pantauan",
+    "subtitle": "West Java · MTD 1 sd 4 Nov",
+    "origin": "tanya",
+    "origin_label": "Dari Dashboard",
+    "spec": {
+     "type": "kpi_watch"
+    },
+    "col": 2,
+    "position": 0,
+    "data": {
+     "status": "ok",
+     "tiles": [
+      {
+       "label": "Site di bawah target",
+       "value": "37",
+       "delta_label": "▲9",
+       "good": false
+      },
+      {
+       "label": "Availability",
+       "value": "99,58%",
+       "delta_label": "+0,04 pp",
+       "good": true
+      },
+      {
+       "label": "RGU 90D",
+       "value": "9,4 jt",
+       "delta_label": "−0,8%",
+       "good": false
+      },
+      {
+       "label": "Rev per site",
+       "value": "Rp 21,4 jt",
+       "delta_label": "−1,2%",
+       "good": false
+      }
+     ]
+    },
+    "ask": "q",
+    "notes_count": 0
+   },
+   {
+    "id": 6,
+    "board_id": 1,
+    "kind": "chart",
+    "title": "5 kabupaten turun terdalam",
+    "subtitle": "Revenue MTD vs LMTD",
+    "origin": "tanya",
+    "origin_label": "Dari Klasemen",
+    "spec": {
+     "type": "rank_table",
+     "level": "kabupaten"
+    },
+    "col": 2,
+    "position": 1,
+    "data": {
+     "status": "ok",
+     "rows": [
+      {
+       "name": "Garut",
+       "pct_label": "−6,1%",
+       "abs_label": "−0,7 M",
+       "pct": -1
+      },
+      {
+       "name": "Cianjur",
+       "pct_label": "−5,2%",
+       "abs_label": "−0,8 M",
+       "pct": -1
+      },
+      {
+       "name": "Tasikmalaya",
+       "pct_label": "−3,1%",
+       "abs_label": "−0,4 M",
+       "pct": -1
+      },
+      {
+       "name": "Sukabumi",
+       "pct_label": "−1,6%",
+       "abs_label": "−0,3 M",
+       "pct": -1
+      },
+      {
+       "name": "Ciamis",
+       "pct_label": "−1,2%",
+       "abs_label": "−0,1 M",
+       "pct": -1
+      }
+     ]
+    },
+    "ask": "q",
+    "notes_count": 0
+   }
+  ]
+ },
+ "/api/klasemen": {
+  "level": "kabupaten",
+  "metric": "revenue",
+  "metric_label": "Revenue",
+  "sort": "achievement",
+  "title": "Klasemen kabupaten/kota, November 2026",
+  "month_chip": "Nov 2026",
+  "vs_label": "vs LMTD",
+  "basis": {
+   "kind": "mtd",
+   "label": "MTD 1 sd 4 Nov vs LMTD 1 sd 4 Okt"
+  },
+  "source": {
+   "label_wib": "Dump Performance 5 Nov 05.00 WIB"
+  },
+  "small_base_label": "Basis kecil: revenue LMTD di bawah Rp 1 M",
+  "target_note": null,
+  "has_targets": true,
+  "total": 119,
+  "noun": "kab/kota",
+  "rows": [
+   {
+    "rank": 1,
+    "key": "MALANG",
+    "name": "Malang",
+    "region": "EAST JAVA",
+    "region_label": "East Java",
+    "region_color": "#0E8579",
+    "growth_pct": 4.8,
+    "achievement_pct": 104.2,
+    "small_base": false,
+    "move": 1,
+    "mine": false,
+    "ach_label": "104,2%",
+    "growth_label": "+4,8%",
+    "abs_label": "+Rp 1,9 M",
+    "move_label": "naik 1 peringkat"
+   },
+   {
+    "rank": 2,
+    "key": "SIDOARJO",
+    "name": "Sidoarjo",
+    "region": "EAST JAVA",
+    "region_label": "East Java",
+    "region_color": "#0E8579",
+    "growth_pct": 4.1,
+    "achievement_pct": 103.1,
+    "small_base": false,
+    "move": 3,
+    "mine": false,
+    "ach_label": "103,1%",
+    "growth_label": "+4,1%",
+    "abs_label": "+Rp 1,6 M",
+    "move_label": "naik 3 peringkat"
+   },
+   {
+    "rank": 3,
+    "key": "BANDUNG",
+    "name": "Bandung",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 3.2,
+    "achievement_pct": 102.6,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "102,6%",
+    "growth_label": "+3,2%",
+    "abs_label": "+Rp 2,4 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 4,
+    "key": "SEMARANG",
+    "name": "Semarang",
+    "region": "CENTRAL JAVA",
+    "region_label": "Central Java",
+    "region_color": "#22B8C9",
+    "growth_pct": 2.7,
+    "achievement_pct": 101.9,
+    "small_base": false,
+    "move": -1,
+    "mine": false,
+    "ach_label": "101,9%",
+    "growth_label": "+2,7%",
+    "abs_label": "+Rp 1,5 M",
+    "move_label": "turun 1 peringkat"
+   },
+   {
+    "rank": 5,
+    "key": "SURABAYA",
+    "name": "Surabaya",
+    "region": "EAST JAVA",
+    "region_label": "East Java",
+    "region_color": "#0E8579",
+    "growth_pct": 2.2,
+    "achievement_pct": 101.5,
+    "small_base": false,
+    "move": -2,
+    "mine": false,
+    "ach_label": "101,5%",
+    "growth_label": "+2,2%",
+    "abs_label": "+Rp 2,8 M",
+    "move_label": "turun 2 peringkat"
+   },
+   {
+    "rank": 6,
+    "key": "KOTA PEKALONGAN",
+    "name": "Kota Pekalongan",
+    "region": "CENTRAL JAVA",
+    "region_label": "Central Java",
+    "region_color": "#22B8C9",
+    "growth_pct": 6.9,
+    "achievement_pct": 101.2,
+    "small_base": true,
+    "move": 9,
+    "mine": false,
+    "ach_label": "101,2%",
+    "growth_label": "+6,9%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "naik 9 peringkat"
+   },
+   {
+    "rank": 7,
+    "key": "KAB 7",
+    "name": "Kab 7",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 100,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "100,0%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 8,
+    "key": "KAB 8",
+    "name": "Kab 8",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.97,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,97%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 9,
+    "key": "KAB 9",
+    "name": "Kab 9",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.94,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,94%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 10,
+    "key": "KAB 10",
+    "name": "Kab 10",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.91,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,91%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 11,
+    "key": "KAB 11",
+    "name": "Kab 11",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.88,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,88%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 12,
+    "key": "KAB 12",
+    "name": "Kab 12",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.85,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,85%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 13,
+    "key": "KAB 13",
+    "name": "Kab 13",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.82,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,82%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 14,
+    "key": "KAB 14",
+    "name": "Kab 14",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.79,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,79%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 15,
+    "key": "KAB 15",
+    "name": "Kab 15",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.76,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,76%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 16,
+    "key": "KAB 16",
+    "name": "Kab 16",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.73,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,73%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 17,
+    "key": "KAB 17",
+    "name": "Kab 17",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.7,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,7%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 18,
+    "key": "KAB 18",
+    "name": "Kab 18",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.67,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,67%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 19,
+    "key": "KAB 19",
+    "name": "Kab 19",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.64,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,64%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 20,
+    "key": "KAB 20",
+    "name": "Kab 20",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.61,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,61%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 21,
+    "key": "KAB 21",
+    "name": "Kab 21",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.58,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,58%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 22,
+    "key": "KAB 22",
+    "name": "Kab 22",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.55,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,55%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 23,
+    "key": "KAB 23",
+    "name": "Kab 23",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.52,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,52%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 24,
+    "key": "KAB 24",
+    "name": "Kab 24",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.49,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,49%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 25,
+    "key": "KAB 25",
+    "name": "Kab 25",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.46,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,46%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 26,
+    "key": "KAB 26",
+    "name": "Kab 26",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.43,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,43%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 27,
+    "key": "KAB 27",
+    "name": "Kab 27",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.4,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,4%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 28,
+    "key": "KAB 28",
+    "name": "Kab 28",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.37,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,37%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 29,
+    "key": "KAB 29",
+    "name": "Kab 29",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.34,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,34%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 30,
+    "key": "KAB 30",
+    "name": "Kab 30",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.31,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,31%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 31,
+    "key": "KAB 31",
+    "name": "Kab 31",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.28,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,28%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 32,
+    "key": "KAB 32",
+    "name": "Kab 32",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.25,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,25%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 33,
+    "key": "KAB 33",
+    "name": "Kab 33",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.22,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,22%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 34,
+    "key": "KAB 34",
+    "name": "Kab 34",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.19,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,19%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 35,
+    "key": "KAB 35",
+    "name": "Kab 35",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.16,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,16%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 36,
+    "key": "KAB 36",
+    "name": "Kab 36",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.13,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,13%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 37,
+    "key": "KAB 37",
+    "name": "Kab 37",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.1,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,1%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 38,
+    "key": "KAB 38",
+    "name": "Kab 38",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.07,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,07%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 39,
+    "key": "KAB 39",
+    "name": "Kab 39",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.04,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,04%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 40,
+    "key": "KAB 40",
+    "name": "Kab 40",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 99.01,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "99,01%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 41,
+    "key": "KAB 41",
+    "name": "Kab 41",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.98,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,98%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 42,
+    "key": "KAB 42",
+    "name": "Kab 42",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.95,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,95%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 43,
+    "key": "KAB 43",
+    "name": "Kab 43",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.92,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,92%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 44,
+    "key": "KAB 44",
+    "name": "Kab 44",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.89,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,89%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 45,
+    "key": "KAB 45",
+    "name": "Kab 45",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.86,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,86%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 46,
+    "key": "KAB 46",
+    "name": "Kab 46",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.83,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,83%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 47,
+    "key": "KAB 47",
+    "name": "Kab 47",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.8,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,8%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 48,
+    "key": "KAB 48",
+    "name": "Kab 48",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.77,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,77%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 49,
+    "key": "KAB 49",
+    "name": "Kab 49",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.74,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,74%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 50,
+    "key": "KAB 50",
+    "name": "Kab 50",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.71,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,71%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 51,
+    "key": "KAB 51",
+    "name": "Kab 51",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.68,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,68%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 52,
+    "key": "KAB 52",
+    "name": "Kab 52",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.65,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,65%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 53,
+    "key": "KAB 53",
+    "name": "Kab 53",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.62,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,62%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 54,
+    "key": "KAB 54",
+    "name": "Kab 54",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.59,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,59%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 55,
+    "key": "KAB 55",
+    "name": "Kab 55",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.56,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,56%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 56,
+    "key": "KAB 56",
+    "name": "Kab 56",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.53,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,53%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 57,
+    "key": "KAB 57",
+    "name": "Kab 57",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.5,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,5%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 58,
+    "key": "KAB 58",
+    "name": "Kab 58",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.47,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,47%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 59,
+    "key": "KAB 59",
+    "name": "Kab 59",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.44,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,44%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 60,
+    "key": "KAB 60",
+    "name": "Kab 60",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.41,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,41%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 61,
+    "key": "KAB 61",
+    "name": "Kab 61",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.38,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,38%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 62,
+    "key": "KAB 62",
+    "name": "Kab 62",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.35,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,35%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 63,
+    "key": "KAB 63",
+    "name": "Kab 63",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.32,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,32%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 64,
+    "key": "KAB 64",
+    "name": "Kab 64",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.29,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,29%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 65,
+    "key": "KAB 65",
+    "name": "Kab 65",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.26,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,26%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 66,
+    "key": "KAB 66",
+    "name": "Kab 66",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.23,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,23%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 67,
+    "key": "KAB 67",
+    "name": "Kab 67",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.2,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,2%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 68,
+    "key": "KAB 68",
+    "name": "Kab 68",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.17,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,17%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 69,
+    "key": "KAB 69",
+    "name": "Kab 69",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.14,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,14%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 70,
+    "key": "KAB 70",
+    "name": "Kab 70",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.11,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,11%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 71,
+    "key": "KAB 71",
+    "name": "Kab 71",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.08,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,08%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 72,
+    "key": "KAB 72",
+    "name": "Kab 72",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.05,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,05%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 73,
+    "key": "KAB 73",
+    "name": "Kab 73",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 98.02,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "98,02%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 74,
+    "key": "KAB 74",
+    "name": "Kab 74",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.99,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,99%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 75,
+    "key": "KAB 75",
+    "name": "Kab 75",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.96,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,96%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 76,
+    "key": "KAB 76",
+    "name": "Kab 76",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.93,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,93%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 77,
+    "key": "KAB 77",
+    "name": "Kab 77",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.9,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,9%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 78,
+    "key": "KAB 78",
+    "name": "Kab 78",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.87,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,87%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 79,
+    "key": "KAB 79",
+    "name": "Kab 79",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.84,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,84%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 80,
+    "key": "KAB 80",
+    "name": "Kab 80",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.81,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,81%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 81,
+    "key": "KAB 81",
+    "name": "Kab 81",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.78,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,78%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 82,
+    "key": "KAB 82",
+    "name": "Kab 82",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.75,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,75%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 83,
+    "key": "KAB 83",
+    "name": "Kab 83",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.72,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,72%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 84,
+    "key": "KAB 84",
+    "name": "Kab 84",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.69,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,69%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 85,
+    "key": "KAB 85",
+    "name": "Kab 85",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.66,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,66%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 86,
+    "key": "KAB 86",
+    "name": "Kab 86",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.63,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,63%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 87,
+    "key": "KAB 87",
+    "name": "Kab 87",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.6,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,6%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 88,
+    "key": "KAB 88",
+    "name": "Kab 88",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.57,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,57%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 89,
+    "key": "KAB 89",
+    "name": "Kab 89",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.54,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,54%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 90,
+    "key": "KAB 90",
+    "name": "Kab 90",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.51,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,51%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 91,
+    "key": "KAB 91",
+    "name": "Kab 91",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.48,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,48%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 92,
+    "key": "KAB 92",
+    "name": "Kab 92",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.45,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,45%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 93,
+    "key": "KAB 93",
+    "name": "Kab 93",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.42,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,42%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 94,
+    "key": "KAB 94",
+    "name": "Kab 94",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.39,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,39%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 95,
+    "key": "KAB 95",
+    "name": "Kab 95",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.36,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,36%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 96,
+    "key": "KAB 96",
+    "name": "Kab 96",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.33,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,33%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 97,
+    "key": "KAB 97",
+    "name": "Kab 97",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.3,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,3%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 98,
+    "key": "KAB 98",
+    "name": "Kab 98",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.27,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,27%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 99,
+    "key": "KAB 99",
+    "name": "Kab 99",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.24,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,24%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 100,
+    "key": "KAB 100",
+    "name": "Kab 100",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.21,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,21%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 101,
+    "key": "KAB 101",
+    "name": "Kab 101",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.18,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,18%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 102,
+    "key": "KAB 102",
+    "name": "Kab 102",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.15,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,15%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 103,
+    "key": "KAB 103",
+    "name": "Kab 103",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.12,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,12%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 104,
+    "key": "KAB 104",
+    "name": "Kab 104",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.09,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,09%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 105,
+    "key": "KAB 105",
+    "name": "Kab 105",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.06,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,06%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 106,
+    "key": "KAB 106",
+    "name": "Kab 106",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97.03,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,03%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 107,
+    "key": "KAB 107",
+    "name": "Kab 107",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 97,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "97,0%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 108,
+    "key": "KAB 108",
+    "name": "Kab 108",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 96.97,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "96,97%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 109,
+    "key": "KAB 109",
+    "name": "Kab 109",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 96.94,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "96,94%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 110,
+    "key": "KAB 110",
+    "name": "Kab 110",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 1,
+    "achievement_pct": 96.91,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "96,91%",
+    "growth_label": "+1,0%",
+    "abs_label": "+Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 111,
+    "key": "SUKABUMI",
+    "name": "Sukabumi",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -1.6,
+    "achievement_pct": 96.3,
+    "small_base": false,
+    "move": -5,
+    "mine": true,
+    "ach_label": "96,3%",
+    "growth_label": "−1,6%",
+    "abs_label": "−Rp 0,3 M",
+    "move_label": "turun 5 peringkat"
+   },
+   {
+    "rank": 112,
+    "key": "KAB 112",
+    "name": "Kab 112",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -2,
+    "achievement_pct": 96,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "96,0%",
+    "growth_label": "−2,0%",
+    "abs_label": "−Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 113,
+    "key": "KAB 113",
+    "name": "Kab 113",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -2,
+    "achievement_pct": 95.8,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "95,8%",
+    "growth_label": "−2,0%",
+    "abs_label": "−Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 114,
+    "key": "KAB 114",
+    "name": "Kab 114",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -2,
+    "achievement_pct": 95.6,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "95,6%",
+    "growth_label": "−2,0%",
+    "abs_label": "−Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 115,
+    "key": "KAB 115",
+    "name": "Kab 115",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -2,
+    "achievement_pct": 95.4,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "95,4%",
+    "growth_label": "−2,0%",
+    "abs_label": "−Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 116,
+    "key": "KAB 116",
+    "name": "Kab 116",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -2,
+    "achievement_pct": 95.2,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "95,2%",
+    "growth_label": "−2,0%",
+    "abs_label": "−Rp 0,1 M",
+    "move_label": "tetap"
+   },
+   {
+    "rank": 117,
+    "key": "TASIKMALAYA",
+    "name": "Tasikmalaya",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -3.1,
+    "achievement_pct": 94.8,
+    "small_base": false,
+    "move": -4,
+    "mine": false,
+    "ach_label": "94,8%",
+    "growth_label": "−3,1%",
+    "abs_label": "−Rp 0,4 M",
+    "move_label": "turun 4 peringkat"
+   },
+   {
+    "rank": 118,
+    "key": "CIANJUR",
+    "name": "Cianjur",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -5.2,
+    "achievement_pct": 93.6,
+    "small_base": false,
+    "move": -2,
+    "mine": false,
+    "ach_label": "93,6%",
+    "growth_label": "−5,2%",
+    "abs_label": "−Rp 0,8 M",
+    "move_label": "turun 2 peringkat"
+   },
+   {
+    "rank": 119,
+    "key": "GARUT",
+    "name": "Garut",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -6.1,
+    "achievement_pct": 92.4,
+    "small_base": false,
+    "move": -3,
+    "mine": false,
+    "ach_label": "92,4%",
+    "growth_label": "−6,1%",
+    "abs_label": "−Rp 0,7 M",
+    "move_label": "turun 3 peringkat"
+   }
+  ],
+  "best": [
+   {
+    "rank": 1,
+    "key": "MALANG",
+    "name": "Malang",
+    "region": "EAST JAVA",
+    "region_label": "East Java",
+    "region_color": "#0E8579",
+    "growth_pct": 4.8,
+    "achievement_pct": 104.2,
+    "small_base": false,
+    "move": 1,
+    "mine": false,
+    "ach_label": "104,2%",
+    "growth_label": "+4,8%",
+    "abs_label": "+Rp 1,9 M",
+    "move_label": "naik 1 peringkat"
+   },
+   {
+    "rank": 2,
+    "key": "SIDOARJO",
+    "name": "Sidoarjo",
+    "region": "EAST JAVA",
+    "region_label": "East Java",
+    "region_color": "#0E8579",
+    "growth_pct": 4.1,
+    "achievement_pct": 103.1,
+    "small_base": false,
+    "move": 3,
+    "mine": false,
+    "ach_label": "103,1%",
+    "growth_label": "+4,1%",
+    "abs_label": "+Rp 1,6 M",
+    "move_label": "naik 3 peringkat"
+   },
+   {
+    "rank": 3,
+    "key": "BANDUNG",
+    "name": "Bandung",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": 3.2,
+    "achievement_pct": 102.6,
+    "small_base": false,
+    "move": 0,
+    "mine": false,
+    "ach_label": "102,6%",
+    "growth_label": "+3,2%",
+    "abs_label": "+Rp 2,4 M",
+    "move_label": "tetap"
+   }
+  ],
+  "worst": [
+   {
+    "rank": 119,
+    "key": "GARUT",
+    "name": "Garut",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -6.1,
+    "achievement_pct": 92.4,
+    "small_base": false,
+    "move": -3,
+    "mine": false,
+    "ach_label": "92,4%",
+    "growth_label": "−6,1%",
+    "abs_label": "−Rp 0,7 M",
+    "move_label": "turun 3 peringkat"
+   },
+   {
+    "rank": 118,
+    "key": "CIANJUR",
+    "name": "Cianjur",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -5.2,
+    "achievement_pct": 93.6,
+    "small_base": false,
+    "move": -2,
+    "mine": false,
+    "ach_label": "93,6%",
+    "growth_label": "−5,2%",
+    "abs_label": "−Rp 0,8 M",
+    "move_label": "turun 2 peringkat"
+   },
+   {
+    "rank": 117,
+    "key": "TASIKMALAYA",
+    "name": "Tasikmalaya",
+    "region": "WEST JAVA",
+    "region_label": "West Java",
+    "region_color": "#6A4CB5",
+    "growth_pct": -3.1,
+    "achievement_pct": 94.8,
+    "small_base": false,
+    "move": -4,
+    "mine": false,
+    "ach_label": "94,8%",
+    "growth_label": "−3,1%",
+    "abs_label": "−Rp 0,4 M",
+    "move_label": "turun 4 peringkat"
+   }
+  ],
+  "mine": {
+   "rank": 111,
+   "total": 119,
+   "name": "Sukabumi",
+   "key": "SUKABUMI",
+   "region": "WEST JAVA",
+   "move_label": "turun 5 peringkat minggu ini",
+   "need_fmt": "Rp 0,4 M",
+   "need_label": "untuk masuk 100 besar",
+   "cause": "revenue per RGU −2,0%"
+  },
+  "regions": [
+   {
+    "rank": 1,
+    "key": "EAST JAVA",
+    "name": "East Java",
+    "color": "#0E8579",
+    "achievement_pct": 101.4,
+    "growth_pct": 2.1,
+    "ach_label": "101,4%",
+    "growth_label": "+2,1%",
+    "abs_label": "+Rp 5,2 M"
+   },
+   {
+    "rank": 2,
+    "key": "CENTRAL JAVA",
+    "name": "Central Java",
+    "color": "#22B8C9",
+    "achievement_pct": 98.7,
+    "growth_pct": 1.4,
+    "ach_label": "98,7%",
+    "growth_label": "+1,4%",
+    "abs_label": "+Rp 2,9 M"
+   },
+   {
+    "rank": 3,
+    "key": "WEST JAVA",
+    "name": "West Java",
+    "color": "#6A4CB5",
+    "achievement_pct": 93.2,
+    "growth_pct": -1.8,
+    "ach_label": "93,2%",
+    "growth_label": "−1,8%",
+    "abs_label": "−Rp 2,5 M"
+   }
+  ],
+  "badges": [
+   {
+    "kind": "climber",
+    "icon": "up",
+    "title": "Pendaki",
+    "text": "Sidoarjo naik 3"
+   },
+   {
+    "kind": "network",
+    "icon": "tower",
+    "title": "Jaringan prima",
+    "text": "Malang 99,9%"
+   },
+   {
+    "kind": "rise",
+    "icon": "spark",
+    "title": "Bangkit",
+    "text": "Pekalongan +9"
+   }
+  ]
+ },
+ "/api/diagnosa": {
+  "metric": "revenue",
+  "metric_label": "Revenue",
+  "scope": {
+   "level": "region",
+   "name": "West Java",
+   "region": "WEST JAVA",
+   "kabupaten": null
+  },
+  "child_level": "kabupaten",
+  "child_noun": "kabupaten/kota",
+  "basis": {
+   "kind": "month",
+   "label": "Okt 2026 vs Sep 2026, bulan penuh",
+   "cur": "Okt 2026",
+   "prev": "Sep 2026"
+  },
+  "source": {
+   "label_wib": "Dump Performance 1 Nov 05.00 WIB"
+  },
+  "coverage_pct": 98.6,
+  "month_chip": "Nov 2026",
+  "title": "Kenapa revenue West Java turun 2,4%?",
+  "total": {
+   "delta": -10100000000,
+   "delta_label": "−Rp 10,1 M",
+   "detail": "−2,4% · Rp 422,7 M ke Rp 412,6 M",
+   "label": "Perubahan revenue"
+  },
+  "summary": [
+   {
+    "t": "Revenue turun "
+   },
+   {
+    "t": "Rp 10,1 M",
+    "s": "e"
+   },
+   {
+    "t": " ke Rp 412,6 M. "
+   },
+   {
+    "t": "79% penurunan datang dari Garut dan Cianjur",
+    "s": "b"
+   },
+   {
+    "t": ". Sebagian besar karena "
+   },
+   {
+    "t": "jumlah pelanggan aktif turun",
+    "s": "b"
+   },
+   {
+    "t": " (efek volume −Rp 6,8 M), bukan karena harga atau kualitas jaringan."
+   }
+  ],
+  "waterfall": {
+   "unit": "Rp miliar",
+   "min": 400,
+   "max": 425,
+   "bars": [
+    {
+     "l": "Sep 2026",
+     "v": 422.7,
+     "t": "total"
+    },
+    {
+     "l": "Garut",
+     "v": -4.6
+    },
+    {
+     "l": "Cianjur",
+     "v": -3.3
+    },
+    {
+     "l": "Tasikmalaya",
+     "v": -1.4
+    },
+    {
+     "l": "Sukabumi",
+     "v": -0.9
+    },
+    {
+     "l": "Bandung",
+     "v": 1.2
+    },
+    {
+     "l": "Bekasi",
+     "v": 0.6
+    },
+    {
+     "l": "Lainnya|21 kab/kota",
+     "v": -1.7,
+     "dim": 1
+    },
+    {
+     "l": "Okt 2026",
+     "t": "end"
+    }
+   ]
+  },
+  "effects": {
+   "note": "Rp miliar, jumlahnya sama dengan −Rp 10,1 M",
+   "total_short": "−10,1",
+   "rows": [
+    {
+     "key": "volume",
+     "label": "Efek volume",
+     "sub": "RGU 90D −2,8%",
+     "short": "−6,8",
+     "width_pct": 100
+    },
+    {
+     "key": "rate",
+     "label": "Efek rate",
+     "sub": "Revenue per RGU −1,1%",
+     "short": "−2,9",
+     "width_pct": 43
+    },
+    {
+     "key": "mix",
+     "label": "Efek mix",
+     "sub": "Pergeseran ke paket kecil",
+     "short": "−0,4",
+     "width_pct": 6
+    }
+   ]
+  },
+  "tree": {
+   "level1": [
+    {
+     "key": "GARUT",
+     "name": "Garut",
+     "delta": -4600000000,
+     "delta_label": "−Rp 4,6 M",
+     "share_pct": 45,
+     "on": true
+    },
+    {
+     "key": "CIANJUR",
+     "name": "Cianjur",
+     "delta": -3300000000,
+     "delta_label": "−Rp 3,3 M",
+     "share_pct": 33,
+     "on": false
+    }
+   ],
+   "level2": [
+    {
+     "key": "CIKAJANG",
+     "name": "Cikajang",
+     "delta": -1600000000,
+     "delta_label": "−Rp 1,6 M",
+     "on": true,
+     "sites": 6
+    },
+    {
+     "key": "PAMEUNGPEUK",
+     "name": "Pameungpeuk",
+     "delta": -1300000000,
+     "delta_label": "−Rp 1,3 M",
+     "on": false,
+     "sites": 5
+    },
+    {
+     "key": "BUNGBULANG",
+     "name": "Bungbulang",
+     "delta": -800000000,
+     "delta_label": "−Rp 0,8 M",
+     "on": false,
+     "sites": 3
+    }
+   ],
+   "level2_other": {
+    "count": 39,
+    "delta_label": "−Rp 0,9 M",
+    "noun": "kec."
+   },
+   "sites": {
+    "count": 6,
+    "kecamatan": "Cikajang",
+    "note": "Rp miliar. Availability ke-6 site 99,6% sd 99,9%, normal.",
+    "items": [
+     {
+      "site_id": "CKJ-012",
+      "short": "−0,41"
+     },
+     {
+      "site_id": "CKJ-007",
+      "short": "−0,33"
+     },
+     {
+      "site_id": "CKJ-021",
+      "short": "−0,29"
+     },
+     {
+      "site_id": "CKJ-003",
+      "short": "−0,24"
+     },
+     {
+      "site_id": "CKJ-015",
+      "short": "−0,18"
+     },
+     {
+      "site_id": "CKJ-009",
+      "short": "−0,15"
+     }
+    ]
+   }
+  },
+  "hypotheses": [
+   {
+    "key": "volume",
+    "n": 1,
+    "title": "Pelanggan pindah ke kompetitor",
+    "confidence": 2,
+    "confidence_label": "Sedang",
+    "evidence": [
+     {
+      "kind": "p",
+      "text": "RGU 90D turun 3,8% di 3 kecamatan selatan"
+     },
+     {
+      "kind": "p",
+      "text": "Payload per RGU tetap, kualitas tidak berubah"
+     },
+     {
+      "kind": "n",
+      "text": "Market share belum tersedia di dump untuk konfirmasi"
+     }
+    ]
+   },
+   {
+    "key": "network",
+    "n": 2,
+    "title": "Gangguan jaringan",
+    "confidence": 1,
+    "confidence_label": "Rendah",
+    "evidence": [
+     {
+      "kind": "m",
+      "text": "Availability 99,6% sd 99,9%, tidak ada site di bawah ambang"
+     }
+    ]
+   }
+  ],
+  "missing": "distribusi voucher dan outlet. Data channel belum ada di Performance dump.",
+  "follow_ups": [
+   {
+    "label": "Bandingkan dengan Cianjur",
+    "question": "x"
+   },
+   {
+    "label": "Tren 6 bulan Cikajang",
+    "question": "y"
+   }
+  ],
+  "steps": 5,
+  "elapsed_s": 6.8,
+  "task_prefill": {
+   "title": "Cek 6 site Cikajang",
+   "origin": "diagnosa",
+   "region": "WEST JAVA",
+   "kabupaten": "GARUT",
+   "metric": "revenue",
+   "impact": -4600000000
+  }
+ },
+ "/api/brief": {
+  "greeting": "Selamat pagi, Rizal",
+  "subtitle": "Disusun agent untuk Rizal · Kamis, 5 Nov 2026 06.00 WIB",
+  "date_short": "Kamis, 5 Nov · 06.00",
+  "month_chip": "Nov 2026",
+  "headline": [
+   {
+    "t": "Revenue Circle Java MTD "
+   },
+   {
+    "t": "naik 1,4% vs LMTD",
+    "s": "b"
+   },
+   {
+    "t": ", sejalan dengan target. Tiga hal butuh perhatian: "
+   },
+   {
+    "t": "payload Garut",
+    "s": "e"
+   },
+   {
+    "t": " masih turun, "
+   },
+   {
+    "t": "gross add FWA Semarang",
+    "s": "e"
+   },
+   {
+    "t": " tertinggal dari run-rate, dan 2 tindak lanjut jatuh tempo hari ini."
+   }
+  ],
+  "audio": {
+   "text": "Selamat pagi.",
+   "seconds": 58
+  },
+  "basis": {
+   "dump": "Dump Performance 5 Nov 05.00 WIB",
+   "period": "MTD 1 sd 4 Nov vs LMTD 1 sd 4 Okt",
+   "focus": "Fokus: Circle Java, semua region"
+  },
+  "source": {
+   "kind": "dump"
+  },
+  "stories": [
+   {
+    "n": 1,
+    "key": "k-payload-GARUT",
+    "tone": "k",
+    "tone_label": "Perlu tindakan",
+    "topic": "Performance",
+    "metric": "payload",
+    "title": "Payload Garut turun 4 hari berturut-turut",
+    "value_label": "−9,4%",
+    "value_note": "MTD vs LMTD",
+    "spark": [
+     31.2,
+     31,
+     30.6,
+     30.9,
+     30.1,
+     29.4,
+     28.8,
+     28.5,
+     28.3,
+     28.2
+    ],
+    "text": "14 site di 3 kecamatan selatan menyumbang 71% penurunan. Availability normal, jadi kemungkinan bukan gangguan jaringan.",
+    "share": "",
+    "peek": "Garut −9,4% MTD",
+    "short_title": "Payload Garut",
+    "region": "WEST JAVA",
+    "kabupaten": "GARUT",
+    "diagnosa": {
+     "metric": "payload",
+     "region": "WEST JAVA",
+     "kabupaten": "GARUT",
+     "basis": "mtd"
+    },
+    "pin": {},
+    "task": {}
+   },
+   {
+    "n": 2,
+    "key": "w-fwa_gross_add-CENTRAL JAVA",
+    "tone": "w",
+    "tone_label": "Waspada",
+    "topic": "Performance",
+    "metric": "fwa_gross_add",
+    "title": "Gross add FWA Semarang di bawah run-rate",
+    "value_label": "78%",
+    "value_note": "dari run-rate target",
+    "spark": [
+     92,
+     90,
+     88,
+     86,
+     84,
+     83,
+     81,
+     80,
+     79,
+     78
+    ],
+    "text": "Perlu 48 gross add per hari sampai 30 Nov untuk menutup gap. Rata-rata 4 hari terakhir 36 per hari.",
+    "share": "",
+    "peek": "FWA Semarang 78% dari run-rate",
+    "short_title": "Gross add",
+    "region": "CENTRAL JAVA",
+    "kabupaten": null,
+    "simulasi": {
+     "metric": "fwa_gross_add",
+     "region": "CENTRAL JAVA"
+    },
+    "diagnosa": {
+     "metric": "subs",
+     "region": "CENTRAL JAVA",
+     "basis": "mtd"
+    },
+    "pin": {},
+    "task": {}
+   },
+   {
+    "n": 3,
+    "key": "g-revenue-EAST JAVA",
+    "tone": "g",
+    "tone_label": "Kabar baik",
+    "topic": "Revenue",
+    "metric": "revenue",
+    "title": "East Java memimpin pertumbuhan revenue",
+    "value_label": "+2,1%",
+    "value_note": "MTD vs LMTD",
+    "spark": [
+     24.1,
+     24.3,
+     24.2,
+     24.6,
+     24.8,
+     24.7,
+     25,
+     25.2,
+     25.3,
+     25.6
+    ],
+    "text": "Malang dan Sidoarjo naik paling tinggi. Pola yang sama bisa diuji di Central Java.",
+    "share": "",
+    "peek": "East Java +2,1% vs LMTD",
+    "short_title": "Revenue",
+    "region": "EAST JAVA",
+    "kabupaten": null,
+    "diagnosa": {
+     "metric": "revenue",
+     "region": "EAST JAVA",
+     "basis": "mtd"
+    },
+    "pin": {},
+    "task": {}
+   }
+  ],
+  "target_title": "Posisi terhadap target November",
+  "target_sub": "Proyeksi akhir bulan dari run-rate 4 hari, rentang 80% ditunjukkan arsiran",
+  "targets": [
+   {
+    "metric": "revenue",
+    "label": "Revenue",
+    "value_label": "Rp 1,87 T dari Rp 1,90 T",
+    "real_pct": 13,
+    "band_pct": 100,
+    "tick_pct": 98.6,
+    "color": "#0E8579",
+    "note": "Realisasi MTD Rp 246,8 M · proyeksi 98,6% (rentang 97,1% sd 100,1%)"
+   },
+   {
+    "metric": "subs",
+    "label": "Pelanggan aktif",
+    "value_label": "41,6 jt dari 41,5 jt",
+    "real_pct": 99,
+    "band_pct": 100,
+    "tick_pct": 99.7,
+    "color": "#22B8C9",
+    "note": "Proyeksi 100,2% · sudah di atas target"
+   },
+   {
+    "metric": "fwa_gross_add",
+    "label": "Gross add FWA",
+    "value_label": "1.080 dari 1.380",
+    "real_pct": 10,
+    "band_pct": 86,
+    "tick_pct": 78.3,
+    "color": "#F5A623",
+    "note": "Proyeksi 78,3% (rentang 72% sd 84%)"
+   }
+  ],
+  "agent_says": [
+   {
+    "t": "Kata agent:",
+    "s": "b"
+   },
+   {
+    "t": " Revenue perlu Rp 63,6 M per hari sampai 30 Nov, di atas rata-rata 4 hari terakhir Rp 61,7 M. Estimasi akhir bulan Rp 1,87 T, gap sekitar Rp 27 M. Ini estimasi, bukan realisasi."
+   }
+  ],
+  "agenda": [
+   {
+    "kind": "task",
+    "icon": "check",
+    "title": "Cek 14 site Garut selatan",
+    "sub": "Tindak lanjut · PIC Dimas",
+    "time": "Hari ini",
+    "urgent": true,
+    "task_id": 1
+   },
+   {
+    "kind": "task",
+    "icon": "check",
+    "title": "Program FWA Semarang",
+    "sub": "Tindak lanjut · PIC Sari",
+    "time": "Hari ini",
+    "urgent": true,
+    "task_id": 2
+   },
+   {
+    "kind": "report",
+    "icon": "file",
+    "title": "Performance Outlook mingguan",
+    "sub": "Laporan terjadwal · 12 penerima",
+    "time": "09.00",
+    "urgent": false
+   },
+   {
+    "kind": "alert",
+    "icon": "bell",
+    "title": "Availability Cirebon 99,3%",
+    "sub": "Alert baru · Peringatan",
+    "time": "05.12",
+    "urgent": false
+   }
+  ],
+  "prefs": {
+   "send": true,
+   "push": true,
+   "email": false,
+   "send_label": "Kirim jam 06.00",
+   "days_label": "Senin sampai Sabtu",
+   "email_label": "rizal@... · versi lengkap"
+  },
+  "topics": [
+   {
+    "key": "perf",
+    "label": "Performance",
+    "on": true
+   },
+   {
+    "key": "prod",
+    "label": "Site productivity",
+    "on": true
+   },
+   {
+    "key": "prof",
+    "label": "Profile wilayah",
+    "on": true
+   },
+   {
+    "key": "ftth",
+    "label": "FTTH",
+    "on": false
+   }
+  ],
+  "regions": [
+   {
+    "key": "JAVA",
+    "label": "Circle Java",
+    "on": true
+   },
+   {
+    "key": "WEST JAVA",
+    "label": "West Java",
+    "on": false
+   },
+   {
+    "key": "CENTRAL JAVA",
+    "label": "Central Java",
+    "on": false
+   },
+   {
+    "key": "EAST JAVA",
+    "label": "East Java",
+    "on": false
+   }
+  ],
+  "vote": null
+ },
+ "/api/tindak/count": {
+  "open_mine": 5
+ }
+}

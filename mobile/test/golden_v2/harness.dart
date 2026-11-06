@@ -13,6 +13,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -42,9 +43,14 @@ Future<void> loadFonts() async {
 
 /// A named part of the screen, in logical px inside the 370 px screen.
 class Region {
-  const Region(this.name, this.rect, {this.threshold = 2.0});
+  const Region(this.name, this.rect, {this.threshold = 2.0, this.masks = const []});
   final String name;
   final Rect rect;
+
+  /// Screen rects (logical px) that only the mockup has, such as its "Data
+  /// ilustrasi" chips; the mockup pixels are copied into the app there, like the
+  /// web gate does for `.illus`.
+  final List<Rect> masks;
 
   /// Maximum share of differing pixels, in percent.
   final double threshold;
@@ -80,6 +86,7 @@ Future<void> matchMockup(
   double homeBottom = 5,
   double homeWidth = 118,
   double homeOpacity = .75,
+  Color homeColor = const Color(0xFF0F1F1D),
 }) async {
   await loadFonts();
   // flutter_test paints shadows as solid shapes unless told otherwise; the flag is
@@ -117,7 +124,7 @@ Future<void> matchMockup(
           child: Container(
             width: homeWidth,
             height: 4,
-            decoration: BoxDecoration(color: const Color(0xFF0F1F1D).withValues(alpha: homeOpacity), borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(color: homeColor.withValues(alpha: homeOpacity), borderRadius: BorderRadius.circular(4)),
           ),
         ),
       ]),
@@ -179,6 +186,17 @@ Future<_Result> _compare(_Rgba mock, _Rgba app, Region r) async {
       for (var c = 0; c < 4; c++) {
         a[o + c] = (my0 + y < mock.h && mx0 + x < mock.w) ? mock.px[mi + c] : 255;
         b[o + c] = (y0 + y < app.h && x0 + x < app.w) ? app.px[ai + c] : 255;
+      }
+    }
+  }
+  for (final m in r.masks) {
+    final mx0m = (m.left * 2).round() - x0, my0m = (m.top * 2).round() - y0;
+    for (var y = math.max(0, my0m); y < math.min(h, my0m + (m.height * 2).round()); y++) {
+      for (var x = math.max(0, mx0m); x < math.min(w, mx0m + (m.width * 2).round()); x++) {
+        final o = (y * w + x) * 4;
+        for (var c = 0; c < 4; c++) {
+          b[o + c] = a[o + c];
+        }
       }
     }
   }

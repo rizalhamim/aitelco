@@ -170,17 +170,17 @@ const DIMAS = P(4, "Dimas", "#FF7A59", "Branch Garut"), ANDI = P(5, "Andi", "#22
 const TK = (o) => ({ items_done: 0, items_total: 0, photos: 0, progress: null, criterion: null, verify: null, region: null, kabupaten: null, priority: "sedang", impact: null, mine: false, origin: "manual", due: { label: null, urgent: false }, ...o });
 const ORG = { alert: ["Dari alert", "bell", "a"], diagnosa: ["Dari Diagnosa", "spark", "d"], brief: ["Dari Brief Pagi", "sun", "b"], ruang: ["Dari Ruang Saya", "layers", "p"] };
 const tk = (id, origin, title, status, o) => TK({ id, origin, title, status, origin_label: ORG[origin][0], origin_icon: ORG[origin][1], origin_tone: ORG[origin][2], ...o });
-const GARUT = tk(3, "diagnosa", "Cek 14 site Garut selatan", "dikerjakan", { criterion: "Selesai jika payload Garut kembali ≥ −3% vs periode sebelum", progress: 0.5, items_done: 2, items_total: 4, photos: 3, pic: DIMAS, due: { label: "Hari ini", long: "Hari ini, 5 Nov", urgent: true }, region: "WEST JAVA", kabupaten: "GARUT", priority: "tinggi", impact: -4.6e9 });
-const OTHER = (id) => tk(id, "alert", `Tugas lain ${id}`, "dikerjakan", { pic: ANDI, due: { label: "20 Nov", urgent: false } });
+const GARUT = tk(3, "diagnosa", "Cek 14 site Garut selatan", "dikerjakan", { criterion: "Selesai jika payload Garut kembali ≥ −3% vs periode sebelum", progress: 0.5, items_done: 2, items_total: 4, photos: 3, pic: DIMAS, due: { label: "Hari ini", long: "Hari ini, 5 Nov", urgent: true, late_days: 0 }, region: "WEST JAVA", kabupaten: "GARUT", priority: "tinggi", impact: -4.6e9, mine: true });
+const OTHER = (id) => tk(id, "alert", `Tugas lain ${id}`, "dikerjakan", { pic: ANDI, due: { label: "20 Nov", urgent: false, late_days: -15 } });
 export const TINDAK = {
   stats: { open: 12, open_mine: 5, due_today: 2, late: 1, late_days: 2, waiting: 3, proven: 8, verified: 11 },
   lanes: {
     baru: [
-      tk(1, "alert", "Availability Cirebon di bawah 99,5%", "baru", { criterion: "Selesai jika availability ≥ 99,5% selama 7 hari", pic: ANDI, due: { label: "8 Nov", urgent: false } }),
-      tk(2, "brief", "Uji program Malang di Central Java", "baru", { criterion: "Selesai jika revenue 2 kabupaten uji naik ≥ 2%", pic: SARI, due: { label: "15 Nov", urgent: false } }),
+      tk(1, "alert", "Availability Cirebon di bawah 99,5%", "baru", { criterion: "Selesai jika availability ≥ 99,5% selama 7 hari", pic: ANDI, due: { label: "8 Nov", urgent: false, late_days: -3 }, mine: true }),
+      tk(2, "brief", "Uji program Malang di Central Java", "baru", { criterion: "Selesai jika revenue 2 kabupaten uji naik ≥ 2%", pic: SARI, due: { label: "15 Nov", urgent: false, late_days: -10 } }),
     ],
     dikerjakan: [GARUT,
-      tk(4, "ruang", "Program bundling FWA Semarang", "dikerjakan", { criterion: "Selesai jika gross add FWA ≥ 48 per hari", progress: 0.25, items_done: 1, items_total: 4, pic: SARI, due: { label: "Hari ini", urgent: true } }),
+      tk(4, "ruang", "Program bundling FWA Semarang", "dikerjakan", { criterion: "Selesai jika gross add FWA ≥ 48 per hari", progress: 0.25, items_done: 1, items_total: 4, pic: SARI, due: { label: "Hari ini", urgent: true, late_days: 0 }, mine: true }),
       OTHER(7), OTHER(8), OTHER(9)],
     verifikasi: [
       tk(5, "alert", "Optimasi 6 site Cianjur selatan", "verifikasi", { verify: { text: "Data sesudah: 9 dari 14 hari", ok: null }, pic: RIZAL, done_label: "Selesai 27 Okt" }),

@@ -33,6 +33,10 @@ dependencies:
   flutter_svg: ^2.0.17
   video_player: ^2.9.2
   file_picker: ^11.0.3
+  flutter_tts: ^4.2.5
+  image_picker: ^1.2.4
+  flutter_local_notifications: ^22.3.3
+  workmanager: ^0.10.10
 
 dev_dependencies:
   flutter_test:
