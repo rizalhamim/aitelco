@@ -574,3 +574,4 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Deploy: `deploy/v3/run.sh` (satu perintah dari Git Bash Rizal). Belum dijalankan; APK dibangun di PC.
 - pytest lokal: test_v3_features 16 lulus; test lain gagal karena `backend/data` tidak ada di clone (gate di server membandingkan dengan commit sebelumnya).
 
+- 2026-11-08: confirmed live. Server agent-02 runs 542bd3e; deploy log 2026-11-06 "SELESAI: all berhasil"; /api/app/version = 1.51.0 (70), sha256 b98c619e..., 1.50.0 still downloadable. PR #8 merged after this check.
