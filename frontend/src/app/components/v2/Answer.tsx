@@ -249,14 +249,15 @@ function TileMap({ rows, spec, columns }: { rows: Row[]; spec: ChartSpec; column
 export function AnswerViz({ result, onDrill }: { result: AnswerResult; onDrill?: (col: string, value: string) => void }) {
   const spec = result.chart;
   const rows = result.rows;
-  const plot = toPlot(spec, rows);
+  const plot = toPlot(spec, spec?.rows ?? rows);
   const geo = detectLatLon(result.columns);
   const hasChart = !!plot || (!!spec && spec.type !== "none" && spec.type !== "kpi");
   const hasMap = !!geo || !!spec?.map_key;
   const [tab, setTab] = useState<"chart" | "table" | "map">(hasChart ? "chart" : "table");
   const title = spec?.title || "Hasil query";
   const sub = tab === "chart" && plot
-    ? [unitText(plot), "arahkan kursor untuk detail"].filter(Boolean).join(" · ")
+    ? [unitText(plot), spec?.caption, "arahkan kursor untuk detail"].filter(Boolean).join(" · ")
+    : tab === "chart" && spec?.caption ? spec.caption
     : `${result.row_count.toLocaleString("id-ID")} baris`;
   return (
     <div className="viz">

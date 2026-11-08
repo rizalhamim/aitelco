@@ -579,3 +579,9 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 ## 2026-11-05 Login input boxes cleaned up (web + Android)
 - Android: `InputDecoration.collapsed` only sets `border`, so the theme's `enabledBorder`/`focusedBorder` (OutlineInputBorder in `theme.dart`) still drew a tight second outline around the text inside the rounded login field. `_V2Field` now sets every border state to `InputBorder.none`. Same trap applies to any custom-boxed TextField under the app theme.
 - Web: login inputs now fill the field height, browser autofill paint (blue/yellow rectangle) is overridden to white, Edge's extra reveal/clear buttons hidden. Lint + build green; Flutter gates not run in the cloud container (no SDK).
+## 2026-11-05 Agent rework: report template, validated charts, tidy thinking, faster turns
+- Charts: `chart_spec.suggest()` gained a validation layer (chronological time axis, year columns as axis, Decimal, all-zero measures dropped, top 6 groups for long time series, caption + units). The synthesizer now narrates the same spec the clients draw.
+- Report: `SYNTH_SYS` is a fixed template (bold one-line answer, context line, Temuan utama, Insight, optional Rekomendasi, Catatan data). `app/answer_facts.py` pre-formats the numbers (Rp one magnitude per column, %, pp, period words) and drives the empty-model fallback.
+- Thinking: one label vocabulary for `step_start` (`STEP_LABELS`), `done.timeline` and `done.elapsed_ms`; web AgentFlow roles translated.
+- Speed: Analyst parallel to Router, no re-route on a cosmetic rewrite, speculative SQL during the scope gate, deterministic grain check instead of a critique call.
+- Not yet measured live: run the smoke (`--only 2,11,20`), then hard-30 and correlation-30 before/after, after deploy.

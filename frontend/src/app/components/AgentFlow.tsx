@@ -58,19 +58,21 @@ const NICE_LABEL: Record<string, string> = {
   reference: "Reference", misc: "Misc",
 };
 
+/* Same phase vocabulary as backend STEP_LABELS (app/main.py), so the live status pill,
+   this panel and the Android app all name a step the same way. */
 const ROLE: Record<string, string> = {
-  user: "QUERY", analyst: "ANALYST", router: "ORCHESTRATOR",
-  agent: "DOMAIN AGENT", general: "DIRECT REPLY", sql_write: "QUERY BUILDER",
-  bq_exec: "DATA ENGINE", bq_done: "DATA RESULT", synth: "SYNTHESIZER",
-  export: "EXPORT", retry: "SELF-HEAL", reflect: "QUALITY CHECK",
-  scope: "DOMAIN CHECK", reroute: "RE-ROUTE",
-  error: "ERROR", done: "DELIVERED",
+  user: "PERTANYAAN", analyst: "MEMPERJELAS", router: "MEMAHAMI",
+  agent: "DOMAIN DATA", general: "JAWAB LANGSUNG", sql_write: "MENYUSUN QUERY",
+  bq_exec: "MENGAMBIL DATA", bq_done: "DATA DITERIMA", synth: "MENYUSUN JAWABAN",
+  export: "FILE", retry: "PERBAIKAN OTOMATIS", reflect: "CEK KUALITAS",
+  scope: "SUMBER DATA", reroute: "ALIH DOMAIN",
+  error: "GAGAL", done: "SELESAI",
 };
 
 const ROLE_DESC: Record<string, string> = {
   user: "Pertanyaan diterima",
-  analyst: "Memvalidasi & memperkaya pertanyaan",
-  router: "Menentukan domain & agent terbaik",
+  analyst: "Memperjelas kebutuhan data",
+  router: "Memahami pertanyaan & memilih domain",
   agent: "Menangani domain spesifik",
   general: "Menjawab pertanyaan umum",
   sql_write: "Menyusun query data optimal",

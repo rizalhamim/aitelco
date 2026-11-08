@@ -29,6 +29,20 @@ class ChartSpec {
   List<String> get alternatives => _list(raw['alternatives']);
   String? fmt(String col) => (raw['formats'] as Map?)?[col]?.toString();
 
+  /// What the chart covers, e.g. "6 periode (202604 sampai 202609)".
+  String get caption => (raw['caption'] ?? '').toString();
+
+  /// Plot-ready rows from the backend (time axis oldest to newest, or the kept groups
+  /// of a limited line). Null when the result rows are already in drawing order.
+  List<Map<String, dynamic>>? get plotRows {
+    final v = raw['rows'];
+    if (v is! List) return null;
+    return v.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+  }
+
+  /// [plotRows] when the backend sent them, else the result rows.
+  List<Map<String, dynamic>> rowsFor(List<Map<String, dynamic>> resultRows) => plotRows ?? resultRows;
+
   static List<String> _list(dynamic v) => v is List ? v.map((e) => e.toString()).toList() : const [];
 }
 
@@ -181,7 +195,7 @@ class _SmartChartState extends State<SmartChart> {
   ChartSpec get spec => widget.spec;
 
   List<Map<String, dynamic>> get _rows {
-    var out = widget.rows;
+    var out = widget.spec.rowsFor(widget.rows);
     final m = spec.y.isEmpty ? null : spec.y.first;
     if (spec.sort == 'desc' && spec.x != null && m != null && spec.seriesBy == null) {
       out = [...out]..sort((a, b) => (toNum(b[m]) ?? double.negativeInfinity).compareTo(toNum(a[m]) ?? double.negativeInfinity));
@@ -192,7 +206,7 @@ class _SmartChartState extends State<SmartChart> {
 
   @override
   Widget build(BuildContext context) {
-    if (spec.type == 'none' || widget.rows.isEmpty) return const SizedBox.shrink();
+    if (spec.type == 'none' || spec.rowsFor(widget.rows).isEmpty) return const SizedBox.shrink();
     final p = Pal.of(context);
     final rows = _rows;
     final options = [spec.type, ...spec.alternatives.where((a) => a != spec.type && a != 'none')];
@@ -211,7 +225,7 @@ class _SmartChartState extends State<SmartChart> {
         body = _cartesian(p, rows);
     }
 
-    final hidden = spec.topN != null && spec.seriesBy == null ? widget.rows.length - spec.topN! : 0;
+    final hidden = spec.topN != null && spec.seriesBy == null ? spec.rowsFor(widget.rows).length - spec.topN! : 0;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       if (widget.showHeader || options.length > 1)
         Padding(
@@ -227,7 +241,7 @@ class _SmartChartState extends State<SmartChart> {
           alignment: Alignment.centerLeft,
           child: TextButton(
             onPressed: () => setState(() => _showAll = !_showAll),
-            child: Text(_showAll ? 'Tampilkan ${spec.topN} teratas' : 'Tampilkan semua (${widget.rows.length})',
+            child: Text(_showAll ? 'Tampilkan ${spec.topN} teratas' : 'Tampilkan semua (${spec.rowsFor(widget.rows).length})',
                 style: ts(12, w600, p.teal700)),
           ),
         ),

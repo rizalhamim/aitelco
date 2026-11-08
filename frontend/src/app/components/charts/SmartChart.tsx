@@ -25,6 +25,11 @@ export type ChartSpec = {
   map_key: string | null;
   alternatives: ChartType[];
   title: string;
+  /** Plot-ready rows (time axis oldest to newest, or the kept groups of a limited line). */
+  rows?: Record<string, unknown>[];
+  /** What the chart covers, e.g. "6 periode (202604 sampai 202609)". */
+  caption?: string;
+  units?: Record<string, string>;
 };
 
 type Row = Record<string, unknown>;
@@ -472,7 +477,9 @@ export function useThemeKey(): string {
   return key;
 }
 
-export default function SmartChart({ spec, rows, onDrill, height = 240, subtitle, bare, className, toolbar }: Props) {
+export default function SmartChart({ spec, rows: resultRows, onDrill, height = 240, subtitle, bare, className, toolbar }: Props) {
+  // The backend sends plot-ready rows when the result order is not the drawing order.
+  const rows = spec.rows ?? resultRows;
   const el = useRef<HTMLDivElement>(null);
   const chart = useRef<ECharts | null>(null);
   const [type, setType] = useState<ChartType>(spec.type);

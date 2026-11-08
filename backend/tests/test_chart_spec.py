@@ -449,3 +449,83 @@ def test_suggest_a_truncated_result_is_not_a_donut():
     rows = [{"operator": o, "market_share": v} for o, v in [("IOH", 40), ("A", 35), ("B", 25)]]
     s = suggest(["operator", "market_share"], rows, result_profile={"truncated": True})
     assert s["type"] != "donut"
+
+
+# ---------------- suggest() validation layer (2026-11 agent rework) ----------------
+
+from decimal import Decimal as _D
+
+from app.chart_spec import chart_brief, chronological_rows
+
+
+def test_time_axis_is_sorted_oldest_first_when_sql_orders_desc():
+    rows = [{"month_id": 202609 - i, "revenue": 10.0 + i} for i in range(6)]
+    s = suggest(["month_id", "revenue"], rows, sql="SELECT ... ORDER BY month_id DESC")
+    assert s["time_axis"] is True
+    assert [r["month_id"] for r in s["rows"]] == sorted(r["month_id"] for r in rows)
+    assert s["caption"].startswith("6 periode (202604 sampai 202609)")
+    fixed = chronological_rows(["month_id", "revenue"], rows, s,
+                               sql="SELECT ... ORDER BY month_id DESC")
+    assert fixed and fixed[0]["month_id"] == 202604
+
+
+def test_ranking_order_is_kept_in_the_table_but_chart_is_chronological():
+    rows = [{"bulan": "2026-0%d" % m, "revenue": float(10 - m)} for m in (3, 1, 2)]
+    s = suggest(["bulan", "revenue"], rows, sql="SELECT ... ORDER BY revenue DESC")
+    assert [r["bulan"] for r in s["rows"]] == ["2026-01", "2026-02", "2026-03"]
+    assert chronological_rows(["bulan", "revenue"], rows, s,
+                              sql="SELECT ... ORDER BY revenue DESC") is None
+
+
+def test_year_column_is_an_axis_not_a_measure():
+    rows = [{"tahun": 2023 + i, "revenue": 1e9 * (i + 1)} for i in range(3)]
+    s = suggest(["tahun", "revenue"], rows)
+    assert s["x"] == "tahun" and s["y"] == ["revenue"]
+
+
+def test_decimal_values_are_numbers():
+    rows = [{"kabupaten": f"K{i}", "revenue": _D("1000.5") * (i + 1)} for i in range(4)]
+    s = suggest(["kabupaten", "revenue"], rows)
+    assert s["type"] == "bar" and s["y"] == ["revenue"]
+
+
+def test_all_zero_or_null_measure_is_dropped():
+    rows = [{"region": r, "revenue": 5.0 + i, "ga": 0} for i, r in enumerate(["A", "B", "C"])]
+    s = suggest(["region", "revenue", "ga"], rows)
+    assert s["y"] == ["revenue"]
+    empty = [{"region": r, "revenue": None} for r in ["A", "B"]]
+    assert suggest(["region", "revenue"], empty)["type"] == "none"
+
+
+def test_many_groups_on_a_time_axis_keep_the_biggest_six():
+    rows = [{"month_id": m, "kabkota": f"KAB {k:02d}", "revenue": float(k * 10 + m % 10)}
+            for m in (202607, 202608, 202609) for k in range(20)]
+    s = suggest(["month_id", "kabkota", "revenue"], rows)
+    assert s["type"] == "line" and s["series_by"] == "kabkota"
+    kept = {r["kabkota"] for r in s["rows"]}
+    assert len(kept) == 6 and "KAB 19" in kept and "KAB 00" not in kept
+    assert "6 kabkota terbesar dari 20" in s["caption"]
+
+
+def test_category_caption_discloses_top_n():
+    rows = [{"kabupaten": f"Kabupaten {i:02d}", "revenue": float(i)} for i in range(38)]
+    s = suggest(["kabupaten", "revenue"], rows)
+    assert s["caption"] == "15 teratas dari 38 kabupaten"
+    assert s["units"] == {"revenue": "Rp"}
+
+
+def test_kpi_keeps_a_zero_value():
+    s = suggest(["revenue", "churn"], [{"revenue": 1e9, "churn": 0}])
+    assert s["type"] == "kpi" and s["y"] == ["revenue", "churn"]
+
+
+def test_chart_brief_is_compact_and_none_for_no_chart():
+    rows = [{"region": r, "revenue": float(i + 1)} for i, r in enumerate(["A", "B", "C"])]
+    brief = chart_brief(suggest(["region", "revenue"], rows))
+    assert brief["type"] == "bar" and brief["y"] == ["revenue"] and "rows" not in brief
+    assert chart_brief(suggest([], [])) is None
+
+
+def test_suggest_never_raises():
+    s = suggest(["a"], [{"a": object()}])
+    assert s["type"] == "none"
