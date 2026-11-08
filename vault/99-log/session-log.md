@@ -575,6 +575,10 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - pytest lokal: test_v3_features 16 lulus; test lain gagal karena `backend/data` tidak ada di clone (gate di server membandingkan dengan commit sebelumnya).
 
 - 2026-11-08: confirmed live. Server agent-02 runs 542bd3e; deploy log 2026-11-06 "SELESAI: all berhasil"; /api/app/version = 1.51.0 (70), sha256 b98c619e..., 1.50.0 still downloadable. PR #8 merged after this check.
+
+## 2026-11-05 Login input boxes cleaned up (web + Android)
+- Android: `InputDecoration.collapsed` only sets `border`, so the theme's `enabledBorder`/`focusedBorder` (OutlineInputBorder in `theme.dart`) still drew a tight second outline around the text inside the rounded login field. `_V2Field` now sets every border state to `InputBorder.none`. Same trap applies to any custom-boxed TextField under the app theme.
+- Web: login inputs now fill the field height, browser autofill paint (blue/yellow rectangle) is overridden to white, Edge's extra reveal/clear buttons hidden. Lint + build green; Flutter gates not run in the cloud container (no SDK).
 ## 2026-11-05 Agent rework: report template, validated charts, tidy thinking, faster turns
 - Charts: `chart_spec.suggest()` gained a validation layer (chronological time axis, year columns as axis, Decimal, all-zero measures dropped, top 6 groups for long time series, caption + units). The synthesizer now narrates the same spec the clients draw.
 - Report: `SYNTH_SYS` is a fixed template (bold one-line answer, context line, Temuan utama, Insight, optional Rekomendasi, Catatan data). `app/answer_facts.py` pre-formats the numbers (Rp one magnitude per column, %, pp, period words) and drives the empty-model fallback.
