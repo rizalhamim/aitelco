@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { Fragment, ReactNode, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
@@ -7,6 +7,7 @@ import { authFetch, getUser, isAdmin, isLoggedIn } from "@/lib/auth";
 import { Icon } from "@/app/components/v2/Icon";
 import { applyPrefs, getPrefs } from "@/lib/prefs";
 import { useMounted } from "@/lib/useMounted";
+import QuickSearch from "./QuickSearch";
 
 export type HistoryItem = { session_id: string; title: string; message_count: number; updated_at: string | null };
 
@@ -17,19 +18,29 @@ type NavItem = {
   bg: string;
   fg: string;
   isNew?: boolean;
+  /** Other routes that light this item (Diagnosa opens from Performance). */
+  also?: string[];
 };
 
-/* Same order, colors and labels as the approved v2 sidebar (design/mockup-v2). */
-const MENU: NavItem[] = [
-  { href: "/", label: "Tanya Agent", icon: "chat", bg: "#C0EDE8", fg: "#0A6A5F" },
-  { href: "/dashboard", label: "Dashboard", icon: "grid", bg: "#E1ECFA", fg: "#2C6CB0" },
-  { href: "/performance", label: "Performance", icon: "pulse", bg: "#F4FCE3", fg: "#5E8A12", isNew: true },
-  { href: "/map", label: "Peta Agent", icon: "map", bg: "#E3F7FA", fg: "#0E6F7C", isNew: true },
-  { href: "/reports", label: "Laporan", icon: "file", bg: "#FCEDD3", fg: "#B7791F" },
-  { href: "/watchlist", label: "Watchlist dan Alert", icon: "bell", bg: "#FBE2E8", fg: "#C23A5B" },
-];
-const ADMIN: NavItem[] = [
-  { href: "/statistik", label: "Statistik", icon: "bars", bg: "#ECE5FA", fg: "#6A4CB5" },
+/* Same groups, order, colors and labels as the approved v3 sidebar (design/mockup-v3/tools/build.py NAV). */
+export const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
+  { title: "Pantau", items: [
+    { href: "/brief", label: "Brief Pagi", icon: "sun", bg: "#FFEDE7", fg: "#B5401F", isNew: true },
+    { href: "/dashboard", label: "Dashboard", icon: "grid", bg: "#E1ECFA", fg: "#2C6CB0" },
+    { href: "/ruang", label: "Ruang Saya", icon: "layers", bg: "#F4FCE3", fg: "#5E8A12", isNew: true },
+    { href: "/klasemen", label: "Klasemen", icon: "bars", bg: "#FDF3E2", fg: "#B7791F", isNew: true },
+  ] },
+  { title: "Analisis", items: [
+    { href: "/", label: "Tanya Agent", icon: "chat", bg: "#C0EDE8", fg: "#0A6A5F" },
+    { href: "/performance", label: "Performance", icon: "pulse", bg: "#E6F7F5", fg: "#0E8579", also: ["/diagnosa"] },
+    { href: "/simulasi", label: "Simulasi Target", icon: "up", bg: "#ECE5FA", fg: "#6A4CB5", isNew: true },
+    { href: "/map", label: "Peta Agent", icon: "map", bg: "#E3F7FA", fg: "#0E6F7C" },
+  ] },
+  { title: "Bertindak", items: [
+    { href: "/watchlist", label: "Watchlist dan Alert", icon: "bell", bg: "#FDECEC", fg: "#C42B2B" },
+    { href: "/tindak", label: "Tindak Lanjut", icon: "check", bg: "#FBE2E8", fg: "#C23A5B" },
+    { href: "/reports", label: "Laporan", icon: "file", bg: "#FCEDD3", fg: "#B7791F" },
+  ] },
 ];
 
 type Props = {
@@ -47,6 +58,7 @@ type Props = {
 /** Routes counted on the admin Statistik page, by feature key. */
 const PAGE_KEYS: Record<string, string> = {
   "/": "tanya", "/dashboard": "dashboard", "/performance": "performance", "/map": "peta", "/reports": "laporan", "/watchlist": "watchlist",
+  "/brief": "brief", "/diagnosa": "diagnosa", "/klasemen": "klasemen", "/ruang": "ruang", "/tindak": "tindak", "/simulasi": "simulasi",
 };
 
 export default function AppShell({
@@ -59,8 +71,9 @@ export default function AppShell({
   const [open, setOpen] = useState(false);
   const [openedAt, setOpenedAt] = useState(pathname);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [query, setQuery] = useState("");
+  const [palette, setPalette] = useState(false);
   const [alertCount, setAlertCount] = useState(0);
+  const [taskCount, setTaskCount] = useState(0);
   const [apkVersion, setApkVersion] = useState<string | null>(null);
   const user = mounted ? getUser() : null;
   const admin = mounted && isAdmin();
@@ -82,7 +95,18 @@ export default function AppShell({
       .then((d) => d?.version_name && setApkVersion(d.version_name)).catch(() => {});
     authFetch("/api/watchlist/alerts/count").then((r) => (r.ok ? r.json() : null))
       .then((d) => typeof d?.active === "number" && setAlertCount(d.active)).catch(() => {});
+    authFetch("/api/tindak/count").then((r) => (r.ok ? r.json() : null))
+      .then((d) => typeof d?.open_mine === "number" && setTaskCount(d.open_mine)).catch(() => {});
   }, [mounted, router]);
+
+  // Ctrl K (or Cmd K) opens the quick search palette from any page.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setPalette(true); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const loadHistory = useCallback(() => {
     authFetch("/api/history/sessions")
@@ -111,15 +135,13 @@ export default function AppShell({
   }
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
-  const filtered = query.trim()
-    ? history.filter((h) => (h.title || "").toLowerCase().includes(query.trim().toLowerCase()))
-    : history;
+  const onChat = pathname === "/";
   const name = user?.full_name || user?.username || "";
   const initial = (name.trim()[0] || "U").toUpperCase();
 
   const navLink = (it: NavItem) => {
-    const active = isActive(it.href);
-    const badge = it.href === "/watchlist" ? alertCount : 0;
+    const active = isActive(it.href) || !!it.also?.some(isActive);
+    const badge = it.href === "/watchlist" ? alertCount : it.href === "/tindak" ? taskCount : 0;
     return (
       <Link key={it.href} href={it.href} className={active ? "on" : ""} aria-current={active ? "page" : undefined}>
         <span className="nt" style={{ background: it.bg, color: it.fg }}><Icon name={it.icon} /></span>
@@ -161,35 +183,41 @@ export default function AppShell({
 
         <button className="newchat" onClick={newChat} disabled={busy}><Icon name="plus" />Percakapan baru</button>
 
-        <label className="search">
-          <Icon name="search" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari percakapan…" aria-label="Cari percakapan" />
-        </label>
+        <button className="search" onClick={() => setPalette(true)} aria-label="Cari cepat" aria-keyshortcuts="Control+K">
+          <Icon name="search" />Cari cepat<span className="kbd">Ctrl K</span>
+        </button>
 
-        <div className="navh">Menu</div>
-        <nav className="nav">{MENU.map(navLink)}</nav>
-        {admin && (<>
-          <div className="navh">Admin</div>
-          <nav className="nav">{ADMIN.map(navLink)}</nav>
+        <nav className="nav">
+          {NAV_GROUPS.map((g) => (
+            <Fragment key={g.title}>
+              <div className="navh">{g.title}</div>
+              {g.items.map(navLink)}
+            </Fragment>
+          ))}
+        </nav>
+
+        {/* Conversation history stays next to the chat it belongs to; elsewhere it is one Ctrl K away. */}
+        {onChat && (<>
+          <div className="navh">Riwayat</div>
+          <div className="hist">
+            {history.length === 0 && <span className="empty">Belum ada percakapan</span>}
+            {history.slice(0, 30).map((h) => (
+              <button key={h.session_id} className={h.session_id === activeSession ? "on" : ""}
+                onClick={() => openSession(h.session_id)} disabled={busy} title={h.title}>
+                <Icon name="hist" />
+                <span>{h.title || "Percakapan tanpa judul"}</span>
+              </button>
+            ))}
+          </div>
         </>)}
 
-        <div className="navh">Riwayat</div>
-        <div className="hist">
-          {filtered.length === 0 && <span className="empty">{query ? "Tidak ada yang cocok" : "Belum ada percakapan"}</span>}
-          {filtered.slice(0, 30).map((h) => (
-            <button key={h.session_id} className={pathname === "/" && h.session_id === activeSession ? "on" : ""}
-              onClick={() => openSession(h.session_id)} disabled={busy} title={h.title}>
-              <Icon name="hist" />
-              <span>{h.title || "Percakapan tanpa judul"}</span>
-            </button>
-          ))}
-        </div>
-
         <div className="spacer" />
-        <Link href="/unduh" className={`apk ${onApk ? "on" : ""}`}>
-          <span className="ai"><Icon name="dl" /></span>
-          <div><b>Aplikasi Android</b><small>Agent Java {apkVersion ? shortVersion(apkVersion) : ""}{apkVersion ? " · " : ""}Unduh APK</small></div>
-        </Link>
+        {(onChat || onApk) && (
+          <Link href="/unduh" className={`apk ${onApk ? "on" : ""}`}>
+            <span className="ai"><Icon name="dl" /></span>
+            <div><b>Aplikasi Android</b><small>Agent Java {apkVersion ? shortVersion(apkVersion) : ""}{apkVersion ? " · " : ""}Unduh APK</small></div>
+          </Link>
+        )}
         <Link href="/profile" className={`me ${onProfile ? "on" : ""}`} aria-current={onProfile ? "page" : undefined}>
           <span className="avatar">{initial}</span>
           <div><b>{name}</b><small>{roleLabel} · Circle Java</small></div>
@@ -198,6 +226,8 @@ export default function AppShell({
       </aside>
 
       <div className={`main ${mainClassName ?? ""}`}>{children}</div>
+      {palette && <QuickSearch onClose={() => setPalette(false)} history={history} admin={admin}
+        onOpenSession={(sid) => { setPalette(false); openSession(sid); }} />}
     </div>
   );
 }

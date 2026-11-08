@@ -1,0 +1,76 @@
+<title>Agent Java v3 Mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Prompt:wght@400;500;600&display=swap">
+<style>
+:root {
+  --page: #EEF4F2; --panel: #FFFFFF; --ink: #0F1F1D; --ink-2: #3D4C49; --mute: #5A6B68; --rule: #DCE6E3;
+  --chip: #E6F7F5; --chip-ink: #0A6A5F; --accent: #0E8579; --lagoon: #22B8C9;
+  --f-display: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Prompt", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; --accent: #33BCAD; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --page: #0B1715; --panel: #12211F; --ink: #E7F1EF; --ink-2: #B9C9C6; --mute: #8FA3A0; --rule: #233532;
+  --chip: #12332F; --chip-ink: #8FDFD7; --accent: #33BCAD; color-scheme: dark }
+* { box-sizing: border-box }
+html, body { margin: 0 }
+body { background: var(--page); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px }
+.wrap { max-width: 1440px; margin: 0 auto; display: grid; gap: 16px }
+header.top-r { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; justify-content: space-between }
+header.top-r h1 { font: 700 21px/1.25 var(--f-display); margin: 0 }
+header.top-r p { margin: 2px 0 0; color: var(--mute); font-size: 13.5px }
+.chip-r { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--chip); color: var(--chip-ink); font: 600 12px/1 var(--f-display) }
+.chip-r i { width: 7px; height: 7px; border-radius: 50%; background: #F5A623 }
+.tabs { display: flex; padding: 4px; gap: 4px; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; overflow-x: auto; scrollbar-width: thin }
+.tabs button { flex: none; font: 600 13px/1 var(--f-display); border: 0; background: transparent; color: var(--ink-2); padding: 10px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap }
+.tabs button[aria-selected="true"] { background: var(--accent); color: #fff }
+.tabs button:focus-visible { outline: 2px solid var(--lagoon); outline-offset: 2px }
+.panel { display: none } .panel.on { display: grid; gap: 14px }
+.phead .num { font: 600 11px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: var(--chip-ink) }
+.phead h2 { font: 700 22px/1.25 var(--f-display); margin: 6px 0 4px }
+.phead p { margin: 0; color: var(--ink-2); max-width: 900px; font-size: 14.5px }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start }
+@media (max-width: 1000px) { .grid { grid-template-columns: minmax(0, 1fr) } }
+.stage { background: repeating-conic-gradient(var(--rule) 0 25%, transparent 0 50%) 0 0/22px 22px, var(--panel); border: 1px solid var(--rule); border-radius: 16px; padding: 14px; min-width: 0; overflow: hidden }
+.stage-label { font: 500 12px/1.3 var(--f-display); color: var(--mute); margin-bottom: 10px }
+.fit { position: relative; margin: 0 auto }
+.fit > .frame { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: 0 20px 60px rgba(4,51,46,.28) }
+aside.notes { background: var(--panel); border: 1px solid var(--rule); border-radius: 16px; padding: 16px 18px }
+aside.notes h3 { font: 700 14px/1.3 var(--f-display); margin: 0 0 8px }
+aside.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; columns: 2 }
+@media (max-width: 800px) { aside.notes ul { columns: 1 } }
+/*FRAMECSS*/
+</style>
+<!--SPRITE-->
+<div class="wrap">
+  <header class="top-r">
+    <div><h1>Agent Java v3: mockup fitur baru</h1><p>6 fitur baru untuk web dan Android, mengikuti gaya Redesign v2. Semua angka adalah data ilustrasi.</p></div>
+    <span class="chip-r"><i></i> Menunggu review Rizal</span>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Fitur"><!--TABS--></nav>
+  <!--PANELS-->
+</div>
+<script>
+(function () {
+  function layout() {
+    document.querySelectorAll('.panel.on .fit').forEach(f => {
+      const w = +f.dataset.w, h = +f.dataset.h, avail = f.parentElement.clientWidth - 28;
+      const s = Math.min(f.dataset.max ? 1 : 9, avail / w);
+      f.style.width = (w * s) + 'px'; f.style.height = (h * s) + 'px';
+      f.firstElementChild.style.transform = 'scale(' + s + ')';
+    });
+  }
+  const tabs = document.querySelectorAll('[role=tab]');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p));
+    layout(); try { localStorage.setItem('aj3-tab', t.dataset.p) } catch (e) {}
+  }));
+  try { const k = localStorage.getItem('aj3-tab'); const t = k && document.querySelector('[data-p="' + k + '"]'); if (t) t.click() } catch (e) {}
+  new ResizeObserver(layout).observe(document.querySelector('.wrap')); layout();
+})();
+</script>

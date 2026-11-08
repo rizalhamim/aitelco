@@ -560,3 +560,18 @@ literal partition bound (about 23.8 MB scanned), so full query-cost efficiency i
 - Deploy is one command from Git Bash on Rizal's PC (`deploy/redesign-v2/run.sh`, read through the server's own `git fetch github` because the raw GitHub CDN served stale scripts).
 - Lessons: `rham_site_wise_monthly.month_id` is STRING (perf_dump now types month literals from table metadata); server venv lacked `requirements-dev.txt`; the PC Flutter needs AGP >= 8.11.1 and must not use the tracked Linux `org.gradle.java.home` (the build copy drops it and builds with `--android-skip-build-dependency-validation`).
 - Gates on the server: pytest only `test_governance_covers_live_inventory` failing (also failing before), KB benchmark passed, smoke #11 empty once then OK on rerun. APK signer 038aa1bf...0458 verified, sha256 72737441...9659.
+
+## 2026-11-05 Agent Java v3: plan 6 fitur baru dan mockup (menunggu review Rizal)
+- Rizal minta minimal 5 fitur baru untuk web dan APK plus mockup. Panel desain 5 peran (`.kilo/agent/`) memilih: Diagnosa "Kenapa?", Brief Pagi, Klasemen, Ruang Saya, Tindak Lanjut, Simulasi Target, plus quick win Bandingkan, Ctrl K, site terdekat GPS. Mode Lapangan terpisah ditolak (pengguna utama pimpinan dan planner; dilebur ke Tindak Lanjut Android).
+- Mockup di `design/mockup-v3/` (PNG @2x, halaman review, .figcraft). Plan: Claude Doc "Agent Java v3: Plan Fitur Baru dan Mockup".
+- Temuan teknis: push Android belum punya transport (`notify_push` hanya tersimpan, tidak ada FCM di `mobile/pubspec.yaml`); target bulanan dari `backend/data/targets.json` (fallback `{}` di `dashboard.py`) perlu dicek di server.
+- Aturan desain v3: chip basis di setiap angka, realisasi/estimasi/hipotesis dibedakan visual, data kosong = status "Belum tersedia", pertumbuhan selalu persen plus rupiah, baris aksi Kenapa?/Pin/Tugas/Bagikan.
+
+## 2026-11-06 Agent Java v3: produksi web, Android, rilis 1.51.0 (70) disiapkan
+- Rizal setuju plan v3 dan minta sampai publish dengan output persis desain. Backend (6 modul + notify), web (6 halaman, 17 kasus visual lulus) dan Android (6 layar, golden test semua area ≤2%) selesai di branch `claude/project-thread-kjx27g`.
+- Android: kartu "Alat analisa" di akhir Dashboard (golden v2 tidak berubah), `V3Nav` didaftarkan HomeShell, notifikasi lewat WorkManager tanpa FCM. Plugin baru: flutter_tts, image_picker, flutter_local_notifications, workmanager (desugaring, minSdk 24, compileSdk 36).
+- Fakta layout Chrome untuk pencocokan piksel dicatat di [[mobile]].
+- Deploy: `deploy/v3/run.sh` (satu perintah dari Git Bash Rizal). Belum dijalankan; APK dibangun di PC.
+- pytest lokal: test_v3_features 16 lulus; test lain gagal karena `backend/data` tidak ada di clone (gate di server membandingkan dengan commit sebelumnya).
+
+- 2026-11-08: confirmed live. Server agent-02 runs 542bd3e; deploy log 2026-11-06 "SELESAI: all berhasil"; /api/app/version = 1.51.0 (70), sha256 b98c619e..., 1.50.0 still downloadable. PR #8 merged after this check.

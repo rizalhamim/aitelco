@@ -1,0 +1,151 @@
+<!--title: Tindak Lanjut-->
+<!--lead: Alert dan insight berubah jadi tugas dengan PIC, tenggat, checklist, dan foto bukti. Tugas ditutup bukan saat dicentang, tetapi saat KPI terbukti membaik: agent membandingkan 14 hari sebelum dan 14 hari sesudah tindakan pada hari yang sama. Loop lihat, putuskan, tindak, ukur hasil akhirnya tertutup.-->
+<!--webH: 1080-->
+<!--droidH: 900-->
+<style>
+.body { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 22px 32px; display: grid; grid-template-columns: 1fr 392px; gap: 16px;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(194,58,91,.06), rgba(194,58,91,0)), #F5F9F8 }
+.col { display: flex; flex-direction: column; gap: 14px; min-width: 0 }
+.hd { display: flex; align-items: flex-end; gap: 12px } .hd .grow { flex: 1 }
+.hd h1 { font: 800 28px/1.2 var(--f-display); margin: 6px 0 0; letter-spacing: -.01em }
+.bt { white-space: nowrap; height: 38px; padding: 0 13px; border-radius: 12px; border: 1px solid #E1E9E7; background: #fff; font: 600 13px/1 var(--f-display); color: #0A6A5F; display: inline-flex; align-items: center; gap: 7px }
+.bt svg { width: 16px; height: 16px } .bt.pri { background: #0E8579; border-color: #0E8579; color: #fff }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px }
+.sx { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; padding: 12px 14px; display: grid; gap: 2px }
+.sx small { font: 500 12px/1.2 var(--f-display); color: #5A6B68 } .sx b { font: 700 24px/1.2 var(--f-display); font-variant-numeric: tabular-nums } .sx span { font: 500 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.sx.k b { color: #C42B2B } .sx.g b { color: #1F7A3A }
+.filt { display: flex; gap: 6px; align-items: center } .filt span { height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 12.5px/32px var(--f-display); color: #3D4C49; white-space: nowrap }
+.filt span.on { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F; font-weight: 600 } .filt .grow { flex: 1 }
+.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start }
+.lane { background: #ECF3F1; border-radius: 20px; padding: 10px; display: flex; flex-direction: column; gap: 10px }
+.lane .lh { display: flex; align-items: center; gap: 8px; padding: 4px 4px 2px; font: 600 13px/1 var(--f-display) }
+.lane .lh i { width: 9px; height: 9px; border-radius: 50% } .lane .lh em { font-style: normal; font: 600 11px/1 var(--f-display); padding: 3px 7px; border-radius: 99px; background: #fff; color: #3D4C49 } .lane .lh .grow { flex: 1 } .lane .lh svg { width: 16px; height: 16px; color: #5A6B68 }
+.tk { background: #fff; border-radius: 16px; padding: 12px; display: grid; gap: 8px; border: 1px solid #E1E9E7; box-shadow: 0 2px 8px rgba(15,31,29,.04) }
+.tk.sel { border: 2px solid #0E8579; box-shadow: 0 10px 24px rgba(14,133,121,.16) }
+.org { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 99px; font: 600 10.5px/1 var(--f-display); width: max-content }
+.org svg { width: 12px; height: 12px }
+.org.a { background: #FDECEC; color: #C42B2B } .org.d { background: #FFEDE7; color: #B5401F } .org.b { background: #FDF3E2; color: #8F5A10 } .org.p { background: #F4FCE3; color: #5E8A12 }
+.tk b { font: 600 13.5px/1.35 var(--f-display) }
+.tk .kpi { font: 400 11.5px/1.4 var(--f-body); color: #3D4C49; background: #F5F9F8; border-radius: 10px; padding: 6px 8px; display: flex; gap: 6px } .tk .kpi svg { width: 13px; height: 13px; flex: none; margin-top: 1px; color: #0E8579 }
+.tk .mt { white-space: nowrap; display: flex; align-items: center; gap: 8px; font: 500 11.5px/1 var(--f-display); color: #5A6B68 }
+.tk .mt .av { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 10px/1 var(--f-display); color: #fff }
+.tk .mt .grow { flex: 1 } .tk .mt svg { width: 13px; height: 13px } .tk .mt .due { display: inline-flex; align-items: center; gap: 4px } .tk .mt .due.k { color: #C42B2B; font-weight: 600 }
+.tk .bar { height: 5px; border-radius: 5px; background: #ECF3F1; overflow: hidden } .tk .bar i { display: block; height: 100%; background: #0E8579; border-radius: 5px }
+.ver { display: flex; align-items: center; gap: 6px; font: 600 11px/1.3 var(--f-display); color: #6A4CB5 } .ver svg { width: 13px; height: 13px }
+.more { text-align: center; font: 600 12px/1 var(--f-display); color: #0A6A5F; padding: 6px }
+/* drawer */
+.dr { background: #fff; border: 1px solid #E1E9E7; border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 30px rgba(15,31,29,.06) }
+.dr .top1 { display: flex; align-items: center; gap: 8px } .dr .top1 .grow { flex: 1 } .dr .top1 .x { width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E9E7; display: grid; place-items: center } .dr .top1 .x svg { width: 15px; height: 15px; transform: rotate(45deg) }
+.dr h2 { margin: 0; font: 700 19px/1.3 var(--f-display) }
+.meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.meta div { border-radius: 12px; background: #F5F9F8; padding: 8px 10px } .meta small { display: block; font: 500 11px/1.2 var(--f-display); color: #5A6B68 } .meta b { font: 600 13px/1.4 var(--f-display); display: flex; align-items: center; gap: 6px }
+.meta .av { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font: 700 9.5px/1 var(--f-display); color: #fff }
+.sect { display: grid; gap: 8px } .sect h5 { margin: 0; font: 600 12px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68 }
+.chk { display: grid; gap: 6px } .chk div { display: flex; gap: 8px; align-items: center; font: 400 13px/1.35 var(--f-body) }
+.chk i { width: 18px; height: 18px; border-radius: 6px; border: 1.5px solid #9FB1AD; flex: none; display: grid; place-items: center } .chk i.on { background: #0E8579; border-color: #0E8579; color: #fff } .chk i svg { width: 12px; height: 12px }
+.chk .done { color: #5A6B68; text-decoration: line-through }
+.photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+.photos div { height: 74px; border-radius: 12px; display: grid; align-content: end; padding: 6px; font: 500 10px/1.2 var(--f-display); color: #fff; position: relative; overflow: hidden }
+.photos div svg { position: absolute; top: 8px; left: 8px; width: 16px; height: 16px; opacity: .85 }
+.photos .add { border: 1.5px dashed #9FB1AD; color: #0A6A5F; place-items: center; align-content: center; text-align: center; font-weight: 600 } .photos .add svg { position: static; color: #0A6A5F }
+.vk { border-radius: 16px; border: 1px solid #DCD0F5; background: #F7F3FE; padding: 12px 14px; display: grid; gap: 8px }
+.vk .r1 { display: flex; align-items: center; gap: 8px; font: 600 13px/1.3 var(--f-display); color: #4B3290 } .vk .r1 svg { width: 16px; height: 16px }
+.vk p { margin: 0; font: 400 12px/1.45 var(--f-body); color: #3D4C49 }
+.win { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.win div { border-radius: 12px; background: #fff; padding: 8px 10px; border: 1px solid #ECE5FA } .win small { display: block; font: 500 10.5px/1.25 var(--f-display); color: #5A6B68 } .win b { font: 700 16px/1.3 var(--f-display) }
+.win .wait b { color: #8A9A97; font-size: 13px }
+.vk .tl { height: 6px; border-radius: 6px; background: #E5DDF8; overflow: hidden } .vk .tl i { display: block; height: 100%; width: 36%; background: #6A4CB5 }
+.log { display: grid; gap: 8px } .log div { display: grid; grid-template-columns: 10px 1fr; gap: 10px; font: 400 12px/1.4 var(--f-body); color: #3D4C49 } .log i { width: 8px; height: 8px; border-radius: 50%; background: #9FB1AD; margin-top: 5px } .log b { font-weight: 600 } .log small { color: #8A9A97 }
+
+/* Android */
+.dpad { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: #F5F9F8; overflow: hidden }
+.dseg { display: flex; gap: 6px } .dseg span { height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 600 12px/32px var(--f-display); color: #3D4C49; white-space: nowrap } .dseg span.on { background: #0E8579; color: #fff; border-color: #0E8579 }
+.dgh { font: 600 11.5px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 4px 2px 0 }
+.dpad .tk { padding: 12px 14px; border-radius: 18px }
+.dcta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px } .dcta span { height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 12.5px/1 var(--f-display); border: 1px solid #E1E9E7; color: #0A6A5F; background: #fff } .dcta span.pri { background: #0E8579; color: #fff; border-color: #0E8579 } .dcta svg { width: 16px; height: 16px }
+.gps { display: flex; align-items: center; gap: 6px; font: 500 11px/1.3 var(--f-display); color: #5A6B68 } .gps svg { width: 13px; height: 13px; color: #0E8579 }
+</style>
+
+<template id="web">
+{{SIDE:aksi}}
+{{TOP:Tindak Lanjut|Dari alert dan insight ke tindakan yang terukur}}
+<div class="body">
+  <div class="col">
+    <div class="hd"><div><div class="eb">Tindak lanjut · data ilustrasi</div><h1>Tindakan tim Circle Java</h1></div><div class="grow"></div><span class="bt"><svg><use href="#i-dl"/></svg>Ekspor</span><span class="bt pri"><svg><use href="#i-plus"/></svg>Tugas baru</span></div>
+    <div class="stats">
+      <div class="sx"><small>Terbuka</small><b>12</b><span>5 milik kamu</span></div>
+      <div class="sx k"><small>Jatuh tempo hari ini</small><b>2</b><span>1 terlambat 2 hari</span></div>
+      <div class="sx"><small>Menunggu verifikasi KPI</small><b>3</b><span>data 14 hari belum lengkap</span></div>
+      <div class="sx g"><small>Terbukti memperbaiki KPI</small><b>8 dari 11</b><span>tugas selesai, 30 hari terakhir</span></div>
+    </div>
+    <div class="filt"><span class="on">Semua</span><span>Milik saya</span><span>West Java</span><span>Central Java</span><span>East Java</span><div class="grow"></div><span>Urut: tenggat</span></div>
+    <div class="board">
+      <div class="lane"><div class="lh"><i style="background:#9FB1AD"></i>Baru<em>3</em><span class="grow"></span><svg><use href="#i-plus"/></svg></div>
+        <div class="tk"><span class="org a"><svg><use href="#i-bell"/></svg>Dari alert</span><b>Availability Cirebon di bawah 99,5%</b><div class="kpi"><svg><use href="#i-check"/></svg>Selesai jika availability ≥ 99,5% selama 7 hari</div><div class="mt"><span class="av" style="background:#22B8C9">A</span>Andi<span class="grow"></span><span class="due"><svg><use href="#i-cal"/></svg>8 Nov</span></div></div>
+        <div class="tk"><span class="org b"><svg><use href="#i-sun"/></svg>Dari Brief Pagi</span><b>Uji program Malang di Central Java</b><div class="kpi"><svg><use href="#i-check"/></svg>Selesai jika revenue 2 kabupaten uji naik ≥ 2%</div><div class="mt"><span class="av" style="background:#6A4CB5">S</span>Sari<span class="grow"></span><span class="due"><svg><use href="#i-cal"/></svg>15 Nov</span></div></div>
+      </div>
+      <div class="lane"><div class="lh"><i style="background:#22B8C9"></i>Dikerjakan<em>5</em><span class="grow"></span></div>
+        <div class="tk sel"><span class="org d"><svg><use href="#i-spark"/></svg>Dari Diagnosa</span><b>Cek 14 site Garut selatan</b><div class="kpi"><svg><use href="#i-check"/></svg>Selesai jika payload Garut kembali ≥ −3% vs periode sebelum</div><div class="bar"><i style="width:50%"></i></div><div class="mt"><span class="av" style="background:#FF7A59">D</span>Dimas<span class="grow"></span><svg><use href="#i-cam"/></svg>3<span class="due k"><svg><use href="#i-cal"/></svg>Hari ini</span></div></div>
+        <div class="tk"><span class="org p"><svg><use href="#i-layers"/></svg>Dari Ruang Saya</span><b>Program bundling FWA Semarang</b><div class="kpi"><svg><use href="#i-check"/></svg>Selesai jika gross add FWA ≥ 48 per hari</div><div class="bar"><i style="width:25%"></i></div><div class="mt"><span class="av" style="background:#6A4CB5">S</span>Sari<span class="grow"></span><span class="due k"><svg><use href="#i-cal"/></svg>Hari ini</span></div></div>
+        <div class="more">3 tugas lain</div>
+      </div>
+      <div class="lane"><div class="lh"><i style="background:#6A4CB5"></i>Verifikasi KPI<em>3</em><span class="grow"></span></div>
+        <div class="tk"><span class="org a"><svg><use href="#i-bell"/></svg>Dari alert</span><b>Optimasi 6 site Cianjur selatan</b><div class="ver"><svg><use href="#i-hist"/></svg>Data sesudah: 9 dari 14 hari</div><div class="mt"><span class="av" style="background:#0E8579">R</span>Rizal<span class="grow"></span>Selesai 27 Okt</div></div>
+        <div class="tk"><span class="org d"><svg><use href="#i-spark"/></svg>Dari Diagnosa</span><b>Promo ulang paket 30 hari Sukabumi</b><div class="ver" style="color:#1F7A3A"><svg><use href="#i-check"/></svg>Terbukti: RGU 90D +1,9% vs sebelum</div><div class="mt"><span class="av" style="background:#22B8C9">A</span>Andi<span class="grow"></span>Selesai 18 Okt</div></div>
+        <div class="more">Selesai: 18 tugas</div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="dr" data-name="Detail tugas">
+    <div class="top1"><span class="org d"><svg><use href="#i-spark"/></svg>Dari Diagnosa 4 Nov</span><span class="grow"></span><span class="x"><svg><use href="#i-plus"/></svg></span></div>
+    <h2>Cek 14 site Garut selatan</h2>
+    <div class="meta"><div><small>PIC</small><b><span class="av" style="background:#FF7A59">D</span>Dimas, Branch Garut</b></div><div><small>Tenggat</small><b style="color:#C42B2B">Hari ini, 5 Nov</b></div><div><small>Wilayah</small><b>Garut · 3 kecamatan</b></div><div><small>Prioritas</small><b>Tinggi · −Rp 4,6 M</b></div></div>
+    <div class="sect"><h5>Checklist 2 dari 4</h5><div class="chk">
+      <div><i class="on"><svg><use href="#i-check"/></svg></i><span class="done">Cek availability dan alarm 14 site</span></div>
+      <div><i class="on"><svg><use href="#i-check"/></svg></i><span class="done">Kunjungi 6 site Cikajang</span></div>
+      <div><i></i>Cek aktivitas kompetitor di outlet sekitar</div>
+      <div><i></i>Usulkan program retensi ke Sales</div></div></div>
+    <div class="sect"><h5>Bukti lapangan</h5><div class="photos">
+      <div style="background:linear-gradient(135deg,#5BCEC3,#0A6A5F)"><svg><use href="#i-cam"/></svg>CKJ-012 · 4 Nov</div>
+      <div style="background:linear-gradient(135deg,#8FDFD7,#0E6F7C)"><svg><use href="#i-cam"/></svg>CKJ-007 · 4 Nov</div>
+      <div class="add"><svg><use href="#i-plus"/></svg>Tambah foto</div></div></div>
+    <div class="vk"><div class="r1"><svg><use href="#i-pulse"/></svg>Verifikasi KPI otomatis</div>
+      <p>Payload Garut 14 hari sebelum tindakan dibanding 14 hari sesudah, hari yang sama dalam seminggu. Tugas ditutup otomatis jika target tercapai.</p>
+      <div class="win"><div><small>Sebelum · 21 Okt sd 3 Nov</small><b class="" style="color:#C42B2B">−9,4%</b></div><div class="wait"><small>Sesudah · 6 Nov sd 19 Nov</small><b>Menunggu data</b></div></div>
+      <div class="tl"><i style="width:0"></i></div></div>
+    <div class="sect"><h5>Riwayat</h5><div class="log">
+      <div><i style="background:#0E8579"></i><span><b>Rizal</b> membuat tugas dari Diagnosa revenue West Java <small>4 Nov 08.12</small></span></div>
+      <div><i></i><span><b>Dimas</b> menyelesaikan 2 item checklist dan menambah 2 foto <small>4 Nov 15.40</small></span></div></div></div>
+  </aside>
+</div>
+</template>
+
+<template id="droid">
+{{STATUS}}
+{{DBAR:Tindak Lanjut|5 tugas milik kamu}}
+<div class="dpad">
+  <div class="dseg"><span class="on">Milik saya</span><span>Tim</span><span>Verifikasi</span><span>Selesai</span></div>
+  <div class="dgh">Hari ini</div>
+  <div class="tk sel"><span class="org d"><svg><use href="#i-spark"/></svg>Dari Diagnosa</span><b>Cek 14 site Garut selatan</b>
+    <div class="kpi"><svg><use href="#i-check"/></svg>Selesai jika payload Garut kembali ≥ −3%</div>
+    <div class="bar"><i style="width:50%"></i></div>
+    <div class="mt"><span class="av" style="background:#FF7A59">D</span>Checklist 2 dari 4<span class="grow"></span><svg><use href="#i-cam"/></svg>2 foto</div>
+    <div class="gps"><svg><use href="#i-locate"/></svg>Kamu 1,2 km dari CKJ-021, site berikutnya</div>
+    <div class="dcta"><span><svg><use href="#i-cam"/></svg>Foto bukti</span><span class="pri"><svg><use href="#i-check"/></svg>Update</span></div></div>
+  <div class="tk"><span class="org p"><svg><use href="#i-layers"/></svg>Dari Ruang Saya</span><b>Program bundling FWA Semarang</b><div class="mt"><span class="av" style="background:#6A4CB5">S</span>Sari<span class="grow"></span><span class="due k"><svg><use href="#i-cal"/></svg>Hari ini</span></div></div>
+  <div class="dgh">Minggu ini</div>
+  <div class="tk"><span class="org a"><svg><use href="#i-bell"/></svg>Dari alert</span><b>Availability Cirebon di bawah 99,5%</b><div class="mt"><span class="av" style="background:#22B8C9">A</span>Andi<span class="grow"></span><span class="due"><svg><use href="#i-cal"/></svg>8 Nov</span></div></div>
+</div>
+{{BNAV:dash}}
+</template>
+
+<template id="notes">
+<li>Tugas dibuat satu ketukan dari alert, Diagnosa, Brief Pagi, atau pin, dan membawa konteksnya (wilayah, angka, sumber).</li>
+<li>Setiap tugas punya kriteria selesai berbasis KPI, PIC, tenggat, prioritas berdasar dampak rupiah, dan checklist.</li>
+<li>Papan tiga kolom: Baru, Dikerjakan, Verifikasi KPI. Selesai dihitung terpisah.</li>
+<li>Verifikasi otomatis memakai jendela tetap 14 hari sebelum dan sesudah pada hari yang sama, bukan MTD berjalan. Hasilnya "Terbukti" atau tidak.</li>
+<li>Bukti lapangan berupa foto dari Android dengan lokasi dan tanggal, tersimpan di tugas.</li>
+<li>Ringkasan "8 dari 11 tugas terbukti memperbaiki KPI" menunjukkan dampak nyata agent.</li>
+<li>Android: tugas milik saya per tenggat, foto bukti dari kamera, dan site terdekat berikutnya dari GPS (pengganti fitur Mode Lapangan terpisah).</li>
+</template>

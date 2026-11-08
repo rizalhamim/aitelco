@@ -1,0 +1,212 @@
+<!--title: Brief Pagi-->
+<!--lead: Setiap pagi 06.00 agent menyusun brief pribadi sesuai peran dan wilayah user: 3 hal terpenting, posisi terhadap target, dan agenda hari ini. Bisa didengar 60 detik di jalan, dibagikan ke WhatsApp, dan setiap kartu punya tombol Kenapa? dan Tindak lanjut.-->
+<!--webH: 1200-->
+<!--droidH: 844-->
+<style>
+.body { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 22px 32px; display: grid; grid-template-columns: 1fr 340px; gap: 18px; align-content: start;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(255,122,89,.07), rgba(255,122,89,0)), #F5F9F8 }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+.greet { border-radius: 24px; padding: 22px 24px; color: #fff; position: relative; overflow: hidden;
+  background: radial-gradient(380px 240px at 88% 10%, rgba(255,194,175,.55), rgba(255,194,175,0)), radial-gradient(320px 220px at 0% 120%, rgba(199,242,94,.22), rgba(199,242,94,0)), linear-gradient(135deg, #0A6A5F, #04332E 72%) }
+.greet .row1 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.greet .tag { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 99px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); font: 600 12px/1 var(--f-display) }
+.greet .tag svg { width: 14px; height: 14px; color: #FFC2AF }
+.greet h1 { font: 800 30px/1.15 var(--f-display); margin: 14px 0 6px; letter-spacing: -.01em }
+.greet p { font: 400 16px/1.55 var(--f-body); margin: 0; max-width: 760px; color: #E6F7F5 }
+.greet p b { color: #C7F25E; font-weight: 600 } .greet p em { color: #FFC2AF; font-style: normal; font-weight: 600 }
+.player { margin-top: 18px; display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); border-radius: 18px; padding: 10px 14px 10px 10px }
+.player .pb { width: 46px; height: 46px; border-radius: 14px; background: #C7F25E; color: #04332E; display: grid; place-items: center; flex: none }
+.player .pb svg { width: 20px; height: 20px }
+.player .meta b { font: 600 14px/1.2 var(--f-display); display: block } .player .meta small { font: 400 12px/1.3 var(--f-body); color: #C0EDE8 }
+.wave { flex: 1; display: flex; align-items: center; gap: 3px; height: 36px }
+.wave i { width: 3px; border-radius: 3px; background: rgba(255,255,255,.35) } .wave i.p { background: #C7F25E }
+.player .sp { font: 600 12px/1 var(--f-display); padding: 7px 9px; border-radius: 9px; background: rgba(255,255,255,.14) }
+.player .sh { height: 38px; padding: 0 12px; border-radius: 11px; border: 1px solid rgba(255,255,255,.35); display: inline-flex; align-items: center; gap: 7px; font: 600 13px/1 var(--f-display) }
+.player .sh svg { width: 16px; height: 16px }
+.basis { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+.basis span { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 99px; background: #fff; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49 }
+.basis span svg { width: 14px; height: 14px; color: #0E8579 }
+.sech { display: flex; align-items: center; gap: 10px } .sech h3 { margin: 0; font: 700 17px/1.3 var(--f-display) } .sech .grow { flex: 1 }
+.sech small { font: 400 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.stories { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px }
+.st { background: #fff; border: 1px solid #E1E9E7; border-radius: 22px; padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; box-shadow: 0 4px 14px rgba(15,31,29,.04) }
+.st::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px }
+.st.k::before { background: #E85D3C } .st.g::before { background: #2FA84F } .st.w::before { background: #F5A623 }
+.st .hd { display: flex; align-items: center; gap: 8px; font: 600 11.5px/1 var(--f-display); color: #5A6B68; letter-spacing: .04em; text-transform: uppercase }
+.st .hd .n { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; color: #fff }
+.st.k .n { background: #E85D3C } .st.g .n { background: #2FA84F } .st.w .n { background: #F5A623 }
+.st h4 { margin: 0; font: 600 16px/1.35 var(--f-display) }
+.st .big { display: flex; align-items: baseline; gap: 8px } .st .big b { font: 700 26px/1.1 var(--f-display); font-variant-numeric: tabular-nums } .st .big span { font: 600 12.5px/1 var(--f-display) }
+.st .big .dn { color: #C42B2B } .st .big .up { color: #1F7A3A } .st .big .wn { color: #B7791F }
+.st p { margin: 0; font: 400 13px/1.5 var(--f-body); color: #3D4C49 }
+.st .acts { display: flex; gap: 6px; margin-top: auto }
+.st .acts span { height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid #E1E9E7; font: 600 12px/1 var(--f-display); color: #0A6A5F; display: inline-flex; align-items: center; gap: 6px }
+.st .acts span.pri { background: #FFEDE7; border-color: #FFC2AF; color: #B5401F }
+.st .acts svg { width: 14px; height: 14px } .st .acts span { padding: 0 9px } .st .acts .ic1 { width: 32px; padding: 0; justify-content: center; flex: none } .st .acts .ic1:last-child { margin-left: auto }
+.tgt { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; align-items: center }
+.tgt .bul { display: grid; gap: 12px }
+.bl { display: grid; gap: 6px } .bl .lb { display: flex; font: 500 13px/1.2 var(--f-display); color: #3D4C49 } .bl .lb b { margin-left: auto; font-weight: 700; color: #0F1F1D; font-variant-numeric: tabular-nums }
+.bl .tr { height: 14px; border-radius: 7px; background: #ECF3F1; position: relative }
+.bl .tr i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px }
+.bl .tr .fc { background: repeating-linear-gradient(45deg, rgba(14,133,121,.28) 0 5px, rgba(14,133,121,.12) 5px 10px) }
+.bl .tr .tk { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #0F1F1D; border-radius: 2px }
+.bl small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.tgt .say { border-radius: 16px; background: #F4FCE3; border: 1px solid #E2F9A8; padding: 14px 16px; font: 400 13.5px/1.55 var(--f-body); color: #2F4A08 }
+.tgt .say b { font-weight: 600 }
+.tgt .say .lk { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font: 600 12.5px/1 var(--f-display); color: #5E8A12 }
+.tgt .say .lk svg { width: 14px; height: 14px }
+.ag { display: grid; gap: 10px }
+.ai { display: grid; grid-template-columns: 38px 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 12px; border-radius: 14px; border: 1px solid #ECF3F1; background: #FBFDFC }
+.ai i { grid-column: 1; grid-row: 1 / span 2; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center } .ai i svg { width: 18px; height: 18px }
+.ai b { grid-column: 2; font: 600 13.5px/1.3 var(--f-display) } .ai small { grid-column: 2; font: 400 12px/1.3 var(--f-body); color: #5A6B68 }
+.ai .tm { grid-column: 3; grid-row: 1 / span 2; font: 600 11.5px/1 var(--f-display); color: #5A6B68 }
+.pref { display: grid; gap: 12px }
+.pr { display: flex; align-items: center; gap: 10px; font: 500 13px/1.3 var(--f-display); color: #0F1F1D }
+.pr small { display: block; font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.pr .grow { flex: 1 }
+.tog { width: 38px; height: 22px; border-radius: 11px; background: #0E8579; position: relative; flex: none } .tog::after { content: ""; position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff }
+.tog.off { background: #CBD6D3 } .tog.off::after { right: auto; left: 3px }
+.chips { display: flex; gap: 6px; flex-wrap: wrap }
+.chips span { height: 30px; padding: 0 11px; border-radius: 99px; border: 1px solid #E1E9E7; font: 500 12px/30px var(--f-display); color: #3D4C49 }
+.chips span.on { background: #E6F7F5; border-color: #8FDFD7; color: #0A6A5F; font-weight: 600 }
+.fb { display: flex; align-items: center; gap: 10px; font: 500 13px/1.3 var(--f-display); color: #3D4C49 }
+.fb span { width: 36px; height: 36px; border-radius: 11px; border: 1px solid #E1E9E7; display: grid; place-items: center; background: #fff }
+.fb svg { width: 17px; height: 17px }
+
+/* Android story */
+.peek { margin-top: 12px; display: flex; align-items: center; gap: 10px; border-radius: 18px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.16); padding: 10px 12px }
+.peek .n { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: #F5A623; color: #fff; font: 700 12px/1 var(--f-display); flex: none }
+.peek.p3 { margin-top: 8px; opacity: .8 } .peek.p3 .n { background: #2FA84F }
+.peek small { display: block; font: 500 10.5px/1.2 var(--f-display); color: #C0EDE8; text-transform: uppercase; letter-spacing: .05em } .peek b { font: 600 13px/1.3 var(--f-display) }
+.dstory { position: absolute; top: 34px; left: 0; right: 0; bottom: 0; color: #fff; padding: 12px 16px 0;
+  background: radial-gradient(300px 260px at 90% 8%, rgba(255,122,89,.45), rgba(255,122,89,0)), radial-gradient(280px 240px at 0% 100%, rgba(199,242,94,.18), rgba(199,242,94,0)), linear-gradient(160deg, #0A6A5F, #04332E 70%) }
+.segs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px } .segs i { height: 3px; border-radius: 3px; background: rgba(255,255,255,.28) } .segs i.d { background: #fff } .segs i.h { background: linear-gradient(90deg, #fff 55%, rgba(255,255,255,.28) 55%) }
+.shead { display: flex; align-items: center; gap: 10px; margin-top: 12px }
+.shead .tile { width: 34px; height: 34px; border-radius: 10px }
+.shead b { font: 600 14px/1.2 var(--f-display); display: block } .shead small { font: 400 11.5px/1.2 var(--f-body); color: #C0EDE8 }
+.shead .grow { flex: 1 } .shead .x { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.12); display: grid; place-items: center } .shead .x svg { width: 18px; height: 18px }
+.scard { margin-top: 18px; background: #fff; color: #0F1F1D; border-radius: 26px; padding: 18px; display: grid; gap: 10px; box-shadow: 0 24px 50px rgba(0,0,0,.28) }
+.scard .hd { display: flex; align-items: center; gap: 8px; font: 600 11px/1 var(--f-display); color: #B5401F; letter-spacing: .06em; text-transform: uppercase }
+.scard .hd .n { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; background: #E85D3C; color: #fff; font-size: 12px }
+.scard h4 { margin: 0; font: 700 20px/1.3 var(--f-display) }
+.scard .big { display: flex; align-items: baseline; gap: 8px } .scard .big b { font: 800 34px/1 var(--f-display); color: #C42B2B } .scard .big span { font: 500 12.5px/1.3 var(--f-body); color: #5A6B68 }
+.scard p { margin: 0; font: 400 13.5px/1.5 var(--f-body); color: #3D4C49 }
+.scard .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.scard .acts span { height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 13px/1 var(--f-display) }
+.scard .acts .a1 { background: #FFEDE7; color: #B5401F } .scard .acts .a2 { background: #0E8579; color: #fff }
+.scard .acts svg { width: 16px; height: 16px }
+.swipe { text-align: center; margin-top: 14px; font: 500 12px/1 var(--f-display); color: #C0EDE8; display: flex; align-items: center; justify-content: center; gap: 6px }
+.swipe svg { width: 14px; height: 14px; transform: rotate(-90deg) }
+.mini { position: absolute; left: 14px; right: 14px; bottom: 30px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 20px; padding: 8px 10px 8px 8px }
+.mini .pb { width: 42px; height: 42px; border-radius: 13px; background: #C7F25E; color: #04332E; display: grid; place-items: center } .mini .pb svg { width: 18px; height: 18px }
+.mini b { font: 600 13px/1.2 var(--f-display); display: block } .mini small { font: 400 11px/1.2 var(--f-body); color: #C0EDE8 }
+.mini .grow { flex: 1 } .mini .sh { width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,.14); display: grid; place-items: center } .mini .sh svg { width: 17px; height: 17px }
+.mini .bar { position: absolute; left: 60px; right: 60px; bottom: 6px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.2) } .mini .bar i { display: block; width: 38%; height: 100%; border-radius: 3px; background: #C7F25E }
+</style>
+
+<template id="web">
+{{SIDE:brief}}
+{{TOP:Brief Pagi|Disusun agent untuk Rizal · Kamis, 5 Nov 2026 06.00 WIB}}
+<div class="body">
+  <div class="col">
+    <section class="greet" data-name="Sapaan">
+      <div class="row1"><span class="tag"><svg><use href="#i-sun"/></svg>Brief harian · 06.00 WIB</span><span class="tag"><svg><use href="#i-check"/></svg>Angka tervalidasi agent</span></div>
+      <h1>Selamat pagi, Rizal</h1>
+      <p>Revenue Circle Java MTD <b>naik 1,4% vs LMTD</b>, sejalan dengan target. Tiga hal butuh perhatian: <em>payload Garut</em> masih turun, <em>gross add FWA Semarang</em> tertinggal dari run-rate, dan 2 tindak lanjut jatuh tempo hari ini.</p>
+      <div class="player" data-name="Audio brief">
+        <span class="pb"><svg><use href="#i-play"/></svg></span>
+        <div class="meta"><b>Dengarkan brief</b><small>58 detik · suara Bahasa Indonesia</small></div>
+        <div class="wave" data-wave="48"></div>
+        <span class="sp">1,0×</span>
+        <span class="sh"><svg><use href="#i-share"/></svg>Bagikan</span>
+      </div>
+    </section>
+    <div class="basis"><span><svg><use href="#i-db"/></svg>Dump Performance 5 Nov 05.00 WIB</span><span><svg><use href="#i-cal"/></svg>MTD 1 sd 4 Nov vs LMTD 1 sd 4 Okt</span><span><svg><use href="#i-pin"/></svg>Fokus: Circle Java, semua region</span><span class="illus">Data ilustrasi</span></div>
+
+    <div class="sech"><h3>3 hal yang perlu kamu tahu</h3><small>diurutkan dari dampak terbesar ke revenue</small><span class="grow"></span></div>
+    <div class="stories">
+      <article class="st k"><div class="hd"><span class="n">1</span>Perlu tindakan</div><h4>Payload Garut turun 4 hari berturut-turut</h4>
+        <div class="big"><b>−9,4%</b><span class="dn">MTD vs LMTD</span></div>
+        <svg class="spark" width="250" height="44" data-spark="31.2,31.0,30.6,30.9,30.1,29.4,28.8,28.5,28.3,28.2" data-color="#C42B2B" data-area="1"></svg>
+        <p>14 site di 3 kecamatan selatan menyumbang 71% penurunan. Availability normal, jadi kemungkinan bukan gangguan jaringan.</p>
+        <div class="acts"><span class="pri"><svg><use href="#i-spark"/></svg>Kenapa?</span><span class="ic1" title="Pin"><svg><use href="#i-layers"/></svg></span><span class="ic1" title="Tugas"><svg><use href="#i-check"/></svg></span><span class="ic1"><svg><use href="#i-share"/></svg></span></div></article>
+      <article class="st w"><div class="hd"><span class="n">2</span>Waspada</div><h4>Gross add FWA Semarang di bawah run-rate</h4>
+        <div class="big"><b>78%</b><span class="wn">dari run-rate target</span></div>
+        <svg class="spark" width="250" height="44" data-spark="92,90,88,86,84,83,81,80,79,78" data-color="#F5A623" data-area="1"></svg>
+        <p>Perlu 48 gross add per hari sampai 30 Nov untuk menutup gap. Rata-rata 4 hari terakhir 36 per hari.</p>
+        <div class="acts"><span class="pri"><svg><use href="#i-spark"/></svg>Kenapa?</span><span class="ic1" title="Pin"><svg><use href="#i-layers"/></svg></span><span><svg><use href="#i-up"/></svg>Simulasi</span><span class="ic1"><svg><use href="#i-share"/></svg></span></div></article>
+      <article class="st g"><div class="hd"><span class="n">3</span>Kabar baik</div><h4>East Java memimpin pertumbuhan revenue</h4>
+        <div class="big"><b>+2,1%</b><span class="up">MTD vs LMTD</span></div>
+        <svg class="spark" width="250" height="44" data-spark="24.1,24.3,24.2,24.6,24.8,24.7,25.0,25.2,25.3,25.6" data-color="#0E8579" data-area="1"></svg>
+        <p>Malang dan Sidoarjo naik paling tinggi. Pola yang sama bisa diuji di Central Java.</p>
+        <div class="acts"><span class="pri"><svg><use href="#i-spark"/></svg>Kenapa?</span><span class="ic1" title="Pin"><svg><use href="#i-layers"/></svg></span><span class="ic1" title="Tugas"><svg><use href="#i-check"/></svg></span><span class="ic1"><svg><use href="#i-share"/></svg></span></div></article>
+    </div>
+
+    <section class="card" data-name="Posisi target">
+      <div class="ch"><div><h3>Posisi terhadap target November</h3><p>Proyeksi akhir bulan dari run-rate 4 hari, rentang 80% ditunjukkan arsiran</p></div></div>
+      <div class="tgt">
+        <div class="bul">
+          <div class="bl"><div class="lb">Revenue<b>Rp 1,87 T dari Rp 1,90 T</b></div><div class="tr"><i class="fc" style="width:100%"></i><i style="width:13%;background:#0E8579"></i><span class="tk" style="left:98.6%"></span></div><small>Realisasi MTD Rp 246,8 M · proyeksi 98,6% (rentang 97,1% sd 100,1%)</small></div>
+          <div class="bl"><div class="lb">Pelanggan aktif<b>41,6 jt dari 41,5 jt</b></div><div class="tr"><i class="fc" style="width:100%"></i><i style="width:99%;background:#22B8C9"></i><span class="tk" style="left:99.7%"></span></div><small>Proyeksi 100,2% · sudah di atas target</small></div>
+          <div class="bl"><div class="lb">Gross add FWA<b>1.080 dari 1.380</b></div><div class="tr"><i class="fc" style="width:86%"></i><i style="width:10%;background:#F5A623"></i><span class="tk" style="left:78.3%"></span></div><small>Proyeksi 78,3% (rentang 72% sd 84%)</small></div>
+        </div>
+        <div class="say"><b>Kata agent:</b> Revenue perlu Rp 63,6 M per hari sampai 30 Nov, di atas rata-rata 4 hari terakhir Rp 61,7 M. Estimasi akhir bulan Rp 1,87 T, gap sekitar Rp 27 M. Ini estimasi, bukan realisasi.<br><span class="lk"><svg><use href="#i-up"/></svg>Buka Simulasi Target</span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="card" data-name="Agenda hari ini">
+      <div class="ch"><div><h3>Agenda kamu hari ini</h3><p>Dari Tindak Lanjut, Laporan, dan Alert</p></div></div>
+      <div class="ag">
+        <div class="ai"><i style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-check"/></svg></i><b>Cek 14 site Garut selatan</b><small>Tindak lanjut · PIC Dimas</small><span class="tm" style="color:#C42B2B">Hari ini</span></div>
+        <div class="ai"><i style="background:#FBE2E8;color:#C23A5B"><svg><use href="#i-check"/></svg></i><b>Program FWA Semarang</b><small>Tindak lanjut · PIC Sari</small><span class="tm" style="color:#C42B2B">Hari ini</span></div>
+        <div class="ai"><i style="background:#FCEDD3;color:#B7791F"><svg><use href="#i-file"/></svg></i><b>Performance Outlook mingguan</b><small>Laporan terjadwal · 12 penerima</small><span class="tm">09.00</span></div>
+        <div class="ai"><i style="background:#FDECEC;color:#C42B2B"><svg><use href="#i-bell"/></svg></i><b>Availability Cirebon 99,3%</b><small>Alert baru · Peringatan</small><span class="tm">05.12</span></div>
+      </div>
+    </section>
+    <section class="card" data-name="Atur brief">
+      <div class="ch"><div><h3>Atur brief kamu</h3><p>Agent belajar dari kartu yang kamu buka</p></div></div>
+      <div class="pref">
+        <div><div class="pr" style="margin-bottom:8px">Topik</div><div class="chips"><span class="on">Performance</span><span class="on">Site productivity</span><span class="on">Profile wilayah</span><span>FTTH</span></div></div>
+        <div><div class="pr" style="margin-bottom:8px">Wilayah</div><div class="chips"><span class="on">Circle Java</span><span>West Java</span><span>Central Java</span><span>East Java</span></div></div>
+        <div class="pr"><div>Kirim jam 06.00<small>Senin sampai Sabtu</small></div><span class="grow"></span><span class="tog"></span></div>
+        <div class="pr"><div>Notifikasi Android<small>Ringkasan 2 baris di layar kunci</small></div><span class="grow"></span><span class="tog"></span></div>
+        <div class="pr"><div>Email<small>rizal@... · versi lengkap</small></div><span class="grow"></span><span class="tog off"></span></div>
+      </div>
+    </section>
+    <div class="fb">Brief ini membantu?<span><svg><use href="#i-up"/></svg></span><span style="transform:rotate(180deg)"><svg><use href="#i-up"/></svg></span></div>
+  </div>
+</div>
+</template>
+
+<template id="droid">
+{{STATUS}}
+<div class="dstory">
+  <div class="segs"><i class="d"></i><i class="h"></i><i></i><i></i><i></i></div>
+  <div class="shead"><span class="tile"><img src="{{LOGO}}" alt="Logo Agent Java"></span><div><b>Brief Pagi</b><small>Kamis, 5 Nov · 06.00 · 2 dari 5</small></div><span class="grow"></span><span class="x"><svg><use href="#i-share"/></svg></span><span class="x"><svg style="transform:rotate(45deg)"><use href="#i-plus"/></svg></span></div>
+  <div class="scard">
+    <div class="hd"><span class="n">1</span>Perlu tindakan · Performance</div>
+    <h4>Payload Garut turun 4 hari berturut-turut</h4>
+    <div class="big"><b>−9,4%</b><span>MTD 1 sd 4 Nov<br>vs LMTD 1 sd 4 Okt</span></div>
+    <svg class="spark" width="314" height="70" data-spark="31.2,31.0,30.6,30.9,30.1,29.4,28.8,28.5,28.3,28.2" data-color="#C42B2B" data-area="1"></svg>
+    <p>14 site di 3 kecamatan selatan menyumbang 71% penurunan. Availability normal, kemungkinan bukan gangguan jaringan.</p>
+    <div class="acts"><span class="a1"><svg><use href="#i-spark"/></svg>Kenapa?</span><span class="a2"><svg><use href="#i-check"/></svg>Tindak lanjut</span></div>
+  </div>
+  <div class="swipe"><svg><use href="#i-chev"/></svg>Ketuk kanan untuk kartu berikutnya</div>
+  <div class="peek"><span class="n">2</span><div><small>Waspada · Gross add</small><b>FWA Semarang 78% dari run-rate</b></div></div>
+  <div class="peek p3"><span class="n">3</span><div><small>Kabar baik · Revenue</small><b>East Java +2,1% vs LMTD</b></div></div>
+  <div class="mini"><span class="pb"><svg><use href="#i-pause"/></svg></span><div><b>Mendengarkan brief</b><small>0:22 dari 0:58</small></div><span class="grow"></span><span class="sh"><svg><use href="#i-share"/></svg></span><div class="bar"><i></i></div></div>
+  <div class="homebar" style="background:#fff"></div>
+</div>
+</template>
+
+<template id="notes">
+<li>Masuk dari menu baru Brief Pagi di web, dan di Android dari notifikasi 06.00 yang membuka tampilan kartu bergaya story.</li>
+<li>Kalimat pembuka ditulis agent, angka di bawahnya dihitung dari dump (bukan LLM), dengan basis perbandingan tertulis: MTD vs LMTD pada hari yang sama.</li>
+<li>Audio 60 detik untuk didengar di jalan, bisa dibagikan ke WhatsApp sebagai teks plus link.</li>
+<li>Setiap kartu punya Kenapa? (membuka Diagnosa) dan Tindak lanjut (membuat tugas dengan PIC).</li>
+<li>Posisi target memakai bullet bar: realisasi, proyeksi dengan rentang arsir, dan garis target.</li>
+<li>Agenda menggabungkan tugas jatuh tempo, laporan terjadwal, dan alert baru dalam satu daftar.</li>
+<li>User memilih topik, wilayah, jam, dan kanal. Tombol suka atau tidak melatih urutan kartu.</li>
+</template>

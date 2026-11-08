@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart' as http;
@@ -552,6 +553,17 @@ class ApiClient {
       throw Exception(data is Map && data['detail'] != null ? data['detail'].toString() : 'HTTP ${res.statusCode}');
     }
     return data is Map<String, dynamic> ? data : {'data': data};
+  }
+
+  // ── v3 features (Brief Pagi, Diagnosa, Klasemen, Ruang Saya, Tindak Lanjut, Simulasi Target) ──
+  // The screens read the same JSON as the web pages, so one generic pair is enough.
+  static Future<Map<String, dynamic>> v3Get(String path, [Map<String, String>? q]) => _getJson(path, q);
+  static Future<Map<String, dynamic>> v3Send(String method, String path, [Object? body]) => _sendJson(method, path, body);
+
+  /// Authenticated binary GET (task photos).
+  static Future<Uint8List?> v3Bytes(String path) async {
+    final res = await _authGet(Uri.parse('$base$path'));
+    return res.statusCode == 200 ? res.bodyBytes : null;
   }
 
   /// Dashboard Monitoring numbers (KPIs, sparklines, revenue per region, agent summary).

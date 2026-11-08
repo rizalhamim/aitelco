@@ -20,7 +20,7 @@
 .v2.app { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; background: var(--v2-bg) }
 
 /* sidebar */
-.v2 .side { position: sticky; top: 0; height: 100vh; height: 100dvh; width: 272px; background: #fff; border-right: 1px solid #E1E9E7; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; z-index: 20 }
+.v2 .side { position: sticky; top: 0; height: 100vh; height: 100dvh; width: 272px; background: #fff; border-right: 1px solid #E1E9E7; padding: 20px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; z-index: 20 }
 .v2 .side .brand { display: flex; align-items: center; gap: 12px; padding: 2px 4px 6px; text-decoration: none; color: inherit }
 .v2 .side .brand .tile { width: 44px; height: 44px }
 .v2 .side .brand b { font: 700 17px/1.2 var(--f-display); display: block }
@@ -31,14 +31,17 @@
 .v2 .newchat { height: 46px; border: 0; border-radius: 14px; background: linear-gradient(100deg, #0E8579, #15A697 55%, #1597A8); color: #fff; font: 600 14px/1 var(--f-display); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 18px rgba(14,133,121,.28); cursor: pointer; flex: none }
 .v2 .newchat:disabled { opacity: .6; cursor: default }
 .v2 .newchat svg { width: 18px; height: 18px }
-.v2 .search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body) }
+.v2 .search { height: 40px; border-radius: 12px; border: 1px solid #E1E9E7; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: #5A6B68; font: 400 13px/1 var(--f-body); background: #fff; width: 100%; cursor: pointer; flex: none; text-align: left }
+.v2 .search:hover { border-color: #8FDFD7 }
+.v2 .kbd { margin-left: auto; font: 600 10.5px/1 var(--f-display); padding: 4px 6px; border-radius: 6px; background: #ECF3F1; color: #5A6B68; white-space: nowrap }
 .v2 .search svg { width: 17px; height: 17px; flex: none }
 .v2 .search input { border: 0; outline: 0; background: transparent; font: inherit; color: #0F1F1D; min-width: 0; flex: 1; padding: 0 }
 .v2 .search input::placeholder { color: #5A6B68 }
 .v2 .search:focus-within { border-color: #8FDFD7; box-shadow: 0 0 0 3px rgba(34,184,201,.12) }
 .v2 .navh { font: 600 11px/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: #5A6B68; padding: 4px 6px 0 }
 .v2 .nav { display: flex; flex-direction: column; gap: 2px }
-.v2 .nav a { display: flex; align-items: center; gap: 11px; height: 42px; padding: 0 10px; border-radius: 12px; font: 500 14px/1 var(--f-display); color: #0F1F1D; text-decoration: none; position: relative }
+.v2 .nav .navh { padding: 12px 6px 6px }
+.v2 .nav a { white-space: nowrap; display: flex; align-items: center; gap: 11px; height: 38px; padding: 0 10px; border-radius: 12px; font: 500 14px/1 var(--f-display); color: #0F1F1D; text-decoration: none; position: relative }
 .v2 .nav a:hover { background: #F5F9F8 }
 .v2 .nav a .nt { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none }
 .v2 .nav a .nt svg { width: 17px; height: 17px }
@@ -117,3 +120,17 @@
   .v2 .page { padding: 16px }
 }
 @media (prefers-reduced-motion: reduce) { .v2 .side { transition: none } }
+
+/* v3 Ctrl K quick search */
+.v2 .qs-scrim { position: fixed; inset: 0; z-index: 60; background: rgba(4,51,46,.32); display: grid; justify-items: center; align-items: start; padding: 12vh 16px 0 }
+.v2 .qs { width: 100%; max-width: 560px; background: #fff; border-radius: 20px; box-shadow: 0 24px 60px rgba(4,51,46,.3); overflow: hidden }
+.v2 .qs-in { display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; border-bottom: 1px solid #E1E9E7; color: #5A6B68 }
+.v2 .qs-in svg { width: 19px; height: 19px; flex: none }
+.v2 .qs-in input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 400 15px/1 var(--f-body); color: #0F1F1D }
+.v2 .qs-list { max-height: 60vh; overflow-y: auto; padding: 8px; display: grid; gap: 2px }
+.v2 .qs-list button { display: flex; align-items: center; gap: 11px; height: 44px; padding: 0 10px; border-radius: 12px; border: 0; background: transparent; cursor: pointer; text-align: left; font: 500 14px/1 var(--f-display); color: #0F1F1D; width: 100% }
+.v2 .qs-list button.on { background: #E6F7F5; color: #0A6A5F }
+.v2 .qs-list .nt { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none } .v2 .qs-list .nt svg { width: 17px; height: 17px }
+.v2 .qs-list .lb { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.v2 .qs-list small { font: 400 12px/1 var(--f-body); color: #5A6B68; white-space: nowrap }
+.v2 .qs-empty { margin: 0; padding: 14px; font: 400 13px/1.3 var(--f-body); color: #5A6B68 }

@@ -364,7 +364,8 @@ def evaluate_rule(db: Session, rule: WatchRule, force: bool = False) -> Optional
 def _notify(db: Session, rule: WatchRule, alert: WatchAlert) -> None:
     if rule.notify_inapp:
         db.add(Notification(user_id=rule.user_id, title=alert.title, message=alert.message,
-                            kind="success" if alert.severity == "pulih" else "alert"))
+                            kind="success" if alert.severity == "pulih" else "alert", link="/watchlist",
+                            push=bool(rule.notify_push)))
         db.commit()
     if rule.notify_email and alert.severity != "pulih":
         user = db.get(User, rule.user_id)
