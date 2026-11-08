@@ -21,21 +21,25 @@ COLS = {
 
 def test_queries_use_literal_partitions_and_probed_columns():
     q = perf_dump.build_queries(202610, date(2026, 10, 31), lambda t: COLS.get(t, set()))
-    assert set(q) == {"kec_month", "avail_month", "region_daily", "site_month"}
+    assert set(q) == {"kec_month", "avail_month", "region_daily", "site_month", "kab_daily", "kec_mtd"}
     assert "BETWEEN 202410 AND 202610" in q["kec_month"]
+    assert "z.kabkota AS kabupaten" in q["kab_daily"] and "DATE '2026-08-23' AND DATE '2026-10-31'" in q["kab_daily"]
+    # MTD 1 to 31 Okt against LMTD 1 to 30 Sep (September has no 31st), literal dates only
+    assert "DATE '2026-10-01' AND DATE '2026-10-31'" in q["kec_mtd"] and "DATE '2026-09-01' AND DATE '2026-09-30'" in q["kec_mtd"]
+    assert "AS subs" not in q["kec_mtd"]  # the daily table has no rgu_90d here
     assert "ANY_VALUE(z.kecamatan) AS kecamatan" in q["kec_month"]
     assert "DATE '2026-08-23' AND DATE '2026-10-31'" in q["region_daily"]
     # the daily table lacks rgu_90d and gross_add: only the measures it has are summed
     assert "rgu_90d" not in q["region_daily"] and "SUM(x.usg_data_gb) AS payload_gb" in q["region_daily"]
-    assert "IN (202610, 202609, 202510)" in q["site_month"] and "SUM(rev_total) AS revenue" in q["site_month"]
+    assert "IN (202610, 202609, 202608, 202510)" in q["site_month"] and "SUM(rev_total) AS revenue" in q["site_month"]
 
 
 def test_string_month_columns_get_quoted_literals():
     # rham_site_wise_monthly keeps month_id as STRING upstream ("No matching signature for operator IN").
     types = {perf_dump.T_SITE: {"month_id": "STRING"}, perf_dump.T_SITE_AV: {"month_id": "INT64"}}
     q = perf_dump.build_queries(202610, None, lambda t: COLS.get(t, set()), lambda t: types.get(t, {}))["site_month"]
-    assert "WHERE month_id IN ('202610', '202609', '202510')" in q
-    assert "WHERE month_id IN (202610, 202609, 202510)" in q
+    assert "WHERE month_id IN ('202610', '202609', '202608', '202510')" in q
+    assert "WHERE month_id IN (202610, 202609, 202608, 202510)" in q
     assert "CAST(month_id AS INT64) AS month_id, SUM(usg_data_gb)" in q
 
 

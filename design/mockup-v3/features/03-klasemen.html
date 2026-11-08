@@ -1,0 +1,185 @@
+<!--title: Klasemen-->
+<!--lead: Peringkat region, kabupaten/kota, dan kecamatan terhadap target dengan basis apple-to-apple (MTD vs LMTD di hari yang sama). Pertumbuhan selalu tampil berpasangan persen dan rupiah, wilayah berbasis kecil diberi tanda, dan pergerakan peringkat ditunjukkan panah. Mendorong kompetisi sehat antar cabang.-->
+<!--webH: 1160-->
+<!--droidH: 900-->
+<style>
+.body { position: absolute; left: 272px; right: 0; top: 76px; bottom: 0; padding: 22px 32px; display: flex; flex-direction: column; gap: 16px;
+  background: radial-gradient(900px 500px at 100% 0%, rgba(245,166,35,.08), rgba(245,166,35,0)), #F5F9F8 }
+.hd { display: flex; align-items: flex-end; gap: 14px } .hd .grow { flex: 1 }
+.hd h1 { font: 800 28px/1.2 var(--f-display); margin: 6px 0 8px; letter-spacing: -.01em }
+.basis { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+.basis span { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 99px; background: #fff; border: 1px solid #E1E9E7; font: 500 12px/1 var(--f-display); color: #3D4C49 }
+.basis span svg { width: 14px; height: 14px; color: #0E8579 }
+.ctrl { display: flex; gap: 10px; align-items: center; flex-wrap: wrap }
+.ctrl .seg { margin: 0; background: #fff; border: 1px solid #E1E9E7 }
+.mchips { display: flex; gap: 6px } .mchips span { height: 34px; padding: 0 12px; border-radius: 99px; border: 1px solid #E1E9E7; background: #fff; font: 500 12.5px/34px var(--f-display); color: #3D4C49; white-space: nowrap }
+.mchips span.on { background: #0E8579; border-color: #0E8579; color: #fff; font-weight: 600 }
+.g2 { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start }
+.pod { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.pc { border-radius: 22px; padding: 16px 18px; display: grid; gap: 10px; border: 1px solid #E1E9E7; background: #fff }
+.pc h3 { margin: 0; font: 600 15px/1.3 var(--f-display); display: flex; align-items: center; gap: 8px } .pc h3 svg { width: 18px; height: 18px }
+.pc.best h3 { color: #1F7A3A } .pc.worst h3 { color: #C42B2B }
+.pr { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center }
+.pr .rk { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font: 700 14px/1 var(--f-display) }
+.pc.best .rk { background: #E6F4EA; color: #1F7A3A } .pc.best .pr:first-of-type .rk { background: #C7F25E; color: #2F4A08 }
+.pc.worst .rk { background: #FDECEC; color: #C42B2B }
+.pr b { font: 600 14px/1.25 var(--f-display); display: block } .pr small { font: 400 11.5px/1.3 var(--f-body); color: #5A6B68 }
+.pr .v { text-align: right; font: 700 14px/1.2 var(--f-display); font-variant-numeric: tabular-nums } .pr .v small { display: block; font: 500 11px/1.2 var(--f-display) }
+.up { color: #1F7A3A } .dn { color: #C42B2B }
+.kt { width: 100%; border-collapse: collapse; font: 400 13px/1.3 var(--f-body); font-variant-numeric: tabular-nums }
+.kt th { text-align: left; font: 600 10.5px/1.2 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #5A6B68; padding: 10px 8px; background: #F5F9F8; border-bottom: 1px solid #E1E9E7; white-space: nowrap }
+.kt td { padding: 8px 8px; border-bottom: 1px solid #ECF3F1; white-space: nowrap }
+.kt .n { text-align: right }
+.kt .rk { font: 700 14px/1 var(--f-display); width: 34px }
+.mv { font: 600 11px/1 var(--f-display); display: inline-flex; align-items: center; gap: 2px } .mv.u { color: #1F7A3A } .mv.d { color: #C42B2B } .mv.s { color: #8A9A97 }
+.nm b { font: 600 13.5px/1.2 var(--f-display) } .nm small { display: flex; align-items: center; gap: 5px; font: 400 11px/1.2 var(--f-body); color: #5A6B68; margin-top: 3px } .nm .rd { width: 7px; height: 7px; border-radius: 2px }
+.rg { display: inline-flex; align-items: center; gap: 6px; font: 500 12px/1 var(--f-display); color: #3D4C49 } .rg i { width: 9px; height: 9px; border-radius: 3px }
+.bul { width: 130px; height: 12px; border-radius: 6px; background: #ECF3F1; position: relative; display: inline-block; vertical-align: middle }
+.bul i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px } .bul em { position: absolute; left: 80%; top: -3px; bottom: -3px; width: 2px; background: #0F1F1D }
+.ach { font: 700 12.5px/1 var(--f-display); margin-left: 8px; display: inline-block; width: 52px; text-align: right }
+.dot { width: 120px; height: 18px; position: relative; display: inline-block; vertical-align: middle }
+.dot::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1.5px; background: #B9C6C3 }
+.dot::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #ECF3F1 }
+.dot i { position: absolute; top: 4px; width: 10px; height: 10px; border-radius: 50%; transform: translateX(-50%); z-index: 1; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.08) }
+.gp b { font: 700 12.5px/1 var(--f-display) } .gp small { display: block; font: 500 11px/1.3 var(--f-display); color: #5A6B68 }
+.small { font: 600 10px/1 var(--f-display); padding: 3px 6px; border-radius: 99px; background: #FDF3E2; color: #B7791F; margin-left: 6px; vertical-align: 2px }
+.gaprow td { text-align: center; color: #5A6B68; font: 500 12px/1 var(--f-display); background: #FBFDFC; padding: 10px }
+.mrow td { background: #FFF8F5 } .mrow td:first-child { box-shadow: inset 4px 0 0 #FF7A59 }
+.foot { display: flex; align-items: center; gap: 10px; font: 400 11.5px/1.4 var(--f-body); color: #5A6B68 } .foot svg { width: 14px; height: 14px } .foot .grow { flex: 1 }
+.rcard { display: grid; gap: 12px }
+.rrow { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center }
+.rrow .rk { font: 700 15px/1 var(--f-display); color: #5A6B68 }
+.rrow b { font: 600 14px/1.2 var(--f-display) } .rrow .bar { height: 8px; border-radius: 8px; background: #ECF3F1; margin-top: 6px; position: relative } .rrow .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 8px }
+.rrow .v { font: 700 13px/1.2 var(--f-display); text-align: right } .rrow .v small { display: block; font: 500 11px/1.2 var(--f-display) }
+.mine { border-radius: 18px; background: #FFF8F5; border: 1px solid #FFD9CB; padding: 14px 16px; display: grid; gap: 8px }
+.mine .t { font: 600 11px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: #B5401F }
+.mine .r { display: flex; align-items: baseline; gap: 8px } .mine .r b { font: 800 30px/1 var(--f-display) } .mine .r span { font: 500 13px/1.3 var(--f-display); color: #5A6B68 }
+.mine p { margin: 0; font: 400 12.5px/1.5 var(--f-body); color: #3D4C49 }
+.mine .lk { display: flex; gap: 8px } .mine .lk span { height: 32px; padding: 0 11px; border-radius: 10px; background: #fff; border: 1px solid #FFC2AF; font: 600 12px/32px var(--f-display); color: #B5401F; display: inline-flex; align-items: center; gap: 6px } .mine .lk svg { width: 14px; height: 14px }
+.badges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+.badges div { border-radius: 14px; border: 1px solid #E1E9E7; padding: 10px; text-align: center; display: grid; gap: 4px; justify-items: center }
+.badges i { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center } .badges i svg { width: 18px; height: 18px }
+.badges b { font: 600 11.5px/1.2 var(--f-display) } .badges small { font: 400 10.5px/1.2 var(--f-body); color: #5A6B68 }
+
+/* Android */
+.dpad { position: absolute; top: 96px; left: 0; right: 0; bottom: 80px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: #F5F9F8; overflow: hidden }
+.dctl { display: flex; gap: 8px; align-items: center } .dctl .seg { margin: 0; background: #fff; border: 1px solid #E1E9E7 } .dctl .seg button { padding: 7px 9px }
+.dbas { font: 500 11px/1.3 var(--f-display); color: #5A6B68; display: flex; gap: 6px; align-items: center } .dbas svg { width: 13px; height: 13px; color: #0E8579 }
+.podium { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 8px; align-items: end }
+.pd { border-radius: 16px; background: #fff; border: 1px solid #E1E9E7; padding: 10px 8px; text-align: center; display: grid; gap: 4px; justify-items: center }
+.pd .m { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 800 14px/1 var(--f-display) }
+.pd b { font: 600 12.5px/1.2 var(--f-display) } .pd small { font: 500 10.5px/1.2 var(--f-display); color: #5A6B68 } .pd .a { font: 800 16px/1 var(--f-display) }
+.pd.p1 { padding-top: 16px; background: linear-gradient(180deg, #F4FCE3, #fff); border-color: #E2F9A8 } .pd.p1 .m { background: #C7F25E; color: #2F4A08 }
+.pd.p2 .m, .pd.p3 .m { background: #E6F4EA; color: #1F7A3A }
+.dl { background: #fff; border: 1px solid #E1E9E7; border-radius: 18px; overflow: hidden }
+.dr { display: grid; grid-template-columns: 30px 1fr 104px; gap: 8px; align-items: center; padding: 9px 12px; border-bottom: 1px solid #ECF3F1 }
+.dr .rk { font: 700 13px/1 var(--f-display); text-align: center } .dr .rk small { display: block; font: 600 9.5px/1.2 var(--f-display); margin-top: 3px }
+.dr b { font: 600 13px/1.2 var(--f-display) } .dr .bul { width: 100%; height: 6px; margin-top: 6px; display: block } .dr .bul em { top: -2px; bottom: -2px }
+.dr .v { text-align: right; font: 700 12.5px/1.2 var(--f-display) } .dr .v small { display: block; font: 500 10.5px/1.25 var(--f-display); color: #5A6B68 }
+.dr.mrow { background: #FFF8F5; box-shadow: inset 4px 0 0 #FF7A59 }
+.dgap { text-align: center; font: 500 11.5px/1 var(--f-display); color: #5A6B68; padding: 9px; border-bottom: 1px solid #ECF3F1; background: #FBFDFC }
+</style>
+
+<template id="web">
+{{SIDE:klas}}
+{{TOP:Klasemen|Peringkat wilayah terhadap target, apple-to-apple}}
+<div class="body">
+  <div class="hd">
+    <div><div class="eb">Klasemen · data ilustrasi</div><h1>Klasemen kabupaten/kota, November 2026</h1>
+      <div class="basis"><span><svg><use href="#i-cal"/></svg>MTD 1 sd 4 Nov vs LMTD 1 sd 4 Okt</span><span><svg><use href="#i-db"/></svg>Dump Performance 5 Nov 05.00 WIB</span><span><svg><use href="#i-info"/></svg>Basis kecil: revenue LMTD di bawah Rp 1 M</span></div></div>
+    <div class="grow"></div>
+    <span class="linkbtn"><svg><use href="#i-share"/></svg>Bagikan gambar</span>
+  </div>
+  <div class="ctrl">
+    <div class="seg"><button>Region</button><button class="on">Kabupaten/kota</button><button>Kecamatan</button></div>
+    <div class="mchips"><span class="on">Revenue</span><span>Payload</span><span>RGU 90D</span><span>Revenue per site</span><span>Availability</span></div>
+    <span style="flex:1"></span>
+    <div class="seg" style="background:#fff;border:1px solid #E1E9E7"><button class="on">Urut: pencapaian target</button><button>Pertumbuhan</button></div>
+  </div>
+  <div class="g2">
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="pod">
+        <section class="pc best"><h3><svg><use href="#i-up"/></svg>Paling unggul</h3>
+          <div class="pr"><span class="rk">1</span><div><b>Malang</b><small>East Java · naik 1 peringkat</small></div><div class="v">104,2%<small class="up">+4,8% · +Rp 1,9 M</small></div></div>
+          <div class="pr"><span class="rk">2</span><div><b>Sidoarjo</b><small>East Java · naik 3 peringkat</small></div><div class="v">103,1%<small class="up">+4,1% · +Rp 1,6 M</small></div></div>
+          <div class="pr"><span class="rk">3</span><div><b>Bandung</b><small>West Java · tetap</small></div><div class="v">102,6%<small class="up">+3,2% · +Rp 2,4 M</small></div></div></section>
+        <section class="pc worst"><h3><svg style="transform:rotate(180deg)"><use href="#i-up"/></svg>Perlu dorongan</h3>
+          <div class="pr"><span class="rk">119</span><div><b>Garut</b><small>West Java · turun 3 peringkat</small></div><div class="v">92,4%<small class="dn">−6,1% · −Rp 0,7 M</small></div></div>
+          <div class="pr"><span class="rk">118</span><div><b>Cianjur</b><small>West Java · turun 2 peringkat</small></div><div class="v">93,6%<small class="dn">−5,2% · −Rp 0,8 M</small></div></div>
+          <div class="pr"><span class="rk">117</span><div><b>Tasikmalaya</b><small>West Java · turun 4 peringkat</small></div><div class="v">94,8%<small class="dn">−3,1% · −Rp 0,4 M</small></div></div></section>
+      </div>
+      <section class="card" data-name="Tabel klasemen" style="padding:6px 0 10px">
+        <table class="kt">
+          <thead><tr><th style="padding-left:20px">#</th><th></th><th>Kabupaten/kota</th><th>Pencapaian (proyeksi)</th><th>Pertumbuhan</th><th class="n" style="padding-right:20px">vs LMTD</th></tr></thead>
+          <tbody>
+            <tr><td class="rk" style="padding-left:20px">1</td><td><span class="mv u">▲1</span></td><td class="nm"><b>Malang</b><small><i class="rd" style="background:#0E8579"></i>East Java</small></td><td><span class="bul"><i style="width:83.4%;background:#2FA84F"></i><em></em></span><span class="ach">104,2%</span></td><td><span class="dot"><i style="left:74%;background:#2FA84F"></i></span></td><td class="n gp" style="padding-right:20px"><b class="up">+4,8%</b><small>+Rp 1,9 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">2</td><td><span class="mv u">▲3</span></td><td class="nm"><b>Sidoarjo</b><small><i class="rd" style="background:#0E8579"></i>East Java</small></td><td><span class="bul"><i style="width:82.5%;background:#2FA84F"></i><em></em></span><span class="ach">103,1%</span></td><td><span class="dot"><i style="left:70.5%;background:#2FA84F"></i></span></td><td class="n gp" style="padding-right:20px"><b class="up">+4,1%</b><small>+Rp 1,6 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">3</td><td><span class="mv s">=</span></td><td class="nm"><b>Bandung</b><small><i class="rd" style="background:#6A4CB5"></i>West Java</small></td><td><span class="bul"><i style="width:82.1%;background:#2FA84F"></i><em></em></span><span class="ach">102,6%</span></td><td><span class="dot"><i style="left:66%;background:#2FA84F"></i></span></td><td class="n gp" style="padding-right:20px"><b class="up">+3,2%</b><small>+Rp 2,4 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">4</td><td><span class="mv d">▼1</span></td><td class="nm"><b>Semarang</b><small><i class="rd" style="background:#22B8C9"></i>Central Java</small></td><td><span class="bul"><i style="width:81.5%;background:#2FA84F"></i><em></em></span><span class="ach">101,9%</span></td><td><span class="dot"><i style="left:63.5%;background:#2FA84F"></i></span></td><td class="n gp" style="padding-right:20px"><b class="up">+2,7%</b><small>+Rp 1,5 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">5</td><td><span class="mv d">▼2</span></td><td class="nm"><b>Surabaya</b><small><i class="rd" style="background:#0E8579"></i>East Java</small></td><td><span class="bul"><i style="width:81.2%;background:#2FA84F"></i><em></em></span><span class="ach">101,5%</span></td><td><span class="dot"><i style="left:61%;background:#2FA84F"></i></span></td><td class="n gp" style="padding-right:20px"><b class="up">+2,2%</b><small>+Rp 2,8 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">6</td><td><span class="mv u">▲9</span></td><td class="nm"><b>Kota Pekalongan<span class="small">Basis kecil</span></b><small><i class="rd" style="background:#22B8C9"></i>Central Java</small></td><td><span class="bul"><i style="width:81%;background:#2FA84F"></i><em></em></span><span class="ach">101,2%</span></td><td><span class="dot"><i style="left:84.5%;background:#2FA84F;opacity:.55"></i></span></td><td class="n gp" style="padding-right:20px"><b class="up">+6,9%</b><small>+Rp 0,1 M</small></td></tr>
+            <tr class="gaprow"><td colspan="6">Peringkat 7 sampai 110 · Lihat semua 119 kab/kota</td></tr>
+            <tr class="mrow"><td class="rk" style="padding-left:20px">111</td><td><span class="mv d">▼5</span></td><td class="nm"><b>Sukabumi</b><small><i class="rd" style="background:#6A4CB5"></i>West Java · Wilayah pantauan kamu</small></td><td><span class="bul"><i style="width:77%;background:#F5A623"></i><em></em></span><span class="ach">96,3%</span></td><td><span class="dot"><i style="left:42%;background:#C42B2B"></i></span></td><td class="n gp" style="padding-right:20px"><b class="dn">−1,6%</b><small>−Rp 0,3 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">117</td><td><span class="mv d">▼4</span></td><td class="nm"><b>Tasikmalaya</b><small><i class="rd" style="background:#6A4CB5"></i>West Java</small></td><td><span class="bul"><i style="width:75.8%;background:#F5A623"></i><em></em></span><span class="ach">94,8%</span></td><td><span class="dot"><i style="left:34.5%;background:#C42B2B"></i></span></td><td class="n gp" style="padding-right:20px"><b class="dn">−3,1%</b><small>−Rp 0,4 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">118</td><td><span class="mv d">▼2</span></td><td class="nm"><b>Cianjur</b><small><i class="rd" style="background:#6A4CB5"></i>West Java</small></td><td><span class="bul"><i style="width:74.9%;background:#C42B2B"></i><em></em></span><span class="ach">93,6%</span></td><td><span class="dot"><i style="left:24%;background:#C42B2B"></i></span></td><td class="n gp" style="padding-right:20px"><b class="dn">−5,2%</b><small>−Rp 0,8 M</small></td></tr>
+            <tr><td class="rk" style="padding-left:20px">119</td><td><span class="mv d">▼3</span></td><td class="nm"><b>Garut</b><small><i class="rd" style="background:#6A4CB5"></i>West Java</small></td><td><span class="bul"><i style="width:73.9%;background:#C42B2B"></i><em></em></span><span class="ach">92,4%</span></td><td><span class="dot"><i style="left:19.5%;background:#C42B2B"></i></span></td><td class="n gp" style="padding-right:20px"><b class="dn">−6,1%</b><small>−Rp 0,7 M</small></td></tr>
+          </tbody>
+        </table>
+        <div class="foot" style="padding:10px 20px 0"><svg><use href="#i-info"/></svg>Garis hitam = target 100%. Titik pertumbuhan di sumbu −10% sd +10%, titik pudar = basis kecil. Pencapaian adalah proyeksi akhir bulan (estimasi).<span class="grow"></span></div>
+      </section>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section class="mine"><span class="t">Wilayah pantauan kamu</span><div class="r"><b>#111</b><span>dari 119 · Sukabumi<br>turun 5 peringkat minggu ini</span></div>
+        <p>Butuh tambahan <b>Rp 0,4 M</b> sampai akhir bulan untuk masuk 100 besar. Penyebab terbesar: revenue per RGU −2,0%.</p>
+        <div class="lk"><span><svg><use href="#i-spark"/></svg>Kenapa?</span><span><svg><use href="#i-up"/></svg>Simulasi</span></div></section>
+      <section class="card" data-name="Klasemen region"><div class="ch"><div><h3>Klasemen region</h3><p>Proyeksi pencapaian target revenue</p></div></div>
+        <div class="rcard">
+          <div class="rrow"><span class="rk">1</span><div><b>East Java</b><div class="bar"><i style="width:100%;background:#0E8579"></i></div></div><div class="v">101,4%<small class="up">+2,1% · +Rp 5,2 M</small></div></div>
+          <div class="rrow"><span class="rk">2</span><div><b>Central Java</b><div class="bar"><i style="width:97%;background:#22B8C9"></i></div></div><div class="v">98,7%<small class="up">+1,4% · +Rp 2,9 M</small></div></div>
+          <div class="rrow"><span class="rk">3</span><div><b>West Java</b><div class="bar"><i style="width:92%;background:#6A4CB5"></i></div></div><div class="v">93,2%<small class="dn">−1,8% · −Rp 2,5 M</small></div></div>
+        </div></section>
+      <section class="card" data-name="Lencana"><div class="ch"><div><h3>Lencana minggu ini</h3><p>Diberikan otomatis dari data, dibagikan ke tim</p></div></div>
+        <div class="badges">
+          <div><i style="background:#F4FCE3;color:#5E8A12"><svg><use href="#i-up"/></svg></i><b>Pendaki</b><small>Sidoarjo naik 3</small></div>
+          <div><i style="background:#E3F7FA;color:#0E6F7C"><svg><use href="#i-tower"/></svg></i><b>Jaringan prima</b><small>Malang 99,9%</small></div>
+          <div><i style="background:#FFEDE7;color:#B5401F"><svg><use href="#i-spark"/></svg></i><b>Bangkit</b><small>Pekalongan +9</small></div>
+        </div></section>
+    </div>
+  </div>
+</div>
+</template>
+
+<template id="droid">
+{{STATUS}}
+{{DBAR:Klasemen|Kabupaten · Revenue · MTD}}
+<div class="dpad">
+  <div class="dctl"><div class="seg"><button>Region</button><button class="on">Kab/kota</button><button>Kec.</button></div><span class="grow" style="flex:1"></span><span class="chip teal" style="height:32px"><svg><use href="#i-wallet"/></svg>Revenue</span></div>
+  <div class="dbas"><svg><use href="#i-cal"/></svg>MTD 1 sd 4 Nov vs LMTD 1 sd 4 Okt · data ilustrasi</div>
+  <div class="podium">
+    <div class="pd p2"><span class="m">2</span><b>Sidoarjo</b><span class="a">103,1%</span><small class="up">+4,1% · +Rp 1,6 M</small></div>
+    <div class="pd p1"><span class="m">1</span><b>Malang</b><span class="a">104,2%</span><small class="up">+4,8% · +Rp 1,9 M</small></div>
+    <div class="pd p3"><span class="m">3</span><b>Bandung</b><span class="a">102,6%</span><small class="up">+3,2% · +Rp 2,4 M</small></div>
+  </div>
+  <div class="dl">
+    <div class="dr"><span class="rk">4<small class="dn">▼1</small></span><div><b>Semarang</b><span class="bul"><i style="width:81.5%;background:#2FA84F"></i><em></em></span></div><div class="v">101,9%<small>+2,7% · +Rp 1,5 M</small></div></div>
+    <div class="dr"><span class="rk">5<small class="dn">▼2</small></span><div><b>Surabaya</b><span class="bul"><i style="width:81.2%;background:#2FA84F"></i><em></em></span></div><div class="v">101,5%<small>+2,2% · +Rp 2,8 M</small></div></div>
+    <div class="dr"><span class="rk">6<small class="up">▲9</small></span><div><b>Kota Pekalongan</b> <span class="small" style="margin:0">Basis kecil</span><span class="bul"><i style="width:81%;background:#2FA84F"></i><em></em></span></div><div class="v">101,2%<small>+6,9% · +Rp 0,1 M</small></div></div>
+    <div class="dgap">Peringkat 7 sampai 110 · Lihat semua</div>
+    <div class="dr mrow"><span class="rk">111<small class="dn">▼5</small></span><div><b>Sukabumi</b><span class="bul"><i style="width:77%;background:#F5A623"></i><em></em></span></div><div class="v">96,3%<small>−1,6% · −Rp 0,3 M</small></div></div>
+    <div class="dr"><span class="rk">118<small class="dn">▼2</small></span><div><b>Cianjur</b><span class="bul"><i style="width:74.9%;background:#C42B2B"></i><em></em></span></div><div class="v">93,6%<small>−5,2% · −Rp 0,8 M</small></div></div>
+    <div class="dr" style="border-bottom:0"><span class="rk">119<small class="dn">▼3</small></span><div><b>Garut</b><span class="bul"><i style="width:73.9%;background:#C42B2B"></i><em></em></span></div><div class="v">92,4%<small>−6,1% · −Rp 0,7 M</small></div></div>
+  </div>
+</div>
+{{BNAV:dash}}
+</template>
+
+<template id="notes">
+<li>Tiga level (region, kabupaten/kota, kecamatan) dan lima metrik dari Performance dump.</li>
+<li>Basis apple-to-apple tertulis di atas: MTD 1 sd 4 Nov dibanding LMTD 1 sd 4 Okt, tidak pernah dengan bulan penuh.</li>
+<li>Pertumbuhan selalu berpasangan persen dan rupiah. Wilayah dengan revenue LMTD di bawah Rp 1 M diberi tanda "Basis kecil" dan titiknya dipudarkan, tetap tampil.</li>
+<li>Bullet bar pencapaian dengan garis target, dot plot pertumbuhan pada sumbu tetap −10% sd +10%.</li>
+<li>Panah pergerakan peringkat dan baris "Wilayah pantauan kamu" yang selalu terlihat walau di peringkat bawah.</li>
+<li>Kartu "Perlu dorongan" langsung bisa dibuka ke Diagnosa atau Simulasi.</li>
+<li>Lencana otomatis dari data untuk dibagikan ke tim. Bagikan klasemen sebagai gambar ke WhatsApp.</li>
+<li>Android: podium 3 besar lalu daftar ringkas. Dibuka dari Dashboard.</li>
+</template>
