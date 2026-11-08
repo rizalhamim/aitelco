@@ -8,6 +8,7 @@ import '../ui/answer_v2.dart' show Triangle;
 import '../ui/chart.dart' show formatValue, idNum, shortNum, toNum;
 import '../ui/mock_icons.dart';
 import '../ui/v2.dart';
+import 'v3/v3_entry.dart';
 
 /// Android · Dashboard (Redesign v2, design/mockup-v2/03-dashboard): period
 /// switch and region chip, the agent's summary hero, four KPI cards with
@@ -196,6 +197,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _alertCard(),
                   const SizedBox(height: 12),
                   _targetCard(d),
+                  const SizedBox(height: 12),
+                  const V3EntryCard(),
                 ],
               ],
             ),

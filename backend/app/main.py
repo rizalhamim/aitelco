@@ -41,6 +41,13 @@ from .profile_api import router as profile_router
 from .watchlist import router as watchlist_router, evaluate_all as evaluate_watchlist
 from .report_schedule import links_router as report_links_router, router as report_schedule_router, run_due as run_due_reports
 from .map_overview import router as map_router
+from .diagnosa import router as diagnosa_router
+from .klasemen import router as klasemen_router
+from .simulasi import router as simulasi_router
+from .brief import router as brief_router, send_due as send_due_briefs
+from .ruang import router as ruang_router, send_due as send_due_boards
+from .tindak import router as tindak_router, verify_due as verify_due_tasks
+from .notify_api import router as notify_router
 from sqlalchemy.orm import Session
 
 app = FastAPI(title="Telco AI Orchestrator", version="1.0")
@@ -83,6 +90,13 @@ app.include_router(watchlist_router)
 app.include_router(report_schedule_router)
 app.include_router(report_links_router)
 app.include_router(map_router)
+app.include_router(diagnosa_router)
+app.include_router(klasemen_router)
+app.include_router(simulasi_router)
+app.include_router(brief_router)
+app.include_router(ruang_router)
+app.include_router(tindak_router)
+app.include_router(notify_router)
 
 # Init database on startup
 @app.on_event("startup")
@@ -92,13 +106,16 @@ def startup():
 
 @app.on_event("startup")
 async def start_watchlist_loop():
-    """Hourly: check watchlist rules (each at most once per day), send due scheduled reports,
-    and write the daily Performance dump after 05.00 WIB (perf_dump)."""
+    """Every 10 minutes: check watchlist rules (each at most once per day), send due scheduled
+    reports and boards, write the daily Performance dump after 05.00 WIB (perf_dump), the
+    Brief Pagi notifications after 06.00 WIB, and verify Tindak Lanjut tasks once a day."""
     import asyncio
     import logging
+    from datetime import datetime, timedelta, timezone
 
     async def loop():
         await asyncio.sleep(60)
+        verified_on = None
         while True:
             try:
                 await run_in_threadpool(evaluate_watchlist)
@@ -115,7 +132,19 @@ async def start_watchlist_loop():
                     logging.getLogger("perf_dump").info(f"dump: {res.get('dump') or res}")
             except Exception as e:
                 logging.getLogger("perf_dump").warning(f"dump loop: {e}")
-            await asyncio.sleep(3600)
+            for name, job in (("brief", send_due_briefs), ("ruang", send_due_boards)):
+                try:
+                    await run_in_threadpool(job)
+                except Exception as e:
+                    logging.getLogger(name).warning(f"{name} loop: {e}")
+            today = (datetime.now(timezone.utc) + timedelta(hours=7)).date()
+            if verified_on != today and (datetime.now(timezone.utc) + timedelta(hours=7)).hour >= 6:
+                try:
+                    await run_in_threadpool(verify_due_tasks)
+                    verified_on = today
+                except Exception as e:
+                    logging.getLogger("tindak").warning(f"verify loop: {e}")
+            await asyncio.sleep(600)
 
     if _os.environ.get("WATCHLIST_LOOP", "1") != "0":
         app.state.watchlist_task = asyncio.create_task(loop())
