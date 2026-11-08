@@ -653,7 +653,23 @@ class _V2Field extends StatelessWidget {
                 onSubmitted: onSubmit == null ? null : (_) => onSubmit!(),
                 style: V2.b(15, FontWeight.w400, V2.ink, lh: 1.2),
                 cursorColor: V2.teal600,
-                decoration: InputDecoration.collapsed(hintText: hint, hintStyle: V2.b(15, FontWeight.w400, const Color(0xFF8A9A97), lh: 1.2)),
+                // InputDecoration.collapsed only sets `border`, so the app theme's
+                // enabledBorder/focusedBorder (OutlineInputBorder) still leaked in and drew
+                // a second, tight outline around the text inside the rounded field. The
+                // container above owns the border and focus ring; turn every state off here.
+                decoration: InputDecoration(
+                  isCollapsed: true,
+                  hintText: hint,
+                  hintStyle: V2.b(15, FontWeight.w400, const Color(0xFF8A9A97), lh: 1.2),
+                  filled: false,
+                  contentPadding: EdgeInsets.zero,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                ),
               ),
             ),
             if (trailing != null) trailing!,
